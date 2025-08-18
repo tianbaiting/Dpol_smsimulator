@@ -1,0 +1,37 @@
+# 编译生成文件
+*.o
+*.so
+*.a
+*.out
+*.exe
+*.dll
+
+# CMake/Makefile 生成目录
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# 日志和临时文件
+*.log
+*.tmp
+*.bak
+
+# VSCode 配置
+.vscode/
+.ipch/
+*.db
+
+# ROOT 文件和数据
+*.root
+*.dat
+
+# Python/Jupyter临时文件
+__pycache__/
+*.pyc
+*.ipynb_checkpoints
+
+# 其他
+*.swp
+*.swo

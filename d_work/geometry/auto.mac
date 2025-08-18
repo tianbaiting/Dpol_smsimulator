@@ -1,0 +1,44 @@
+# =========================================================================
+# =========================================================================
+#
+# Geometry for the SAMURAI Dayone experiment
+#
+#-----------------------------------
+# field map file
+/samurai/geometry/Dipole/Angle 30 deg
+/samurai/geometry/Dipole/FieldFile /nas/data/Bryan/field_map/180626-1,20T-3000.bin
+/samurai/geometry/Dipole/FieldFactor 1
+
+# Target
+/samurai/geometry/Target/SetTarget true
+/samurai/geometry/Target/Material Sn
+/samurai/geometry/Target/Size 80 80 30 mm
+/samurai/geometry/Target/Position -7.15 0.10 -58.21 cm
+/samurai/geometry/Target/Angle 10.00 deg
+
+#-----------------------------------
+# PDCs
+# Z should be distance from MAGcenter to PDC Z=0 plane
+/samurai/geometry/PDC/Angle 62.42 deg
+/samurai/geometry/PDC/Position1 103.73 0.00 450.00 cm
+/samurai/geometry/PDC/Position2 103.73 0.00 550.00 cm
+
+#-----------------------------------
+# Dump
+# Z should be distance from MAGcenter to the beam dump Z=0 plane
+/samurai/geometry/Dump/SetDump false
+/samurai/geometry/Dump/Angle 36.85 deg
+/samurai/geometry/Dump/Position -1.83 -25.00 0.00 cm
+
+#-----------------------------------
+# NEBULA
+/samurai/geometry/NEBULA/ParameterFileName geometry/NEBULA_Dayone.csv
+/samurai/geometry/NEBULA/DetectorParameterFileName geometry/NEBULA_Detectors_Dayone.csv
+#
+
+#-----------------------------------
+# UPDATE (should be called after changing geometry)
+/samurai/geometry/FillAir true
+/samurai/geometry/Update
+
+# /samurai/geometry/AutoConfig geometry/auto.mac

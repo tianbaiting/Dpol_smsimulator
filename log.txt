@@ -1,0 +1,271 @@
+cd data; if [ ! -e ./Makefile ] ; then ./autogen.sh --prefix=/data4/Bryan/smsimulator5.5/smg4lib/data; fi; make install
+make -C physics
+make[1]: Entering directory '/data4/Bryan/smsimulator5.5/smg4lib/physics'
+make[1]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
+make[1]: Entering directory '/data4/Bryan/smsimulator5.5/smg4lib/data'
+CDPATH="${ZSH_VERSION+.}:" && cd . && /bin/bash /data4/Bryan/smsimulator5.5/smg4lib/data/missing aclocal-1.15 
+aclocal-1.15: warning: autoconf input should be named 'configure.ac', not 'configure.in'
+Installed shared library to /data4/Bryan/smsimulator5.5/smg4lib/lib
+make[1]: Leaving directory '/data4/Bryan/smsimulator5.5/smg4lib/physics'
+configure.in:8: warning: The macro 'AC_CONFIG_HEADER' is obsolete.
+configure.in:8: You should run autoupdate.
+./lib/autoconf/status.m4:719: AC_CONFIG_HEADER is expanded from...
+configure.in:8: the top level
+configure.in:13: warning: The macro 'AC_PROG_LIBTOOL' is obsolete.
+configure.in:13: You should run autoupdate.
+/usr/share/aclocal/libtool.m4:99: AC_PROG_LIBTOOL is expanded from...
+configure.in:13: the top level
+ cd . && /bin/bash /data4/Bryan/smsimulator5.5/smg4lib/data/missing automake-1.15 --foreign
+automake-1.15: warning: autoconf input should be named 'configure.ac', not 'configure.in'
+configure.in:8: warning: The macro 'AC_CONFIG_HEADER' is obsolete.
+configure.in:8: You should run autoupdate.
+./lib/autoconf/status.m4:719: AC_CONFIG_HEADER is expanded from...
+configure.in:8: the top level
+configure.in:13: warning: The macro 'AC_PROG_LIBTOOL' is obsolete.
+configure.in:13: You should run autoupdate.
+aclocal.m4:121: AC_PROG_LIBTOOL is expanded from...
+configure.in:13: the top level
+sources/Makefile.am:8: warning: 'INCLUDES' is the old name for 'AM_CPPFLAGS' (or '*_CPPFLAGS')
+automake-1.15: warning: autoconf input should be named 'configure.ac', not 'configure.in'
+CDPATH="${ZSH_VERSION+.}:" && cd . && /bin/bash /data4/Bryan/smsimulator5.5/smg4lib/data/missing autoconf
+configure.in:8: warning: The macro 'AC_CONFIG_HEADER' is obsolete.
+configure.in:8: You should run autoupdate.
+./lib/autoconf/status.m4:719: AC_CONFIG_HEADER is expanded from...
+configure.in:8: the top level
+configure.in:13: warning: The macro 'AC_PROG_LIBTOOL' is obsolete.
+configure.in:13: You should run autoupdate.
+aclocal.m4:121: AC_PROG_LIBTOOL is expanded from...
+configure.in:13: the top level
+/bin/bash ./config.status --recheck
+running CONFIG_SHELL=/bin/bash /bin/bash ./configure --prefix=/data4/Bryan/smsimulator5.5/smg4lib/data --no-create --no-recursion
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for a race-free mkdir -p... /bin/mkdir -p
+checking for gawk... gawk
+checking whether make sets $(MAKE)... yes
+checking whether make supports nested variables... yes
+checking for g++-13... g++-13
+checking whether the C++ compiler works... yes
+checking for C++ compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether the compiler supports GNU C++... yes
+checking whether g++-13 accepts -g... yes
+checking for g++-13 option to enable C++11 features... none needed
+checking for style of include used by make... GNU
+checking dependency style of g++-13... gcc3
+checking for ranlib... ranlib
+checking build system type... x86_64-pc-linux-gnu
+checking host system type... x86_64-pc-linux-gnu
+checking how to print strings... printf
+checking for gcc... gcc
+checking whether the compiler supports GNU C... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to enable C11 features... none needed
+checking whether gcc understands -c and -o together... yes
+checking dependency style of gcc... gcc3
+checking for a sed that does not truncate output... /bin/sed
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for fgrep... /bin/grep -F
+checking for ld used by gcc... /usr/bin/ld
+checking if the linker (/usr/bin/ld) is GNU ld... yes
+checking for BSD- or MS-compatible name lister (nm)... /usr/bin/nm -B
+checking the name lister (/usr/bin/nm -B) interface... BSD nm
+checking whether ln -s works... yes
+checking the maximum length of command line arguments... 1572864
+checking how to convert x86_64-pc-linux-gnu file names to x86_64-pc-linux-gnu format... func_convert_file_noop
+checking how to convert x86_64-pc-linux-gnu file names to toolchain format... func_convert_file_noop
+checking for /usr/bin/ld option to reload object files... -r
+checking for objdump... objdump
+checking how to recognize dependent libraries... pass_all
+checking for dlltool... no
+checking how to associate runtime and link libraries... printf %s\n
+checking for ar... ar
+checking for archiver @FILE support... @
+checking for strip... strip
+checking for ranlib... (cached) ranlib
+checking command to parse /usr/bin/nm -B output from gcc object... ok
+checking for sysroot... no
+checking for a working dd... /bin/dd
+checking how to truncate binary pipes... /bin/dd bs=4096 count=1
+checking for mt... mt
+checking if mt is a manifest tool... no
+checking for stdio.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for strings.h... yes
+checking for sys/stat.h... yes
+checking for sys/types.h... yes
+checking for unistd.h... yes
+checking for dlfcn.h... yes
+checking for objdir... .libs
+checking if gcc supports -fno-rtti -fno-exceptions... no
+checking for gcc option to produce PIC... -fPIC -DPIC
+checking if gcc PIC flag -fPIC -DPIC works... yes
+checking if gcc static flag -static works... yes
+checking if gcc supports -c -o file.o... yes
+checking if gcc supports -c -o file.o... (cached) yes
+checking whether the gcc linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking whether -lc should be explicitly linked in... no
+checking dynamic linker characteristics... GNU/Linux ld.so
+checking how to hardcode library paths into programs... immediate
+checking whether stripping libraries is possible... yes
+checking if libtool supports shared libraries... yes
+checking whether to build shared libraries... yes
+checking whether to build static libraries... yes
+checking how to run the C++ preprocessor... g++-13 -E
+checking for ld used by g++-13... /usr/bin/ld -m elf_x86_64
+checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+checking whether the g++-13 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking for g++-13 option to produce PIC... -fPIC -DPIC
+checking if g++-13 PIC flag -fPIC -DPIC works... yes
+checking if g++-13 static flag -static works... yes
+checking if g++-13 supports -c -o file.o... yes
+checking if g++-13 supports -c -o file.o... (cached) yes
+checking whether the g++-13 linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking dynamic linker characteristics... (cached) GNU/Linux ld.so
+checking how to hardcode library paths into programs... immediate
+checking that generated files are newer than configure... done
+configure: creating ./config.status
+ /bin/bash ./config.status
+config.status: creating Makefile
+config.status: creating sources/Makefile
+config.status: creating config.h
+config.status: config.h is unchanged
+config.status: executing depfiles commands
+config.status: executing libtool commands
+make[1]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
+Making install in sources
+make[2]: Entering directory '/data4/Bryan/smsimulator5.5/smg4lib/data/sources'
+/bin/bash ../libtool  --tag=CXX   --mode=compile g++-13 -DHAVE_CONFIG_H -I. -I.. -Iinclude -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include    -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall -MT smdata_dict.lo -MD -MP -MF .deps/smdata_dict.Tpo -c -o smdata_dict.lo smdata_dict.cc
+libtool: compile:  g++-13 -DHAVE_CONFIG_H -I. -I.. -Iinclude -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall -MT smdata_dict.lo -MD -MP -MF .deps/smdata_dict.Tpo -c smdata_dict.cc  -fPIC -DPIC -o .libs/smdata_dict.o
+libtool: compile:  g++-13 -DHAVE_CONFIG_H -I. -I.. -Iinclude -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall -MT smdata_dict.lo -MD -MP -MF .deps/smdata_dict.Tpo -c smdata_dict.cc -o smdata_dict.o >/dev/null 2>&1
+mv -f .deps/smdata_dict.Tpo .deps/smdata_dict.Plo
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/TBeamSimData.o src/TBeamSimData.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/SimDataManager.o src/SimDataManager.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/TRunSimParameter.o src/TRunSimParameter.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/BeamSimDataInitializer.o src/BeamSimDataInitializer.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/FragSimDataInitializer.o src/FragSimDataInitializer.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/TSimData.o src/TSimData.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/FragSimDataConverter_Basic.o src/FragSimDataConverter_Basic.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/NEBULASimDataInitializer.o src/NEBULASimDataInitializer.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/TNEBULASimParameter.o src/TNEBULASimParameter.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/TDetectorSimParameter.o src/TDetectorSimParameter.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/TFragSimParameter.o src/TFragSimParameter.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/NEBULASimParameterReader.o src/NEBULASimParameterReader.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/TSimParameter.o src/TSimParameter.cc
+g++-13 -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall   -c -o src/NEBULASimDataConverter_TArtNEBULAPla.o src/NEBULASimDataConverter_TArtNEBULAPla.cc
+src/NEBULASimDataConverter_TArtNEBULAPla.cc: In member function ‘virtual int NEBULASimDataConverter_TArtNEBULAPla::ConvertSimData()’:
+src/NEBULASimDataConverter_TArtNEBULAPla.cc:109:24: warning: variable ‘Xsiz’ set but not used [-Wunused-but-set-variable]
+  109 |       Double_t AttLen, Xsiz, Ysiz, Zsiz;
+      |                        ^~~~
+src/NEBULASimDataConverter_TArtNEBULAPla.cc:109:36: warning: variable ‘Zsiz’ set but not used [-Wunused-but-set-variable]
+  109 |       Double_t AttLen, Xsiz, Ysiz, Zsiz;
+      |                                    ^~~~
+/bin/bash ../libtool  --tag=CXX   --mode=link g++-13  -fPIC -Iinclude -pthread -std=c++20 -m64 -fPIC -I/data4/Bryan/root-6.30.04/install/include -I/data4/Bryan/anaroot/install/include -g -Wall -L/data4/Bryan/root-6.30.04/install/lib -lGui -lCore -lImt -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lROOTVecOps -lTree -lTreePlayer -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lMultiProc -lROOTDataFrame -Wl,-rpath,/data4/Bryan/root-6.30.04/install/lib -pthread -lm -ldl -rdynamic -L/data4/Bryan/root-6.30.04/install/lib -lGui -lCore -lImt -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lROOTVecOps -lTree -lTreePlayer -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lMultiProc -lROOTDataFrame -Wl,-rpath,/data4/Bryan/root-6.30.04/install/lib -pthread -lm -ldl -rdynamic -o libsmdata.la -rpath /data4/Bryan/smsimulator5.5/smg4lib/data/lib  smdata_dict.lo src/TBeamSimData.o src/SimDataManager.o src/TRunSimParameter.o src/BeamSimDataInitializer.o src/FragSimDataInitializer.o src/TSimData.o src/FragSimDataConverter_Basic.o src/NEBULASimDataInitializer.o src/TNEBULASimParameter.o src/TDetectorSimParameter.o src/TFragSimParameter.o src/NEBULASimParameterReader.o src/TSimParameter.o src/NEBULASimDataConverter_TArtNEBULAPla.o 
+
+*** Warning: Linking the shared library libsmdata.la against the non-libtool
+*** objects  src/TBeamSimData.o src/SimDataManager.o src/TRunSimParameter.o src/BeamSimDataInitializer.o src/FragSimDataInitializer.o src/TSimData.o src/FragSimDataConverter_Basic.o src/NEBULASimDataInitializer.o src/TNEBULASimParameter.o src/TDetectorSimParameter.o src/TFragSimParameter.o src/NEBULASimParameterReader.o src/TSimParameter.o src/NEBULASimDataConverter_TArtNEBULAPla.o is not portable!
+libtool: link: g++-13  -fPIC -DPIC -shared -nostdlib /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/13/crtbeginS.o  .libs/smdata_dict.o  src/TBeamSimData.o src/SimDataManager.o src/TRunSimParameter.o src/BeamSimDataInitializer.o src/FragSimDataInitializer.o src/TSimData.o src/FragSimDataConverter_Basic.o src/NEBULASimDataInitializer.o src/TNEBULASimParameter.o src/TDetectorSimParameter.o src/TFragSimParameter.o src/NEBULASimParameterReader.o src/TSimParameter.o src/NEBULASimDataConverter_TArtNEBULAPla.o   -L/data4/Bryan/root-6.30.04/install/lib -lGui -lCore -lImt -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lROOTVecOps -lTree -lTreePlayer -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lMultiProc -lROOTDataFrame -ldl -L/home/Bryan/.local/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/13 -L/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/13/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/home/Bryan/.local/lib -L/usr/lib/gcc/x86_64-linux-gnu/13/../../.. -lstdc++ -lm -lc -lgcc_s /usr/lib/gcc/x86_64-linux-gnu/13/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crtn.o  -pthread -m64 -g -Wl,-rpath -Wl,/data4/Bryan/root-6.30.04/install/lib -pthread -Wl,-rpath -Wl,/data4/Bryan/root-6.30.04/install/lib -pthread   -pthread -Wl,-soname -Wl,libsmdata.so.0 -o .libs/libsmdata.so.0.0.0
+libtool: link: (cd ".libs" && rm -f "libsmdata.so.0" && ln -s "libsmdata.so.0.0.0" "libsmdata.so.0")
+libtool: link: (cd ".libs" && rm -f "libsmdata.so" && ln -s "libsmdata.so.0.0.0" "libsmdata.so")
+libtool: link: ar cru .libs/libsmdata.a  smdata_dict.o
+ar: `u' modifier ignored since `D' is the default (see `U')
+libtool: link: ranlib .libs/libsmdata.a
+libtool: link: ( cd ".libs" && rm -f "libsmdata.la" && ln -s "../libsmdata.la" "libsmdata.la" )
+make[3]: Entering directory '/data4/Bryan/smsimulator5.5/smg4lib/data/sources'
+ /bin/mkdir -p '/data4/Bryan/smsimulator5.5/smg4lib/data/lib'
+ /bin/bash ../libtool   --mode=install /usr/bin/install -c   libsmdata.la '/data4/Bryan/smsimulator5.5/smg4lib/data/lib'
+libtool: install: /usr/bin/install -c .libs/libsmdata.so.0.0.0 /data4/Bryan/smsimulator5.5/smg4lib/data/lib/libsmdata.so.0.0.0
+libtool: install: (cd /data4/Bryan/smsimulator5.5/smg4lib/data/lib && { ln -s -f libsmdata.so.0.0.0 libsmdata.so.0 || { rm -f libsmdata.so.0 && ln -s libsmdata.so.0.0.0 libsmdata.so.0; }; })
+libtool: install: (cd /data4/Bryan/smsimulator5.5/smg4lib/data/lib && { ln -s -f libsmdata.so.0.0.0 libsmdata.so || { rm -f libsmdata.so && ln -s libsmdata.so.0.0.0 libsmdata.so; }; })
+libtool: install: /usr/bin/install -c .libs/libsmdata.lai /data4/Bryan/smsimulator5.5/smg4lib/data/lib/libsmdata.la
+libtool: install: /usr/bin/install -c .libs/libsmdata.a /data4/Bryan/smsimulator5.5/smg4lib/data/lib/libsmdata.a
+libtool: install: chmod 644 /data4/Bryan/smsimulator5.5/smg4lib/data/lib/libsmdata.a
+libtool: install: ranlib /data4/Bryan/smsimulator5.5/smg4lib/data/lib/libsmdata.a
+libtool: finish: PATH="/home/Bryan/geant4_workdir/bin/Linux-g++:/data4/Bryan/geant4-11.1.2/install/bin:/home/Bryan/.local/bin:/data4/Bryan/geant4-11.1.2/install/bin:/data4/Bryan/root-6.30.04/install/bin:/home/Bryan/.vscode-server/bin/8b3775030ed1a69b13e4f4c628c612102e30a681/bin/remote-cli:/home/Bryan/.local/bin:/home/Bryan/.local/bin:/data4/Bryan/geant4-11.1.2/install/bin:/usr/local/texlive/2019/bin/x86_64-linux:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/data4/Bryan/smsimulator5.5/bin:/data4/Bryan/smsimulator5.5/bin:/data4/Bryan/smsimulator5.5/bin/Linux-g++:/sbin" ldconfig -n /data4/Bryan/smsimulator5.5/smg4lib/data/lib
+----------------------------------------------------------------------
+Libraries have been installed in:
+   /data4/Bryan/smsimulator5.5/smg4lib/data/lib
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the '-LLIBDIR'
+flag during linking and do at least one of the following:
+   - add LIBDIR to the 'LD_LIBRARY_PATH' environment variable
+     during execution
+   - add LIBDIR to the 'LD_RUN_PATH' environment variable
+     during linking
+   - use the '-Wl,-rpath -Wl,LIBDIR' linker flag
+   - have your system administrator add LIBDIR to '/etc/ld.so.conf'
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+----------------------------------------------------------------------
+ /bin/mkdir -p '/data4/Bryan/smsimulator5.5/smg4lib/data/include'
+ /usr/bin/install -c -m 644 include/NEBULASimDataConverter_TArtNEBULAPla.hh include/TBeamSimData.hh include/TNEBULASimParameter.hh include/FragSimDataInitializer.hh include/SimDataInitializer.hh include/TRunSimParameter.hh include/BeamSimDataInitializer.hh include/TSimData.hh include/FragSimDataConverter_Basic.hh include/SimDataConverter.hh include/NEBULASimDataInitializer.hh include/TDetectorSimParameter.hh include/SimDataManager.hh include/TFragSimParameter.hh include/NEBULASimParameterReader.hh include/TSimParameter.hh '/data4/Bryan/smsimulator5.5/smg4lib/data/include'
+make[3]: Leaving directory '/data4/Bryan/smsimulator5.5/smg4lib/data/sources'
+make[2]: Leaving directory '/data4/Bryan/smsimulator5.5/smg4lib/data/sources'
+make[2]: Entering directory '/data4/Bryan/smsimulator5.5/smg4lib/data'
+(CDPATH="${ZSH_VERSION+.}:" && cd . && /bin/bash /data4/Bryan/smsimulator5.5/smg4lib/data/missing autoheader)
+autoheader: warning: autoconf input should be named 'configure.ac', not 'configure.in'
+rm -f stamp-h1
+touch config.h.in
+cd . && /bin/bash ./config.status config.h
+config.status: creating config.h
+config.status: config.h is unchanged
+make[3]: Entering directory '/data4/Bryan/smsimulator5.5/smg4lib/data'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/data4/Bryan/smsimulator5.5/smg4lib/data'
+make[2]: Leaving directory '/data4/Bryan/smsimulator5.5/smg4lib/data'
+make[1]: Leaving directory '/data4/Bryan/smsimulator5.5/smg4lib/data'
+make -C construction
+make -C action
+make[1]: Entering directory '/data4/Bryan/smsimulator5.5/smg4lib/action'
+make[1]: Entering directory '/data4/Bryan/smsimulator5.5/smg4lib/construction'
+Making dependency for file src/PrimaryGeneratorActionBasic.cc ...
+Making dependency for file src/DipoleConstruction.cc ...
+Making dependency for file src/TrackingActionBasic.cc ...
+Making dependency for file src/MagField.cc ...
+Making dependency for file src/RunActionBasic.cc ...
+Making dependency for file src/NEBULAConstruction.cc ...
+Making dependency for file src/BeamSimDataMessenger.cc ...
+Making dependency for file src/PDCConstruction.cc ...
+Making dependency for file src/ActionBasicMessenger.cc ...
+Making dependency for file src/FragmentSD.cc ...
+Making dependency for file src/EventActionBasic.cc ...
+Making dependency for file src/DipoleConstructionMessenger.cc ...
+Making dependency for file src/NEBULASD.cc ...
+Making dependency for file src/NEBULAConstructionMessenger.cc ...
+Compiling EventActionBasic.cc ...
+Compiling ActionBasicMessenger.cc ...
+Compiling BeamSimDataMessenger.cc ...
+Compiling NEBULAConstructionMessenger.cc ...
+Compiling RunActionBasic.cc ...
+Compiling NEBULASD.cc ...
+Compiling DipoleConstructionMessenger.cc ...
+Compiling TrackingActionBasic.cc ...
+Compiling FragmentSD.cc ...
+Compiling PrimaryGeneratorActionBasic.cc ...
+Compiling PDCConstruction.cc ...
+Compiling NEBULAConstruction.cc ...
+Compiling MagField.cc ...
+Compiling DipoleConstruction.cc ...
+src/TrackingActionBasic.cc: In member function ‘virtual void TrackingActionBasic::PostUserTrackingAction(const G4Track*)’:
+src/TrackingActionBasic.cc:25:65: warning: unused parameter ‘atrack’ [-Wunused-parameter]
+   25 | void TrackingActionBasic::PostUserTrackingAction(const G4Track* atrack)
+      |                                                  ~~~~~~~~~~~~~~~^~~~~~
+Creating shared library /data4/Bryan/smsimulator5.5/smg4lib/construction/tmp/Linux-g++/smconstruction/libsmconstruction.so ...
+Installed shared library to /data4/Bryan/smsimulator5.5/smg4lib/lib
+make[1]: Leaving directory '/data4/Bryan/smsimulator5.5/smg4lib/construction'
+Creating shared library /data4/Bryan/smsimulator5.5/smg4lib/action/tmp/Linux-g++/smaction/libsmaction.so ...
+Installed shared library to /data4/Bryan/smsimulator5.5/smg4lib/lib
+make[1]: Leaving directory '/data4/Bryan/smsimulator5.5/smg4lib/action'
+cp ./*/include/* ./include
+cp ./*/lib/* ./lib
+cp ./data/sources/smdata_dict_rdict.pcm ./lib

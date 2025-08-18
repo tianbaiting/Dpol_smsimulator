@@ -1,0 +1,14 @@
+
+G4TARGET := $(name)
+G4EXLIB := true
+G4WORKDIR = $(shell pwd)
+
+all: lib
+	@if [ ! -d ./lib ] ; then mkdir ./lib  ;fi
+	@cp $(G4LIBDIR)/lib$(name).$(SHEXT) ./lib
+	@echo Installed shared library to $(PWD)/lib
+
+include $(G4INSTALL)/config/binmake.gmk
+
+clean_lib:
+	-rm ./lib/lib$(name).so	
