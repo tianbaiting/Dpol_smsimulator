@@ -26,6 +26,7 @@ Makefile
 # ROOT 文件和数据
 *.root
 *.dat
+d_work/geometry/
 
 # Python/Jupyter临时文件
 __pycache__/
