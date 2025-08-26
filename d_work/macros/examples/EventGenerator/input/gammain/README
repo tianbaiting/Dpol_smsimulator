@@ -1,0 +1,20 @@
+README : HOW TO DESCLIBE GAMMA INPUT FILE FOR EVENTGENERATOR
+
+In gamma input files, you can define the decay scheme to be simulated.
+This file consists of "LEVEL" and "DECAY" defined as follows:
+
+_______________________________________________________________________
+LEVEL N P E T
+
+N : ID of level.
+P : Populate probability (relative value is OK)
+E : Excitation energy of level
+T : Halflife of level
+_______________________________________________________________________
+DECAY I F B
+
+I : ID of initial level
+F : ID of final level
+B : Branching ratio of ID=I for transition to ID=F
+_______________________________________________________________________
+

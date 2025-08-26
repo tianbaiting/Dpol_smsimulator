@@ -143,6 +143,10 @@ SMSIMULATOR5.5 支持多种粒子束流输入方式，通过 `PrimaryGeneratorAc
 
 ##### 输入数据结构 (TBeamSimData)
 
+~/smsimulator5.5/smg4lib/include/TBeamSimData.hh
+
+在此处定义的
+
 ```cpp
 class TBeamSimData {
 public:
