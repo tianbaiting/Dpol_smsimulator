@@ -451,8 +451,7 @@ void DeutDetectorConstruction::AutoConfigGeometry(G4String outputMacroFile)
     if (command == "/samurai/geometry/PDC/Position2")
     {
       G4ThreeVector pos = trackingAction->GetPDC2Pos()/10;
-      str << command << " " << pos.x() << " " <
-      < pos.y() << " "\
+      str << command << " " << pos.x() << " " << pos.y() << " "\
           << pos.z() << " " << "cm";
       line = str.str();
     }

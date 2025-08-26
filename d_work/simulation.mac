@@ -1,0 +1,15 @@
+# 加载几何
+/control/execute /home/tbt/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac
+
+# 输出文件名设置
+/action/file/SaveDirectory output_tree/
+/action/file/RunName d+Pb208E190g050xyz
+
+# 不保存轨迹，节省内存
+/tracking/storeTrajectory 0
+
+# 粒子输入类型为 Tree
+/action/gun/Type Tree
+/action/gun/tree/InputFileName /home/tbt/workspace/dpol/smsimulator5.5/d_work/rootfiles/d+Pb208E190g050xyz/dbreakb01.root
+/action/gun/tree/TreeName BeamSimTree
+/run/beamOn 100

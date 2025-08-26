@@ -5,7 +5,8 @@ source /home/tbt/Software/geant4/install/share/Geant4/geant4make/geant4make.sh
 #source /usr/local/lib64/geant4/share/Geant4-10.6.1/geant4make/geant4make.sh
 #export TARTSYS=/home/togano/tool/anaroot
 # export TARTSYS=/home/kondo/work/geant/anaroot/anaroot_v4.5.36
-export TARTSYS=/home/tbt/Software/anaroot/install
+# export TARTSYS=/home/tbt/Software/anaroot/install
+export TARTSYS=/home/tbt/workspace/dpol/tbt_anaroot/src
 
 export SMSIMDIR=/home/tbt/workspace/dpol/smsimulator5.5
 
