@@ -18,7 +18,10 @@
 # /vis/viewer/set/viewpointThetaPhi 0. 90.
 
 /vis/drawVolume
- 
+
+# 添加坐标轴
+/vis/scene/add/axes 0 0 0 6000 mm
+
 /vis/scene/endOfEventAction accumulate
 /vis/scene/add/trajectories smooth
 /vis/modeling/trajectories/create/drawByCharge
