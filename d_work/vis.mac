@@ -3,7 +3,7 @@
 #/vis/open DAWNFILE
 
 /action/file/OverWrite y
-/action/file/RunName test
+/action/file/RunName testaba
 /action/file/SaveDirectory output_tree
 
 # Load geometry
@@ -46,7 +46,7 @@
 /action/gun/Type Tree
 /action/gun/tree/InputFileName /home/tbt/workspace/dpol/smsimulator5.5/d_work/rootfiles/d+Sn124E190g050ynp/dbreakb09.root
 /action/gun/tree/TreeName tree
-/action/gun/tree/beamOn 9
+# /action/gun/tree/beamOn 9
 
 # /event/verbose 1
 # /tracking/verbose 1
