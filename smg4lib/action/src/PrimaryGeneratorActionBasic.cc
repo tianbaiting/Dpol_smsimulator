@@ -583,6 +583,9 @@ void PrimaryGeneratorActionBasic::TreeBeamOn(G4int num)
   G4RunManager *RunManager = G4RunManager::GetRunManager();
   RunManager->BeamOn(n_event);
 
-  fRootInputFile->Close();
+  // NOTE: do not close fRootInputFile here so that interactive sessions
+  // can call /action/gun/tree/beamOn multiple times without reopening the file.
+  // Closing the file here caused the second call to access invalid branch
+  // memory and crash. The file will be closed on program exit.
 }
 //________________________________________________________________
