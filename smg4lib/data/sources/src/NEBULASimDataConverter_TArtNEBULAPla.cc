@@ -95,10 +95,6 @@ int NEBULASimDataConverter_TArtNEBULAPla::ConvertSimData()
 
   for (auto&& [ID,data]: fDataBufferMap)
   {
-    // `fNEBULAPlaArray` has been filled by `npla` modules, so we create the next
-    // module `pla` at the (npla+1)th slot, which is (*fNEBULAPlaArray)[npla].
-    Int_t npla = fNEBULAPlaArray->GetEntries();
-    TArtNEBULAPla *pla = new ((*fNEBULAPlaArray)[npla]) TArtNEBULAPla;
     TDetectorSimParameter *prm = NEBULAParameter->FindDetectorSimParameter(ID);
     if (!prm) {
       std::cerr << "NEBULASimDataConverter_TArtNEBULAPla: WARNING - detector parameter for ID=" << ID
@@ -106,6 +102,11 @@ int NEBULASimDataConverter_TArtNEBULAPla::ConvertSimData()
       // do not attempt to fill pla with invalid prm; continue to next ID
       continue;
     }
+
+    // `fNEBULAPlaArray` has been filled by `npla` modules, so we create the next
+    // module `pla` at the (npla)th slot, which is (*fNEBULAPlaArray)[npla].
+    Int_t npla = fNEBULAPlaArray->GetEntries();
+    TArtNEBULAPla *pla = new ((*fNEBULAPlaArray)[npla]) TArtNEBULAPla;
 
     // store converted data
     pla->SetID(ID);
