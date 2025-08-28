@@ -1,4 +1,4 @@
-// 生成smsimulator的root文件
+// 生成smsimulator的root文件，np,分别fill
 
 #include <fstream>
 #include <iostream>
@@ -14,7 +14,7 @@ int TransDat2root() {
     // 输出文件夹路径
     std::string outDir = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/rootfiles/d+Pb208E190g050xyz/";
     // 输出ROOT文件名
-    std::string outFile = outDir + "dbreakb01.root";
+    std::string outFile = outDir + "dbreakb01_seperate.root";
 
     // 创建输出文件夹
     system(("mkdir -p " + outDir).c_str());
