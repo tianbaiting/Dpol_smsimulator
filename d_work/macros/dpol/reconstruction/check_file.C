@@ -12,9 +12,9 @@
 #include "TBeamSimData.hh"
 
 void check_file() {
-    // gSystem->Load("/home/tbt/workspace/dpol/smsimulator5.5/smg4lib/lib/libsmdata.so");
+    gSystem->Load("/home/tbt/workspace/dpol/smsimulator5.5/smg4lib/lib/libsmdata.so");
 
-    TFile* file = TFile::Open("/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/d+Pb208E190g050xyz_np_sametime0000.root");
+    TFile* file = TFile::Open("/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root");
     if (!file || file->IsZombie()) {
         std::cerr << "Error: Cannot open ROOT file!" << std::endl;
         return;
