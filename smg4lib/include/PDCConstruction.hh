@@ -10,7 +10,7 @@ class G4Material;
 class DetectorConstruction;
 
 class PDCConstruction : public G4VUserDetectorConstruction
-{ 
+{
   friend class DetectorConstruction;
   
 public:

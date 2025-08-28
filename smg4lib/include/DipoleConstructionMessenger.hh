@@ -2,7 +2,6 @@
 #define DIPOLECONSTRUCTIONMESSENGER_HH
 
 #include "G4UImessenger.hh"
-#include "G4String.hh" 
 
 class DipoleConstruction;
 class G4UIdirectory;
