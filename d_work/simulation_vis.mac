@@ -28,32 +28,33 @@
 /vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
 /vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1
 
+# 设置颜色
+/vis/modeling/trajectories/drawByCharge-0/set 1 red    # 质子 - 红色
+/vis/modeling/trajectories/drawByCharge-0/set 0 blue   # 中子 - 蓝色
+/vis/modeling/trajectories/drawByCharge-0/set -1 green # 负电荷 - 绿色
 
-# /action/gun/Type Gaus
-# /action/gun/AngleX 0 deg
-# /action/gun/AngleY 0 deg
-# /action/gun/PositionXSigma 1 cm
-# /action/gun/PositionYSigma 1 cm
-# /action/gun/SetBeamParticleName proton
-# /action/gun/Energy 190 MeV
+# 启用轨迹存储用于可视化
+/tracking/storeTrajectory 1
 
-# /action/gun/Type Pencil
-# /action/gun/Position 0 0 0 m
-# /action/gun/SetBeamParticleName proton
-# /action/gun/Energy 190 MeV
-# /run/beamOn 1
+# 加载几何
+/control/execute /home/tbt/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac
 
+# 输出文件名设置
+/action/file/SaveDirectory output_tree/
+/action/file/RunName d+Sn124E190g050ynp_np_sametime_vis
+
+# 粒子输入类型为 Tree（用于多粒子同时入射）
 /action/gun/Type Tree
 /action/gun/tree/InputFileName /home/tbt/workspace/dpol/smsimulator5.5/d_work/rootfiles/d+Sn124E190g050ynp/dbreakb09.root
 /action/gun/tree/TreeName tree
+
+
+
+# 运行事件并进入交互模式
 /action/gun/tree/beamOn 9
 
-# /event/verbose 1
-# /tracking/verbose 1
+# 查看保存的事件
+/vis/reviewKeptEvents
 
-/tracking/storeTrajectory 1
-
-# /action/gun/Type Tree
-# /action/gun/tree/InputFileName input_tree/y_pol/phi_random/d+Xe130E190g060ynp.root
-# /action/gun/tree/TreeName tree
-# /action/gun/tree/beamOn 20
+# 进入交互模式，保持GUI窗口打开
+# 注意：需要从终端直接运行程序而不使用宏来进入交互模式

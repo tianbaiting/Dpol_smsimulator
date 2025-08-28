@@ -88,6 +88,10 @@ int NEBULASimDataConverter_TArtNEBULAPla::ConvertSimData()
   SimDataManager *sman = SimDataManager::GetSimDataManager();
   auto NEBULAParameter = (TNEBULASimParameter*)sman
                          ->FindParameter("NEBULAParameter");
+  if (!NEBULAParameter) {
+    std::cerr << "NEBULASimDataConverter_TArtNEBULAPla: NEBULAParameter not found at ConvertSimData(), aborting conversion." << std::endl;
+    return 1;
+  }
 
   for (auto&& [ID,data]: fDataBufferMap)
   {
@@ -96,6 +100,12 @@ int NEBULASimDataConverter_TArtNEBULAPla::ConvertSimData()
     Int_t npla = fNEBULAPlaArray->GetEntries();
     TArtNEBULAPla *pla = new ((*fNEBULAPlaArray)[npla]) TArtNEBULAPla;
     TDetectorSimParameter *prm = NEBULAParameter->FindDetectorSimParameter(ID);
+    if (!prm) {
+      std::cerr << "NEBULASimDataConverter_TArtNEBULAPla: WARNING - detector parameter for ID=" << ID
+                << " not found. Skipping this ID." << std::endl;
+      // do not attempt to fill pla with invalid prm; continue to next ID
+      continue;
+    }
 
     // store converted data
     pla->SetID(ID);
