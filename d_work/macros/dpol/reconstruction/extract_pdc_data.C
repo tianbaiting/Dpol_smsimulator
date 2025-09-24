@@ -11,7 +11,10 @@
 // Define the function that will be executed by ROOT
 void extract_pdc_data() {
     // --- Configuration ---
-    const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root";
+    const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root"; // 数目不够
+    // const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/d+Pb208E190g050xyz_np_sametime_vis0000.root";
+    // const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/d+Pb208E190g050xyz_np_sametime_vis0000.root";
+
     const char* treeName = "tree"; // Default tree name, change if necessary
     TString targetDetector = "PDC";
     // ---
