@@ -21,7 +21,7 @@ public:
 
   DeutDetectorConstruction();
   ~DeutDetectorConstruction();
-
+  G4VPhysicalVolume* GetPhysicalWorld() const { return physiWorld; }
   void SetPDCAngle(G4double angle);
   void SetPDC1Pos(G4ThreeVector pos);
   void SetPDC2Pos(G4ThreeVector pos);
@@ -48,6 +48,7 @@ public:
   void SetDump(G4bool tf){fSetDump = tf;}
                
 private:
+  G4VPhysicalVolume* physiWorld;  // 添加成员变量
   G4bool fFillAir;
   G4bool fSetTarget;
   G4bool fSetDump;
