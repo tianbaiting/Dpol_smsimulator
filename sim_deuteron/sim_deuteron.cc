@@ -56,6 +56,10 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
+#include "G4GDMLParser.hh"
+#include "G4PhysicalVolumeStore.hh"
+#include <cstdio>
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 int main(int argc,char** argv)
@@ -110,7 +114,7 @@ int main(int argc,char** argv)
 
   // Initialize G4 kernel
   runManager->Initialize();
-  
+
   // Initialize visualization
   G4VisManager* visManager = new G4VisExecutive;
   visManager->Initialize();
@@ -124,10 +128,43 @@ int main(int argc,char** argv)
     G4String fileName = argv[1];
     detector->SetInputMacroFile(fileName);
     UImanager->ApplyCommand(command+fileName);
+    
+    // Export geometry AFTER macro execution when positions are set
+    // First remove existing file to avoid error
+    std::remove("detector_geometry.gdml");
+    
+    G4GDMLParser parser;
+    G4cout << "\n=== GEOMETRY EXPORT INFO ===" << G4endl;
+    G4cout << "Exporting geometry after macro execution..." << G4endl;
+    parser.SetOverlapCheck(false);  // 禁用重叠检查加速导出
+    parser.Clear();  // 清理之前的数据
+    parser.Write("detector_geometry.gdml", detector->GetPhysicalWorld());
+    G4cout << "✓ Geometry exported to detector_geometry.gdml" << G4endl;
+    
+    // List all physical volumes for verification
+    G4PhysicalVolumeStore* pvStore = G4PhysicalVolumeStore::GetInstance();
+    G4cout << "Total physical volumes: " << pvStore->size() << G4endl;
+    for (auto pv : *pvStore) {
+      G4cout << "  - " << pv->GetName() << " at " << pv->GetTranslation() << G4endl;
+    }
+    
   }else{  // interactive mode : define UI session
     detector->SetInputMacroFile("vis.mac");
     G4UIExecutive* ui = new G4UIExecutive(argc, argv);
-    UImanager->ApplyCommand("/control/execute vis.mac"); 
+    UImanager->ApplyCommand("/control/execute vis.mac");
+    
+    // Export geometry AFTER vis.mac execution
+    // First remove existing file to avoid error
+    std::remove("detector_geometry.gdml");
+    
+    G4GDMLParser parser;
+    G4cout << "\n=== GEOMETRY EXPORT INFO ===" << G4endl;
+    G4cout << "Exporting geometry after vis.mac execution..." << G4endl;
+    parser.SetOverlapCheck(false);  // 禁用重叠检查加速导出
+    parser.Clear();  // 清理之前的数据
+    parser.Write("detector_geometry.gdml", detector->GetPhysicalWorld());
+    G4cout << "✓ Geometry exported to detector_geometry.gdml" << G4endl;
+     
     ui->SessionStart();
     delete ui;
   }

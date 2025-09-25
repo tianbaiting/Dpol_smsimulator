@@ -275,6 +275,8 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
     );
   }
 
+  physiWorld = expHall_phys;  // 存储世界体积
+
   return expHall_phys;
 }
 //______________________________________________________________________________
