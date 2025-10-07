@@ -1,9 +1,11 @@
 /vis/open OGL
-#/vis/open VRML2FILE
+# /vis/open VRML2FILE
 #/vis/open DAWNFILE
+# /vis/open OGLSWin
+# /vis/open OGLIXWin
 
 /action/file/OverWrite y
-/action/file/RunName testaba
+/action/file/RunName testry
 /action/file/SaveDirectory output_tree
 
 # Load geometry
@@ -46,10 +48,14 @@
 /action/gun/Type Tree
 /action/gun/tree/InputFileName /home/tbt/workspace/dpol/smsimulator5.5/d_work/rootfiles/d+Sn124E190g050ynp/dbreakb09.root
 /action/gun/tree/TreeName tree
-# /action/gun/tree/beamOn 9
-
+/action/gun/tree/beamOn 1
+/vis/viewer/flush
 # /event/verbose 1
 # /tracking/verbose 1
+
+# /control/alias runf "/action/gun/tree/beamOn 1; /vis/viewer/flush "
+# 上个命令失败了
+
 
 /tracking/storeTrajectory 1
 

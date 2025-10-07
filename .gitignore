@@ -29,6 +29,9 @@ cmake_install.cmake
 d_work/geometry/
 /bin
 
+# 可执行文件
+sim_deuteron
+
 # Python/Jupyter临时文件
 __pycache__/
 *.pyc
