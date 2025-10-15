@@ -12,6 +12,7 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 # Makefile
+smsimulator5.5/doc/doxyfile
 
 # 日志和临时文件
 *.log
@@ -30,7 +31,9 @@ d_work/geometry/
 /bin
 
 # 可执行文件
-sim_deuteron
+bin/sim_deuteron
+sim_deuteron/sim_deuteron
+try/
 
 # Python/Jupyter临时文件
 __pycache__/
