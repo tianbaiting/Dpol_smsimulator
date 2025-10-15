@@ -1,0 +1,426 @@
+\hypertarget{EventGenerator_8cc}{}\doxysection{/home/tbt/workspace/dpol/smsimulator5.5/d\+\_\+work/macros/examples/\+Event\+Generator/\+Event\+Generator.cc File Reference}
+\label{EventGenerator_8cc}\index{/home/tbt/workspace/dpol/smsimulator5.5/d\_work/macros/examples/EventGenerator/EventGenerator.cc@{/home/tbt/workspace/dpol/smsimulator5.5/d\_work/macros/examples/EventGenerator/EventGenerator.cc}}
+{\ttfamily \#include \char`\"{}T\+Beam\+Sim\+Data.\+hh\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}T\+H1.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}T\+H2.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}T\+F1.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}T\+File.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}T\+Tree.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}T\+String.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}T\+Random.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Math/\+Polynomial.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Math/\+Interpolator.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cmath$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+Include dependency graph for Event\+Generator.\+cc\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{EventGenerator_8cc__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structLevel}{Level}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{EventGenerator_8cc_a4f6fbdb5bb1a6cdeeffa67615933671f}{Read\+Input\+File}} (T\+String fname)
+\item 
+void \mbox{\hyperlink{EventGenerator_8cc_afe720063981b0d52d4bd41802533b275}{Read\+Gamma\+File}} ()
+\item 
+void \mbox{\hyperlink{EventGenerator_8cc_a0a05223b0f89a74a3a17906ab371f72f}{Generate\+Events}} ()
+\item 
+T\+Vector3 \mbox{\hyperlink{EventGenerator_8cc_a707c0220cdfdabb9cb179e4503dbf53f}{Get\+Next\+Vector}} (T\+Vector3 vector\+\_\+in, float theta)
+\item 
+void \mbox{\hyperlink{EventGenerator_8cc_ac16e8aa13befdab2f67ef144535c32eb}{Event\+Generator}} (T\+String fname=\char`\"{}./Event\+Generator/input/\mbox{\hyperlink{log_8txt_ac2710b3dfbe2cdbad09ff6bca7e44904}{Event\+Generator.\+in}}\char`\"{})
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_aadb0ea2aaaeba5ae99de71460e55cf7c}{mass}} = 1
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_a14f94e529dff0b8bfba8e16fbe9755d6}{z}} = 1
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_ae8b866d74c9f0b8464b1aee9788c04eb}{charge}} = 1
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_ac916b20cad41c834dbb2e1b82c17d453}{numevent\+\_\+total}} = 10000
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_ade1682459ebbd6a76707b5880a73da15}{mass\+\_\+f}} = 1
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_a86a8c700d359e10dc297c1cad4e814ef}{z\+\_\+f}} = 1
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_aa5d3121f3f97f5a4deeb0a6d2e237046}{charge\+\_\+f}} = 1
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_a692e2d90a15d61d7f32e404e486a5196}{shape\+\_\+target}} = 1
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_ac0d4144f1580f6aed502481dba9310e7}{energy\+\_\+beam\+\_\+mean}} = 0.
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_aeab62315dadc5fa5957a8126d1f5d269}{energy\+\_\+beam\+\_\+sigma}} = 0.
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a45bade444e27449392626c10db957d25}{target\+\_\+X}} = 40.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a54ba50a1d8b8a8ca4b324e32a7a5778c}{target\+\_\+Y}} = 40.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_ad50da36c78d913fdd2ba2aa88516936e}{target\+\_\+Z}} = 10.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a9d9e01cc434c9fdf2c930e467692ece9}{target\+\_\+R}} = 5.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a9b692bfc64ad97c6316284b0869e6677}{Z\+Pos\+Shift}} = 0.\+0
+\item 
+char \mbox{\hyperlink{EventGenerator_8cc_a7dc6e5d70f7004c47f492bc2cb6fdfa8}{temp}} \mbox{[}300\mbox{]}
+\item 
+char \mbox{\hyperlink{EventGenerator_8cc_a9af7be8e635c4bd4c33a6661577e6f61}{gamma\+\_\+in}} \mbox{[}300\mbox{]} = \char`\"{}dummy.\+in\char`\"{}
+\item 
+char \mbox{\hyperlink{EventGenerator_8cc_a6142e532ca219e209252ae5a4ebc5092}{root\+\_\+in}} \mbox{[}300\mbox{]} = \char`\"{}dummy\+In.\+root\char`\"{}
+\item 
+char \mbox{\hyperlink{EventGenerator_8cc_a9cc55294fdc3ecc921dcd48b2fda7dae}{root\+\_\+out}} \mbox{[}300\mbox{]} = \char`\"{}dummy.\+root\char`\"{}
+\item 
+char \mbox{\hyperlink{EventGenerator_8cc_a9df93b52e31ab38915dabea535a6bfff}{tempparticle}} \mbox{[}300\mbox{]}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_ad51d9d3680779b58aba2c46c480a43bc}{theta\+\_\+low}} = 0.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_ae55d3c2322deb3ddf9efe35fd2508794}{theta\+\_\+high}} = 180.
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a6d90b5af12fc9f90d467a61b4651ac3f}{x\+\_\+beam\+\_\+mean}} = 0.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a42be14942e635d916d31acd038cb522e}{y\+\_\+beam\+\_\+mean}} = 0.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a69dafb046edbfdff55df31e1dc7ff607}{x\+\_\+beam\+\_\+sigma}} = 0.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_ac1dc7331ea080f3747c89847c169e900}{y\+\_\+beam\+\_\+sigma}} = 0.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_acf2b96d29c6db6c0e83f8d67f51e2dbf}{theta\+\_\+beam\+\_\+mean}} = 0.\+0
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a48b56ac4637a0b9557a8ea6a31342d34}{theta\+\_\+beam\+\_\+sigma}} = 0.\+0
+\item 
+double \mbox{\hyperlink{EventGenerator_8cc_a7338e8ec367e8735b87fff115574c0f9}{sum\+\_\+dist}}
+\item 
+double \mbox{\hyperlink{EventGenerator_8cc_a2dc7443914fb814179eb77da2ae58578}{sum\+\_\+dist\+\_\+uptonow}} \mbox{[}18001\mbox{]}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a4939119d90c0416167ab88fefe8eaded}{evnum}}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_aae14acc2eaa4b26c72dfe5301add39cd}{decay\+I\+Devnum}}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_aabc91bdfe817bdfb695580d9f421b64a}{halflife}}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_af4947b528dd192068983a4d294ca3962}{decay\+\_\+time\+\_\+after\+\_\+interaction}}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a055ce5769af140c229d0c5813b714c0d}{e\+\_\+rest}}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a857b374fa9f182f0ade1d232b62e8e04}{e\+\_\+doppler}}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a42f123a70de44f8bdb1ef5f6cdb63b76}{theta\+\_\+gamma\+\_\+rest}}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a5fb48b0497631c755d130f19480a7129}{theta\+\_\+gamma\+\_\+lab}}
+\item 
+struct \mbox{\hyperlink{structLevel}{Level}} \mbox{\hyperlink{EventGenerator_8cc_a17d2c6d5721162f09b7c14c8c16da130}{S\+Level}} \mbox{[}100\mbox{]}
+\item 
+float \mbox{\hyperlink{EventGenerator_8cc_a95fe7782989eb4a8cecd8dcf9a147afb}{g\+Total\+Level\+Excitation\+Probability}} = 0.
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_a8faf782ec47fe7169448df41343e8569}{g\+Number\+Of\+Levels}} = 0
+\item 
+int \mbox{\hyperlink{EventGenerator_8cc_a67a5f8b16c5dcb9b99109a8d4f15fce9}{g\+Number\+Of\+Excited\+Levels}} = 0
+\item 
+T\+Tree $\ast$ \mbox{\hyperlink{EventGenerator_8cc_a054a775f1c95a421ad7ebb62f124936a}{Tree}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{EventGenerator_8cc_ac16e8aa13befdab2f67ef144535c32eb}\label{EventGenerator_8cc_ac16e8aa13befdab2f67ef144535c32eb}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!EventGenerator@{EventGenerator}}
+\index{EventGenerator@{EventGenerator}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{EventGenerator()}{EventGenerator()}}
+{\footnotesize\ttfamily void Event\+Generator (\begin{DoxyParamCaption}\item[{T\+String}]{fname = {\ttfamily \char`\"{}./EventGenerator/input/\mbox{\hyperlink{log_8txt_ac2710b3dfbe2cdbad09ff6bca7e44904}{Event\+Generator.\+in}}\char`\"{}} }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a0a05223b0f89a74a3a17906ab371f72f}\label{EventGenerator_8cc_a0a05223b0f89a74a3a17906ab371f72f}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!GenerateEvents@{GenerateEvents}}
+\index{GenerateEvents@{GenerateEvents}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{GenerateEvents()}{GenerateEvents()}}
+{\footnotesize\ttfamily void Generate\+Events (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a707c0220cdfdabb9cb179e4503dbf53f}\label{EventGenerator_8cc_a707c0220cdfdabb9cb179e4503dbf53f}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!GetNextVector@{GetNextVector}}
+\index{GetNextVector@{GetNextVector}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{GetNextVector()}{GetNextVector()}}
+{\footnotesize\ttfamily T\+Vector3 Get\+Next\+Vector (\begin{DoxyParamCaption}\item[{T\+Vector3}]{vector\+\_\+in,  }\item[{float}]{theta }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{EventGenerator_8cc_afe720063981b0d52d4bd41802533b275}\label{EventGenerator_8cc_afe720063981b0d52d4bd41802533b275}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!ReadGammaFile@{ReadGammaFile}}
+\index{ReadGammaFile@{ReadGammaFile}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{ReadGammaFile()}{ReadGammaFile()}}
+{\footnotesize\ttfamily void Read\+Gamma\+File (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a4f6fbdb5bb1a6cdeeffa67615933671f}\label{EventGenerator_8cc_a4f6fbdb5bb1a6cdeeffa67615933671f}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!ReadInputFile@{ReadInputFile}}
+\index{ReadInputFile@{ReadInputFile}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{ReadInputFile()}{ReadInputFile()}}
+{\footnotesize\ttfamily void Read\+Input\+File (\begin{DoxyParamCaption}\item[{T\+String}]{fname }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{EventGenerator_8cc_ae8b866d74c9f0b8464b1aee9788c04eb}\label{EventGenerator_8cc_ae8b866d74c9f0b8464b1aee9788c04eb}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!charge@{charge}}
+\index{charge@{charge}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{charge}{charge}}
+{\footnotesize\ttfamily int charge = 1}
+
+\mbox{\Hypertarget{EventGenerator_8cc_aa5d3121f3f97f5a4deeb0a6d2e237046}\label{EventGenerator_8cc_aa5d3121f3f97f5a4deeb0a6d2e237046}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!charge\_f@{charge\_f}}
+\index{charge\_f@{charge\_f}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{charge\_f}{charge\_f}}
+{\footnotesize\ttfamily int charge\+\_\+f = 1}
+
+\mbox{\Hypertarget{EventGenerator_8cc_af4947b528dd192068983a4d294ca3962}\label{EventGenerator_8cc_af4947b528dd192068983a4d294ca3962}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!decay\_time\_after\_interaction@{decay\_time\_after\_interaction}}
+\index{decay\_time\_after\_interaction@{decay\_time\_after\_interaction}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{decay\_time\_after\_interaction}{decay\_time\_after\_interaction}}
+{\footnotesize\ttfamily float decay\+\_\+time\+\_\+after\+\_\+interaction}
+
+\mbox{\Hypertarget{EventGenerator_8cc_aae14acc2eaa4b26c72dfe5301add39cd}\label{EventGenerator_8cc_aae14acc2eaa4b26c72dfe5301add39cd}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!decayIDevnum@{decayIDevnum}}
+\index{decayIDevnum@{decayIDevnum}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{decayIDevnum}{decayIDevnum}}
+{\footnotesize\ttfamily float decay\+I\+Devnum}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a857b374fa9f182f0ade1d232b62e8e04}\label{EventGenerator_8cc_a857b374fa9f182f0ade1d232b62e8e04}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!e\_doppler@{e\_doppler}}
+\index{e\_doppler@{e\_doppler}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{e\_doppler}{e\_doppler}}
+{\footnotesize\ttfamily float e\+\_\+doppler}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a055ce5769af140c229d0c5813b714c0d}\label{EventGenerator_8cc_a055ce5769af140c229d0c5813b714c0d}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!e\_rest@{e\_rest}}
+\index{e\_rest@{e\_rest}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{e\_rest}{e\_rest}}
+{\footnotesize\ttfamily float e\+\_\+rest}
+
+\mbox{\Hypertarget{EventGenerator_8cc_ac0d4144f1580f6aed502481dba9310e7}\label{EventGenerator_8cc_ac0d4144f1580f6aed502481dba9310e7}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!energy\_beam\_mean@{energy\_beam\_mean}}
+\index{energy\_beam\_mean@{energy\_beam\_mean}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{energy\_beam\_mean}{energy\_beam\_mean}}
+{\footnotesize\ttfamily float energy\+\_\+beam\+\_\+mean = 0.}
+
+\mbox{\Hypertarget{EventGenerator_8cc_aeab62315dadc5fa5957a8126d1f5d269}\label{EventGenerator_8cc_aeab62315dadc5fa5957a8126d1f5d269}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!energy\_beam\_sigma@{energy\_beam\_sigma}}
+\index{energy\_beam\_sigma@{energy\_beam\_sigma}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{energy\_beam\_sigma}{energy\_beam\_sigma}}
+{\footnotesize\ttfamily float energy\+\_\+beam\+\_\+sigma = 0.}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a4939119d90c0416167ab88fefe8eaded}\label{EventGenerator_8cc_a4939119d90c0416167ab88fefe8eaded}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!evnum@{evnum}}
+\index{evnum@{evnum}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{evnum}{evnum}}
+{\footnotesize\ttfamily float evnum}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a9af7be8e635c4bd4c33a6661577e6f61}\label{EventGenerator_8cc_a9af7be8e635c4bd4c33a6661577e6f61}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!gamma\_in@{gamma\_in}}
+\index{gamma\_in@{gamma\_in}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{gamma\_in}{gamma\_in}}
+{\footnotesize\ttfamily char gamma\+\_\+in\mbox{[}300\mbox{]} = \char`\"{}dummy.\+in\char`\"{}}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a67a5f8b16c5dcb9b99109a8d4f15fce9}\label{EventGenerator_8cc_a67a5f8b16c5dcb9b99109a8d4f15fce9}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!gNumberOfExcitedLevels@{gNumberOfExcitedLevels}}
+\index{gNumberOfExcitedLevels@{gNumberOfExcitedLevels}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{gNumberOfExcitedLevels}{gNumberOfExcitedLevels}}
+{\footnotesize\ttfamily int g\+Number\+Of\+Excited\+Levels = 0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a8faf782ec47fe7169448df41343e8569}\label{EventGenerator_8cc_a8faf782ec47fe7169448df41343e8569}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!gNumberOfLevels@{gNumberOfLevels}}
+\index{gNumberOfLevels@{gNumberOfLevels}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{gNumberOfLevels}{gNumberOfLevels}}
+{\footnotesize\ttfamily int g\+Number\+Of\+Levels = 0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a95fe7782989eb4a8cecd8dcf9a147afb}\label{EventGenerator_8cc_a95fe7782989eb4a8cecd8dcf9a147afb}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!gTotalLevelExcitationProbability@{gTotalLevelExcitationProbability}}
+\index{gTotalLevelExcitationProbability@{gTotalLevelExcitationProbability}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{gTotalLevelExcitationProbability}{gTotalLevelExcitationProbability}}
+{\footnotesize\ttfamily float g\+Total\+Level\+Excitation\+Probability = 0.}
+
+\mbox{\Hypertarget{EventGenerator_8cc_aabc91bdfe817bdfb695580d9f421b64a}\label{EventGenerator_8cc_aabc91bdfe817bdfb695580d9f421b64a}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!halflife@{halflife}}
+\index{halflife@{halflife}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{halflife}{halflife}}
+{\footnotesize\ttfamily float halflife}
+
+\mbox{\Hypertarget{EventGenerator_8cc_aadb0ea2aaaeba5ae99de71460e55cf7c}\label{EventGenerator_8cc_aadb0ea2aaaeba5ae99de71460e55cf7c}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!mass@{mass}}
+\index{mass@{mass}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{mass}{mass}}
+{\footnotesize\ttfamily int mass = 1}
+
+\mbox{\Hypertarget{EventGenerator_8cc_ade1682459ebbd6a76707b5880a73da15}\label{EventGenerator_8cc_ade1682459ebbd6a76707b5880a73da15}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!mass\_f@{mass\_f}}
+\index{mass\_f@{mass\_f}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{mass\_f}{mass\_f}}
+{\footnotesize\ttfamily int mass\+\_\+f = 1}
+
+\mbox{\Hypertarget{EventGenerator_8cc_ac916b20cad41c834dbb2e1b82c17d453}\label{EventGenerator_8cc_ac916b20cad41c834dbb2e1b82c17d453}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!numevent\_total@{numevent\_total}}
+\index{numevent\_total@{numevent\_total}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{numevent\_total}{numevent\_total}}
+{\footnotesize\ttfamily int numevent\+\_\+total = 10000}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a6142e532ca219e209252ae5a4ebc5092}\label{EventGenerator_8cc_a6142e532ca219e209252ae5a4ebc5092}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!root\_in@{root\_in}}
+\index{root\_in@{root\_in}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{root\_in}{root\_in}}
+{\footnotesize\ttfamily char root\+\_\+in\mbox{[}300\mbox{]} = \char`\"{}dummy\+In.\+root\char`\"{}}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a9cc55294fdc3ecc921dcd48b2fda7dae}\label{EventGenerator_8cc_a9cc55294fdc3ecc921dcd48b2fda7dae}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!root\_out@{root\_out}}
+\index{root\_out@{root\_out}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{root\_out}{root\_out}}
+{\footnotesize\ttfamily char root\+\_\+out\mbox{[}300\mbox{]} = \char`\"{}dummy.\+root\char`\"{}}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a692e2d90a15d61d7f32e404e486a5196}\label{EventGenerator_8cc_a692e2d90a15d61d7f32e404e486a5196}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!shape\_target@{shape\_target}}
+\index{shape\_target@{shape\_target}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{shape\_target}{shape\_target}}
+{\footnotesize\ttfamily int shape\+\_\+target = 1}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a17d2c6d5721162f09b7c14c8c16da130}\label{EventGenerator_8cc_a17d2c6d5721162f09b7c14c8c16da130}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!SLevel@{SLevel}}
+\index{SLevel@{SLevel}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{SLevel}{SLevel}}
+{\footnotesize\ttfamily struct \mbox{\hyperlink{structLevel}{Level}} S\+Level\mbox{[}100\mbox{]}}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a7338e8ec367e8735b87fff115574c0f9}\label{EventGenerator_8cc_a7338e8ec367e8735b87fff115574c0f9}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!sum\_dist@{sum\_dist}}
+\index{sum\_dist@{sum\_dist}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{sum\_dist}{sum\_dist}}
+{\footnotesize\ttfamily double sum\+\_\+dist}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a2dc7443914fb814179eb77da2ae58578}\label{EventGenerator_8cc_a2dc7443914fb814179eb77da2ae58578}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!sum\_dist\_uptonow@{sum\_dist\_uptonow}}
+\index{sum\_dist\_uptonow@{sum\_dist\_uptonow}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{sum\_dist\_uptonow}{sum\_dist\_uptonow}}
+{\footnotesize\ttfamily double sum\+\_\+dist\+\_\+uptonow\mbox{[}18001\mbox{]}}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a9d9e01cc434c9fdf2c930e467692ece9}\label{EventGenerator_8cc_a9d9e01cc434c9fdf2c930e467692ece9}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!target\_R@{target\_R}}
+\index{target\_R@{target\_R}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{target\_R}{target\_R}}
+{\footnotesize\ttfamily float target\+\_\+R = 5.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a45bade444e27449392626c10db957d25}\label{EventGenerator_8cc_a45bade444e27449392626c10db957d25}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!target\_X@{target\_X}}
+\index{target\_X@{target\_X}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{target\_X}{target\_X}}
+{\footnotesize\ttfamily float target\+\_\+X = 40.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a54ba50a1d8b8a8ca4b324e32a7a5778c}\label{EventGenerator_8cc_a54ba50a1d8b8a8ca4b324e32a7a5778c}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!target\_Y@{target\_Y}}
+\index{target\_Y@{target\_Y}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{target\_Y}{target\_Y}}
+{\footnotesize\ttfamily float target\+\_\+Y = 40.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_ad50da36c78d913fdd2ba2aa88516936e}\label{EventGenerator_8cc_ad50da36c78d913fdd2ba2aa88516936e}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!target\_Z@{target\_Z}}
+\index{target\_Z@{target\_Z}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{target\_Z}{target\_Z}}
+{\footnotesize\ttfamily float target\+\_\+Z = 10.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a7dc6e5d70f7004c47f492bc2cb6fdfa8}\label{EventGenerator_8cc_a7dc6e5d70f7004c47f492bc2cb6fdfa8}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!temp@{temp}}
+\index{temp@{temp}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{temp}{temp}}
+{\footnotesize\ttfamily char temp\mbox{[}300\mbox{]}}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a9df93b52e31ab38915dabea535a6bfff}\label{EventGenerator_8cc_a9df93b52e31ab38915dabea535a6bfff}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!tempparticle@{tempparticle}}
+\index{tempparticle@{tempparticle}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{tempparticle}{tempparticle}}
+{\footnotesize\ttfamily char tempparticle\mbox{[}300\mbox{]}}
+
+\mbox{\Hypertarget{EventGenerator_8cc_acf2b96d29c6db6c0e83f8d67f51e2dbf}\label{EventGenerator_8cc_acf2b96d29c6db6c0e83f8d67f51e2dbf}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!theta\_beam\_mean@{theta\_beam\_mean}}
+\index{theta\_beam\_mean@{theta\_beam\_mean}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{theta\_beam\_mean}{theta\_beam\_mean}}
+{\footnotesize\ttfamily float theta\+\_\+beam\+\_\+mean = 0.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a48b56ac4637a0b9557a8ea6a31342d34}\label{EventGenerator_8cc_a48b56ac4637a0b9557a8ea6a31342d34}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!theta\_beam\_sigma@{theta\_beam\_sigma}}
+\index{theta\_beam\_sigma@{theta\_beam\_sigma}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{theta\_beam\_sigma}{theta\_beam\_sigma}}
+{\footnotesize\ttfamily float theta\+\_\+beam\+\_\+sigma = 0.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a5fb48b0497631c755d130f19480a7129}\label{EventGenerator_8cc_a5fb48b0497631c755d130f19480a7129}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!theta\_gamma\_lab@{theta\_gamma\_lab}}
+\index{theta\_gamma\_lab@{theta\_gamma\_lab}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{theta\_gamma\_lab}{theta\_gamma\_lab}}
+{\footnotesize\ttfamily float theta\+\_\+gamma\+\_\+lab}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a42f123a70de44f8bdb1ef5f6cdb63b76}\label{EventGenerator_8cc_a42f123a70de44f8bdb1ef5f6cdb63b76}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!theta\_gamma\_rest@{theta\_gamma\_rest}}
+\index{theta\_gamma\_rest@{theta\_gamma\_rest}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{theta\_gamma\_rest}{theta\_gamma\_rest}}
+{\footnotesize\ttfamily float theta\+\_\+gamma\+\_\+rest}
+
+\mbox{\Hypertarget{EventGenerator_8cc_ae55d3c2322deb3ddf9efe35fd2508794}\label{EventGenerator_8cc_ae55d3c2322deb3ddf9efe35fd2508794}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!theta\_high@{theta\_high}}
+\index{theta\_high@{theta\_high}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{theta\_high}{theta\_high}}
+{\footnotesize\ttfamily float theta\+\_\+high = 180.}
+
+\mbox{\Hypertarget{EventGenerator_8cc_ad51d9d3680779b58aba2c46c480a43bc}\label{EventGenerator_8cc_ad51d9d3680779b58aba2c46c480a43bc}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!theta\_low@{theta\_low}}
+\index{theta\_low@{theta\_low}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{theta\_low}{theta\_low}}
+{\footnotesize\ttfamily float theta\+\_\+low = 0.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a054a775f1c95a421ad7ebb62f124936a}\label{EventGenerator_8cc_a054a775f1c95a421ad7ebb62f124936a}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!Tree@{Tree}}
+\index{Tree@{Tree}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{Tree}{Tree}}
+{\footnotesize\ttfamily T\+Tree$\ast$ Tree}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a6d90b5af12fc9f90d467a61b4651ac3f}\label{EventGenerator_8cc_a6d90b5af12fc9f90d467a61b4651ac3f}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!x\_beam\_mean@{x\_beam\_mean}}
+\index{x\_beam\_mean@{x\_beam\_mean}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{x\_beam\_mean}{x\_beam\_mean}}
+{\footnotesize\ttfamily float x\+\_\+beam\+\_\+mean = 0.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a69dafb046edbfdff55df31e1dc7ff607}\label{EventGenerator_8cc_a69dafb046edbfdff55df31e1dc7ff607}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!x\_beam\_sigma@{x\_beam\_sigma}}
+\index{x\_beam\_sigma@{x\_beam\_sigma}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{x\_beam\_sigma}{x\_beam\_sigma}}
+{\footnotesize\ttfamily float x\+\_\+beam\+\_\+sigma = 0.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a42be14942e635d916d31acd038cb522e}\label{EventGenerator_8cc_a42be14942e635d916d31acd038cb522e}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!y\_beam\_mean@{y\_beam\_mean}}
+\index{y\_beam\_mean@{y\_beam\_mean}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{y\_beam\_mean}{y\_beam\_mean}}
+{\footnotesize\ttfamily float y\+\_\+beam\+\_\+mean = 0.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_ac1dc7331ea080f3747c89847c169e900}\label{EventGenerator_8cc_ac1dc7331ea080f3747c89847c169e900}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!y\_beam\_sigma@{y\_beam\_sigma}}
+\index{y\_beam\_sigma@{y\_beam\_sigma}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{y\_beam\_sigma}{y\_beam\_sigma}}
+{\footnotesize\ttfamily float y\+\_\+beam\+\_\+sigma = 0.\+0}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a14f94e529dff0b8bfba8e16fbe9755d6}\label{EventGenerator_8cc_a14f94e529dff0b8bfba8e16fbe9755d6}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!z@{z}}
+\index{z@{z}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{z}{z}}
+{\footnotesize\ttfamily int z = 1}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a86a8c700d359e10dc297c1cad4e814ef}\label{EventGenerator_8cc_a86a8c700d359e10dc297c1cad4e814ef}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!z\_f@{z\_f}}
+\index{z\_f@{z\_f}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{z\_f}{z\_f}}
+{\footnotesize\ttfamily int z\+\_\+f = 1}
+
+\mbox{\Hypertarget{EventGenerator_8cc_a9b692bfc64ad97c6316284b0869e6677}\label{EventGenerator_8cc_a9b692bfc64ad97c6316284b0869e6677}} 
+\index{EventGenerator.cc@{EventGenerator.cc}!ZPosShift@{ZPosShift}}
+\index{ZPosShift@{ZPosShift}!EventGenerator.cc@{EventGenerator.cc}}
+\doxysubsubsection{\texorpdfstring{ZPosShift}{ZPosShift}}
+{\footnotesize\ttfamily float Z\+Pos\+Shift = 0.\+0}
+

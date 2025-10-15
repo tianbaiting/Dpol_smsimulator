@@ -31,6 +31,7 @@ d_work/geometry/
 /bin
 
 # 可执行文件
+bin
 bin/sim_deuteron
 sim_deuteron/sim_deuteron
 try/
@@ -43,3 +44,7 @@ __pycache__/
 # 其他
 *.swp
 *.swo
+d_work/sources/dependency.html
+d_work/HOW_TO_BUILD_AND_USE.md
+d_work/sources/dependency.html
+d_work/sources/dependency.svg

@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.10)
 project(PDCAnalysisTools)
 
 # Find ROOT package
-find_package(ROOT REQUIRED)
+find_package(ROOT REQUIRED COMPONENTS Eve)
 
 # Include ROOT's CMake file
 include(${ROOT_USE_FILE})

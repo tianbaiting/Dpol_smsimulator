@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include "TMath.h"
 
 GeometryManager::GeometryManager()
     : fAngleRad(0.0), fPDC1_Position(0,0,0), fPDC2_Position(0,0,0) {}
@@ -44,10 +45,20 @@ bool GeometryManager::LoadGeometry(const std::string& filename) {
         fPDC2_Position.SetXYZ(x, y, z);
     }
 
+    if (fParams.count("/samurai/geometry/Target/Position")) {
+        std::stringstream ss(fParams["/samurai/geometry/Target/Position"]);
+        double x, y, z;
+        std::string unit;
+        ss >> x >> y >> z >> unit;
+        if (unit == "cm") { x*=10; y*=10; z*=10; } // convert to mm
+        fTargetPosition.SetXYZ(x, y, z);
+    }
+
     std::cout << "Geometry loaded from " << filename << std::endl;
     std::cout << "  PDC Angle: " << fAngleRad * TMath::RadToDeg() << " deg" << std::endl;
     std::cout << "  PDC1 Pos: (" << fPDC1_Position.X() << ", " << fPDC1_Position.Y() << ", " << fPDC1_Position.Z() << ") mm" << std::endl;
     std::cout << "  PDC2 Pos: (" << fPDC2_Position.X() << ", " << fPDC2_Position.Y() << ", " << fPDC2_Position.Z() << ") mm" << std::endl;
+    std::cout << "  Target Pos: (" << fTargetPosition.X() << ", " << fTargetPosition.Y() << ", " << fTargetPosition.Z() << ") mm" << std::endl;
 
     return true;
 }
@@ -70,7 +81,8 @@ void GeometryManager::ParseLine(const std::string& line) {
 
     if (key == "/samurai/geometry/PDC/Angle" || 
         key == "/samurai/geometry/PDC/Position1" || 
-        key == "/samurai/geometry/PDC/Position2") {
+        key == "/samurai/geometry/PDC/Position2" ||
+        key == "/samurai/geometry/Target/Position") {
         fParams[key] = value;
     }
 }

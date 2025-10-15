@@ -1,0 +1,150 @@
+此文档概述 sms simulator 中数据从输入到输出的完整流向（中文），并列出关键源码位置、验证命令和常见排查方法。放在：{\ttfamily \mbox{\hyperlink{data__flow__README_8md}{d\+\_\+work/macros/dpol/data\+\_\+flow\+\_\+\+R\+E\+A\+D\+M\+E.\+md}}}。\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md1}{}\doxysection{目的与适用场景}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md1}
+
+\begin{DoxyItemize}
+\item 快速理解：输入（dat / input root）如何被 {\ttfamily Primary\+Generator} 读入、如何在敏感探测器生成 sim-\/hit（{\ttfamily T\+Clones\+Array}），以及如何通过 Converter/\+Initializer 写入最终输出 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} tree。
+\item 排查运行时问题（如 branch为空或段错误）。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md2}{}\doxysection{快速检查清单}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md2}
+
+\begin{DoxyItemize}
+\item \mbox{[} \mbox{]} 输入文件存在并且 {\ttfamily tree} 名称正确（通常为 {\ttfamily tree} 或 {\ttfamily Beam\+Sim\+Tree}）。
+\item \mbox{[} \mbox{]} {\ttfamily \mbox{\hyperlink{classTBeamSimData}{T\+Beam\+Sim\+Data}}}/{\ttfamily T\+Beam\+Sim\+Data\+Array} 在输入文件有 branch（branch 名称与 macro 中 {\ttfamily /action/gun/tree/\+Tree\+Name} 一致）。
+\item \mbox{[} \mbox{]} 敏感探测器（\+P\+D\+C、\+N\+E\+B\+U\+L\+A）在 {\ttfamily Detector\+Construction} 中已注册为 {\ttfamily Set\+Sensitive\+Detector}。
+\item \mbox{[} \mbox{]} {\ttfamily \mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}}} 已注册并在 Run 开始时为输出 {\ttfamily T\+Tree} 定义 branch。
+\item \mbox{[} \mbox{]} {\ttfamily \mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}}} 在事件结束时被调用，并且没有访问到 {\ttfamily null} 的参数（例如 {\ttfamily N\+E\+B\+U\+L\+A\+Parameter}、{\ttfamily \mbox{\hyperlink{classTDetectorSimParameter}{T\+Detector\+Sim\+Parameter}}}）。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md3}{}\doxysection{数据流分步（按生命周期）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md3}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md4}{}\doxysubsection{1) 输入生成（dat -\/$>$ input R\+O\+O\+T）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md4}
+
+\begin{DoxyItemize}
+\item 代码示例：{\ttfamily d\+\_\+work/macros/dpol/\+Event\+Generator/\+Gen\+Input\+Root\+\_\+np\+\_\+atime.\+cc}、{\ttfamily Trans\+Dat2root.\+cc}。
+\item 作用：将文本数据转为 {\ttfamily T\+File}/{\ttfamily T\+Tree} 并创建 branch {\ttfamily \mbox{\hyperlink{classTBeamSimData}{T\+Beam\+Sim\+Data}}} 或 {\ttfamily T\+Beam\+Sim\+Data\+Array}（通常树名为 {\ttfamily tree}）。
+\item 验证：
+\begin{DoxyItemize}
+\item 在 shell 中运行： \`{}\`{}\`{}bash root -\/l your\+\_\+input.\+root T\+File {\itshape f = T\+File\+::\+Open(\char`\"{}your\+\_\+input.\+root\char`\"{}); f-\/$>$ls(); T\+Tree $\ast$t = (T\+Tree})f-\/$>$Get(\char`\"{}tree\char`\"{}); t-\/$>$Print(); \`{}\`{}\`{}
+\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md5}{}\doxysubsection{2) Primary generator（读取 input tree 并发射初级粒子）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md5}
+
+\begin{DoxyItemize}
+\item 文件：{\ttfamily sim\+\_\+deuteron/src/\+Deut\+Primary\+Generator\+Action.\+cc}（或 {\ttfamily \mbox{\hyperlink{classPrimaryGeneratorActionBasic}{Primary\+Generator\+Action\+Basic}}.$\ast$}）。
+\item 行为：读取 {\ttfamily T\+Beam\+Sim\+Data\+Array}，对每个事件创建一个或多个初级粒子（{\ttfamily G4\+Particle\+Gun} 或自定义方法）。
+\item 验证：运行模拟后，输出 root 中应包含 {\ttfamily beam} 分支。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md6}{}\doxysubsection{3) 事件运行：步进与敏感探测器记录 sim-\/hit}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md6}
+
+\begin{DoxyItemize}
+\item 敏感探测器实现举例：
+\begin{DoxyItemize}
+\item N\+E\+B\+U\+LA\+: {\ttfamily smg4lib/construction/src/\+N\+E\+B\+U\+L\+A\+S\+D.\+cc}（示例里会 {\ttfamily new (($\ast$\+Sim\+Data\+Array)\mbox{[}n\mbox{]}) \mbox{\hyperlink{classTSimData}{T\+Sim\+Data}};} 并填充字段）
+\item P\+D\+C/\+Fragment\+: {\ttfamily \mbox{\hyperlink{construction_2include_2FragmentSD_8hh}{smg4lib/construction/include/\+Fragment\+S\+D.\+hh}}}（实现通常在相邻 src 目录）
+\end{DoxyItemize}
+\item 存储结构：所有 sim-\/hit 都被放到 {\ttfamily \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}}} 管理的 {\ttfamily T\+Clones\+Array} 中（例如 {\ttfamily Frag\+Sim\+Data}, {\ttfamily N\+E\+B\+U\+L\+A\+Sim\+Data}）。
+\item 目的：减少频繁 new/delete，提高 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 写入效率。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md7}{}\doxysubsection{4) 事件结束 / 转换 -\/$>$ 写入输出 Tree}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md7}
+
+\begin{DoxyItemize}
+\item 管理器：{\ttfamily \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}}}（负责注册 Initializer/\+Converter 并在事件或 Run 收尾时调用转换写入）。
+\item Initializer：例如 {\ttfamily \mbox{\hyperlink{classFragSimDataInitializer}{Frag\+Sim\+Data\+Initializer}}}，在 Run 开始时为 {\ttfamily T\+Tree} 定义 branch： 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}}-\/>Branch(\textcolor{stringliteral}{"FragSimData"}, \&fFragSimDataArray);}
+\end{DoxyCode}
+
+\item Converter：例如 {\ttfamily \mbox{\hyperlink{classFragSimDataConverter__Basic}{Frag\+Sim\+Data\+Converter\+\_\+\+Basic}}}、{\ttfamily \mbox{\hyperlink{classNEBULASimDataConverter__TArtNEBULAPla}{N\+E\+B\+U\+L\+A\+Sim\+Data\+Converter\+\_\+\+T\+Art\+N\+E\+B\+U\+L\+A\+Pla}}}：
+\begin{DoxyItemize}
+\item 读取 {\ttfamily T\+Clones\+Array} 中的 sim-\/hit，做聚合/校准/坐标变换。
+\item 生成分析用对象（如 {\ttfamily T\+Art\+N\+E\+B\+U\+L\+A\+Pla}）放入另一个 {\ttfamily T\+Clones\+Array}，或直接写入 tree 的分支。
+\item 在合适时机调用 {\ttfamily tree-\/$>$Fill()}。
+\end{DoxyItemize}
+\item 清理：\+Converter 的 {\ttfamily Clear\+Buffer()}（通常会 {\ttfamily f\+N\+E\+B\+U\+L\+A\+Pla\+Array-\/$>$Delete()}）在事件结束后清空临时容器。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md8}{}\doxysection{输出 (示例) 与其来源对照}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md8}
+
+\begin{DoxyItemize}
+\item {\ttfamily beam} $<$-\/ 来自 input tree ({\ttfamily T\+Beam\+Sim\+Data\+Array})。
+\item {\ttfamily Frag\+Sim\+Data} $<$-\/ 来自 P\+D\+C/\+Fragment 的 {\ttfamily \mbox{\hyperlink{classFragmentSD_a825dbc8bcee781db7606da0547bd6a80}{Fragment\+S\+D\+::\+Process\+Hits}}}（每个 step 一个 {\ttfamily T\+Frag\+Sim\+Data}）。
+\item {\ttfamily P\+D\+C1\+U/\+P\+D\+C1\+X/...} $<$-\/ 来自 {\ttfamily \mbox{\hyperlink{classFragSimDataConverter__Basic}{Frag\+Sim\+Data\+Converter\+\_\+\+Basic}}} 的分组/聚合后量（按 P\+DC 层/视角分支）。
+\item {\ttfamily N\+E\+B\+U\+L\+A\+Pla} $<$-\/ 来自 {\ttfamily \mbox{\hyperlink{classNEBULASimDataConverter__TArtNEBULAPla}{N\+E\+B\+U\+L\+A\+Sim\+Data\+Converter\+\_\+\+T\+Art\+N\+E\+B\+U\+L\+A\+Pla}}}（将 {\ttfamily N\+E\+B\+U\+L\+A\+Sim\+Data\+Array} 聚合为 {\ttfamily T\+Art\+N\+E\+B\+U\+L\+A\+Pla}）。
+\item {\ttfamily Run\+Parameter} / {\ttfamily Frag\+Parameter} / {\ttfamily N\+E\+B\+U\+L\+A\+Parameter} $<$-\/ 运行/几何参数，由相应 Parameter 类在 Run 初始化时写入。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md9}{}\doxysection{关键源码位置（文件路径）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md9}
+
+\begin{DoxyItemize}
+\item 输入生成：
+\begin{DoxyItemize}
+\item {\ttfamily d\+\_\+work/macros/dpol/\+Event\+Generator/\+Gen\+Input\+Root\+\_\+np\+\_\+atime.\+cc}
+\item {\ttfamily d\+\_\+work/macros/dpol/\+Event\+Generator/\+Trans\+Dat2root.\+cc}
+\end{DoxyItemize}
+\item Primary generator：
+\begin{DoxyItemize}
+\item {\ttfamily sim\+\_\+deuteron/src/\+Deut\+Primary\+Generator\+Action.\+cc}
+\end{DoxyItemize}
+\item 敏感探测器：
+\begin{DoxyItemize}
+\item N\+E\+B\+U\+LA\+: {\ttfamily smg4lib/construction/src/\+N\+E\+B\+U\+L\+A\+S\+D.\+cc}
+\item P\+D\+C/\+Fragment\+: {\ttfamily \mbox{\hyperlink{construction_2include_2FragmentSD_8hh}{smg4lib/construction/include/\+Fragment\+S\+D.\+hh}}}（实现文件在相邻 src/）
+\end{DoxyItemize}
+\item Sim\+Data 管理/初始化/转换：
+\begin{DoxyItemize}
+\item {\ttfamily sim\+\_\+deuteron/src/\+Sim\+Data\+Manager.\+cc}
+\item {\ttfamily smg4lib/data/sources/src/\+Frag\+Sim\+Data\+Initializer.\+cc}
+\item {\ttfamily smg4lib/data/sources/src/\+Frag\+Sim\+Data\+Converter\+\_\+\+Basic.\+cc}
+\item {\ttfamily smg4lib/data/sources/src/\+N\+E\+B\+U\+L\+A\+Sim\+Data\+Converter\+\_\+\+T\+Art\+N\+E\+B\+U\+L\+A\+Pla.\+cc}
+\end{DoxyItemize}
+\item 注册点（应用入口）：
+\begin{DoxyItemize}
+\item {\ttfamily sim\+\_\+deuteron/sim\+\_\+deuteron.\+cc}（注册 Initializer/\+Converter）
+\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md10}{}\doxysection{常见问题与排查步骤}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md10}
+
+\begin{DoxyEnumerate}
+\item 输出 branch 为空或缺少 {\ttfamily N\+E\+B\+U\+L\+A\+Pla}：
+\begin{DoxyItemize}
+\item 检查 {\ttfamily \mbox{\hyperlink{classNEBULASimDataConverter__TArtNEBULAPla_a6ca774dac63f9814cc758b613237fb25}{N\+E\+B\+U\+L\+A\+Sim\+Data\+Converter\+\_\+\+T\+Art\+N\+E\+B\+U\+L\+A\+Pla\+::\+Initialize()}}} 是否返回 0（找到 {\ttfamily N\+E\+B\+U\+L\+A\+Parameter} \& {\ttfamily N\+E\+B\+U\+L\+A\+Sim\+Data\+Array}）。
+\item 检查是否在宏里关闭了步存储：{\ttfamily /action/data/\+N\+E\+B\+U\+L\+A/\+Store\+Steps false} 或 {\ttfamily N\+E\+B\+U\+L\+A\+Sim\+Data\+Initializer\+::\+Set\+Data\+Store(false)}。
+\end{DoxyItemize}
+\item 段错误（segfault）在 Converter：
+\begin{DoxyItemize}
+\item 常见原因：{\ttfamily Find\+Detector\+Sim\+Parameter(\+I\+D)} 返回 null，但代码仍然访问 {\ttfamily prm-\/$>$...}。
+\item 解决（已做示例修补）：在 {\ttfamily Convert\+Sim\+Data()} 中检查 {\ttfamily N\+E\+B\+U\+L\+A\+Parameter} 与 {\ttfamily prm} 是否为 null，若为空则打印警告并跳过该 I\+D。
+\end{DoxyItemize}
+\item 输入 Tree 名称或 branch 名称不一致：
+\begin{DoxyItemize}
+\item 检查宏 {\ttfamily vis.\+mac} / {\ttfamily simulation.\+mac} 中的 {\ttfamily /action/gun/tree/\+Tree\+Name} 与生成 input file 中 {\ttfamily T\+Tree(\char`\"{}tree\char`\"{},...)} 是否一致。
+\end{DoxyItemize}
+\item 库加载错误（运行时报 {\ttfamily cannot open shared object file}）：
+\begin{DoxyItemize}
+\item 先运行 {\ttfamily . ./setup.sh}，确保 {\ttfamily L\+D\+\_\+\+L\+I\+B\+R\+A\+R\+Y\+\_\+\+P\+A\+TH} 包含 {\ttfamily smg4lib/lib} 或其他库路径。
+\item 用 {\ttfamily ldd ../bin/sim\+\_\+deuteron $\vert$ grep not\textbackslash{} found} 检查缺失库。
+\end{DoxyItemize}
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md11}{}\doxysection{常用验证命令（复制粘贴）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md11}
+
+\begin{DoxyItemize}
+\item 在 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 中查看输出 file： 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{root -\/l output\_tree/test0000.root}
+\DoxyCodeLine{\# 在 root 提示符}
+\DoxyCodeLine{TFile *f = TFile::Open("output\_tree/test0000.root"); f-\/>ls();}
+\DoxyCodeLine{TTree *t = (TTree*)f-\/>Get("tree"); t-\/>Print(); t-\/>Show(0);}
+\end{DoxyCode}
+
+\item 查看 Frag\+Sim\+Data 条目： 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{TClonesArray *arr=0; t-\/>SetBranchAddress("FragSimData", \&arr); t-\/>GetEntry(0); arr-\/>GetEntries(); arr-\/>At(0)-\/>Print();}
+\end{DoxyCode}
+
+\item 重新编译并运行（在项目根目录）： 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{. ./setup.sh}
+\DoxyCodeLine{cd smg4lib \&\& make -\/j4}
+\DoxyCodeLine{cd ../sim\_deuteron \&\& make -\/j4}
+\DoxyCodeLine{cd ../d\_work}
+\DoxyCodeLine{../bin/sim\_deuteron vis.mac}
+\end{DoxyCode}
+
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md12}{}\doxysection{推荐的下一步（调试建议）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_macros_dpol_data_flow_README_autotoc_md12}
+
+\begin{DoxyItemize}
+\item 若你遇到 segfault：先在 {\ttfamily \mbox{\hyperlink{classNEBULASimDataConverter__TArtNEBULAPla_ab658375d54095410a2eeea09c038dcb3}{N\+E\+B\+U\+L\+A\+Sim\+Data\+Converter\+\_\+\+T\+Art\+N\+E\+B\+U\+L\+A\+Pla\+::\+Convert\+Sim\+Data()}}} 添加 {\ttfamily if (!\+N\+E\+B\+U\+L\+A\+Parameter) ...} 和对 {\ttfamily prm} 的空检查（已示例修改）。
+\item 如需更详细事件级调试，在 {\ttfamily Process\+Hits} 或 Converter 中临时加 {\ttfamily G4cout} 或 {\ttfamily std\+::cerr} 打印（仅用于短量事件）。
+\item 若需我帮忙：
+\begin{DoxyItemize}
+\item (A) 展示 {\ttfamily \mbox{\hyperlink{classFragmentSD_a825dbc8bcee781db7606da0547bd6a80}{Fragment\+S\+D\+::\+Process\+Hits}}} 的实现并解释字段映射；
+\item (B) 直接在某个输出文件上运行验证命令并把结果贴回；
+\item (C) 添加更详细的 debug 打印并跑 1-\/5 个事件以验证流程。 
+\end{DoxyItemize}
+\end{DoxyItemize}

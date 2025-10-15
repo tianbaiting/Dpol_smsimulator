@@ -50,19 +50,26 @@ void PDCSimAna::ProcessEvent(TClonesArray* fragSimData) {
 
         TVector3 pos = hit->fPrePosition;
         if (hit->fID == 0) { // PDC1
-            TVector3 pos_rel = pos - pos1;
-            double x_rot = pos_rel.X() * TMath::Cos(-angle) - pos_rel.Z() * TMath::Sin(-angle);
-            double u_pos = (x_rot + pos.Y()) / sqrt2;
-            double v_pos = (x_rot - pos.Y()) / sqrt2;
-            if (hit->fModuleName == "U") fU1_hits.push_back({u_pos, hit->fEnergyDeposit});
-            if (hit->fModuleName == "V") fV1_hits.push_back({v_pos, hit->fEnergyDeposit});
+            // TVector3 pos_rel = pos - pos1;
+            // double x_rot = pos_rel.X() * TMath::Cos(angle) + pos_rel.Z() * TMath::Sin(angle);
+            // double z_rot = -pos_rel.X() * TMath::Sin(angle) + pos_rel.Z() * TMath::Cos(angle);
+            // double u_pos = (x_rot + pos.Y()) / sqrt2;
+            // double v_pos = (-x_rot + pos.Y()) / sqrt2;
+            
+
+            if (hit->fModuleName == "U") fU1_hits.push_back({pos.X(), pos.Y(), pos.Z(), hit->fEnergyDeposit});
+            if (hit->fModuleName == "V") fV1_hits.push_back({pos.X(), pos.Y(), pos.Z(), hit->fEnergyDeposit});
+
         } else if (hit->fID == 1) { // PDC2
-            TVector3 pos_rel = pos - pos2;
-            double x_rot = pos_rel.X() * TMath::Cos(-angle) - pos_rel.Z() * TMath::Sin(-angle);
-            double u_pos = (x_rot + pos.Y()) / sqrt2;
-            double v_pos = (x_rot - pos.Y()) / sqrt2;
-            if (hit->fModuleName == "U") fU2_hits.push_back({u_pos, hit->fEnergyDeposit});
-            if (hit->fModuleName == "V") fV2_hits.push_back({v_pos, hit->fEnergyDeposit});
+            // TVector3 pos_rel = pos - pos2;
+            // double x_rot = pos_rel.X() * TMath::Cos(angle) + pos_rel.Z() * TMath::Sin(+angle);
+            // double z_rot = -pos_rel.X() * TMath::Sin(angle) + pos_rel.Z() * TMath::Cos(angle);
+            // double u_pos = (x_rot + pos.Y()) / sqrt2;
+            // double v_pos = (-x_rot + pos.Y()) / sqrt2;
+            
+            if (hit->fModuleName == "U") fU2_hits.push_back({pos.X(), pos.Y(), pos.Z(), hit->fEnergyDeposit});
+
+            if (hit->fModuleName == "V") fV2_hits.push_back({pos.X(), pos.Y(), pos.Z(), hit->fEnergyDeposit});
         }
     }
 
@@ -70,7 +77,13 @@ void PDCSimAna::ProcessEvent(TClonesArray* fragSimData) {
     if (!gRandom) gRandom = new TRandom3(0);
     auto smear_vector = [&](const std::vector<Hit>& in_hits, std::vector<Hit>& out_hits, double sigma) {
         for (const auto& hit : in_hits) {
-            out_hits.push_back({hit.position + gRandom->Gaus(0, sigma), hit.energy});
+            double error = gRandom->Gaus(0, sigma)/sqrt2; // Projected onto U/V axis
+            if (hit->fModuleName == "U"){
+                out_hits.push_back({hit.x + error, hit.y + error, hit.z , hit.energy});
+            }
+            if (hit->fModuleName == "V"){
+                out_hits.push_back({hit.x + error, hit.y - error, hit.z , hit.energy});
+            }
         }
     };
 
@@ -80,8 +93,8 @@ void PDCSimAna::ProcessEvent(TClonesArray* fragSimData) {
     smear_vector(fV2_hits, fV2_hits_smeared, fSigmaV);
 
     // 3. Perform reconstruction using the smeared hits
-    fRecoPoint1 = ReconstructPDC(fU1_hits_smeared, fV1_hits_smeared, pos1);
-    fRecoPoint2 = ReconstructPDC(fU2_hits_smeared, fV2_hits_smeared, pos2);
+    fRecoPoint1 = ReconstructPDC(fU1_hits_smeared, fV1_hits_smeared);
+    fRecoPoint2 = ReconstructPDC(fU2_hits_smeared, fV2_hits_smeared);
 }
 
 std::vector<TVector3> PDCSimAna::GetSmearedGlobalPositions() const {
@@ -103,25 +116,26 @@ std::vector<TVector3> PDCSimAna::GetSmearedGlobalPositions() const {
     return positions;
 }
 
-TVector3 PDCSimAna::ReconstructPDC(const std::vector<Hit>& u_hits, const std::vector<Hit>& v_hits, const TVector3& pdc_position) const {
+TVector3 PDCSimAna::ReconstructPDC(const std::vector<Hit>& u_hits, const std::vector<Hit>& v_hits) const {
     if (u_hits.empty() || v_hits.empty()) {
         return TVector3(0, 0, 0);
     }
 
-    double u_com = CalculateCoM(u_hits);
+    double u_com = CalculateUCoM(u_hits);
     double v_com = CalculateCoM(v_hits);
 
     const double sqrt2 = TMath::Sqrt(2.0);
     double y_global = (u_com - v_com) / sqrt2;
     double x_local = (u_com + v_com) / sqrt2;
+    d
 
     const double angle = fGeoManager.GetAngleRad();
-    double x_rotated = x_local * TMath::Cos(angle);
-    double z_rotated = x_local * TMath::Sin(angle);
+    double x_backrotated = x_local * TMath::Cos(angle) - z_local * TMath::Sin(angle);
+    double z_backrotated = +x_local * TMath::Sin(angle) + z_local * TMath::Cos(angle);
 
-    double final_X = x_rotated + pdc_position.X();
+    double final_X = x_backrotated + pdc_position.X();
     double final_Y = y_global + pdc_position.Y();
-    double final_Z = z_rotated + pdc_position.Z();
+    double final_Z = z_backrotated + pdc_position.Z();
 
     return TVector3(final_X, final_Y, final_Z);
 }
@@ -131,8 +145,22 @@ double PDCSimAna::CalculateCoM(const std::vector<Hit>& hits) const {
     double total_energy = 0.0;
     double weighted_sum = 0.0;
     for (const auto& hit : hits) {
-        weighted_sum += hit.position * hit.energy;
+        weighted_sum += hit.x * hit.energy;
         total_energy += hit.energy;
     }
     return (total_energy > 0) ? (weighted_sum / total_energy) : 0.0;
+    // std::pair<double, double> PDCSimAna::CalculateCoM(const std::vector<Hit>& hits) const {
+    // if (hits.empty()) return {0.0, 0.0};
+    // double total_energy = 0.0;
+    // double weighted_pos_sum = 0.0; // for U or V coordinate (position)
+    // double weighted_z_sum = 0.0;   // for Z coordinate
+
+    // for (const auto& hit : hits) {
+    //     weighted_pos_sum += hit.position * hit.energy;
+    //     weighted_z_sum += hit.Z * hit.energy;
+    //     total_energy += hit.energy;
+    // }
+
+    // if (total_energy <= 0.0) return {0.0, 0.0};
+    // return {weighted_pos_sum / total_energy, weighted_z_sum / total_energy};
 }

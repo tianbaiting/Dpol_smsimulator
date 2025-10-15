@@ -1,0 +1,643 @@
+\hypertarget{classSimDataManager}{}\doxysection{Sim\+Data\+Manager Class Reference}
+\label{classSimDataManager}\index{SimDataManager@{SimDataManager}}
+
+
+{\ttfamily \#include $<$Sim\+Data\+Manager.\+hh$>$}
+
+
+
+Collaboration diagram for Sim\+Data\+Manager\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=291pt]{classSimDataManager__coll__graph}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{classSimDataManager_acb4d6b8eb3d77e54011561da4c0eb35e}{$\sim$\+Sim\+Data\+Manager}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_add0907956a5f479dc47ce4074fca8b13}{Regist\+Initializer}} (\mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$initializer)
+\item 
+void \mbox{\hyperlink{classSimDataManager_ab5753800d47d667cea35fdcd1c08e06d}{Regist\+Converter}} (\mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$converter)
+\item 
+int \mbox{\hyperlink{classSimDataManager_a8e61ce93e47d38b0103591c9f71c3081}{Initialize}} ()
+\item 
+int \mbox{\hyperlink{classSimDataManager_a21dd9e8db20ba60747378557232f1a3b}{Define\+Branch}} (T\+Tree $\ast$tree)
+\item 
+int \mbox{\hyperlink{classSimDataManager_ac2ea15a5c6910cb6db404c302608066a}{Remove\+Parameters}} (T\+File $\ast$file)
+\item 
+int \mbox{\hyperlink{classSimDataManager_a701344dabeb39ca0812a7d1073def0c6}{Clear\+Buffer}} ()
+\item 
+int \mbox{\hyperlink{classSimDataManager_a3b0b6fb68d7036434150b5feeeb34abb}{Convert\+Sim\+Data}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a76386a4b3fff236ded0f125e090fe0b0}{Remove\+All\+Initializer}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a1378e4078f53120f9cbe9ccdcd635279}{Remove\+All\+Converter}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a1484dcbb52b08c35d99418fb28333c1b}{Add\+Parameter}} (\mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$prm)
+\item 
+void \mbox{\hyperlink{classSimDataManager_a17e18184f609ffebc036e3f743716e7f}{Add\+Parameters}} (T\+File $\ast$file)
+\item 
+\mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$ \mbox{\hyperlink{classSimDataManager_a271d9801a2553fe976a60e7a388d0df8}{Find\+Parameter}} (T\+String name)
+\item 
+\mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$ \mbox{\hyperlink{classSimDataManager_a634410319ec890e24731e9f1c2c8c629}{Find\+Initializer}} (T\+String name)
+\item 
+\mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$ \mbox{\hyperlink{classSimDataManager_aa97ba163a75b1ba52e9d79b2eddd985e}{Find\+Converter}} (T\+String name)
+\item 
+T\+Clones\+Array $\ast$ \mbox{\hyperlink{classSimDataManager_a008f0ef40bc855781c6b3ce2a74c799a}{Find\+Sim\+Data\+Array}} (T\+String name)
+\item 
+void \mbox{\hyperlink{classSimDataManager_a248345ae49e5d4edfa7f53948c3b5acb}{Print\+Parameters}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_ac9451112c1314b9ce68dc4ce00c6893f}{Print\+Initializers}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a901046ab8c7970e88b2fc2a17eaf2e25}{Print\+Converters}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a2ef73f2e215b05982bb878bc944043b7}{Append\+Header}} (T\+String str)
+\item 
+T\+String \mbox{\hyperlink{classSimDataManager_a1e0fffdc1978b9a85cf5082bddf9cd15}{Get\+Header}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_ab01c8024c59fea582a2c3d80bb465e88}{Clear\+Header}} ()
+\item 
+virtual \mbox{\hyperlink{classSimDataManager_abb59238ef6856c5a39cad9ee16194422}{$\sim$\+Sim\+Data\+Manager}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_add0907956a5f479dc47ce4074fca8b13}{Regist\+Initializer}} (\mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$initializer)
+\item 
+void \mbox{\hyperlink{classSimDataManager_ab5753800d47d667cea35fdcd1c08e06d}{Regist\+Converter}} (\mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$converter)
+\item 
+int \mbox{\hyperlink{classSimDataManager_a8e61ce93e47d38b0103591c9f71c3081}{Initialize}} ()
+\item 
+int \mbox{\hyperlink{classSimDataManager_a21dd9e8db20ba60747378557232f1a3b}{Define\+Branch}} (T\+Tree $\ast$tree)
+\item 
+int \mbox{\hyperlink{classSimDataManager_ac2ea15a5c6910cb6db404c302608066a}{Remove\+Parameters}} (T\+File $\ast$file)
+\item 
+int \mbox{\hyperlink{classSimDataManager_a701344dabeb39ca0812a7d1073def0c6}{Clear\+Buffer}} ()
+\item 
+int \mbox{\hyperlink{classSimDataManager_a3b0b6fb68d7036434150b5feeeb34abb}{Convert\+Sim\+Data}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a76386a4b3fff236ded0f125e090fe0b0}{Remove\+All\+Initializer}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a1378e4078f53120f9cbe9ccdcd635279}{Remove\+All\+Converter}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a1484dcbb52b08c35d99418fb28333c1b}{Add\+Parameter}} (\mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$prm)
+\item 
+void \mbox{\hyperlink{classSimDataManager_a17e18184f609ffebc036e3f743716e7f}{Add\+Parameters}} (T\+File $\ast$file)
+\item 
+\mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$ \mbox{\hyperlink{classSimDataManager_aebae5ff36108fa99b0a59890068f3446}{Find\+Parameter}} (T\+String name)
+\item 
+\mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$ \mbox{\hyperlink{classSimDataManager_aee0fe0b9e0f3ab82f979f0ce1d380d9e}{Find\+Initializer}} (T\+String name)
+\item 
+\mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$ \mbox{\hyperlink{classSimDataManager_a3f9ff8a2b671b80a442ee00bb0bf7e07}{Find\+Converter}} (T\+String name)
+\item 
+T\+Clones\+Array $\ast$ \mbox{\hyperlink{classSimDataManager_ae1071b8048ffede984f6888f3a741246}{Find\+Sim\+Data\+Array}} (T\+String name)
+\item 
+void \mbox{\hyperlink{classSimDataManager_a248345ae49e5d4edfa7f53948c3b5acb}{Print\+Parameters}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_ac9451112c1314b9ce68dc4ce00c6893f}{Print\+Initializers}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a901046ab8c7970e88b2fc2a17eaf2e25}{Print\+Converters}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a2ef73f2e215b05982bb878bc944043b7}{Append\+Header}} (T\+String str)
+\item 
+T\+String \mbox{\hyperlink{classSimDataManager_a1e0fffdc1978b9a85cf5082bddf9cd15}{Get\+Header}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_ab01c8024c59fea582a2c3d80bb465e88}{Clear\+Header}} ()
+\item 
+virtual \mbox{\hyperlink{classSimDataManager_abb59238ef6856c5a39cad9ee16194422}{$\sim$\+Sim\+Data\+Manager}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_add0907956a5f479dc47ce4074fca8b13}{Regist\+Initializer}} (\mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$initializer)
+\item 
+void \mbox{\hyperlink{classSimDataManager_ab5753800d47d667cea35fdcd1c08e06d}{Regist\+Converter}} (\mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$converter)
+\item 
+int \mbox{\hyperlink{classSimDataManager_a8e61ce93e47d38b0103591c9f71c3081}{Initialize}} ()
+\item 
+int \mbox{\hyperlink{classSimDataManager_a21dd9e8db20ba60747378557232f1a3b}{Define\+Branch}} (T\+Tree $\ast$tree)
+\item 
+int \mbox{\hyperlink{classSimDataManager_ac2ea15a5c6910cb6db404c302608066a}{Remove\+Parameters}} (T\+File $\ast$file)
+\item 
+int \mbox{\hyperlink{classSimDataManager_a701344dabeb39ca0812a7d1073def0c6}{Clear\+Buffer}} ()
+\item 
+int \mbox{\hyperlink{classSimDataManager_a3b0b6fb68d7036434150b5feeeb34abb}{Convert\+Sim\+Data}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a76386a4b3fff236ded0f125e090fe0b0}{Remove\+All\+Initializer}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a1378e4078f53120f9cbe9ccdcd635279}{Remove\+All\+Converter}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a1484dcbb52b08c35d99418fb28333c1b}{Add\+Parameter}} (\mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$prm)
+\item 
+void \mbox{\hyperlink{classSimDataManager_a17e18184f609ffebc036e3f743716e7f}{Add\+Parameters}} (T\+File $\ast$file)
+\item 
+\mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$ \mbox{\hyperlink{classSimDataManager_aebae5ff36108fa99b0a59890068f3446}{Find\+Parameter}} (T\+String name)
+\item 
+\mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$ \mbox{\hyperlink{classSimDataManager_aee0fe0b9e0f3ab82f979f0ce1d380d9e}{Find\+Initializer}} (T\+String name)
+\item 
+\mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$ \mbox{\hyperlink{classSimDataManager_a3f9ff8a2b671b80a442ee00bb0bf7e07}{Find\+Converter}} (T\+String name)
+\item 
+T\+Clones\+Array $\ast$ \mbox{\hyperlink{classSimDataManager_ae1071b8048ffede984f6888f3a741246}{Find\+Sim\+Data\+Array}} (T\+String name)
+\item 
+void \mbox{\hyperlink{classSimDataManager_a248345ae49e5d4edfa7f53948c3b5acb}{Print\+Parameters}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_ac9451112c1314b9ce68dc4ce00c6893f}{Print\+Initializers}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a901046ab8c7970e88b2fc2a17eaf2e25}{Print\+Converters}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_a2ef73f2e215b05982bb878bc944043b7}{Append\+Header}} (T\+String str)
+\item 
+T\+String \mbox{\hyperlink{classSimDataManager_a1e0fffdc1978b9a85cf5082bddf9cd15}{Get\+Header}} ()
+\item 
+void \mbox{\hyperlink{classSimDataManager_ab01c8024c59fea582a2c3d80bb465e88}{Clear\+Header}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}} $\ast$ \mbox{\hyperlink{classSimDataManager_ac6587f88d12c6e9c309f9b948df38a04}{Get\+Sim\+Data\+Manager}} ()
+\item 
+static \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}} $\ast$ \mbox{\hyperlink{classSimDataManager_a01676cb562c048ea85eec640c8031e69}{Get\+Sim\+Data\+Manager}} ()
+\item 
+static \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}} $\ast$ \mbox{\hyperlink{classSimDataManager_a01676cb562c048ea85eec640c8031e69}{Get\+Sim\+Data\+Manager}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$ $>$ \mbox{\hyperlink{classSimDataManager_ae44be265345777bc18c952a87d259ff7}{f\+Initializer\+Array}}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$ $>$ \mbox{\hyperlink{classSimDataManager_ac7f7f5639a33d3c8d20fbc120b124360}{f\+Converter\+Array}}
+\item 
+std\+::map$<$ T\+String, \mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$ $>$ \mbox{\hyperlink{classSimDataManager_a15c67864dd627e0d3e5b3fca1c131731}{f\+Parameter\+Map}}
+\item 
+std\+::map$<$ T\+String, T\+Clones\+Array $\ast$ $>$ \mbox{\hyperlink{classSimDataManager_a7b430454586b666460aabe8024b19c0e}{f\+Sim\+Data\+Array\+Pointers}}
+\item 
+T\+String \mbox{\hyperlink{classSimDataManager_a545f3354fbe235b91695d20a327952a3}{f\+Header}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}} $\ast$ \mbox{\hyperlink{classSimDataManager_a243499b853c749403cf8a85207ac4b16}{f\+Sim\+Data\+Manager}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classSimDataManager_acb4d6b8eb3d77e54011561da4c0eb35e}\label{classSimDataManager_acb4d6b8eb3d77e54011561da4c0eb35e}} 
+\index{SimDataManager@{SimDataManager}!````~SimDataManager@{$\sim$SimDataManager}}
+\index{````~SimDataManager@{$\sim$SimDataManager}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{$\sim$SimDataManager()}{~SimDataManager()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily Sim\+Data\+Manager\+::$\sim$\+Sim\+Data\+Manager (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+\mbox{\Hypertarget{classSimDataManager_abb59238ef6856c5a39cad9ee16194422}\label{classSimDataManager_abb59238ef6856c5a39cad9ee16194422}} 
+\index{SimDataManager@{SimDataManager}!````~SimDataManager@{$\sim$SimDataManager}}
+\index{````~SimDataManager@{$\sim$SimDataManager}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{$\sim$SimDataManager()}{~SimDataManager()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily virtual Sim\+Data\+Manager\+::$\sim$\+Sim\+Data\+Manager (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+\mbox{\Hypertarget{classSimDataManager_abb59238ef6856c5a39cad9ee16194422}\label{classSimDataManager_abb59238ef6856c5a39cad9ee16194422}} 
+\index{SimDataManager@{SimDataManager}!````~SimDataManager@{$\sim$SimDataManager}}
+\index{````~SimDataManager@{$\sim$SimDataManager}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{$\sim$SimDataManager()}{~SimDataManager()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily virtual Sim\+Data\+Manager\+::$\sim$\+Sim\+Data\+Manager (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classSimDataManager_a1484dcbb52b08c35d99418fb28333c1b}\label{classSimDataManager_a1484dcbb52b08c35d99418fb28333c1b}} 
+\index{SimDataManager@{SimDataManager}!AddParameter@{AddParameter}}
+\index{AddParameter@{AddParameter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{AddParameter()}{AddParameter()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Add\+Parameter (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$}]{prm }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a1484dcbb52b08c35d99418fb28333c1b}\label{classSimDataManager_a1484dcbb52b08c35d99418fb28333c1b}} 
+\index{SimDataManager@{SimDataManager}!AddParameter@{AddParameter}}
+\index{AddParameter@{AddParameter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{AddParameter()}{AddParameter()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Add\+Parameter (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$}]{prm }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a1484dcbb52b08c35d99418fb28333c1b}\label{classSimDataManager_a1484dcbb52b08c35d99418fb28333c1b}} 
+\index{SimDataManager@{SimDataManager}!AddParameter@{AddParameter}}
+\index{AddParameter@{AddParameter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{AddParameter()}{AddParameter()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Add\+Parameter (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$}]{prm }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a17e18184f609ffebc036e3f743716e7f}\label{classSimDataManager_a17e18184f609ffebc036e3f743716e7f}} 
+\index{SimDataManager@{SimDataManager}!AddParameters@{AddParameters}}
+\index{AddParameters@{AddParameters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{AddParameters()}{AddParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Add\+Parameters (\begin{DoxyParamCaption}\item[{T\+File $\ast$}]{file }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a17e18184f609ffebc036e3f743716e7f}\label{classSimDataManager_a17e18184f609ffebc036e3f743716e7f}} 
+\index{SimDataManager@{SimDataManager}!AddParameters@{AddParameters}}
+\index{AddParameters@{AddParameters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{AddParameters()}{AddParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Add\+Parameters (\begin{DoxyParamCaption}\item[{T\+File $\ast$}]{file }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a17e18184f609ffebc036e3f743716e7f}\label{classSimDataManager_a17e18184f609ffebc036e3f743716e7f}} 
+\index{SimDataManager@{SimDataManager}!AddParameters@{AddParameters}}
+\index{AddParameters@{AddParameters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{AddParameters()}{AddParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Add\+Parameters (\begin{DoxyParamCaption}\item[{T\+File $\ast$}]{file }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a2ef73f2e215b05982bb878bc944043b7}\label{classSimDataManager_a2ef73f2e215b05982bb878bc944043b7}} 
+\index{SimDataManager@{SimDataManager}!AppendHeader@{AppendHeader}}
+\index{AppendHeader@{AppendHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{AppendHeader()}{AppendHeader()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Append\+Header (\begin{DoxyParamCaption}\item[{T\+String}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classSimDataManager_a2ef73f2e215b05982bb878bc944043b7}\label{classSimDataManager_a2ef73f2e215b05982bb878bc944043b7}} 
+\index{SimDataManager@{SimDataManager}!AppendHeader@{AppendHeader}}
+\index{AppendHeader@{AppendHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{AppendHeader()}{AppendHeader()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Append\+Header (\begin{DoxyParamCaption}\item[{T\+String}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classSimDataManager_a2ef73f2e215b05982bb878bc944043b7}\label{classSimDataManager_a2ef73f2e215b05982bb878bc944043b7}} 
+\index{SimDataManager@{SimDataManager}!AppendHeader@{AppendHeader}}
+\index{AppendHeader@{AppendHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{AppendHeader()}{AppendHeader()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Append\+Header (\begin{DoxyParamCaption}\item[{T\+String}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classSimDataManager_a701344dabeb39ca0812a7d1073def0c6}\label{classSimDataManager_a701344dabeb39ca0812a7d1073def0c6}} 
+\index{SimDataManager@{SimDataManager}!ClearBuffer@{ClearBuffer}}
+\index{ClearBuffer@{ClearBuffer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{ClearBuffer()}{ClearBuffer()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Clear\+Buffer (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a701344dabeb39ca0812a7d1073def0c6}\label{classSimDataManager_a701344dabeb39ca0812a7d1073def0c6}} 
+\index{SimDataManager@{SimDataManager}!ClearBuffer@{ClearBuffer}}
+\index{ClearBuffer@{ClearBuffer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{ClearBuffer()}{ClearBuffer()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Clear\+Buffer (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a701344dabeb39ca0812a7d1073def0c6}\label{classSimDataManager_a701344dabeb39ca0812a7d1073def0c6}} 
+\index{SimDataManager@{SimDataManager}!ClearBuffer@{ClearBuffer}}
+\index{ClearBuffer@{ClearBuffer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{ClearBuffer()}{ClearBuffer()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Clear\+Buffer (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ab01c8024c59fea582a2c3d80bb465e88}\label{classSimDataManager_ab01c8024c59fea582a2c3d80bb465e88}} 
+\index{SimDataManager@{SimDataManager}!ClearHeader@{ClearHeader}}
+\index{ClearHeader@{ClearHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{ClearHeader()}{ClearHeader()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Clear\+Header (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classSimDataManager_ab01c8024c59fea582a2c3d80bb465e88}\label{classSimDataManager_ab01c8024c59fea582a2c3d80bb465e88}} 
+\index{SimDataManager@{SimDataManager}!ClearHeader@{ClearHeader}}
+\index{ClearHeader@{ClearHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{ClearHeader()}{ClearHeader()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Clear\+Header (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classSimDataManager_ab01c8024c59fea582a2c3d80bb465e88}\label{classSimDataManager_ab01c8024c59fea582a2c3d80bb465e88}} 
+\index{SimDataManager@{SimDataManager}!ClearHeader@{ClearHeader}}
+\index{ClearHeader@{ClearHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{ClearHeader()}{ClearHeader()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Clear\+Header (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classSimDataManager_a3b0b6fb68d7036434150b5feeeb34abb}\label{classSimDataManager_a3b0b6fb68d7036434150b5feeeb34abb}} 
+\index{SimDataManager@{SimDataManager}!ConvertSimData@{ConvertSimData}}
+\index{ConvertSimData@{ConvertSimData}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{ConvertSimData()}{ConvertSimData()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Convert\+Sim\+Data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a3b0b6fb68d7036434150b5feeeb34abb}\label{classSimDataManager_a3b0b6fb68d7036434150b5feeeb34abb}} 
+\index{SimDataManager@{SimDataManager}!ConvertSimData@{ConvertSimData}}
+\index{ConvertSimData@{ConvertSimData}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{ConvertSimData()}{ConvertSimData()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Convert\+Sim\+Data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a3b0b6fb68d7036434150b5feeeb34abb}\label{classSimDataManager_a3b0b6fb68d7036434150b5feeeb34abb}} 
+\index{SimDataManager@{SimDataManager}!ConvertSimData@{ConvertSimData}}
+\index{ConvertSimData@{ConvertSimData}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{ConvertSimData()}{ConvertSimData()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Convert\+Sim\+Data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a21dd9e8db20ba60747378557232f1a3b}\label{classSimDataManager_a21dd9e8db20ba60747378557232f1a3b}} 
+\index{SimDataManager@{SimDataManager}!DefineBranch@{DefineBranch}}
+\index{DefineBranch@{DefineBranch}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{DefineBranch()}{DefineBranch()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Define\+Branch (\begin{DoxyParamCaption}\item[{T\+Tree $\ast$}]{tree }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a21dd9e8db20ba60747378557232f1a3b}\label{classSimDataManager_a21dd9e8db20ba60747378557232f1a3b}} 
+\index{SimDataManager@{SimDataManager}!DefineBranch@{DefineBranch}}
+\index{DefineBranch@{DefineBranch}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{DefineBranch()}{DefineBranch()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Define\+Branch (\begin{DoxyParamCaption}\item[{T\+Tree $\ast$}]{tree }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a21dd9e8db20ba60747378557232f1a3b}\label{classSimDataManager_a21dd9e8db20ba60747378557232f1a3b}} 
+\index{SimDataManager@{SimDataManager}!DefineBranch@{DefineBranch}}
+\index{DefineBranch@{DefineBranch}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{DefineBranch()}{DefineBranch()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Define\+Branch (\begin{DoxyParamCaption}\item[{T\+Tree $\ast$}]{tree }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a3f9ff8a2b671b80a442ee00bb0bf7e07}\label{classSimDataManager_a3f9ff8a2b671b80a442ee00bb0bf7e07}} 
+\index{SimDataManager@{SimDataManager}!FindConverter@{FindConverter}}
+\index{FindConverter@{FindConverter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindConverter()}{FindConverter()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}}$\ast$ Sim\+Data\+Manager\+::\+Find\+Converter (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_aa97ba163a75b1ba52e9d79b2eddd985e}\label{classSimDataManager_aa97ba163a75b1ba52e9d79b2eddd985e}} 
+\index{SimDataManager@{SimDataManager}!FindConverter@{FindConverter}}
+\index{FindConverter@{FindConverter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindConverter()}{FindConverter()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$ Sim\+Data\+Manager\+::\+Find\+Converter (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a3f9ff8a2b671b80a442ee00bb0bf7e07}\label{classSimDataManager_a3f9ff8a2b671b80a442ee00bb0bf7e07}} 
+\index{SimDataManager@{SimDataManager}!FindConverter@{FindConverter}}
+\index{FindConverter@{FindConverter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindConverter()}{FindConverter()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}}$\ast$ Sim\+Data\+Manager\+::\+Find\+Converter (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_aee0fe0b9e0f3ab82f979f0ce1d380d9e}\label{classSimDataManager_aee0fe0b9e0f3ab82f979f0ce1d380d9e}} 
+\index{SimDataManager@{SimDataManager}!FindInitializer@{FindInitializer}}
+\index{FindInitializer@{FindInitializer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindInitializer()}{FindInitializer()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}}$\ast$ Sim\+Data\+Manager\+::\+Find\+Initializer (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_aee0fe0b9e0f3ab82f979f0ce1d380d9e}\label{classSimDataManager_aee0fe0b9e0f3ab82f979f0ce1d380d9e}} 
+\index{SimDataManager@{SimDataManager}!FindInitializer@{FindInitializer}}
+\index{FindInitializer@{FindInitializer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindInitializer()}{FindInitializer()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}}$\ast$ Sim\+Data\+Manager\+::\+Find\+Initializer (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a634410319ec890e24731e9f1c2c8c629}\label{classSimDataManager_a634410319ec890e24731e9f1c2c8c629}} 
+\index{SimDataManager@{SimDataManager}!FindInitializer@{FindInitializer}}
+\index{FindInitializer@{FindInitializer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindInitializer()}{FindInitializer()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$ Sim\+Data\+Manager\+::\+Find\+Initializer (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_aebae5ff36108fa99b0a59890068f3446}\label{classSimDataManager_aebae5ff36108fa99b0a59890068f3446}} 
+\index{SimDataManager@{SimDataManager}!FindParameter@{FindParameter}}
+\index{FindParameter@{FindParameter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindParameter()}{FindParameter()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}}$\ast$ Sim\+Data\+Manager\+::\+Find\+Parameter (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a271d9801a2553fe976a60e7a388d0df8}\label{classSimDataManager_a271d9801a2553fe976a60e7a388d0df8}} 
+\index{SimDataManager@{SimDataManager}!FindParameter@{FindParameter}}
+\index{FindParameter@{FindParameter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindParameter()}{FindParameter()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$ Sim\+Data\+Manager\+::\+Find\+Parameter (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_aebae5ff36108fa99b0a59890068f3446}\label{classSimDataManager_aebae5ff36108fa99b0a59890068f3446}} 
+\index{SimDataManager@{SimDataManager}!FindParameter@{FindParameter}}
+\index{FindParameter@{FindParameter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindParameter()}{FindParameter()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}}$\ast$ Sim\+Data\+Manager\+::\+Find\+Parameter (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a008f0ef40bc855781c6b3ce2a74c799a}\label{classSimDataManager_a008f0ef40bc855781c6b3ce2a74c799a}} 
+\index{SimDataManager@{SimDataManager}!FindSimDataArray@{FindSimDataArray}}
+\index{FindSimDataArray@{FindSimDataArray}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindSimDataArray()}{FindSimDataArray()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily T\+Clones\+Array $\ast$ Sim\+Data\+Manager\+::\+Find\+Sim\+Data\+Array (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ae1071b8048ffede984f6888f3a741246}\label{classSimDataManager_ae1071b8048ffede984f6888f3a741246}} 
+\index{SimDataManager@{SimDataManager}!FindSimDataArray@{FindSimDataArray}}
+\index{FindSimDataArray@{FindSimDataArray}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindSimDataArray()}{FindSimDataArray()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily T\+Clones\+Array$\ast$ Sim\+Data\+Manager\+::\+Find\+Sim\+Data\+Array (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ae1071b8048ffede984f6888f3a741246}\label{classSimDataManager_ae1071b8048ffede984f6888f3a741246}} 
+\index{SimDataManager@{SimDataManager}!FindSimDataArray@{FindSimDataArray}}
+\index{FindSimDataArray@{FindSimDataArray}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{FindSimDataArray()}{FindSimDataArray()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily T\+Clones\+Array$\ast$ Sim\+Data\+Manager\+::\+Find\+Sim\+Data\+Array (\begin{DoxyParamCaption}\item[{T\+String}]{name }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a1e0fffdc1978b9a85cf5082bddf9cd15}\label{classSimDataManager_a1e0fffdc1978b9a85cf5082bddf9cd15}} 
+\index{SimDataManager@{SimDataManager}!GetHeader@{GetHeader}}
+\index{GetHeader@{GetHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{GetHeader()}{GetHeader()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily T\+String Sim\+Data\+Manager\+::\+Get\+Header (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classSimDataManager_a1e0fffdc1978b9a85cf5082bddf9cd15}\label{classSimDataManager_a1e0fffdc1978b9a85cf5082bddf9cd15}} 
+\index{SimDataManager@{SimDataManager}!GetHeader@{GetHeader}}
+\index{GetHeader@{GetHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{GetHeader()}{GetHeader()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily T\+String Sim\+Data\+Manager\+::\+Get\+Header (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classSimDataManager_a1e0fffdc1978b9a85cf5082bddf9cd15}\label{classSimDataManager_a1e0fffdc1978b9a85cf5082bddf9cd15}} 
+\index{SimDataManager@{SimDataManager}!GetHeader@{GetHeader}}
+\index{GetHeader@{GetHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{GetHeader()}{GetHeader()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily T\+String Sim\+Data\+Manager\+::\+Get\+Header (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{classSimDataManager_ac6587f88d12c6e9c309f9b948df38a04}\label{classSimDataManager_ac6587f88d12c6e9c309f9b948df38a04}} 
+\index{SimDataManager@{SimDataManager}!GetSimDataManager@{GetSimDataManager}}
+\index{GetSimDataManager@{GetSimDataManager}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{GetSimDataManager()}{GetSimDataManager()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}} $\ast$ Sim\+Data\+Manager\+::\+Get\+Sim\+Data\+Manager (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{classSimDataManager_a01676cb562c048ea85eec640c8031e69}\label{classSimDataManager_a01676cb562c048ea85eec640c8031e69}} 
+\index{SimDataManager@{SimDataManager}!GetSimDataManager@{GetSimDataManager}}
+\index{GetSimDataManager@{GetSimDataManager}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{GetSimDataManager()}{GetSimDataManager()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}}$\ast$ Sim\+Data\+Manager\+::\+Get\+Sim\+Data\+Manager (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{classSimDataManager_a01676cb562c048ea85eec640c8031e69}\label{classSimDataManager_a01676cb562c048ea85eec640c8031e69}} 
+\index{SimDataManager@{SimDataManager}!GetSimDataManager@{GetSimDataManager}}
+\index{GetSimDataManager@{GetSimDataManager}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{GetSimDataManager()}{GetSimDataManager()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}}$\ast$ Sim\+Data\+Manager\+::\+Get\+Sim\+Data\+Manager (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+\mbox{\Hypertarget{classSimDataManager_a8e61ce93e47d38b0103591c9f71c3081}\label{classSimDataManager_a8e61ce93e47d38b0103591c9f71c3081}} 
+\index{SimDataManager@{SimDataManager}!Initialize@{Initialize}}
+\index{Initialize@{Initialize}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{Initialize()}{Initialize()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Initialize (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a8e61ce93e47d38b0103591c9f71c3081}\label{classSimDataManager_a8e61ce93e47d38b0103591c9f71c3081}} 
+\index{SimDataManager@{SimDataManager}!Initialize@{Initialize}}
+\index{Initialize@{Initialize}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{Initialize()}{Initialize()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Initialize (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a8e61ce93e47d38b0103591c9f71c3081}\label{classSimDataManager_a8e61ce93e47d38b0103591c9f71c3081}} 
+\index{SimDataManager@{SimDataManager}!Initialize@{Initialize}}
+\index{Initialize@{Initialize}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{Initialize()}{Initialize()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Initialize (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a901046ab8c7970e88b2fc2a17eaf2e25}\label{classSimDataManager_a901046ab8c7970e88b2fc2a17eaf2e25}} 
+\index{SimDataManager@{SimDataManager}!PrintConverters@{PrintConverters}}
+\index{PrintConverters@{PrintConverters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{PrintConverters()}{PrintConverters()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Print\+Converters (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a901046ab8c7970e88b2fc2a17eaf2e25}\label{classSimDataManager_a901046ab8c7970e88b2fc2a17eaf2e25}} 
+\index{SimDataManager@{SimDataManager}!PrintConverters@{PrintConverters}}
+\index{PrintConverters@{PrintConverters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{PrintConverters()}{PrintConverters()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Print\+Converters (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a901046ab8c7970e88b2fc2a17eaf2e25}\label{classSimDataManager_a901046ab8c7970e88b2fc2a17eaf2e25}} 
+\index{SimDataManager@{SimDataManager}!PrintConverters@{PrintConverters}}
+\index{PrintConverters@{PrintConverters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{PrintConverters()}{PrintConverters()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Print\+Converters (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ac9451112c1314b9ce68dc4ce00c6893f}\label{classSimDataManager_ac9451112c1314b9ce68dc4ce00c6893f}} 
+\index{SimDataManager@{SimDataManager}!PrintInitializers@{PrintInitializers}}
+\index{PrintInitializers@{PrintInitializers}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{PrintInitializers()}{PrintInitializers()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Print\+Initializers (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ac9451112c1314b9ce68dc4ce00c6893f}\label{classSimDataManager_ac9451112c1314b9ce68dc4ce00c6893f}} 
+\index{SimDataManager@{SimDataManager}!PrintInitializers@{PrintInitializers}}
+\index{PrintInitializers@{PrintInitializers}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{PrintInitializers()}{PrintInitializers()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Print\+Initializers (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ac9451112c1314b9ce68dc4ce00c6893f}\label{classSimDataManager_ac9451112c1314b9ce68dc4ce00c6893f}} 
+\index{SimDataManager@{SimDataManager}!PrintInitializers@{PrintInitializers}}
+\index{PrintInitializers@{PrintInitializers}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{PrintInitializers()}{PrintInitializers()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Print\+Initializers (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a248345ae49e5d4edfa7f53948c3b5acb}\label{classSimDataManager_a248345ae49e5d4edfa7f53948c3b5acb}} 
+\index{SimDataManager@{SimDataManager}!PrintParameters@{PrintParameters}}
+\index{PrintParameters@{PrintParameters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{PrintParameters()}{PrintParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Print\+Parameters (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a248345ae49e5d4edfa7f53948c3b5acb}\label{classSimDataManager_a248345ae49e5d4edfa7f53948c3b5acb}} 
+\index{SimDataManager@{SimDataManager}!PrintParameters@{PrintParameters}}
+\index{PrintParameters@{PrintParameters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{PrintParameters()}{PrintParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Print\+Parameters (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a248345ae49e5d4edfa7f53948c3b5acb}\label{classSimDataManager_a248345ae49e5d4edfa7f53948c3b5acb}} 
+\index{SimDataManager@{SimDataManager}!PrintParameters@{PrintParameters}}
+\index{PrintParameters@{PrintParameters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{PrintParameters()}{PrintParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Print\+Parameters (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ab5753800d47d667cea35fdcd1c08e06d}\label{classSimDataManager_ab5753800d47d667cea35fdcd1c08e06d}} 
+\index{SimDataManager@{SimDataManager}!RegistConverter@{RegistConverter}}
+\index{RegistConverter@{RegistConverter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RegistConverter()}{RegistConverter()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Regist\+Converter (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$}]{converter }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ab5753800d47d667cea35fdcd1c08e06d}\label{classSimDataManager_ab5753800d47d667cea35fdcd1c08e06d}} 
+\index{SimDataManager@{SimDataManager}!RegistConverter@{RegistConverter}}
+\index{RegistConverter@{RegistConverter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RegistConverter()}{RegistConverter()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Regist\+Converter (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$}]{converter }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ab5753800d47d667cea35fdcd1c08e06d}\label{classSimDataManager_ab5753800d47d667cea35fdcd1c08e06d}} 
+\index{SimDataManager@{SimDataManager}!RegistConverter@{RegistConverter}}
+\index{RegistConverter@{RegistConverter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RegistConverter()}{RegistConverter()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Regist\+Converter (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$}]{converter }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_add0907956a5f479dc47ce4074fca8b13}\label{classSimDataManager_add0907956a5f479dc47ce4074fca8b13}} 
+\index{SimDataManager@{SimDataManager}!RegistInitializer@{RegistInitializer}}
+\index{RegistInitializer@{RegistInitializer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RegistInitializer()}{RegistInitializer()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Regist\+Initializer (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$}]{initializer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_add0907956a5f479dc47ce4074fca8b13}\label{classSimDataManager_add0907956a5f479dc47ce4074fca8b13}} 
+\index{SimDataManager@{SimDataManager}!RegistInitializer@{RegistInitializer}}
+\index{RegistInitializer@{RegistInitializer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RegistInitializer()}{RegistInitializer()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Regist\+Initializer (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$}]{initializer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_add0907956a5f479dc47ce4074fca8b13}\label{classSimDataManager_add0907956a5f479dc47ce4074fca8b13}} 
+\index{SimDataManager@{SimDataManager}!RegistInitializer@{RegistInitializer}}
+\index{RegistInitializer@{RegistInitializer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RegistInitializer()}{RegistInitializer()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Regist\+Initializer (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$}]{initializer }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a1378e4078f53120f9cbe9ccdcd635279}\label{classSimDataManager_a1378e4078f53120f9cbe9ccdcd635279}} 
+\index{SimDataManager@{SimDataManager}!RemoveAllConverter@{RemoveAllConverter}}
+\index{RemoveAllConverter@{RemoveAllConverter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RemoveAllConverter()}{RemoveAllConverter()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Remove\+All\+Converter (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a1378e4078f53120f9cbe9ccdcd635279}\label{classSimDataManager_a1378e4078f53120f9cbe9ccdcd635279}} 
+\index{SimDataManager@{SimDataManager}!RemoveAllConverter@{RemoveAllConverter}}
+\index{RemoveAllConverter@{RemoveAllConverter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RemoveAllConverter()}{RemoveAllConverter()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Remove\+All\+Converter (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a1378e4078f53120f9cbe9ccdcd635279}\label{classSimDataManager_a1378e4078f53120f9cbe9ccdcd635279}} 
+\index{SimDataManager@{SimDataManager}!RemoveAllConverter@{RemoveAllConverter}}
+\index{RemoveAllConverter@{RemoveAllConverter}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RemoveAllConverter()}{RemoveAllConverter()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Remove\+All\+Converter (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a76386a4b3fff236ded0f125e090fe0b0}\label{classSimDataManager_a76386a4b3fff236ded0f125e090fe0b0}} 
+\index{SimDataManager@{SimDataManager}!RemoveAllInitializer@{RemoveAllInitializer}}
+\index{RemoveAllInitializer@{RemoveAllInitializer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RemoveAllInitializer()}{RemoveAllInitializer()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Remove\+All\+Initializer (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a76386a4b3fff236ded0f125e090fe0b0}\label{classSimDataManager_a76386a4b3fff236ded0f125e090fe0b0}} 
+\index{SimDataManager@{SimDataManager}!RemoveAllInitializer@{RemoveAllInitializer}}
+\index{RemoveAllInitializer@{RemoveAllInitializer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RemoveAllInitializer()}{RemoveAllInitializer()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Remove\+All\+Initializer (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_a76386a4b3fff236ded0f125e090fe0b0}\label{classSimDataManager_a76386a4b3fff236ded0f125e090fe0b0}} 
+\index{SimDataManager@{SimDataManager}!RemoveAllInitializer@{RemoveAllInitializer}}
+\index{RemoveAllInitializer@{RemoveAllInitializer}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RemoveAllInitializer()}{RemoveAllInitializer()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Sim\+Data\+Manager\+::\+Remove\+All\+Initializer (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ac2ea15a5c6910cb6db404c302608066a}\label{classSimDataManager_ac2ea15a5c6910cb6db404c302608066a}} 
+\index{SimDataManager@{SimDataManager}!RemoveParameters@{RemoveParameters}}
+\index{RemoveParameters@{RemoveParameters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RemoveParameters()}{RemoveParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Remove\+Parameters (\begin{DoxyParamCaption}\item[{T\+File $\ast$}]{file }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ac2ea15a5c6910cb6db404c302608066a}\label{classSimDataManager_ac2ea15a5c6910cb6db404c302608066a}} 
+\index{SimDataManager@{SimDataManager}!RemoveParameters@{RemoveParameters}}
+\index{RemoveParameters@{RemoveParameters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RemoveParameters()}{RemoveParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Remove\+Parameters (\begin{DoxyParamCaption}\item[{T\+File $\ast$}]{file }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{classSimDataManager_ac2ea15a5c6910cb6db404c302608066a}\label{classSimDataManager_ac2ea15a5c6910cb6db404c302608066a}} 
+\index{SimDataManager@{SimDataManager}!RemoveParameters@{RemoveParameters}}
+\index{RemoveParameters@{RemoveParameters}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{RemoveParameters()}{RemoveParameters()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily int Sim\+Data\+Manager\+::\+Remove\+Parameters (\begin{DoxyParamCaption}\item[{T\+File $\ast$}]{file }\end{DoxyParamCaption})}
+
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classSimDataManager_ac7f7f5639a33d3c8d20fbc120b124360}\label{classSimDataManager_ac7f7f5639a33d3c8d20fbc120b124360}} 
+\index{SimDataManager@{SimDataManager}!fConverterArray@{fConverterArray}}
+\index{fConverterArray@{fConverterArray}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{fConverterArray}{fConverterArray}}
+{\footnotesize\ttfamily std\+::vector$<$ \mbox{\hyperlink{classSimDataConverter}{Sim\+Data\+Converter}} $\ast$ $>$ Sim\+Data\+Manager\+::f\+Converter\+Array\hspace{0.3cm}{\ttfamily [protected]}}
+
+\mbox{\Hypertarget{classSimDataManager_a545f3354fbe235b91695d20a327952a3}\label{classSimDataManager_a545f3354fbe235b91695d20a327952a3}} 
+\index{SimDataManager@{SimDataManager}!fHeader@{fHeader}}
+\index{fHeader@{fHeader}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{fHeader}{fHeader}}
+{\footnotesize\ttfamily T\+String Sim\+Data\+Manager\+::f\+Header\hspace{0.3cm}{\ttfamily [protected]}}
+
+\mbox{\Hypertarget{classSimDataManager_ae44be265345777bc18c952a87d259ff7}\label{classSimDataManager_ae44be265345777bc18c952a87d259ff7}} 
+\index{SimDataManager@{SimDataManager}!fInitializerArray@{fInitializerArray}}
+\index{fInitializerArray@{fInitializerArray}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{fInitializerArray}{fInitializerArray}}
+{\footnotesize\ttfamily std\+::vector$<$ \mbox{\hyperlink{classSimDataInitializer}{Sim\+Data\+Initializer}} $\ast$ $>$ Sim\+Data\+Manager\+::f\+Initializer\+Array\hspace{0.3cm}{\ttfamily [protected]}}
+
+\mbox{\Hypertarget{classSimDataManager_a15c67864dd627e0d3e5b3fca1c131731}\label{classSimDataManager_a15c67864dd627e0d3e5b3fca1c131731}} 
+\index{SimDataManager@{SimDataManager}!fParameterMap@{fParameterMap}}
+\index{fParameterMap@{fParameterMap}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{fParameterMap}{fParameterMap}}
+{\footnotesize\ttfamily std\+::map$<$ T\+String, \mbox{\hyperlink{classTSimParameter}{T\+Sim\+Parameter}} $\ast$ $>$ Sim\+Data\+Manager\+::f\+Parameter\+Map\hspace{0.3cm}{\ttfamily [protected]}}
+
+\mbox{\Hypertarget{classSimDataManager_a7b430454586b666460aabe8024b19c0e}\label{classSimDataManager_a7b430454586b666460aabe8024b19c0e}} 
+\index{SimDataManager@{SimDataManager}!fSimDataArrayPointers@{fSimDataArrayPointers}}
+\index{fSimDataArrayPointers@{fSimDataArrayPointers}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{fSimDataArrayPointers}{fSimDataArrayPointers}}
+{\footnotesize\ttfamily std\+::map$<$ T\+String, T\+Clones\+Array $\ast$ $>$ Sim\+Data\+Manager\+::f\+Sim\+Data\+Array\+Pointers\hspace{0.3cm}{\ttfamily [protected]}}
+
+\mbox{\Hypertarget{classSimDataManager_a243499b853c749403cf8a85207ac4b16}\label{classSimDataManager_a243499b853c749403cf8a85207ac4b16}} 
+\index{SimDataManager@{SimDataManager}!fSimDataManager@{fSimDataManager}}
+\index{fSimDataManager@{fSimDataManager}!SimDataManager@{SimDataManager}}
+\doxysubsubsection{\texorpdfstring{fSimDataManager}{fSimDataManager}}
+{\footnotesize\ttfamily static \mbox{\hyperlink{classSimDataManager}{Sim\+Data\+Manager}} $\ast$ Sim\+Data\+Manager\+::f\+Sim\+Data\+Manager\hspace{0.3cm}{\ttfamily [static]}, {\ttfamily [protected]}}
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/home/tbt/workspace/dpol/smsimulator5.\+5/smg4lib/data/include/\mbox{\hyperlink{data_2include_2SimDataManager_8hh}{Sim\+Data\+Manager.\+hh}}\item 
+/home/tbt/workspace/dpol/smsimulator5.\+5/smg4lib/data/sources/src/\mbox{\hyperlink{SimDataManager_8cc}{Sim\+Data\+Manager.\+cc}}\end{DoxyCompactItemize}

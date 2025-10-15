@@ -1,0 +1,23 @@
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{graph TD}
+\DoxyCodeLine{    subgraph "输入与模拟"}
+\DoxyCodeLine{        A[输入文件<br/>dbreakb01.root] -\/-\/> B\{Geant4 模拟\};}
+\DoxyCodeLine{        C[BeamSimTree] -\/-\/> D[beam数据];}
+\DoxyCodeLine{    end}
+\DoxyCodeLine{}
+\DoxyCodeLine{    subgraph "PDC 径迹探测器处理"}
+\DoxyCodeLine{        E(FragmentSD) -\/-\/> F[FragSimData];}
+\DoxyCodeLine{    end}
+\DoxyCodeLine{}
+\DoxyCodeLine{    subgraph "中子探测器处理"}
+\DoxyCodeLine{        I(NEBULASD) -\/-\/> J[NEBULAPla数据];}
+\DoxyCodeLine{        J -\/-\/> K[中子探测分析];}
+\DoxyCodeLine{    end}
+\DoxyCodeLine{}
+\DoxyCodeLine{    subgraph "其他"}
+\DoxyCodeLine{            G\{轨迹重建算法所需\} -\/-\/> H[输出分支<br/>target\_*, PDC1*, PDC2*];}
+\DoxyCodeLine{    end}
+\DoxyCodeLine{    B -\/-\/> E \& I;}
+\end{DoxyCode}
+ 

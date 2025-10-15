@@ -1,0 +1,91 @@
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md106}{}\doxysection{参考资料与教学}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md106}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md107}{}\doxysubsection{1. 漂移室原理}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md107}
+
+\begin{DoxyItemize}
+\item \href{https://yznkxjs.xml-journal.net/cn/article/pdf/preview/10.7538/yzk.1981.15.01.0116.pdf}{\texttt{ 漂移室教学材料 (中文)}}
+\item \href{https://indico.cern.ch/event/426015/contributions/1047606/attachments/906077/1278746/DriftChamber_ICFA2005.pdf}{\texttt{ Drift Chamber Tutorial (I\+C\+FA 2005)}}
+\item \href{https://iopscience.iop.org/article/10.1088/1742-6596/18/1/010/pdf}{\texttt{ Drift Chamber Principles (I\+OP)}}
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md108}{}\doxysubsection{2. Geant4 模拟}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md108}
+
+\begin{DoxyItemize}
+\item \href{https://indico.cern.ch/event/709670/contributions/3027829/attachments/1670306/2679293/Munich.pdf}{\texttt{ Geant4 Simulation Tutorial (Munich 2018)}}
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md109}{}\doxysubsection{3. P\+D\+C 探测器技术文档}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md109}
+
+\begin{DoxyItemize}
+\item \href{https://www.nishina.riken.jp/ribf/SAMURAI/image/Detector-PDC.pdf}{\texttt{ P\+DC 详细参数与设计说明}}
+\item \href{https://indico2.riken.jp/event/2752/contributions/11231/attachments/7528/8801/04_EMIS2012_KobayashiT.pdf}{\texttt{ P\+DC C\+AD 截图}}
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md110}{}\doxysection{P\+D\+C 指标}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md110}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md111}{}\doxysubsection{1. 设计与用途}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md111}
+P\+D\+C探测器（质子漂移室）用于测量与束流速度相近（projectile-\/rapidity）的质子的动量，放置在\+S\+A\+M\+U\+R\+A\+I磁铁下游。为减少探测器平面数量，\+P\+D\+C采用阴极读出法获取位置信息，阳极平面使用\+Walenta型漂移室，8毫米漂移长度设计减少阳极线数量。为探测多粒子事件，阴极线采用三种方向：0度、+45度和-\/45度。
+
+\begin{quote}
+$\ast$$\ast$注$\ast$$\ast$：\+P\+D\+C采用阴极读出（cathode readout）。当电离产生的电子向阳极丝漂移并引发雪崩时，会在附近的阴极条上产生感应电荷，通过读取这些感应电荷来确定粒子的位置。 \end{quote}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md112}{}\doxysubsection{2. 主要参数}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md112}
+
+\begin{DoxyItemize}
+\item $\ast$$\ast$有效面积$\ast$$\ast$：1700mm × 800mm
+\item $\ast$$\ast$阳极线$\ast$$\ast$：金-\/钨/铼合金，30μm直径，间距16mm，漂移长度8mm
+\item $\ast$$\ast$阴极线$\ast$$\ast$：金-\/铝合金，80μm直径，间距3mm
+\item $\ast$$\ast$阳极-\/阴极间隙$\ast$$\ast$：8mm
+\item $\ast$$\ast$阴极条宽度$\ast$$\ast$：12mm（每4根阴极线合并成一个条）
+\item $\ast$$\ast$供电$\ast$$\ast$：阳极线施加正高压，势线施加轻微负高压
+\item $\ast$$\ast$配置$\ast$$\ast$：阴极(U)-\/阳极(\+V)-\/阴极(\+X)-\/阳极(\+U)-\/阴极(\+V)
+\item $\ast$$\ast$运行气体$\ast$$\ast$：\+Ar+25\% i-\/\+C4\+H10 或 Ar+50\% C2\+H6
+\end{DoxyItemize}
+
+ {\itshape P\+D\+C结构示意图}
+
+ {\itshape P\+D\+C丝室结构。X, U, V 层通过不同方向的丝（或条）来确定粒子穿过的二维位置。例如，X 层的丝通常垂直于\+X轴，用于精确测量\+X坐标。}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md113}{}\doxysubsection{3. 读出方案与发展}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md113}
+
+\begin{DoxyItemize}
+\item $\ast$$\ast$初始方案（已测试）$\ast$$\ast$：为减少读出通道，曾测试电荷分割读出法，将阴极条通过电阻串联，每8个条通过一个电荷灵敏前置放大器读出。原型探测器（600mm × 480mm）对\+X射线取得1mm（rms）位置分辨率，但无法正确处理两个质子事件。
+\item $\ast$$\ast$新方案（开发中）$\ast$$\ast$：为解决多粒子问题并提高分辨率，开发新读出电路。每个阴极信号直接连接到前置放大器、整形器和采样保持电路，在前端板（\+F\+E\+B）数字化。预计位置分辨率提升约5倍，需约810个读出通道。
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md115}{}\doxysection{模拟方案概述}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md115}
+需要自行构建 P\+DC 探测器。\+Geant4 能够精确模拟粒子与气体分子的电离过程。我们的替代方案如下：
+
+
+\begin{DoxyEnumerate}
+\item 用 Geant4 模拟粒子穿过漂移室气体。
+\item 在 Geant4 的用户动作类（\+Stepping\+Action）中，记录所有电离事件（能量沉积）的位置。
+\item 在每根丝附近构建 Sensitive Detector，将最近漂移距离作为时间，总沉积能量作为幅度。
+\item 该方法将“点火”简化为“附近发生了电离”，忽略了电子漂移时间、扩散和雪崩增益等复杂过程。
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md116}{}\doxysection{方法局限}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md116}
+
+\begin{DoxyItemize}
+\item $\ast$$\ast$忽略电子漂移$\ast$$\ast$：实际电离产生的电子会沿电场线漂移，而不是简单地朝最近的丝线移动。在高电场区，电子会产生雪崩，这是“点火”过程。此方法无法模拟这一点。
+\item $\ast$$\ast$无法模拟信号形状和时间$\ast$$\ast$：未考虑漂移时间，无法得到信号的精确时间信息和波形。
+\item $\ast$$\ast$无法模拟增益$\ast$$\ast$：\+Geant4 本身不模拟雪崩过程，无法得到每个“点火”事件的信号增益。
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md118}{}\doxysection{1. 物理模型简述}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md118}
+
+\begin{DoxyItemize}
+\item 用 Geant4 构建 P\+DC 漂移室几何和气体材料。
+\item 粒子（如质子）穿过气体时产生电离，能量沉积被记录。
+\item 在 Stepping\+Action 中，判断电离事件是否靠近某根丝（anode wire），将最近距离作为漂移时间，能量沉积作为信号幅度。
+\item 忽略电子漂移过程、雪崩增益和信号波形，仅模拟空间分布和能量响应。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md119}{}\doxysection{2. 几何与材料构建}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md119}
+
+\begin{DoxyItemize}
+\item $\ast$$\ast$定义气体混合物$\ast$$\ast$：如 75\% Ar + 25\% i-\/\+C4\+H10，1 atm。
+\item $\ast$$\ast$构建漂移室盒体$\ast$$\ast$：用 G4\+Box 或 G4\+Trap 表示气体体积。
+\item $\ast$$\ast$构建丝阵列$\ast$$\ast$：用 G4\+Cylinder 或 G4\+Tubs 表示阳极丝，按实际位置排布。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md120}{}\doxysection{3. 敏感体设置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md120}
+
+\begin{DoxyItemize}
+\item 将气体体积设置为 Sensitive Detector（\+S\+D），在 SD 中记录每一步的能量沉积和位置。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md121}{}\doxysection{4. Stepping\+Action 实现}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md121}
+
+\begin{DoxyItemize}
+\item 在 User\+Stepping\+Action 中，判断每一步是否发生在气体体积内。
+\item 计算该步到最近丝的距离，作为漂移距离。
+\item 记录能量沉积、位置、最近丝编号等信息。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md122}{}\doxysection{5. 数据输出}\label{md__home_tbt_workspace_dpol_smsimulator5_85_sim_deuteron_forunderstanding_pdc_8zh_autotoc_md122}
+
+\begin{DoxyItemize}
+\item 每个事件输出所有“点火”信号（可用 T\+Tree/\+T\+Clones\+Array），包括能量、位置、最近丝编号、漂移距离等。 
+\end{DoxyItemize}

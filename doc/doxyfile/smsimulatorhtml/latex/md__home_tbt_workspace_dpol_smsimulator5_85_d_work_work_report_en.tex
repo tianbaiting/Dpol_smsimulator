@@ -1,0 +1,49 @@
+Data flow description
+
+According to the simulation workflow, the main data flow is as follows\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{graph TD}
+\DoxyCodeLine{    subgraph "Input and Simulation"}
+\DoxyCodeLine{        A[Input file<br/>dbreakb01.root] -\/-\/> B\{Geant4 simulation\};}
+\DoxyCodeLine{        C[BeamSimTree] -\/-\/> D[beam data];}
+\DoxyCodeLine{    end}
+\DoxyCodeLine{}
+\DoxyCodeLine{    subgraph "PDC tracking detector processing"}
+\DoxyCodeLine{        E(FragmentSD) -\/-\/> F[FragSimData];}
+\DoxyCodeLine{    end}
+\DoxyCodeLine{}
+\DoxyCodeLine{    subgraph "Neutron detector processing"}
+\DoxyCodeLine{        I(NEBULASD) -\/-\/> J[NEBULAPla data];}
+\DoxyCodeLine{        J -\/-\/> K[Neutron analysis];}
+\DoxyCodeLine{    end}
+\DoxyCodeLine{}
+\DoxyCodeLine{    subgraph "Other"}
+\DoxyCodeLine{            G\{Required by track reconstruction algorithm\} -\/-\/> H[Output branches<br/>target\_*, PDC1*, PDC2*];}
+\DoxyCodeLine{    end}
+\DoxyCodeLine{    B -\/-\/> E \& I;}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_work_report_en_autotoc_md38}{}\doxysubsection{Figures / screenshots}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_work_report_en_autotoc_md38}
+The report includes in-\/repo screenshots (referenced by path)\+:
+
+ 
+
+
+
+
+
+
+
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_work_report_en_autotoc_md39}{}\doxysubsection{Next steps}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_work_report_en_autotoc_md39}
+
+\begin{DoxyItemize}
+\item Finish tuning data structures, especially those related to the target configuration. ~\newline
+
+\item Become familiar with the output data structures and the A\+P\+Is used to read them. ~\newline
+
+\item P\+DC cathode readout simulation\+: define how induced charge is estimated, how positions are reconstructed, and how measurement uncertainties are modeled and applied.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+ 

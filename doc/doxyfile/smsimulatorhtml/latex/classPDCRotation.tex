@@ -1,0 +1,96 @@
+\hypertarget{classPDCRotation}{}\doxysection{P\+D\+C\+Rotation Class Reference}
+\label{classPDCRotation}\index{PDCRotation@{PDCRotation}}
+
+
+Handles coordinate transformations between global and P\+D\+C-\/local frames.  
+
+
+
+
+{\ttfamily \#include $<$P\+D\+C\+Rotation.\+hh$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classPDCRotation_a5122efd1510ab1e915c1c376397077c9}{P\+D\+C\+Rotation}} (double angle\+\_\+rad)
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classPDCRotation_ad3407766b5f87e1df7e4624bb22aca23}{$\sim$\+P\+D\+C\+Rotation}} ()=default
+\item 
+T\+Vector3 \mbox{\hyperlink{classPDCRotation_a9d98867c5d2a9389210871e7e5d07c3f}{To\+Local}} (const T\+Vector3 \&global\+Vec) const
+\begin{DoxyCompactList}\small\item\em Transforms a vector from the Global frame to the P\+DC\textquotesingle{}s Local frame. \end{DoxyCompactList}\item 
+T\+Vector3 \mbox{\hyperlink{classPDCRotation_a9d54c4d6bdbcd29a2ba3c0285ffcdd79}{To\+Global}} (const T\+Vector3 \&local\+Vec) const
+\begin{DoxyCompactList}\small\item\em Transforms a vector from the P\+DC\textquotesingle{}s Local frame to the Global frame. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Handles coordinate transformations between global and P\+D\+C-\/local frames. 
+
+This class is initialized with the P\+DC\textquotesingle{}s rotation angle around the Y-\/axis and provides methods to transform a T\+Vector3 to and from the P\+DC\textquotesingle{}s local coordinate system. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classPDCRotation_a5122efd1510ab1e915c1c376397077c9}\label{classPDCRotation_a5122efd1510ab1e915c1c376397077c9}} 
+\index{PDCRotation@{PDCRotation}!PDCRotation@{PDCRotation}}
+\index{PDCRotation@{PDCRotation}!PDCRotation@{PDCRotation}}
+\doxysubsubsection{\texorpdfstring{PDCRotation()}{PDCRotation()}}
+{\footnotesize\ttfamily P\+D\+C\+Rotation\+::\+P\+D\+C\+Rotation (\begin{DoxyParamCaption}\item[{double}]{angle\+\_\+rad }\end{DoxyParamCaption})}
+
+
+
+Constructor. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em angle\+\_\+rad} & The rotation angle of the P\+DC around the Y-\/axis in radians. The sign should match the definition used in the simulation. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPDCRotation_ad3407766b5f87e1df7e4624bb22aca23}\label{classPDCRotation_ad3407766b5f87e1df7e4624bb22aca23}} 
+\index{PDCRotation@{PDCRotation}!````~PDCRotation@{$\sim$PDCRotation}}
+\index{````~PDCRotation@{$\sim$PDCRotation}!PDCRotation@{PDCRotation}}
+\doxysubsubsection{\texorpdfstring{$\sim$PDCRotation()}{~PDCRotation()}}
+{\footnotesize\ttfamily P\+D\+C\+Rotation\+::$\sim$\+P\+D\+C\+Rotation (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classPDCRotation_a9d54c4d6bdbcd29a2ba3c0285ffcdd79}\label{classPDCRotation_a9d54c4d6bdbcd29a2ba3c0285ffcdd79}} 
+\index{PDCRotation@{PDCRotation}!ToGlobal@{ToGlobal}}
+\index{ToGlobal@{ToGlobal}!PDCRotation@{PDCRotation}}
+\doxysubsubsection{\texorpdfstring{ToGlobal()}{ToGlobal()}}
+{\footnotesize\ttfamily T\+Vector3 P\+D\+C\+Rotation\+::\+To\+Global (\begin{DoxyParamCaption}\item[{const T\+Vector3 \&}]{local\+Vec }\end{DoxyParamCaption}) const}
+
+
+
+Transforms a vector from the P\+DC\textquotesingle{}s Local frame to the Global frame. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em local\+Vec} & A T\+Vector3 in the local coordinate system. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+T\+Vector3 The corresponding vector in the global coordinate system. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPDCRotation_a9d98867c5d2a9389210871e7e5d07c3f}\label{classPDCRotation_a9d98867c5d2a9389210871e7e5d07c3f}} 
+\index{PDCRotation@{PDCRotation}!ToLocal@{ToLocal}}
+\index{ToLocal@{ToLocal}!PDCRotation@{PDCRotation}}
+\doxysubsubsection{\texorpdfstring{ToLocal()}{ToLocal()}}
+{\footnotesize\ttfamily T\+Vector3 P\+D\+C\+Rotation\+::\+To\+Local (\begin{DoxyParamCaption}\item[{const T\+Vector3 \&}]{global\+Vec }\end{DoxyParamCaption}) const}
+
+
+
+Transforms a vector from the Global frame to the P\+DC\textquotesingle{}s Local frame. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em global\+Vec} & A T\+Vector3 in the global coordinate system. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+T\+Vector3 The corresponding vector in the local coordinate system. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/home/tbt/workspace/dpol/smsimulator5.\+5/d\+\_\+work/include/\mbox{\hyperlink{PDCRotation_8hh}{P\+D\+C\+Rotation.\+hh}}\item 
+/home/tbt/workspace/dpol/smsimulator5.\+5/d\+\_\+work/src/\mbox{\hyperlink{PDCRotation_8cc}{P\+D\+C\+Rotation.\+cc}}\end{DoxyCompactItemize}

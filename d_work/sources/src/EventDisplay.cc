@@ -13,7 +13,7 @@
 // ===================================================================
 
 EventDisplay::EventDisplay(const char* geom_file, PDCSimAna& ana)
-    : m_pdc_ana(ana), m_currentEventElements(nullptr) 
+    : m_pdc_ana(ana), m_currentEventElements(nullptr)
 {
     InitEve();
     LoadGeometry(geom_file);
@@ -71,6 +71,12 @@ void EventDisplay::DisplayEvent(EventDataReader& reader) {
 
     m_currentEventElements = new TEveElementList(Form("Event_%lld", reader.GetCurrentEventNumber()));
     gEve->AddElement(m_currentEventElements);
+
+    // Create and add propagated tracks (TrackPropagator holds propagator instance)
+    // TEveElementList* propagated = m_trackPropagator.CreateTracks(reader.GetHits(), /*vertex*/ m_pdc_ana.GetRecoPoint1());
+    // if (propagated) {
+    //     m_currentEventElements->AddElement(propagated);
+    // }
 
     // 1. Raw Hits
     TEvePointSet* raw_hits = new TEvePointSet("Raw Hits");

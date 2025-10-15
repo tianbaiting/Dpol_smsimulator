@@ -1,0 +1,119 @@
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md14}{}\doxysection{概述}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md14}
+{\ttfamily output\+\_\+tree}目录包含仿真运行后生成的\+R\+O\+O\+T文件，用于存储氘核实验的蒙特卡罗仿真数据。\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md15}{}\doxysection{文件格式}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md15}
+
+\begin{DoxyItemize}
+\item {\bfseries{文件名格式}}\+: {\ttfamily d+\+Pb208\+E190g050xyz0000.root}
+\begin{DoxyItemize}
+\item {\ttfamily d+\+Pb208}\+: 氘核+铅208靶
+\item {\ttfamily E190}\+: 束流能量190 MeV
+\item {\ttfamily g050}\+: geometry参数
+\item {\ttfamily xyz0000}\+: 配置标识
+\item {\ttfamily .root}\+: R\+O\+O\+T数据格式
+\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md16}{}\doxysection{数据结构}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md16}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md17}{}\doxysubsection{主要分支 (\+Branches)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md17}
+R\+O\+O\+T文件包含一个名为{\ttfamily tree}的\+T\+Tree，共243个分支，主要包括：\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md18}{}\doxysubsubsection{1. 束流数据 (beam)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md18}
+
+\begin{DoxyItemize}
+\item {\ttfamily beam.\+fZ}, {\ttfamily beam.\+fA}\+: 原子序数和质量数
+\item {\ttfamily beam.\+f\+Charge}, {\ttfamily beam.\+f\+Mass}\+: 电荷和质量
+\item {\ttfamily beam.\+f\+Momentum}\+: 四动量矢量 (T\+Lorentz\+Vector)
+\item {\ttfamily beam.\+f\+Position}\+: 位置矢量 (T\+Vector3)
+\item {\ttfamily beam.\+f\+Time}\+: 时间信息
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md19}{}\doxysubsubsection{2. 碎片仿真数据 (\+Frag\+Sim\+Data)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md19}
+
+\begin{DoxyItemize}
+\item {\ttfamily Frag\+Sim\+Data.\+f\+Track\+ID}\+: 径迹\+ID
+\item {\ttfamily Frag\+Sim\+Data.\+fZ}, {\ttfamily Frag\+Sim\+Data.\+fA}\+: 碎片原子序数和质量数
+\item {\ttfamily Frag\+Sim\+Data.\+f\+Pre\+Momentum}, {\ttfamily Frag\+Sim\+Data.\+f\+Post\+Momentum}\+: 反应前后动量
+\item {\ttfamily Frag\+Sim\+Data.\+f\+Pre\+Position}, {\ttfamily Frag\+Sim\+Data.\+f\+Post\+Position}\+: 反应前后位置
+\item {\ttfamily Frag\+Sim\+Data.\+f\+Energy\+Deposit}\+: 能量损失
+\item {\ttfamily Frag\+Sim\+Data.\+f\+Detector\+Name}\+: 探测器名称
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md20}{}\doxysubsubsection{3. 靶重建数据 (target\+\_\+$\ast$)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md20}
+
+\begin{DoxyItemize}
+\item {\ttfamily target\+\_\+x}, {\ttfamily target\+\_\+y}, {\ttfamily target\+\_\+z}\+: 靶点坐标
+\item {\ttfamily target\+\_\+$\ast$\+\_\+err}\+: 重建误差
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md21}{}\doxysubsubsection{4. P\+D\+C径迹数据 (\+P\+D\+C1$\ast$, P\+D\+C2$\ast$)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md21}
+
+\begin{DoxyItemize}
+\item {\ttfamily P\+D\+C1$\ast$\+\_\+x}, {\ttfamily P\+D\+C1$\ast$\+\_\+y}\+: P\+D\+C1层位置信息
+\item {\ttfamily P\+D\+C2$\ast$\+\_\+x}, {\ttfamily P\+D\+C2$\ast$\+\_\+y}\+: P\+D\+C2层位置信息
+\item 包含U, X, V三个方向的信息
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md22}{}\doxysubsubsection{5. N\+E\+B\+U\+L\+A探测器数据 (\+N\+E\+B\+U\+L\+A\+Pla)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md22}
+
+\begin{DoxyItemize}
+\item {\ttfamily N\+E\+B\+U\+L\+A\+Pla.\+f\+Charge\mbox{[}120\mbox{]}}\+: 各探测器单元电荷
+\item {\ttfamily N\+E\+B\+U\+L\+A\+Pla.\+f\+Time\mbox{[}120\mbox{]}}\+: 时间信息
+\item {\ttfamily N\+E\+B\+U\+L\+A\+Pla.\+f\+G\+Pos\mbox{[}120\mbox{]}}\+: 全局位置
+\item 共120个\+N\+E\+B\+U\+L\+A塑闪探测器单元
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md23}{}\doxysection{使用方法}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md23}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md24}{}\doxysubsection{1. 基本\+R\+O\+O\+T命令}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md24}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 进入输出目录}
+\DoxyCodeLine{cd /path/to/output\_tree}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 打开ROOT文件}
+\DoxyCodeLine{root -\/l d+Pb208E190g050xyz0000.root}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 在ROOT中查看树结构}
+\DoxyCodeLine{tree-\/>Print()}
+\DoxyCodeLine{tree-\/>Show(0)  \# 显示第0个事件}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md25}{}\doxysubsection{2. 数据分析示例}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md25}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{// ROOT宏示例}}
+\DoxyCodeLine{TFile* f = TFile::Open(\textcolor{stringliteral}{"d+Pb208E190g050xyz0000.root"});}
+\DoxyCodeLine{TTree* \mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}} = (TTree*)f-\/>Get(\textcolor{stringliteral}{"tree"});}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{// 读取束流信息}}
+\DoxyCodeLine{TClonesArray* beam = 0;}
+\DoxyCodeLine{\mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}}-\/>SetBranchAddress(\textcolor{stringliteral}{"beam"}, \&beam);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{// 读取碎片数据  }}
+\DoxyCodeLine{TClonesArray* fragData = 0;}
+\DoxyCodeLine{\mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}}-\/>SetBranchAddress(\textcolor{stringliteral}{"FragSimData"}, \&fragData);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{// 事件循环}}
+\DoxyCodeLine{\textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i < \mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}}-\/>GetEntries(); i++) \{}
+\DoxyCodeLine{    \mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}}-\/>GetEntry(i);}
+\DoxyCodeLine{    \textcolor{comment}{// 分析代码...}}
+\DoxyCodeLine{\}}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md26}{}\doxysubsection{3. Python分析 (使用uproot)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md26}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{import uproot}
+\DoxyCodeLine{import numpy as np}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 读取ROOT文件}
+\DoxyCodeLine{file = uproot.open("d+Pb208E190g050xyz0000.root")}
+\DoxyCodeLine{tree = file["tree"]}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 获取分支数据}
+\DoxyCodeLine{beam\_data = tree["beam.fMomentum"].array()}
+\DoxyCodeLine{frag\_data = tree["FragSimData.fEnergyDeposit"].array()}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md27}{}\doxysection{数据特征}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md27}
+
+\begin{DoxyItemize}
+\item {\bfseries{事件数量}}\+: 100个事件
+\item {\bfseries{文件大小}}\+: $\sim$23.8 KB
+\item {\bfseries{压缩比}}\+: 4.\+29
+\item {\bfseries{数据完整性}}\+: 包含完整的粒子径迹、探测器响应和重建信息
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md28}{}\doxysection{注意事项}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md28}
+
+\begin{DoxyEnumerate}
+\item 文件使用\+R\+O\+O\+T格式，需要\+R\+O\+O\+T环境或兼容库
+\item 某些类定义可能需要加载相应的共享库
+\item 分析时注意数组分支的长度可能不固定
+\item N\+E\+B\+U\+L\+A数据包含120个探测器单元的完整信息
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md29}{}\doxysection{相关文件}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_output_tree_README_autotoc_md29}
+
+\begin{DoxyItemize}
+\item 仿真配置\+: {\ttfamily ../simulation.mac}
+\item 几何定义\+: {\ttfamily ../geometry/}
+\item 分析脚本\+: 可在此目录创建\+R\+O\+O\+T宏或\+Python脚本 
+\end{DoxyItemize}

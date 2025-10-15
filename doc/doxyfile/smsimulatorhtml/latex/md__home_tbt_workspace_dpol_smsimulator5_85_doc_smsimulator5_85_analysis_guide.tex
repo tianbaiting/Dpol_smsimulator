@@ -1,0 +1,768 @@
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md49}{}\doxysection{项目概述}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md49}
+S\+M\+S\+I\+M\+U\+L\+A\+T\+O\+R5.\+5 是用于 S\+A\+M\+U\+R\+AI 实验的 Geant4 仿真器，专门用于模拟重离子+中子反应实验。该仿真器由 R. Tanaka、Y. Kondo 和 M. Yasuda 开发，版本 5.\+0 兼容 Geant4.\+10.\+x。\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md50}{}\doxysection{系统环境要求}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md50}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md51}{}\doxysubsection{必需软件}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md51}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Geant4}} (版本 10.\+x)
+\item {\bfseries{A\+N\+A\+R\+O\+OT}} 库 (可从 R\+I\+B\+F\+D\+AQ 网页下载)
+\item {\bfseries{\mbox{\hyperlink{namespaceROOT}{R\+O\+OT}}}} 框架
+\item {\bfseries{G\+NU Make}}
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md52}{}\doxysubsection{当前系统配置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md52}
+
+\begin{DoxyItemize}
+\item Geant4 安装路径\+: {\ttfamily /home/tbt/\+Software/geant4/install/}
+\item A\+N\+A\+R\+O\+OT 安装路径\+: {\ttfamily /home/tbt/\+Software/anaroot/install}
+\item 项目路径\+: {\ttfamily /home/tbt/workspace/dpol/smsimulator5.5}
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md53}{}\doxysection{项目结构分析}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md53}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{smsimulator5.5/}
+\DoxyCodeLine{├── README                    \# 详细使用说明}
+\DoxyCodeLine{├── setup.sh                 \# 环境设置脚本}
+\DoxyCodeLine{├── bin/                     \# 可执行文件目录}
+\DoxyCodeLine{│   └── sim\_deuteron        \# 氘核仿真主程序}
+\DoxyCodeLine{├── lib/                     \# 库文件目录}
+\DoxyCodeLine{├── smg4lib/                 \# 主要仿真库}
+\DoxyCodeLine{├── sim\_deuteron/            \# 氘核仿真模块}
+\DoxyCodeLine{}
+\DoxyCodeLine{├── inputdata/               \# 输入qmd数据}
+\DoxyCodeLine{└── analis\_note/            \# 分析说明文档 (此目录)}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md54}{}\doxysection{使用流程}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md54}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md55}{}\doxysubsection{第一步：环境配置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md55}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{加载环境设置}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{cd /home/tbt/workspace/dpol/smsimulator5.5}
+\DoxyCodeLine{source setup.sh}
+\end{DoxyCode}
+
+\item {\bfseries{验证环境变量}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{echo \$SMSIMDIR}
+\DoxyCodeLine{echo \$TARTSYS}
+\DoxyCodeLine{echo \$G4SMLIBDIR}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md56}{}\doxysubsection{第二步：编译系统}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md56}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{编译主库}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{cd smg4lib}
+\DoxyCodeLine{make clean}
+\DoxyCodeLine{make}
+\end{DoxyCode}
+
+\item {\bfseries{编译氘核仿真模块}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{cd ../sim\_deuteron}
+\DoxyCodeLine{make clean}
+\DoxyCodeLine{make}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md57}{}\doxysubsection{第三步：几何配置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md57}
+项目包含多个几何配置文件，位于 {\ttfamily geant4\+\_\+sim/geometry/} 目录：
+
+
+\begin{DoxyItemize}
+\item {\ttfamily 5deg\+\_\+1.\+2\+T.\+mac} -\/ 5度角度，1.2T 磁场配置
+\item {\ttfamily 8deg\+\_\+1.\+2\+T.\+mac} -\/ 8度角度，1.2T 磁场配置 ~\newline
+
+\item {\ttfamily 10deg\+\_\+1.\+2\+T.\+mac} -\/ 10度角度，1.2T 磁场配置
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md58}{}\doxysubsubsection{几何配置要素：}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md58}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{磁场设置}}
+\begin{DoxyItemize}
+\item 磁场数据文件\+: {\ttfamily /nas/data/\+Bryan/field\+\_\+map/180626-\/1,20\+T-\/3000.\+bin}
+\item 磁场因子\+: 1
+\item 偶极子角度\+: 30度
+\end{DoxyItemize}
+\item {\bfseries{目标设置}}
+\begin{DoxyItemize}
+\item 材料\+: Sn (锡)
+\item 尺寸\+: 80×80×30 mm
+\item 角度\+: 5度
+\end{DoxyItemize}
+\item {\bfseries{P\+DC (Proportional Drift Chamber) 探测器}}
+\begin{DoxyItemize}
+\item 角度\+: 62度
+\item 位置1\+: (40, 0, 300) cm
+\item 位置2\+: (40, 0, 400) cm
+\end{DoxyItemize}
+\item {\bfseries{N\+E\+B\+U\+LA 中子探测器}}
+\begin{DoxyItemize}
+\item 参数文件\+: {\ttfamily N\+E\+B\+U\+L\+A\+\_\+\+Dayone.\+csv}
+\item 探测器参数文件\+: {\ttfamily N\+E\+B\+U\+L\+A\+\_\+\+Detectors\+\_\+\+Dayone.\+csv}
+\end{DoxyItemize}
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md59}{}\doxysubsection{第四步：粒子束流输入配置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md59}
+S\+M\+S\+I\+M\+U\+L\+A\+T\+O\+R5.\+5 支持多种粒子束流输入方式，通过 {\ttfamily \mbox{\hyperlink{classPrimaryGeneratorActionBasic}{Primary\+Generator\+Action\+Basic}}} 基类实现。\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md60}{}\doxysubsubsection{4.\+1 束流类型 (\+Beam\+Type)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md60}
+支持以下五种束流类型：
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Pencil Beam (束状光束)}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/BeamType Pencil}
+\end{DoxyCode}
+
+\begin{DoxyItemize}
+\item 单一能量，单一方向的理想光束
+\item 适用于简单的几何测试
+\end{DoxyItemize}
+\item {\bfseries{Gaussian Beam (高斯分布光束)}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/BeamType Gaus}
+\end{DoxyCode}
+
+\begin{DoxyItemize}
+\item 位置和角度具有高斯分布
+\item 更真实的光束模拟
+\end{DoxyItemize}
+\item {\bfseries{Isotropic Beam (各向同性光束)}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/BeamType Isotropic}
+\end{DoxyCode}
+
+\begin{DoxyItemize}
+\item 各向同性发射
+\item 用于背景研究
+\end{DoxyItemize}
+\item {\bfseries{Tree Input (树状输入)}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/BeamType Tree}
+\end{DoxyCode}
+
+\begin{DoxyItemize}
+\item 从 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 树文件读取粒子信息
+\item {\bfseries{当前项目主要使用的方式}}
+\end{DoxyItemize}
+\item {\bfseries{Geantino Beam}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/BeamType Geantino}
+\end{DoxyCode}
+
+\begin{DoxyItemize}
+\item 用于几何调试的虚拟粒子
+\end{DoxyItemize}
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md61}{}\doxysubsubsection{4.\+2 Tree Input 详细配置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md61}
+当前项目使用 Tree 输入方式，通过读取预计算的反应产物数据：\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md62}{}\doxyparagraph{输入数据结构 (\+T\+Beam\+Sim\+Data)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md62}
+$\sim$/smsimulator5.\mbox{\hyperlink{include_2TBeamSimData_8hh}{5/smg4lib/include/\+T\+Beam\+Sim\+Data.\+hh}}
+
+在此处定义的
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class }\mbox{\hyperlink{classTBeamSimData}{TBeamSimData}} \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{  Int\_t          \mbox{\hyperlink{classTBeamSimData_a74d7dc073ea5ff2112f390d91c968ed1}{fPrimaryParticleID}};  \textcolor{comment}{// 主粒子ID}}
+\DoxyCodeLine{  Int\_t          \mbox{\hyperlink{classTBeamSimData_a5f70eb36f3fe7f86c2edbe4def4f7c68}{fZ}};                  \textcolor{comment}{// 原子序数}}
+\DoxyCodeLine{  Int\_t          \mbox{\hyperlink{classTBeamSimData_a66c497c85ad2228ebea75d5ac19c7ccd}{fA}};                  \textcolor{comment}{// 质量数}}
+\DoxyCodeLine{  Int\_t          \mbox{\hyperlink{classTBeamSimData_acd179784dcaf9109c13a0fd84fc3d89f}{fPDGCode}};           \textcolor{comment}{// PDG编码}}
+\DoxyCodeLine{  TString        \mbox{\hyperlink{classTBeamSimData_a27924287d2582be3711b61d618fda953}{fParticleName}};      \textcolor{comment}{// 粒子名称}}
+\DoxyCodeLine{  Double\_t       \mbox{\hyperlink{classTBeamSimData_a141ebe3b6cc9eeb3a497aa6560be2885}{fCharge}};            \textcolor{comment}{// 电荷}}
+\DoxyCodeLine{  Double\_t       \mbox{\hyperlink{classTBeamSimData_acd05ce64898a08cbbe6679d070a6767f}{fMass}};              \textcolor{comment}{// 质量 (MeV)}}
+\DoxyCodeLine{  TLorentzVector \mbox{\hyperlink{classTBeamSimData_a08e384c1a410d64d1fa0fb470b4ced0c}{fMomentum}};          \textcolor{comment}{// 四动量 (MeV)}}
+\DoxyCodeLine{  TVector3       \mbox{\hyperlink{classTBeamSimData_a2bf1f7341c3f306112d5dcc47beefa39}{fPosition}};          \textcolor{comment}{// 位置 (mm)}}
+\DoxyCodeLine{  Double\_t       \mbox{\hyperlink{classTBeamSimData_aa2ff52f2d8b4bb6ed589a7a08778d08e}{fTime}};              \textcolor{comment}{// 时间 (ns)}}
+\DoxyCodeLine{  Bool\_t         \mbox{\hyperlink{classTBeamSimData_a4d2811a2269f8fc79cb5820b44ac0294}{fIsAccepted}};        \textcolor{comment}{// 是否被接受}}
+\DoxyCodeLine{\};}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md63}{}\doxyparagraph{输入文件配置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md63}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/TreeInputFile inputtree/unpol/d+Sn124E190g070xyz.root}
+\DoxyCodeLine{/action/gun/TreeName tree}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md64}{}\doxyparagraph{当前可用的输入数据}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md64}
+输入数据位于 {\ttfamily inputtree/unpol/} 目录：
+
+{\bfseries{反应类型：}}
+\begin{DoxyItemize}
+\item {\bfseries{d+\+Pb208}} (氘核+铅208) -\/ 能量190 Me\+V，角度范围50-\/100度
+\item {\bfseries{d+\+Sn112}} (氘核+锡112) -\/ 能量190 Me\+V，角度范围50-\/100度 ~\newline
+
+\item {\bfseries{d+\+Sn124}} (氘核+锡124) -\/ 能量190 Me\+V，角度范围50-\/100度
+\item {\bfseries{d+\+Xe130}} (氘核+氙130) -\/ 能量190 Me\+V，角度100度
+\end{DoxyItemize}
+
+{\bfseries{文件命名规则\+:}} {\ttfamily d+核素\+E能量g角度xyz.root}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md65}{}\doxysubsubsection{4.\+3 束流参数设置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md65}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md66}{}\doxyparagraph{粒子设定}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md66}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/BeamA 2              \# 质量数 (氘核)}
+\DoxyCodeLine{/action/gun/BeamZ 1              \# 原子序数 (氘核)}
+\DoxyCodeLine{/action/gun/BeamEnergy 190 MeV   \# 束流能量}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md67}{}\doxyparagraph{位置和角度设定}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md67}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/BeamPosition 0 0 -\/1000 mm        \# 束流起始位置}
+\DoxyCodeLine{/action/gun/BeamPositionXSigma 2 mm          \# X方向位置分布}
+\DoxyCodeLine{/action/gun/BeamPositionYSigma 2 mm          \# Y方向位置分布}
+\DoxyCodeLine{/action/gun/BeamAngleX 0 deg                 \# X方向角度}
+\DoxyCodeLine{/action/gun/BeamAngleY 0 deg                 \# Y方向角度}
+\DoxyCodeLine{/action/gun/BeamAngleXSigma 1 mrad           \# X方向角度分布}
+\DoxyCodeLine{/action/gun/BeamAngleYSigma 1 mrad           \# Y方向角度分布}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md68}{}\doxyparagraph{粒子过滤设置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md68}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/SkipNeutron false     \# 是否跳过中子}
+\DoxyCodeLine{/action/gun/SkipHeavyIon false    \# 是否跳过重离子}
+\DoxyCodeLine{/action/gun/SkipGamma false       \# 是否跳过γ射线}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md69}{}\doxysubsection{第五步：运行仿真}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md69}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md70}{}\doxysubsubsection{5.\+1 基本运行流程}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md70}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{准备工作目录}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{cd /home/tbt/workspace/dpol/smsimulator5.5/geant4\_sim}
+\end{DoxyCode}
+
+\item {\bfseries{运行仿真程序}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{../bin/sim\_deuteron}
+\end{DoxyCode}
+
+\item {\bfseries{在 Geant4 交互模式中执行以下命令}}
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md71}{}\doxyparagraph{基本设置命令序列：}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md71}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 加载几何配置}
+\DoxyCodeLine{/control/execute geometry/5deg\_1.2T.mac}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 设置束流类型为 Tree 输入}
+\DoxyCodeLine{/action/gun/BeamType Tree}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 设置输入文件}
+\DoxyCodeLine{/action/gun/TreeInputFile ../inputtree/unpol/d+Sn124E190g070xyz.root}
+\DoxyCodeLine{/action/gun/TreeName tree}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 设置输出文件}
+\DoxyCodeLine{/action/output/Filename output\_d+Sn124\_070deg.root}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 设置事件数}
+\DoxyCodeLine{/action/gun/TreeBeamOn 1000}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 开始仿真}
+\DoxyCodeLine{/run/beamOn 1000}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md72}{}\doxysubsubsection{5.\+2 完整的宏文件示例}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md72}
+创建一个完整的宏文件 {\ttfamily run\+\_\+simulation.\+mac}：
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# ===================================}
+\DoxyCodeLine{\# SMSIMULATOR5.5 运行脚本示例}
+\DoxyCodeLine{\# ===================================}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 基本设置}
+\DoxyCodeLine{/control/suppressAbortion 1}
+\DoxyCodeLine{/control/verbose 1}
+\DoxyCodeLine{/run/verbose 1}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 加载几何配置}
+\DoxyCodeLine{/control/execute geometry/5deg\_1.2T.mac}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 束流设置}
+\DoxyCodeLine{/action/gun/BeamType Tree}
+\DoxyCodeLine{/action/gun/TreeInputFile ../inputtree/unpol/d+Sn124E190g070xyz.root}
+\DoxyCodeLine{/action/gun/TreeName tree}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 粒子过滤设置}
+\DoxyCodeLine{/action/gun/SkipNeutron false}
+\DoxyCodeLine{/action/gun/SkipHeavyIon false  }
+\DoxyCodeLine{/action/gun/SkipGamma false}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 探测器数据设置}
+\DoxyCodeLine{/action/data/NEBULA/StoreSteps true}
+\DoxyCodeLine{/action/data/NEBULA/Convert true}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 输出设置}
+\DoxyCodeLine{/action/output/Filename output\_d+Sn124\_070deg.root}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 运行设置}
+\DoxyCodeLine{/action/gun/TreeBeamOn 10000}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 执行仿真}
+\DoxyCodeLine{/run/beamOn 10000}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 保存并退出}
+\DoxyCodeLine{/action/output/Save}
+\DoxyCodeLine{exit}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md73}{}\doxysubsubsection{5.\+3 批处理模式运行}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md73}
+对于大规模仿真，建议使用批处理模式：
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 直接运行宏文件}
+\DoxyCodeLine{../bin/sim\_deuteron run\_simulation.mac}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 或者使用重定向}
+\DoxyCodeLine{../bin/sim\_deuteron < run\_simulation.mac > simulation.log 2>\&1}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md74}{}\doxysubsubsection{5.\+4 不同几何配置的运行}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md74}
+针对不同的角度配置：
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 5度配置}
+\DoxyCodeLine{/control/execute geometry/5deg\_1.2T.mac}
+\DoxyCodeLine{/action/gun/TreeInputFile ../inputtree/unpol/d+Sn124E190g050xyz.root}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 8度配置  }
+\DoxyCodeLine{/control/execute geometry/8deg\_1.2T.mac}
+\DoxyCodeLine{/action/gun/TreeInputFile ../inputtree/unpol/d+Sn124E190g080xyz.root}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 10度配置}
+\DoxyCodeLine{/control/execute geometry/10deg\_1.2T.mac}
+\DoxyCodeLine{/action/gun/TreeInputFile ../inputtree/unpol/d+Sn124E190g100xyz.root}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md75}{}\doxysubsubsection{5.\+5 可视化模式}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md75}
+对于调试和验证，可以使用可视化模式：
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 启动可视化}
+\DoxyCodeLine{/control/execute vis.mac}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 显示几何}
+\DoxyCodeLine{/vis/drawVolume}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 设置视角}
+\DoxyCodeLine{/vis/viewer/set/viewpointThetaPhi 90 0 deg}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 运行少量事件以查看轨迹}
+\DoxyCodeLine{/run/beamOn 1}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md76}{}\doxysubsection{第六步：探测器数据记录与分析}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md76}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md77}{}\doxysubsubsection{6.\+1 N\+E\+B\+U\+L\+A 中子探测器数据记录}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md77}
+N\+E\+B\+U\+LA (N\+Eutron-\/detection system for Breakup of Unstable-\/nuclei with Large Acceptance) 是专门用于中子探测的大接受角探测器系统。\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md78}{}\doxyparagraph{N\+E\+B\+U\+L\+A 探测器结构}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md78}
+
+\begin{DoxyItemize}
+\item {\bfseries{中子探测器}} (Neutron Detector)\+: 塑料闪烁体阵列
+\item {\bfseries{反符合探测器}} (Veto Detector)\+: 用于排除带电粒子的薄层探测器
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md79}{}\doxyparagraph{N\+E\+B\+U\+L\+A 数据记录 (\+T\+N\+E\+B\+U\+L\+A\+Sim\+Data)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md79}
+每次粒子与 N\+E\+B\+U\+LA 探测器发生相互作用时，会记录以下信息：
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class }TNEBULASimData \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{  Int\_t    fPrimaryParticleID;    \textcolor{comment}{// 主粒子ID}}
+\DoxyCodeLine{  Int\_t    fParentID;             \textcolor{comment}{// 父轨迹ID}}
+\DoxyCodeLine{  Int\_t    fTrackID;              \textcolor{comment}{// 当前轨迹ID}}
+\DoxyCodeLine{  Int\_t    fStepNo;               \textcolor{comment}{// 步数}}
+\DoxyCodeLine{  Int\_t    fZ;                    \textcolor{comment}{// 原子序数}}
+\DoxyCodeLine{  Int\_t    fA;                    \textcolor{comment}{// 质量数}}
+\DoxyCodeLine{  Int\_t    fPDGCode;              \textcolor{comment}{// PDG编码}}
+\DoxyCodeLine{  Int\_t    fModuleID;             \textcolor{comment}{// 模块ID}}
+\DoxyCodeLine{  Int\_t    fID;                   \textcolor{comment}{// 探测器ID}}
+\DoxyCodeLine{  TString  fParticleName;         \textcolor{comment}{// 粒子名称}}
+\DoxyCodeLine{  TString  fDetectorName;         \textcolor{comment}{// 探测器名称}}
+\DoxyCodeLine{  TString  fModuleName;           \textcolor{comment}{// 模块名称}}
+\DoxyCodeLine{  TString  fProcessName;          \textcolor{comment}{// 物理过程名称}}
+\DoxyCodeLine{  Double\_t fCharge;               \textcolor{comment}{// 电荷}}
+\DoxyCodeLine{  Double\_t fMass;                 \textcolor{comment}{// 质量 (MeV)}}
+\DoxyCodeLine{  Double\_t fPreKineticEnergy;     \textcolor{comment}{// 步前动能 (MeV)}}
+\DoxyCodeLine{  Double\_t fPostKineticEnergy;    \textcolor{comment}{// 步后动能 (MeV)}}
+\DoxyCodeLine{  TVector3 fPrePosition;          \textcolor{comment}{// 步前位置 (mm)}}
+\DoxyCodeLine{  TVector3 fPostPosition;         \textcolor{comment}{// 步后位置 (mm)}}
+\DoxyCodeLine{  TLorentzVector fPreMomentum;    \textcolor{comment}{// 步前四动量 (MeV)}}
+\DoxyCodeLine{  TLorentzVector fPostMomentum;   \textcolor{comment}{// 步后四动量 (MeV)}}
+\DoxyCodeLine{  Double\_t fEnergyDeposit;        \textcolor{comment}{// 能量沉积 (MeV)}}
+\DoxyCodeLine{  Double\_t fPreTime;              \textcolor{comment}{// 步前时间 (ns)}}
+\DoxyCodeLine{  Double\_t fPostTime;             \textcolor{comment}{// 步后时间 (ns)}}
+\DoxyCodeLine{  Bool\_t   fIsAccepted;           \textcolor{comment}{// 是否被接受}}
+\DoxyCodeLine{\};}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md80}{}\doxyparagraph{N\+E\+B\+U\+L\+A 几何配置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md80}
+几何参数由两个 C\+SV 文件定义：
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{N\+E\+B\+U\+L\+A\+\_\+\+Dayone.\+csv}} -\/ 整体系统参数 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{Position, 0, 0, 7249.72,        \# 探测器位置 (mm)}
+\DoxyCodeLine{NeutSize, 120, 1800, 120,       \# 中子探测器尺寸 (mm)}
+\DoxyCodeLine{VetoSize, 320, 1900, 10,        \# 反符合探测器尺寸 (mm)}
+\DoxyCodeLine{Angle, 0, 0, 0,                 \# 旋转角度 (deg)}
+\end{DoxyCode}
+
+\item {\bfseries{N\+E\+B\+U\+L\+A\+\_\+\+Detectors\+\_\+\+Dayone.\+csv}} -\/ 各个探测器位置
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md81}{}\doxyparagraph{N\+E\+B\+U\+L\+A 数据控制命令}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md81}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/data/NEBULA/StoreSteps true/false     \# 是否存储步骤数据}
+\DoxyCodeLine{/action/data/NEBULA/Convert true/false        \# 是否转换为观测量}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md82}{}\doxysubsubsection{6.\+2 P\+D\+C (\+Proportional Drift Chamber) 数据记录}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md82}
+P\+DC 是用于重离子轨迹测量的多丝漂移室探测器。\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md83}{}\doxyparagraph{P\+D\+C 探测器结构}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md83}
+P\+DC 系统包含三个测量层：
+\begin{DoxyItemize}
+\item {\bfseries{U 层}}\+: 倾斜导线层，测量一个倾斜坐标
+\item {\bfseries{X 层}}\+: 水平导线层，测量 X 坐标
+\item {\bfseries{V 层}}\+: 另一个倾斜导线层，测量另一个倾斜坐标
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md84}{}\doxyparagraph{P\+D\+C 敏感探测器设置}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md84}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{// 在 DeutDetectorConstruction.cc 中}}
+\DoxyCodeLine{fPDCSD\_U = \textcolor{keyword}{new} \mbox{\hyperlink{classFragmentSD}{FragmentSD}}(\textcolor{stringliteral}{"/PDC\_U"});  \textcolor{comment}{// U层敏感探测器}}
+\DoxyCodeLine{fPDCSD\_X = \textcolor{keyword}{new} \mbox{\hyperlink{classFragmentSD}{FragmentSD}}(\textcolor{stringliteral}{"/PDC\_X"});  \textcolor{comment}{// X层敏感探测器}}
+\DoxyCodeLine{fPDCSD\_V = \textcolor{keyword}{new} \mbox{\hyperlink{classFragmentSD}{FragmentSD}}(\textcolor{stringliteral}{"/PDC\_V"});  \textcolor{comment}{// V层敏感探测器}}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md85}{}\doxyparagraph{P\+D\+C 几何参数 (5deg\+\_\+1.\+2\+T.\+mac)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md85}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/samurai/geometry/PDC/Angle 62 deg           \# PDC 旋转角度}
+\DoxyCodeLine{/samurai/geometry/PDC/Position1 40 0 300 cm  \# 第一个PDC位置}
+\DoxyCodeLine{/samurai/geometry/PDC/Position2 40 0 400 cm  \# 第二个PDC位置}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md86}{}\doxyparagraph{P\+D\+C 数据记录 (\+T\+Frag\+Sim\+Data)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md86}
+P\+DC 使用 {\ttfamily \mbox{\hyperlink{classFragmentSD}{Fragment\+SD}}} 敏感探测器，记录重离子的轨迹信息：
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{class }TFragSimData \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{  Int\_t    fPrimaryParticleID;    \textcolor{comment}{// 主粒子ID}}
+\DoxyCodeLine{  Int\_t    fTrackID;              \textcolor{comment}{// 轨迹ID}}
+\DoxyCodeLine{  Int\_t    fZ;                    \textcolor{comment}{// 原子序数}}
+\DoxyCodeLine{  Int\_t    fA;                    \textcolor{comment}{// 质量数}}
+\DoxyCodeLine{  TString  fParticleName;         \textcolor{comment}{// 粒子名称}}
+\DoxyCodeLine{  TString  fDetectorName;         \textcolor{comment}{// 探测器名称}}
+\DoxyCodeLine{  Double\_t fCharge;               \textcolor{comment}{// 电荷}}
+\DoxyCodeLine{  Double\_t fMass;                 \textcolor{comment}{// 质量}}
+\DoxyCodeLine{  Double\_t fKineticEnergy;        \textcolor{comment}{// 动能}}
+\DoxyCodeLine{  TVector3 fPosition;             \textcolor{comment}{// 位置}}
+\DoxyCodeLine{  TVector3 fMomentum;             \textcolor{comment}{// 动量}}
+\DoxyCodeLine{  Double\_t fTime;                 \textcolor{comment}{// 时间}}
+\DoxyCodeLine{  Double\_t fEnergyDeposit;        \textcolor{comment}{// 能量沉积}}
+\DoxyCodeLine{\};}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md87}{}\doxysubsubsection{6.\+3 数据分析流程}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md87}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md88}{}\doxyparagraph{输出数据结构}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md88}
+输出的 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 文件包含以下 Tree 结构：
+\begin{DoxyEnumerate}
+\item {\bfseries{Simulation\+Tree}} -\/ 主要数据树
+\begin{DoxyItemize}
+\item N\+E\+B\+U\+L\+A\+Sim\+Data 分支 -\/ N\+E\+B\+U\+LA 探测器数据
+\item Frag\+Sim\+Data 分支 -\/ P\+DC 和其他探测器数据
+\item Beam\+Sim\+Data 分支 -\/ 输入束流数据
+\item Frag\+Sim\+Parameter 分支 -\/ 仿真参数
+\end{DoxyItemize}
+\item {\bfseries{Parameter\+Tree}} -\/ 参数树
+\begin{DoxyItemize}
+\item 几何配置参数
+\item 场强设置
+\item 其他仿真设置
+\end{DoxyItemize}
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md89}{}\doxyparagraph{数据转换}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md89}
+从 Geant4 步骤数据转换为物理观测量：
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{能量沉积转换为光产额}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{// 在 NEBULASimDataConverter 中}}
+\DoxyCodeLine{lightOutput = energyDeposit * lightYield;}
+\end{DoxyCode}
+
+\item {\bfseries{时间信息校正}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{correctedTime = rawTime -\/ flightTime + timeOffset;}
+\end{DoxyCode}
+
+\item {\bfseries{位置重建}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{// 从多个击中点重建粒子轨迹}}
+\DoxyCodeLine{reconstructedPosition = weightedAverage(hitPositions, energyDeposits);}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md90}{}\doxyparagraph{分析示例脚本}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md90}
+位于各模块的 {\ttfamily macros/examples/} 目录：
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{// analysis\_example.cc 示例}}
+\DoxyCodeLine{\textcolor{keywordtype}{void} \mbox{\hyperlink{analysis__example_8cc_a1b475b0846960106787874fa4a74894f}{analysis\_example}}() \{}
+\DoxyCodeLine{    TFile *file = \textcolor{keyword}{new} TFile(\textcolor{stringliteral}{"output.root"});}
+\DoxyCodeLine{    TTree *\mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}} = (TTree*)file-\/>Get(\textcolor{stringliteral}{"SimulationTree"});}
+\DoxyCodeLine{    }
+\DoxyCodeLine{    TClonesArray *nebulaArray = 0;}
+\DoxyCodeLine{    \mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}}-\/>SetBranchAddress(\textcolor{stringliteral}{"NEBULASimData"}, \&nebulaArray);}
+\DoxyCodeLine{    }
+\DoxyCodeLine{    \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < \mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}}-\/>GetEntries(); i++) \{}
+\DoxyCodeLine{        \mbox{\hyperlink{namespaceplot__pdc__wires_acc6c1112493470bae8a1d9184622110d}{tree}}-\/>GetEntry(i);}
+\DoxyCodeLine{        }
+\DoxyCodeLine{        \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} j = 0; j < nebulaArray-\/>GetEntries(); j++) \{}
+\DoxyCodeLine{            TNEBULASimData *\mbox{\hyperlink{log_8txt_a87da9831d8d50b58fb21c02cfa80c481}{data}} = (TNEBULASimData*)nebulaArray-\/>At(j);}
+\DoxyCodeLine{            }
+\DoxyCodeLine{            \textcolor{comment}{// 分析中子击中}}
+\DoxyCodeLine{            \textcolor{keywordflow}{if} (\mbox{\hyperlink{log_8txt_a87da9831d8d50b58fb21c02cfa80c481}{data}}-\/>fParticleName == \textcolor{stringliteral}{"neutron"}) \{}
+\DoxyCodeLine{                Double\_t tof = \mbox{\hyperlink{log_8txt_a87da9831d8d50b58fb21c02cfa80c481}{data}}-\/>fPreTime;          \textcolor{comment}{// 飞行时间}}
+\DoxyCodeLine{                Double\_t energy = \mbox{\hyperlink{log_8txt_a87da9831d8d50b58fb21c02cfa80c481}{data}}-\/>fEnergyDeposit; \textcolor{comment}{// 沉积能量}}
+\DoxyCodeLine{                TVector3 pos = \mbox{\hyperlink{log_8txt_a87da9831d8d50b58fb21c02cfa80c481}{data}}-\/>fPrePosition;      \textcolor{comment}{// 击中位置}}
+\DoxyCodeLine{                }
+\DoxyCodeLine{                \textcolor{comment}{// 进行中子能量和角度分析}}
+\DoxyCodeLine{                \textcolor{comment}{// ...}}
+\DoxyCodeLine{            \}}
+\DoxyCodeLine{        \}}
+\DoxyCodeLine{    \}}
+\DoxyCodeLine{\}}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md91}{}\doxysection{重要配置参数}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md91}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md92}{}\doxysubsection{当前项目特定配置 (5deg\+\_\+1.\+2\+T.\+mac)}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md92}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 偶极子磁场}
+\DoxyCodeLine{/samurai/geometry/Dipole/Angle 30 deg}
+\DoxyCodeLine{/samurai/geometry/Dipole/FieldFile /nas/data/Bryan/field\_map/180626-\/1,20T-\/3000.bin}
+\DoxyCodeLine{/samurai/geometry/Dipole/FieldFactor 1}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 目标}
+\DoxyCodeLine{/samurai/geometry/Target/SetTarget false}
+\DoxyCodeLine{/samurai/geometry/Target/Material Sn}
+\DoxyCodeLine{/samurai/geometry/Target/Size 80 80 30 mm}
+\DoxyCodeLine{/samurai/geometry/Target/Position -\/2.43 0.00 -\/90.79 cm}
+\DoxyCodeLine{/samurai/geometry/Target/Angle 5.00 deg}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# PDC 探测器}
+\DoxyCodeLine{/samurai/geometry/PDC/Angle 62 deg}
+\DoxyCodeLine{/samurai/geometry/PDC/Position1 40 0 300 cm}
+\DoxyCodeLine{/samurai/geometry/PDC/Position2 40 0 400 cm}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# NEBULA 中子探测器}
+\DoxyCodeLine{/samurai/geometry/NEBULA/ParameterFileName geometry/NEBULA\_Dayone.csv}
+\DoxyCodeLine{/samurai/geometry/NEBULA/DetectorParameterFileName geometry/NEBULA\_Detectors\_Dayone.csv}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md93}{}\doxysection{性能优化建议}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md93}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md94}{}\doxysubsection{7.\+1 内存和存储优化}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md94}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{控制步骤数据存储}} (大幅减少文件大小) 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/data/NEBULA/StoreSteps false     \# 不存储详细步骤数据}
+\end{DoxyCode}
+
+\item {\bfseries{选择性粒子记录}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/action/gun/SkipGamma true               \# 跳过γ射线}
+\DoxyCodeLine{/action/data/NEBULA/EnergyThreshold 0.1  \# 设置能量阈值 (MeV)}
+\end{DoxyCode}
+
+\item {\bfseries{文件压缩设置}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{// 在 ROOT 文件中设置压缩级别}}
+\DoxyCodeLine{file-\/>SetCompressionLevel(9);}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md95}{}\doxysubsection{7.\+2 仿真性能优化}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md95}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{防止仿真中止}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/control/suppressAbortion 1}
+\end{DoxyCode}
+
+\item {\bfseries{物理过程优化}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{/physics/SetCuts 0.1 mm                  \# 设置产生次级粒子的最小距离}
+\DoxyCodeLine{/physics/SetRegionCuts detector 0.05 mm  \# 在探测器区域使用更精细的切割}
+\end{DoxyCode}
+
+\item {\bfseries{并行处理}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 将大任务分割为多个小任务并行运行}
+\DoxyCodeLine{for angle in 050 060 070 080 090 100; do}
+\DoxyCodeLine{    ../bin/sim\_deuteron run\_\$\{angle\}.mac \&}
+\DoxyCodeLine{done}
+\DoxyCodeLine{wait}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md96}{}\doxysubsection{7.\+3 大规模仿真的批处理脚本}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md96}
+创建批处理脚本 {\ttfamily batch\+\_\+simulation.\+sh}：
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#!/bin/bash}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 设置环境}
+\DoxyCodeLine{source ../setup.sh}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 仿真参数}
+\DoxyCodeLine{REACTIONS=("d+Pb208" "d+Sn112" "d+Sn124")}
+\DoxyCodeLine{ANGLES=("050" "060" "070" "080" "090" "100")}
+\DoxyCodeLine{GEOMETRIES=("5deg\_1.2T" "8deg\_1.2T" "10deg\_1.2T")}
+\DoxyCodeLine{EVENTS=10000}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 创建输出目录}
+\DoxyCodeLine{mkdir -\/p output\_data}
+\DoxyCodeLine{}
+\DoxyCodeLine{for reaction in "\$\{REACTIONS[@]\}"; do}
+\DoxyCodeLine{    for angle in "\$\{ANGLES[@]\}"; do}
+\DoxyCodeLine{        for geom in "\$\{GEOMETRIES[@]\}"; do}
+\DoxyCodeLine{            }
+\DoxyCodeLine{            \# 生成宏文件}
+\DoxyCodeLine{            cat > batch\_\$\{reaction\}\_\$\{angle\}\_\$\{geom\}.mac << EOF}
+\DoxyCodeLine{/control/suppressAbortion 1}
+\DoxyCodeLine{/control/execute geometry/\$\{geom\}.mac}
+\DoxyCodeLine{/action/gun/BeamType Tree}
+\DoxyCodeLine{/action/gun/TreeInputFile ../inputtree/unpol/\$\{reaction\}E190g\$\{angle\}xyz.root}
+\DoxyCodeLine{/action/gun/TreeName tree}
+\DoxyCodeLine{/action/data/NEBULA/StoreSteps false}
+\DoxyCodeLine{/action/output/Filename output\_data/\$\{reaction\}\_\$\{angle\}\_\$\{geom\}.root}
+\DoxyCodeLine{/action/gun/TreeBeamOn \$\{EVENTS\}}
+\DoxyCodeLine{/run/beamOn \$\{EVENTS\}}
+\DoxyCodeLine{exit}
+\DoxyCodeLine{EOF}
+\DoxyCodeLine{            }
+\DoxyCodeLine{            \# 后台运行}
+\DoxyCodeLine{            echo "Starting simulation: \$\{reaction\} \$\{angle\} \$\{geom\}"}
+\DoxyCodeLine{            ../bin/sim\_deuteron batch\_\$\{reaction\}\_\$\{angle\}\_\$\{geom\}.mac > \(\backslash\)}
+\DoxyCodeLine{                logs/\$\{reaction\}\_\$\{angle\}\_\$\{geom\}.log 2>\&1 \&}
+\DoxyCodeLine{            }
+\DoxyCodeLine{            \# 控制并行任务数量}
+\DoxyCodeLine{            while [ \$(jobs -\/r | wc -\/l) -\/ge 4 ]; do}
+\DoxyCodeLine{                sleep 10}
+\DoxyCodeLine{            done}
+\DoxyCodeLine{        done}
+\DoxyCodeLine{    done}
+\DoxyCodeLine{done}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 等待所有任务完成}
+\DoxyCodeLine{wait}
+\DoxyCodeLine{echo "All simulations completed!"}
+\end{DoxyCode}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md97}{}\doxysection{故障排除}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md97}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md98}{}\doxysubsection{8.\+1 常见编译错误}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md98}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Geant4 路径问题}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 检查 Geant4 环境}
+\DoxyCodeLine{echo \$G4INSTALL}
+\DoxyCodeLine{echo \$G4INCLUDE}
+\DoxyCodeLine{source /home/tbt/Software/geant4/install/share/Geant4/geant4make/geant4make.sh}
+\end{DoxyCode}
+
+\item {\bfseries{A\+N\+A\+R\+O\+OT 链接错误}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 检查 ANAROOT 环境}
+\DoxyCodeLine{echo \$TARTSYS}
+\DoxyCodeLine{export LD\_LIBRARY\_PATH=\$TARTSYS/lib:\$LD\_LIBRARY\_PATH}
+\end{DoxyCode}
+
+\item {\bfseries{\mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 版本兼容性}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 检查 ROOT 版本}
+\DoxyCodeLine{root-\/config -\/-\/version}
+\DoxyCodeLine{\# 确保 ROOT 版本与 ANAROOT 兼容}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md99}{}\doxysubsection{8.\+2 运行时错误}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md99}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{磁场文件找不到}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{错误: Cannot open field file: /nas/data/Bryan/field\_map/180626-\/1,20T-\/3000.bin}
+\DoxyCodeLine{解决: 检查磁场文件路径，或在几何文件中修改路径}
+\end{DoxyCode}
+
+\item {\bfseries{输入树文件错误}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{错误: Cannot open input tree file}
+\DoxyCodeLine{解决: 检查输入文件路径和文件完整性}
+\end{DoxyCode}
+
+\item {\bfseries{内存不足}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{错误: std::bad\_alloc}
+\DoxyCodeLine{解决: 减少事件数量或开启 StoreSteps false}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md100}{}\doxysubsection{8.\+3 输出文件问题}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md100}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{文件过大}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 检查文件大小}
+\DoxyCodeLine{ls -\/lh output*.root}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 如果文件过大，修改设置}
+\DoxyCodeLine{/action/data/NEBULA/StoreSteps false}
+\DoxyCodeLine{/action/data/NEBULA/EnergyThreshold 1.0  \# 提高阈值}
+\end{DoxyCode}
+
+\item {\bfseries{数据缺失}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 检查 ROOT 文件内容}
+\DoxyCodeLine{root -\/l output.root}
+\DoxyCodeLine{root [0] .ls}
+\DoxyCodeLine{root [1] SimulationTree-\/>Show(0)}
+\end{DoxyCode}
+
+\item {\bfseries{权限问题}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 确认输出目录权限}
+\DoxyCodeLine{chmod 755 output\_directory}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md101}{}\doxysubsection{8.\+4 性能监控}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md101}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{监控系统资源}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 实时监控}
+\DoxyCodeLine{htop}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 内存使用}
+\DoxyCodeLine{free -\/h}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 磁盘使用}
+\DoxyCodeLine{df -\/h}
+\end{DoxyCode}
+
+\item {\bfseries{仿真进度监控}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 监控日志文件}
+\DoxyCodeLine{tail -\/f simulation.log}
+\DoxyCodeLine{}
+\DoxyCodeLine{\# 检查输出文件增长}
+\DoxyCodeLine{watch -\/n 30 'ls -\/lh output*.root'}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md102}{}\doxysection{下一步开发方向}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md102}
+根据 R\+E\+A\+D\+ME 中的 T\+O\+DO 部分：
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{需要添加的功能}}
+\begin{DoxyItemize}
+\item 重离子分辨率模拟
+\item 目标中的能量损失差异效应
+\item 仿真器有效性评估文档
+\end{DoxyItemize}
+\item {\bfseries{可能的改进}}
+\begin{DoxyItemize}
+\item 优化中子仿真精度
+\item 增加更多探测器类型支持
+\item 改进用户界面
+\end{DoxyItemize}
+\end{DoxyEnumerate}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md103}{}\doxysection{联系信息}\label{md__home_tbt_workspace_dpol_smsimulator5_85_doc_smsimulator5_85_analysis_guide_autotoc_md103}
+
+\begin{DoxyItemize}
+\item 开发者\+: R. Tanaka, Y. Kondo, M. Yasuda
+\item 更多信息\+: \href{http://be.nucl.ap.titech.ac.jp/~ryuki/iroiro/geant4/}{\texttt{ http\+://be.\+nucl.\+ap.\+titech.\+ac.\+jp/$\sim$ryuki/iroiro/geant4/}}
+\item R\+I\+B\+F\+D\+AQ 网页\+: \href{http://ribf.riken.jp/RIBFDAQ/}{\texttt{ http\+://ribf.\+riken.\+jp/\+R\+I\+B\+F\+D\+A\+Q/}}
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+
+
+{\itshape 最后更新\+: 2025年7月16日} {\itshape 版本\+: S\+M\+S\+I\+M\+U\+L\+A\+T\+OR 5.\+5} 

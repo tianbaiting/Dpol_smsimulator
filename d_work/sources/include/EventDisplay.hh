@@ -20,6 +20,7 @@
 #include "PDCSimAna.hh"
 
 
+
 // ===================================================================
 //  Class: EventDisplay
 //  职责: 管理EVE可视化环境、几何体和事件显示
@@ -47,6 +48,8 @@ public:
     // 强制重绘
     void Redraw() { if(gEve) gEve->Redraw3D(kTRUE); }
     
+
+    
 private:
     // 初始化函数
     void InitEve();
@@ -56,6 +59,8 @@ private:
     // 私有成员变量
     PDCSimAna& m_pdc_ana; // 对PDC分析器的引用
     TEveElementList* m_currentEventElements; // 指向当前显示的事件元素列表
+    // TrackPropagator m_trackPropagator; // 用于将仿真数据生成可传播的 TEveTrack
+    
 };
 
 #endif // EVENT_DISPLAY_H

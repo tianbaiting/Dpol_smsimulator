@@ -10,7 +10,9 @@
 
 // A simple structure to hold hit information (position along an axis and energy)
 struct Hit {
-    double position; // Position along U or V axis
+    double x; // Position in global x
+    double y; // Position in global y
+    double z; // Position in global z
     double energy;   // Energy deposited
 };
 
@@ -35,7 +37,7 @@ public:
 private:
     // --- Helper Methods ---
     void ClearAll();
-    TVector3 ReconstructPDC(const std::vector<Hit>& u_hits, const std::vector<Hit>& v_hits, const TVector3& pdc_position) const;
+    TVector3 ReconstructPDC(const std::vector<Hit>& u_hits, const std::vector<Hit>& v_hits) const;
     double CalculateCoM(const std::vector<Hit>& hits) const;
 
     // --- Geometry ---

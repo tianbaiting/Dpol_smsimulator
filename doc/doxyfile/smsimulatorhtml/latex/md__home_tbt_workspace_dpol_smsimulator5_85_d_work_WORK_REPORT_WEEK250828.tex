@@ -1,0 +1,135 @@
+范围：2025-\/08-\/22 ～ 2025-\/08-\/28（近 7 天内的提交）
+
+编写人：\+Baiting Tian
+
+\DoxyHorRuler{0}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_WEEK250828_autotoc_md43}{}\doxysection{本周要点摘要}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_WEEK250828_autotoc_md43}
+
+\begin{DoxyItemize}
+\item 主要改动集中在：\+Tree 输入的交互稳定性修复、\+N\+E\+B\+U\+LA converter 的空指针保护、为重建/可视化准备并完善若干宏与文档，以及若干与 P\+DC 绘图/几何相关的文件调整。
+\item 已新增调试、重建与查看用的宏和 R\+E\+A\+D\+M\+E，便于复现与验证数据流。
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_WEEK250828_autotoc_md45}{}\doxysection{提交明细（按时间倒序）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_WEEK250828_autotoc_md45}
+
+\begin{DoxyEnumerate}
+\item 5eb3201 — 2025-\/08-\/26 12\+:00\+:30 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：plot cathode wires
+\item 变更文件：多处新增/修改，包括 {\ttfamily d\+\_\+work/geometry/$\ast$}、{\ttfamily d\+\_\+work/macros/examples/$\ast$}、{\ttfamily sim\+\_\+deuteron} 下若干文件等
+\item 要点：加入二维/三维 P\+DC 线结构绘图脚本、几何文件与示例宏，扩充示例和工具链。
+\item 验证：运行 {\ttfamily sim\+\_\+deuteron} 的绘图脚本查看生成图像；确认几何文件在仿真中生效。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item 336877f — 2025-\/08-\/26 12\+:11\+:24 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：git ignore big files
+\item 变更文件：$<$tt$>$.\+gitignore 更新，同时删除一批大型 geometry 与临时文件的跟踪
+\item 要点：进一步清理仓库历史与不必要的大文件。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item e47c1d6 — 2025-\/08-\/27 14\+:22\+:14 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：plot wires add legend
+\item 变更文件：重命名/移动与 P\+DC 绘图相关的文件，添加绘图资源（png）并移除过时副本。
+\item 要点：改进 P\+DC 电极线绘图脚本和图示资源。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item 5117c6f — 2025-\/08-\/27 14\+:26\+:11 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：remove large file
+\item 变更文件：更新 {\ttfamily .gitignore}，移除大文件历史记录（删除部分 build 临时文件）
+\item 要点：清理仓库，避免提交过大的中间文件。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item a1fa8ee — 2025-\/08-\/27 15\+:46\+:48 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：add output tree readme.\+md
+\item 变更文件：新增 {\ttfamily d\+\_\+work/macros/dpol/reconstruction/show\+\_\+root\+\_\+detail.\+cc}、{\ttfamily \mbox{\hyperlink{README_8md}{d\+\_\+work/output\+\_\+tree/\+R\+E\+A\+D\+M\+E.\+md}}} 等
+\item 要点：补充输出树的查看说明与宏，方便分析人员使用。
+\item 验证：运行对应宏查看输出树结构与分支。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item 9a7b943 — 2025-\/08-\/28 16\+:08\+:12 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：add code of creating inputtree using T\+Beam\+Simdataarray
+\item 变更文件：新增多项（事件生成与转换相关脚本/宏），如 {\ttfamily d\+\_\+work/analyze\+\_\+frag.\+C}、{\ttfamily d\+\_\+work/macros/dpol/\+Event\+Generator/\+Gen\+Input\+Root\+\_\+np\+\_\+atime.\+cc} 等；并修改 {\ttfamily d\+\_\+work/vis.\+mac}、{\ttfamily d\+\_\+work/simulation.\+mac} 等
+\item 要点：加入生成输入 T\+Tree 的示例代码和工具，完善事件生成 pipeline。
+\item 验证：用新脚本生成 input root，再用 {\ttfamily \mbox{\hyperlink{classPrimaryGeneratorActionBasic}{Primary\+Generator\+Action\+Basic}}} 的 Tree 模式读取并运行短例。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item 30e45cb — 2025-\/08-\/28 16\+:19\+:50 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：fix(\+N\+E\+B\+U\+L\+A)\+: guard against missing parameters in N\+E\+B\+U\+L\+A\+Sim\+Data\+Converter
+\item 变更文件：{\ttfamily smg4lib/data/sources/src/\+N\+E\+B\+U\+L\+A\+Sim\+Data\+Converter\+\_\+\+T\+Art\+N\+E\+B\+U\+L\+A\+Pla.\+cc}（\+M）
+\item 要点：同上，具体实现文件中加入空指针校验与防护。
+\item 验证：见上条。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item 618e247 — 2025-\/08-\/28 16\+:22\+:35 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：上一个提交还干了，\+Add null-\/check for N\+E\+B\+U\+L\+A\+Parameter in Convert\+Sim\+Data()
+\item 变更文件：若干库与中间目标（包括 smg4lib 的库文件变更）
+\item 要点：为 N\+E\+B\+U\+LA converter 添加空检查、在缺少参数时跳过并打印警告、只有在参数有效后才创建 {\ttfamily T\+Art\+N\+E\+B\+U\+L\+A\+Pla}，以避免 placement-\/new 在无效数据上引起未定义行为。
+\item 验证：重建 {\ttfamily smg4lib}，运行短例观察是否仍有与 {\ttfamily T\+Art\+Data\+Object\+::\+Copy} 相关的 segfault。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item 5710084 — 2025-\/08-\/28 16\+:55\+:59 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：reconstruct one evnt to see pdc and nebula
+\item 变更文件：新增/修改多文件，包括 {\ttfamily \mbox{\hyperlink{data__flow__README_8md}{d\+\_\+work/macros/dpol/data\+\_\+flow\+\_\+\+R\+E\+A\+D\+M\+E.\+md}}}（\+A），{\ttfamily d\+\_\+work/macros/dpol/reconstruction/reconstruct\+\_\+one\+\_\+event.\+cc}（\+M）等
+\item 要点：增加用于查看 P\+D\+C/\+N\+E\+B\+U\+LA 数据的宏与数据流说明，便于在 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 中快速检查输出树内容。
+\item 验证：在 {\ttfamily d\+\_\+work/macros/dpol/reconstruction} 中使用 {\ttfamily reconstruct\+\_\+one\+\_\+event.\+cc} 打开 {\ttfamily output\+\_\+tree/test0000.\+root} 并打印示例信息。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item 708a72f — 2025-\/08-\/28 17\+:13\+:12 +0900
+\begin{DoxyItemize}
+\item 作者：\+Baiting Tian
+\item 标题（缩写）：fix(action)\+: keep Tree input T\+File open after Tree\+Beam\+On to allow repeated calls
+\item 变更文件：{\ttfamily smg4lib/action/src/\+Primary\+Generator\+Action\+Basic.\+cc}（修改）
+\item 要点：在 {\ttfamily Tree\+Beam\+On} 结束时不再关闭输入 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 文件，修复在交互式会话中第二次调用 {\ttfamily /action/gun/tree/beam\+On} 导致的崩溃问题。
+\item 验证：重建 {\ttfamily smg4lib} 与 {\ttfamily sim\+\_\+deuteron}，在 UI 中两次执行 {\ttfamily /action/gun/tree/beam\+On} 不应再发生 segfault。
+\end{DoxyItemize}
+\end{DoxyEnumerate}
+
+\DoxyHorRuler{0}
+\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_WEEK250828_autotoc_md47}{}\doxysection{本周验证状态（总体）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_WEEK250828_autotoc_md47}
+
+\begin{DoxyItemize}
+\item 已完成：代码修改已保存；{\ttfamily sim\+\_\+deuteron} 在本地有过 {\ttfamily make} 成功记录；若干查看宏可在 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 中运行（{\ttfamily reconstruct\+\_\+one\+\_\+event.\+cc} 已被执行）。
+\end{DoxyItemize}
+
+输入  
+
+模拟 
+
+读取模拟数据 
+
+下一步， 调好各个数据结构。 特别是target相关设置。
+
+熟悉输出结构的调用方式。
+
+P\+D\+C阴极读出模拟？ 如何确定感应电荷，然后确定位置。 误差怎么加
+
+
+
+ 

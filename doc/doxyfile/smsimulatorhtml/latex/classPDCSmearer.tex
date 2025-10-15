@@ -1,0 +1,84 @@
+\hypertarget{classPDCSmearer}{}\doxysection{P\+D\+C\+Smearer Class Reference}
+\label{classPDCSmearer}\index{PDCSmearer@{PDCSmearer}}
+
+
+Applies Gaussian position smearing to P\+DC hits.  
+
+
+
+
+{\ttfamily \#include $<$P\+D\+C\+Smearer.\+hh$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classPDCSmearer_aedd1fdd9727b4a5defe9cf1e9876695d}{P\+D\+C\+Smearer}} (const \mbox{\hyperlink{classPDCRotation}{P\+D\+C\+Rotation}} \&rotation, double sigmaU, double sigmaV, double sigmaX)
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classPDCSmearer_aed44b0cb670a6e4cafdef40f62be317c}{$\sim$\+P\+D\+C\+Smearer}} ()=default
+\item 
+T\+Vector3 \mbox{\hyperlink{classPDCSmearer_aa92112d420d8fa3e41c97941de7258fe}{Smear}} (const T\+Vector3 \&global\+Pos, const T\+String \&module\+Name)
+\begin{DoxyCompactList}\small\item\em Applies smearing to a global position vector based on the module type. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Applies Gaussian position smearing to P\+DC hits. 
+
+This class uses a \mbox{\hyperlink{classPDCRotation}{P\+D\+C\+Rotation}} object to transform hits to the local frame, applies a 2D Gaussian smearing in the local XY plane, and transforms the result back to the global frame. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classPDCSmearer_aedd1fdd9727b4a5defe9cf1e9876695d}\label{classPDCSmearer_aedd1fdd9727b4a5defe9cf1e9876695d}} 
+\index{PDCSmearer@{PDCSmearer}!PDCSmearer@{PDCSmearer}}
+\index{PDCSmearer@{PDCSmearer}!PDCSmearer@{PDCSmearer}}
+\doxysubsubsection{\texorpdfstring{PDCSmearer()}{PDCSmearer()}}
+{\footnotesize\ttfamily P\+D\+C\+Smearer\+::\+P\+D\+C\+Smearer (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classPDCRotation}{P\+D\+C\+Rotation}} \&}]{rotation,  }\item[{double}]{sigmaU,  }\item[{double}]{sigmaV,  }\item[{double}]{sigmaX }\end{DoxyParamCaption})}
+
+
+
+Constructor. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em rotation} & The \mbox{\hyperlink{classPDCRotation}{P\+D\+C\+Rotation}} object defining the coordinate system. \\
+\hline
+{\em sigmaU} & The position resolution (sigma) for the U layer in mm. \\
+\hline
+{\em sigmaV} & The position resolution (sigma) for the V layer in mm. \\
+\hline
+{\em sigmaX} & The position resolution (sigma) for the X layer in mm. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPDCSmearer_aed44b0cb670a6e4cafdef40f62be317c}\label{classPDCSmearer_aed44b0cb670a6e4cafdef40f62be317c}} 
+\index{PDCSmearer@{PDCSmearer}!````~PDCSmearer@{$\sim$PDCSmearer}}
+\index{````~PDCSmearer@{$\sim$PDCSmearer}!PDCSmearer@{PDCSmearer}}
+\doxysubsubsection{\texorpdfstring{$\sim$PDCSmearer()}{~PDCSmearer()}}
+{\footnotesize\ttfamily P\+D\+C\+Smearer\+::$\sim$\+P\+D\+C\+Smearer (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [default]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classPDCSmearer_aa92112d420d8fa3e41c97941de7258fe}\label{classPDCSmearer_aa92112d420d8fa3e41c97941de7258fe}} 
+\index{PDCSmearer@{PDCSmearer}!Smear@{Smear}}
+\index{Smear@{Smear}!PDCSmearer@{PDCSmearer}}
+\doxysubsubsection{\texorpdfstring{Smear()}{Smear()}}
+{\footnotesize\ttfamily T\+Vector3 P\+D\+C\+Smearer\+::\+Smear (\begin{DoxyParamCaption}\item[{const T\+Vector3 \&}]{global\+Pos,  }\item[{const T\+String \&}]{module\+Name }\end{DoxyParamCaption})}
+
+
+
+Applies smearing to a global position vector based on the module type. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em global\+Pos} & The original hit position in the global frame. \\
+\hline
+{\em module\+Name} & The name of the detector layer (\char`\"{}\+U\char`\"{}, \char`\"{}\+V\char`\"{}, or \char`\"{}\+X\char`\"{}). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+T\+Vector3 The new, smeared position in the global frame. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/home/tbt/workspace/dpol/smsimulator5.\+5/d\+\_\+work/include/\mbox{\hyperlink{PDCSmearer_8hh}{P\+D\+C\+Smearer.\+hh}}\item 
+/home/tbt/workspace/dpol/smsimulator5.\+5/d\+\_\+work/src/\mbox{\hyperlink{PDCSmearer_8cc}{P\+D\+C\+Smearer.\+cc}}\end{DoxyCompactItemize}

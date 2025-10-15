@@ -1,0 +1,97 @@
+本文档简短记录在本仓库（smsimulator5.5）中你（或我们）所做的代码与脚本修改、目的、验证步骤以及后续建议。放在：{\ttfamily /home/tbt/workspace/dpol/smsimulator5.\mbox{\hyperlink{WORK__REPORT_8md}{5/d\+\_\+work/\+W\+O\+R\+K\+\_\+\+R\+E\+P\+O\+R\+T.\+md}}}。\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md31}{}\doxysection{关键变更清单（\+Checklist）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md31}
+
+\begin{DoxyItemize}
+\item \mbox{[}x\mbox{]} 修复 {\ttfamily vis.\+mac}：将 {\ttfamily /action/gun/tree/beam\+On} 明确为带事件数（例如 {\ttfamily ... beam\+On 9}），避免命令解析异常。
+\item \mbox{[}x\mbox{]} 修复 {\ttfamily \mbox{\hyperlink{classPrimaryGeneratorActionBasic_a008559d3634d6c8c36f34b34bbaaf1ab}{Primary\+Generator\+Action\+Basic\+::\+Tree\+Beam\+On}}}：移除末尾 {\ttfamily f\+Root\+Input\+File-\/$>$Close();}，保持输入 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 文件在交互式会话中打开，从而允许多次调用 {\ttfamily /action/gun/tree/beam\+On}。
+\item \mbox{[}x\mbox{]} 修复 N\+E\+B\+U\+LA converter 的空指针访问（先前会话中修改）：为 {\ttfamily N\+E\+B\+U\+L\+A\+Sim\+Data\+Converter\+\_\+\+T\+Art\+N\+E\+B\+U\+L\+A\+Pla.\+cc} 添加空检查并延后 placement-\/new，减少 {\ttfamily T\+Art\+Data\+Object\+::\+Copy} 导致的 segfault 风险。
+\item \mbox{[}x\mbox{]} 新增/更新用于调试和查看的数据/宏：{\ttfamily \mbox{\hyperlink{data__flow__README_8md}{d\+\_\+work/macros/dpol/data\+\_\+flow\+\_\+\+R\+E\+A\+D\+M\+E.\+md}}}（数据流说明）和 {\ttfamily d\+\_\+work/macros/dpol/reconstruction/reconstruct\+\_\+one\+\_\+event.\+cc}（示例 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 宏，用于查看 P\+D\+C/\+N\+E\+B\+U\+LA 信息）。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md32}{}\doxysection{具体修改（文件与要点）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md32}
+
+\begin{DoxyItemize}
+\item {\ttfamily d\+\_\+work/vis.\+mac}
+\begin{DoxyItemize}
+\item 将 {\ttfamily /action/gun/tree/beam\+On} 改为 {\ttfamily /action/gun/tree/beam\+On 9}（或其他期望的事件数）。
+\item 目的：在可视化交互场景中显式指定从输入树发射的事件数，避免解析问题。
+\end{DoxyItemize}
+\item {\ttfamily smg4lib/action/src/\+Primary\+Generator\+Action\+Basic.\+cc}
+\begin{DoxyItemize}
+\item 在 {\ttfamily Tree\+Beam\+On(\+G4int num)} 末尾移除了 {\ttfamily f\+Root\+Input\+File-\/$>$Close();}。
+\item 添加注释：避免在交互式会话中第二次调用 {\ttfamily /action/gun/tree/beam\+On} 时访问已关闭的分支导致崩溃。
+\item 影响：允许在同一进程内多次运行 Tree 输入；输入文件将在程序退出时自动关闭。
+\end{DoxyItemize}
+\item {\ttfamily smg4lib/data/sources/src/\+N\+E\+B\+U\+L\+A\+Sim\+Data\+Converter\+\_\+\+T\+Art\+N\+E\+B\+U\+L\+A\+Pla.\+cc}（先前修改）
+\begin{DoxyItemize}
+\item 为 {\ttfamily N\+E\+B\+U\+L\+A\+Parameter} 与 detector parameter ({\ttfamily prm}) 添加空指针检查；如果缺失则记录警告并跳过该 I\+D；将对 {\ttfamily T\+Art\+N\+E\+B\+U\+L\+A\+Pla} 的 placement-\/new 移到参数校验之后。
+\item 目的：防止在转换阶段因未初始化/缺失参数导致的未定义行为与段错误。
+\end{DoxyItemize}
+\item {\ttfamily \mbox{\hyperlink{data__flow__README_8md}{d\+\_\+work/macros/dpol/data\+\_\+flow\+\_\+\+R\+E\+A\+D\+M\+E.\+md}}}
+\begin{DoxyItemize}
+\item 新增：描述从敏感探测器 → {\ttfamily T\+Clones\+Array} → converter → {\ttfamily T\+Tree} 的完整数据流、关键文件和调试要点。
+\end{DoxyItemize}
+\item {\ttfamily d\+\_\+work/macros/dpol/reconstruction/reconstruct\+\_\+one\+\_\+event.\+cc}
+\begin{DoxyItemize}
+\item 新增/修改：示例 \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} 宏，能够打开 {\ttfamily output\+\_\+tree/test0000.\+root} 并打印 P\+D\+C（\+Frag\+Sim\+Data）与 N\+E\+B\+U\+L\+A（\+T\+Art\+N\+E\+B\+U\+L\+A\+Pla）信息；为了兼容缺失头文件，部分读取逻辑使用运行时 R\+T\+T\+I/\+Print()。
+\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md33}{}\doxysection{为什么要做这些改动（简短说明）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md33}
+
+\begin{DoxyItemize}
+\item 在交互式可视化场景中，用户可能重复触发 Tree 输入。原实现运行后立即关闭输入文件，会造成第二次调用时访问到已释放或失效的分支/缓冲，从而引发段错误。移除即时关闭并显式在宏中传入事件数可以避免这类错误。
+\item converter 的空检查可防止对不存在的 detector parameter 解引用，修复了观察到的 gdb backtrace 指向 {\ttfamily T\+Art\+Data\+Object\+::\+Copy} 的崩溃点。
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md34}{}\doxysection{编译与验证步骤（建议）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md34}
+
+\begin{DoxyEnumerate}
+\item 设置环境（如果项目有 setup 脚本）： 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{. ./setup.sh}
+\end{DoxyCode}
+
+\item 重新编译受影响模块： 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{cd smg4lib \&\& make -\/j4}
+\DoxyCodeLine{cd ../sim\_deuteron \&\& make -\/j4}
+\end{DoxyCode}
+
+\item 验证 Tree 输入在交互会话中可重复调用： 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\# 带可视化的宏}
+\DoxyCodeLine{../bin/sim\_deuteron d\_work/vis.mac}
+\DoxyCodeLine{\# 或者在 Geant4 UI 中手动执行：}
+\DoxyCodeLine{/action/gun/tree/beamOn 1}
+\DoxyCodeLine{\# 等完成后再次执行}
+\DoxyCodeLine{/action/gun/tree/beamOn 1}
+\end{DoxyCode}
+
+\begin{DoxyItemize}
+\item 期望：不会在第二次执行时发生 segmentation fault。
+\end{DoxyItemize}
+\item 若仍崩溃：用 gdb 运行并抓取 backtrace： 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{gdb -\/-\/args ../bin/sim\_deuteron d\_work/vis.mac}
+\DoxyCodeLine{\# 在 gdb 中 run，崩溃后输入 bt full}
+\end{DoxyCode}
+
+\end{DoxyEnumerate}
+
+把 backtrace 发来以便进一步定位。\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md35}{}\doxysection{推荐的 Git commit 信息（示例）}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md35}
+
+\begin{DoxyItemize}
+\item Commit 标题（简短）： fix(action)\+: keep Tree input T\+File open after Tree\+Beam\+On to allow repeated calls
+\item Commit 详细信息（正文）： Keep the input \mbox{\hyperlink{namespaceROOT}{R\+O\+OT}} file open after executing {\ttfamily \mbox{\hyperlink{classPrimaryGeneratorActionBasic_a008559d3634d6c8c36f34b34bbaaf1ab}{Primary\+Generator\+Action\+Basic\+::\+Tree\+Beam\+On}}}. Previously the function closed {\ttfamily f\+Root\+Input\+File} at the end of the run, which caused subsequent interactive calls to {\ttfamily /action/gun/tree/beam\+On} to access a closed file/branch and crash (segmentation fault). Removing the immediate close allows multiple Tree\+Beam\+On invocations in the same process. The file will be closed automatically on program exit.
+\item Git 命令示例： 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{git add smg4lib/action/src/PrimaryGeneratorActionBasic.cc}
+\DoxyCodeLine{git commit -\/m "fix(action): keep Tree input TFile open after TreeBeamOn to allow repeated calls" -\/m \$'Keep the input ROOT file open after executing PrimaryGeneratorActionBasic::TreeBeamOn.\(\backslash\)n\(\backslash\)nPreviously the function closed fRootInputFile at the end of the run, which caused subsequent interactive calls to /action/gun/tree/beamOn to access a closed file/branch and crash (segmentation fault). Removing the immediate close allows multiple TreeBeamOn invocations in the same process. The file will be closed automatically on program exit.\(\backslash\)n\(\backslash\)nTesting:\(\backslash\)n-\/ Rebuild smg4lib and sim\_deuteron.\(\backslash\)n-\/ Start interactive/visual session and run /action/gun/tree/beamOn 1 twice; no crash should occur.\(\backslash\)n'}
+\DoxyCodeLine{}
+\DoxyCodeLine{git push origin main}
+\end{DoxyCode}
+
+\end{DoxyItemize}\hypertarget{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md36}{}\doxysection{下一步建议}\label{md__home_tbt_workspace_dpol_smsimulator5_85_d_work_WORK_REPORT_autotoc_md36}
+
+\begin{DoxyItemize}
+\item 在 CI 或本地做一次完整的短跑（10--50 事件），同时开启与关闭可视化，确认不会复现 segfault；若出现，收集 gdb backtrace 后继续修复。
+\item 考虑在 {\ttfamily \mbox{\hyperlink{classPrimaryGeneratorActionBasic}{Primary\+Generator\+Action\+Basic}}} 中加入一个专门的 {\ttfamily Close\+Input\+Tree} 方法，由用户在确实不再使用输入时显式调用，而不是在 {\ttfamily Tree\+Beam\+On} 内隐式关闭。
+\item 若需要把 {\ttfamily T\+Frag\+Sim\+Data.\+hh} 等头文件暴露给用户宏以便更丰富的分析，可以把相应头文件路径添加到 {\ttfamily d\+\_\+work} 的宏 include 路径或 copy 一份到 {\ttfamily d\+\_\+work/include}。
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+ 若你希望我把此报告 commit 到仓库（并同时提交相关变更），我可以为你执行 {\ttfamily git add}/{\ttfamily git commit} 并给出最终提交哈希；或者把报告内容做成更完整的 PR 描述。 
