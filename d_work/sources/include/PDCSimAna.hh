@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "GeometryManager.hh" // Include GeometryManager
+#include "RecoEvent.hh"       // 重建事件数据结构
 
 // A simple structure to hold hit information (position along an axis and energy)
 struct Hit {
@@ -24,10 +25,12 @@ public:
     void SetSmearing(double sigma_u, double sigma_v);
 
     // --- Main Processing Method ---
-    // Processes all hits from the FragSimData TClonesArray for one event
-    void ProcessEvent(TClonesArray* fragSimData);
+    // 处理原始 hits 并返回重建结果
+    RecoEvent ProcessEvent(TClonesArray* fragSimData);
+    // 处理批处理版本（填充已有的 RecoEvent 对象，可用于批处理）
+    void ProcessEvent(TClonesArray* fragSimData, RecoEvent& outEvent);
 
-    // --- Getters for Results ---
+    // --- 为了向后兼容的 Getters ---
     TVector3 GetRecoPoint1() const { return fRecoPoint1; }
     TVector3 GetRecoPoint2() const { return fRecoPoint2; }
     std::vector<TVector3> GetSmearedGlobalPositions() const;

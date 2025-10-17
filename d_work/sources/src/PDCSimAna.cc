@@ -33,8 +33,18 @@ void PDCSimAna::ClearAll() {
     fRecoPoint2.SetXYZ(0, 0, 0);
 }
 
-void PDCSimAna::ProcessEvent(TClonesArray* fragSimData) {
+// 新接口 - 返回值版本
+RecoEvent PDCSimAna::ProcessEvent(TClonesArray* fragSimData) {
+    RecoEvent result;
+    ProcessEvent(fragSimData, result);
+    return result;
+}
+
+// 新接口 - 输出参数版本
+void PDCSimAna::ProcessEvent(TClonesArray* fragSimData, RecoEvent& outEvent) {
+    // 清除内部状态和输出事件
     ClearAll();
+    outEvent.Clear();
     if (!fragSimData) return;
 
     const double sqrt2 = TMath::Sqrt(2.0);
@@ -82,6 +92,26 @@ void PDCSimAna::ProcessEvent(TClonesArray* fragSimData) {
     // 3. Perform reconstruction using the smeared hits
     fRecoPoint1 = ReconstructPDC(fU1_hits_smeared, fV1_hits_smeared, pos1);
     fRecoPoint2 = ReconstructPDC(fU2_hits_smeared, fV2_hits_smeared, pos2);
+    
+    // 4. 填充 RecoEvent 对象
+    // 添加原始击中
+    for (int i = 0; i < n_entries; ++i) {
+        TSimData* hit = (TSimData*)fragSimData->At(i);
+        if (!hit || !hit->fDetectorName.Contains("PDC")) continue;
+        
+        outEvent.rawHits.push_back(RecoHit(hit->fPrePosition, hit->fEnergyDeposit));
+    }
+    
+    // 添加涂抹后的点（获取完整的全局位置列表）
+    std::vector<TVector3> smearedPositions = GetSmearedGlobalPositions();
+    for (const auto& pos : smearedPositions) {
+        outEvent.smearedHits.push_back(RecoHit(pos, 1.0)); // 能量设为1.0作为权重
+    }
+    
+    // 添加重建轨迹（如果有两个点）
+    if (fRecoPoint1.Mag() > 0 && fRecoPoint2.Mag() > 0) {
+        outEvent.tracks.push_back(RecoTrack(fRecoPoint1, fRecoPoint2));
+    }
 }
 
 std::vector<TVector3> PDCSimAna::GetSmearedGlobalPositions() const {

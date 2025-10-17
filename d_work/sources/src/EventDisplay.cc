@@ -12,8 +12,8 @@
 //  Implementation: EventDisplay
 // ===================================================================
 
-EventDisplay::EventDisplay(const char* geom_file, PDCSimAna& ana)
-    : m_pdc_ana(ana), m_currentEventElements(nullptr) 
+EventDisplay::EventDisplay(const char* geom_file, const GeometryManager& geo)
+    : m_geo(geo), m_currentEventElements(nullptr) 
 {
     InitEve();
     LoadGeometry(geom_file);
@@ -64,12 +64,11 @@ void EventDisplay::ClearCurrentEvent() {
     }
 }
 
-void EventDisplay::DisplayEvent(EventDataReader& reader) {
+// New primary interface: consume a ready RecoEvent and draw it
+void EventDisplay::DisplayEvent(const RecoEvent& event) {
     ClearCurrentEvent();
 
-    m_pdc_ana.ProcessEvent(reader.GetHits());
-
-    m_currentEventElements = new TEveElementList(Form("Event_%lld", reader.GetCurrentEventNumber()));
+    m_currentEventElements = new TEveElementList(Form("Event_%lld", event.eventID));
     gEve->AddElement(m_currentEventElements);
 
     // 1. Raw Hits
@@ -77,12 +76,8 @@ void EventDisplay::DisplayEvent(EventDataReader& reader) {
     raw_hits->SetMarkerColor(kRed);
     raw_hits->SetMarkerStyle(20);
     raw_hits->SetMarkerSize(1.0);
-    TClonesArray* hits_array = reader.GetHits();
-    for (int i = 0; i < hits_array->GetEntries(); ++i) {
-        TSimData* hit = (TSimData*)hits_array->At(i);
-        if (hit && hit->fDetectorName.Contains("PDC")) {
-            raw_hits->SetNextPoint(hit->fPrePosition.X(), hit->fPrePosition.Y(), hit->fPrePosition.Z());
-        }
+    for (const auto& hit : event.rawHits) {
+        raw_hits->SetNextPoint(hit.position.X(), hit.position.Y(), hit.position.Z());
     }
     m_currentEventElements->AddElement(raw_hits);
 
@@ -91,34 +86,36 @@ void EventDisplay::DisplayEvent(EventDataReader& reader) {
     smeared_hits->SetMarkerColor(kBlue);
     smeared_hits->SetMarkerStyle(20);
     smeared_hits->SetMarkerSize(1.0);
-    auto smeared_positions = m_pdc_ana.GetSmearedGlobalPositions();
-    for (const auto& pos : smeared_positions) {
-        smeared_hits->SetNextPoint(pos.X(), pos.Y(), pos.Z());
+    for (const auto& hit : event.smearedHits) {
+        smeared_hits->SetNextPoint(hit.position.X(), hit.position.Y(), hit.position.Z());
     }
     m_currentEventElements->AddElement(smeared_hits);
 
-    // 3. Reconstructed Track
-    TVector3 p1 = m_pdc_ana.GetRecoPoint1();
-    TVector3 p2 = m_pdc_ana.GetRecoPoint2();
-    if (p1.Mag() > 0 && p2.Mag() > 0) {
+    // 3. Reconstructed Tracks
+    for (const auto& track : event.tracks) {
         TEvePointSet* reco_pts = new TEvePointSet("Reco Points");
         reco_pts->SetMarkerColor(kGreen+2);
         reco_pts->SetMarkerStyle(4);
         reco_pts->SetMarkerSize(2.5);
-        reco_pts->SetNextPoint(p1.X(), p1.Y(), p1.Z());
-        reco_pts->SetNextPoint(p2.X(), p2.Y(), p2.Z());
+        reco_pts->SetNextPoint(track.start.X(), track.start.Y(), track.start.Z());
+        reco_pts->SetNextPoint(track.end.X(), track.end.Y(), track.end.Z());
         m_currentEventElements->AddElement(reco_pts);
 
-        TEveLine* track = new TEveLine("Track");
-        track->SetPoint(0, p1.X(), p1.Y(), p1.Z());
-        track->SetPoint(1, p2.X(), p2.Y(), p2.Z());
-        track->SetLineColor(kGreen+2);
-        track->SetLineWidth(3);
-        m_currentEventElements->AddElement(track);
+        TEveLine* track_line = new TEveLine("Track");
+        track_line->SetPoint(0, track.start.X(), track.start.Y(), track.start.Z());
+        track_line->SetPoint(1, track.end.X(), track.end.Y(), track.end.Z());
+        track_line->SetLineColor(kGreen+2);
+        track_line->SetLineWidth(3);
+        m_currentEventElements->AddElement(track_line);
     }
 
     Redraw();
-    std::cout << "Displayed Event: " << reader.GetCurrentEventNumber() << std::endl;
+    std::cout << "Displayed Event: " << event.eventID << std::endl;
+}
+
+// Backward-compatible helper: accept reader and event (reader unused here)
+void EventDisplay::DisplayEvent(EventDataReader& /*reader*/, const RecoEvent& event) {
+    DisplayEvent(event);
 }
 
 // Other control methods from header...

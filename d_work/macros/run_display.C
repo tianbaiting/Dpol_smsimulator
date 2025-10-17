@@ -6,6 +6,7 @@
 #include "PDCSimAna.hh"
 #include "EventDataReader.hh"
 #include "EventDisplay.hh"
+#include "RecoEvent.hh"
 
 // 主函数
 void run_display(Long64_t event_id = 0) {
@@ -24,11 +25,16 @@ void run_display(Long64_t event_id = 0) {
         return; // 如果文件打不开，则退出
     }
 
-    EventDisplay display("/home/tbt/workspace/dpol/smsimulator5.5/d_work/detector_geometry.gdml", ana);
+    EventDisplay display("/home/tbt/workspace/dpol/smsimulator5.5/d_work/detector_geometry.gdml", geo);
 
-    // 3. 定位到指定事件并显示
+    // 3. 定位到指定事件，执行重建，然后显示
     if (reader.GoToEvent(event_id)) {
-        display.DisplayEvent(reader);
+        // 获取原始 hits 并重建
+        TClonesArray* hits = reader.GetHits();
+        RecoEvent event = ana.ProcessEvent(hits);
+        
+        // 将重建结果传给显示模块
+        display.DisplayEvent(event);
     }
 
     // 4. 启动ROOT应用程序事件循环
