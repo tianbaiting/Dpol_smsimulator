@@ -31,9 +31,9 @@ export G4SMLDLIBS="-lsmphysics -lsmaction -lsmconstruction -lsmdata"
 
 
 if [[ $LD_LIBRARY_PATH == "" ]]; then
-    export LD_LIBRARY_PATH=$G4SMLIBDIR/lib:$SMSIMDIR/lib:$TARTSYS/lib
+    export LD_LIBRARY_PATH=$G4SMLIBDIR/lib:$SMSIMDIR/lib:$TARTSYS/lib:$SMSIMDIR/d_work/build
 else
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$G4SMLIBDIR/lib:$SMSIMDIR/lib:$TARTSYS/lib
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$G4SMLIBDIR/lib:$SMSIMDIR/lib:$TARTSYS/lib:$SMSIMDIR/d_work/build
 fi
 
 if [[ $LIBRARY_PATH == "" ]]; then
@@ -43,9 +43,9 @@ else
 fi
 
 if [[ $ROOT_INCLUDE_PATH == "" ]]; then
-    export ROOT_INCLUDE_PATH=$G4SMLIBDIR/include:$TARTSYS/include
+    export ROOT_INCLUDE_PATH=$G4SMLIBDIR/include:$TARTSYS/include:$SMSIMDIR/d_work/sources/include
 else
-    export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$G4SMLIBDIR/include::$TARTSYS/include
+    export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$G4SMLIBDIR/include::$TARTSYS/include:$SMSIMDIR/d_work/sources/include
 fi
 
 ## ----> for kondo

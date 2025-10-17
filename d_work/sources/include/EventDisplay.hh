@@ -17,7 +17,8 @@
 #include <iostream>
 
 #include "EventDataReader.hh"
-#include "PDCSimAna.hh"
+#include "RecoEvent.hh"
+#include "GeometryManager.hh"
 
 
 // ===================================================================
@@ -27,12 +28,15 @@
 class EventDisplay {
 public:
     // 构造函数：初始化EVE环境并加载几何体
-    EventDisplay(const char* geom_file, PDCSimAna& ana);
+    EventDisplay(const char* geom_file, const GeometryManager& geo);
     // 析构函数
     ~EventDisplay();
 
-    // 显示来自数据读取器的事件
-    void DisplayEvent(EventDataReader& reader);
+    // 显示重建后的事件（新的主要接口）
+    void DisplayEvent(const RecoEvent& event);
+    
+    // 为了向后兼容的接口（已不推荐使用）
+    void DisplayEvent(EventDataReader& reader, const RecoEvent& event);
 
     // 清除当前显示的事件
     void ClearCurrentEvent();
@@ -54,7 +58,7 @@ private:
     void SetupCamera();
     
     // 私有成员变量
-    PDCSimAna& m_pdc_ana; // 对PDC分析器的引用
+    const GeometryManager& m_geo; // 几何管理器引用
     TEveElementList* m_currentEventElements; // 指向当前显示的事件元素列表
 };
 
