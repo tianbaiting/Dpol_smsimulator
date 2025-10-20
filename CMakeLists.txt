@@ -19,11 +19,15 @@ file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 find_package(ROOT REQUIRED COMPONENTS Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread)
 include(${ROOT_USE_FILE})
 
-# Find Geant4
-find_package(Geant4 REQUIRED)
-include(${Geant4_USE_FILE})
-### for Geant4 ---------------------------
-find_package(Geant4 REQUIRED)
+# Find Geant4 package with all UI and Vis drivers (like B1 example)
+option(WITH_GEANT4_UIVIS "Build with Geant4 UI and Vis drivers" ON)
+if(WITH_GEANT4_UIVIS)
+  find_package(Geant4 REQUIRED ui_all vis_all)
+else()
+  find_package(Geant4 REQUIRED)
+endif()
+
+# Setup Geant4 include directories and compile definitions
 include(${Geant4_USE_FILE})
 include_directories(${Geant4_INCLUDE_DIRS})
 # Find ANAROOT

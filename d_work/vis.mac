@@ -1,4 +1,4 @@
-/vis/open OGL
+/vis/open OGL  # Restore original OGL setting
 # /vis/open VRML2FILE
 #/vis/open DAWNFILE
 # /vis/open OGLSWin
