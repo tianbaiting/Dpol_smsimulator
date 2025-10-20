@@ -2,6 +2,9 @@ project(sim_deuteron)
 
 file(GLOB SRC_FILES "src/*.cc")
 
+# Geant4 库已在根CMakeLists.txt中使用 ui_all vis_all 正确配置
+# ${Geant4_LIBRARIES} 现在自动包含所有可视化组件，包括 G4OpenGL
+
 add_library(sim_deuteron-so SHARED ${SRC_FILES})
 set_target_properties(sim_deuteron-so PROPERTIES OUTPUT_NAME sim_deuteron)
 target_include_directories(sim_deuteron-so PRIVATE 
@@ -31,7 +34,8 @@ target_link_libraries(
   smphysics
   ${ANAROOT_LIBRARIES} 
   ${ROOT_LIBRARIES} 
-  ${Geant4_LIBRARIES}
+  ${Geant4_LIBRARIES}  # 现在包含所有可视化库
+  ${CMAKE_DL_LIBS}
   ${XercesC_LIBRARIES}
 )
 
@@ -44,7 +48,8 @@ target_link_libraries(
   smphysics
   ${ANAROOT_LIBRARIES} 
   ${ROOT_LIBRARIES} 
-  ${Geant4_LIBRARIES}
+  ${Geant4_LIBRARIES}  # 现在包含所有可视化库
+  ${CMAKE_DL_LIBS}
   ${XercesC_LIBRARIES}
 )
 
