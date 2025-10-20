@@ -15,9 +15,13 @@ endif()
 # 确保bin目录存在
 file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
-# Find ROOT
+# Find ROOT (removed Imt component to avoid TBB version conflicts)
 find_package(ROOT REQUIRED COMPONENTS Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread)
 include(${ROOT_USE_FILE})
+
+# Workaround for TBB linking issue: ROOT's libImt.so may require TBB but we don't use it
+# Remove libImt from ROOT_LIBRARIES if present
+list(FILTER ROOT_LIBRARIES EXCLUDE REGEX ".*libImt.*")
 
 # Find Geant4 package with all UI and Vis drivers (like B1 example)
 option(WITH_GEANT4_UIVIS "Build with Geant4 UI and Vis drivers" ON)
