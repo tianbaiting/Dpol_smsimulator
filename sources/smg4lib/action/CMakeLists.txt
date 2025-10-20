@@ -18,4 +18,4 @@ target_link_libraries(smaction PUBLIC
 
 install(FILES ${INC_FILES} DESTINATION include)
 install(TARGETS smaction
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    LIBRARY DESTINATION lib)

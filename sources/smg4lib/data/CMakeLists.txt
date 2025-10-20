@@ -20,7 +20,16 @@ foreach(loop_var IN LISTS TINC_FILES)
   get_filename_component(loop_var_filename "${loop_var}" NAME_WE)
   file(APPEND smdata_linkdef.hh "#pragma link C++ class ${loop_var_filename}+;\n")
 endforeach()
-list(POP_BACK CMAKE_MESSAGE_INDENT)
+# 兼容旧版CMake：使用REMOVE_AT代替POP_BACK
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.15")
+  list(POP_BACK CMAKE_MESSAGE_INDENT)
+else()
+  list(LENGTH CMAKE_MESSAGE_INDENT list_len)
+  if(list_len GREATER 0)
+    math(EXPR last_index "${list_len} - 1")
+    list(REMOVE_AT CMAKE_MESSAGE_INDENT ${last_index})
+  endif()
+endif()
 file(APPEND smdata_linkdef.hh "#endif\n")
 
 ROOT_GENERATE_DICTIONARY(G__smrootdata
@@ -38,7 +47,7 @@ target_link_libraries(smdata PUBLIC ${ROOT_LIBRARIES})
 
 install(FILES ${INC_FILES} DESTINATION include)
 install(TARGETS smdata
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    LIBRARY DESTINATION lib)  # 简化为固定路径
 
 if (${ROOT_VERSION} VERSION_GREATER "6.0")
    install(

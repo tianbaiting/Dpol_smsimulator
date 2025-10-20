@@ -11,4 +11,4 @@ target_link_libraries(smphysics PUBLIC ${Geant4_LIBRARIES})
 
 install(FILES ${INC_FILES} DESTINATION include)
 install(TARGETS smphysics
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    LIBRARY DESTINATION lib)
