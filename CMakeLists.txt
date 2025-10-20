@@ -1,7 +1,19 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.12)  # 降低版本要求以兼容更多系统
 project(smsimulator CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+
+# 包含GNUInstallDirs以获取标准安装目录变量
+include(GNUInstallDirs)
+
+# 安全检查：防止在源码目录构建
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(WARNING "In-source builds are not recommended. Please create a separate build directory.")
+    message(WARNING "To clean up: rm -rf CMakeCache.txt CMakeFiles/")
+endif()
+
+# 确保bin目录存在
+file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 # Find ROOT
 find_package(ROOT REQUIRED COMPONENTS Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread)

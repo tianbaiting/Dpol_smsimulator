@@ -48,15 +48,16 @@ target_link_libraries(
   ${XercesC_LIBRARIES}
 )
 
-# Copy sim_deuteron to bin directory after build
+# Copy sim_deuteron to bin directory after build (安全复制，不会删除源码)
 add_custom_command(TARGET sim_deuteron POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:sim_deuteron> ${CMAKE_SOURCE_DIR}/bin/
-    COMMENT "Copying sim_deuteron to bin directory"
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/bin
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:sim_deuteron> ${CMAKE_SOURCE_DIR}/bin/sim_deuteron
+    COMMENT "Safely copying sim_deuteron to bin directory (source code will not be deleted)"
 )
 
 install(DIRECTORY include/
 		  DESTINATION include)
 install(TARGETS sim_deuteron
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    RUNTIME DESTINATION bin)
 install(TARGETS sim_deuteron-so
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    LIBRARY DESTINATION lib)

@@ -18,4 +18,4 @@ target_link_libraries(smconstruction PUBLIC
 
 install(FILES ${INC_FILES} DESTINATION include)
 install(TARGETS smconstruction
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    LIBRARY DESTINATION lib)
