@@ -59,12 +59,20 @@ http://ribf.riken.jp/RIBFDAQ/
 (3) 编译 smsimulator
 根据系统修改 smsimulator/setup.sh。
 
+方法 A: 传统 Make 构建
 $ . setup.sh
 $ cd smg4lib
 $ make
 $ cd ../simtrace
 $ make
 ...（对 simdayone、get_pdgmass、crosssection 等同理）
+
+方法 B: CMake 构建（推荐）
+$ . setup.sh
+$ mkdir build && cd build
+$ cmake ..
+$ make -j$(nproc)
+# sim_deuteron 可执行文件将自动复制到 bin/ 目录
 
 (4) 运行 Geant4
 将工作目录 "smsimulator/work" 复制到其他位置。（建议不要直接在 "smsimulator/work" 下工作，以便将来更新 smsimulator。）SAMURAI 磁体的场图可在以下下载：
@@ -135,9 +143,16 @@ $ make install
 
 修改 rootlogon.C 以加载该库并添加 include 路径。可在 smsimulator/work/sim_samurai21/macros/examples/analysis_crosstalk_example.cc 中找到使用 TArtCrosstalk_XXX 类的示例。
 
------------
+-----
 更新信息
------------
+-----
+- version 5.5 (CMake 支持)
+  - 在传统 Make 基础上新增 CMake 构建系统
+  - 将源码重新组织到 sources/ 目录，包含 smg4lib/ 和 sim_deuteron/
+  - 将 ROOT 字典生成集成到 CMake 中
+  - 自动复制二进制文件到 bin/ 目录
+  - 改进的依赖管理
+
 - version 4.2
     - 在 TFragSimData 中添加了 TargetThickness
 
@@ -157,6 +172,17 @@ $ make install
 -----
 提示
 -----
+- 构建系统选择
+  你可以在两种构建系统中选择：
+  - 传统 Make：用于与旧工作流程的兼容性
+  - CMake：推荐用于新开发，更好的依赖管理
+  
+- CMake 的优势
+  - 自动依赖解析
+  - 支持并行编译
+  - 与现代 IDE 更好的集成
+  - 简化的 ROOT 字典生成
+
 - 大量事件模拟
     为避免中止，在 g4mac/xxx.mac 中加入以下行：
     /control/suppressAbortion 1

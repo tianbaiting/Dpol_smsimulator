@@ -29,7 +29,12 @@ ROOT_GENERATE_DICTIONARY(G__smrootdata
 )
 
 add_library(smdata SHARED ${SRC_FILES} G__smrootdata.cxx)
-target_include_directories(smdata PUBLIC include)
+target_include_directories(smdata PUBLIC 
+    include
+    ../include
+)
+
+target_link_libraries(smdata PUBLIC ${ROOT_LIBRARIES})
 
 install(FILES ${INC_FILES} DESTINATION include)
 install(TARGETS smdata

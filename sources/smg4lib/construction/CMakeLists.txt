@@ -5,9 +5,16 @@ file(GLOB INC_FILES "include/*.hh")
 
 add_library(smconstruction SHARED ${SRC_FILES})
 
-target_include_directories(smconstruction PUBLIC include)
+target_include_directories(smconstruction PUBLIC 
+    include
+    ../include
+    ../data/include
+)
 
-target_link_libraries(smconstruction PUBLIC ${Geant4_LIBRARIES})
+target_link_libraries(smconstruction PUBLIC 
+    ${Geant4_LIBRARIES}
+    smdata
+)
 
 install(FILES ${INC_FILES} DESTINATION include)
 install(TARGETS smconstruction
