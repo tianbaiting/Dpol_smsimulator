@@ -13,6 +13,10 @@
 struct Hit {
     double position; // Position along U or V axis
     double energy;   // Energy deposited
+    double z;        // Z position relative to PDC center (mm)
+    
+    Hit() : position(0), energy(0), z(0) {}
+    Hit(double pos, double e, double z_val) : position(pos), energy(e), z(z_val) {}
 };
 
 class PDCSimAna : public TObject {

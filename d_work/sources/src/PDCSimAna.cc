@@ -49,8 +49,15 @@ void PDCSimAna::ProcessEvent(TClonesArray* fragSimData, RecoEvent& outEvent) {
 
     const double sqrt2 = TMath::Sqrt(2.0);
     const double angle = fGeoManager.GetAngleRad();
-    const TVector3 pos1 = fGeoManager.GetPDC1Position();
-    const TVector3 pos2 = fGeoManager.GetPDC2Position();
+    TVector3 pdc1_beforeRotation_position=fGeoManager.GetPDC1Position();
+    TVector3 pdc2_beforeRotation_position=fGeoManager.GetPDC2Position();
+    pdc1_beforeRotation_position.RotateY(-angle);
+    pdc2_beforeRotation_position.RotateY(-angle);
+    const TVector3 pos1 = pdc1_beforeRotation_position;
+    const TVector3 pos2 = pdc2_beforeRotation_position;
+
+    // std::cout << "PDC1 Position: " << pos1.X() << ", " << pos1.Y() << ", " << pos1.Z() << std::endl;
+    // std::cout << "PDC2 Position: " << pos2.X() << ", " << pos2.Y() << ", " << pos2.Z() << std::endl;
 
     // 1. Sort raw hits from TClonesArray
     int n_entries = fragSimData->GetEntries();
@@ -63,16 +70,35 @@ void PDCSimAna::ProcessEvent(TClonesArray* fragSimData, RecoEvent& outEvent) {
             TVector3 pos_rel = pos - pos1;
             double x_rot = pos_rel.X() * TMath::Cos(-angle) - pos_rel.Z() * TMath::Sin(-angle);
             double u_pos = (x_rot + pos.Y()) / sqrt2;
-            double v_pos = (x_rot - pos.Y()) / sqrt2;
-            if (hit->fModuleName == "U") fU1_hits.push_back({u_pos, hit->fEnergyDeposit});
-            if (hit->fModuleName == "V") fV1_hits.push_back({v_pos, hit->fEnergyDeposit});
+            double v_pos = (-x_rot + pos.Y()) / sqrt2;
+            
+            // Set z-offset according to layer type
+            double z_offset = 0.0;
+            if (hit->fModuleName == "U") {
+                z_offset = -12.0; // U Layer at -12 mm
+                fU1_hits.push_back(Hit(u_pos, hit->fEnergyDeposit, z_offset));
+            }
+            if (hit->fModuleName == "V") {
+                z_offset = +12.0; // V Layer at +12 mm
+                fV1_hits.push_back(Hit(v_pos, hit->fEnergyDeposit, z_offset));
+            }
         } else if (hit->fID == 1) { // PDC2
             TVector3 pos_rel = pos - pos2;
             double x_rot = pos_rel.X() * TMath::Cos(-angle) - pos_rel.Z() * TMath::Sin(-angle);
             double u_pos = (x_rot + pos.Y()) / sqrt2;
-            double v_pos = (x_rot - pos.Y()) / sqrt2;
-            if (hit->fModuleName == "U") fU2_hits.push_back({u_pos, hit->fEnergyDeposit});
-            if (hit->fModuleName == "V") fV2_hits.push_back({v_pos, hit->fEnergyDeposit});
+            double v_pos = (-x_rot + pos.Y()) / sqrt2;
+
+            
+            // Set z-offset according to layer type
+            double z_offset = 0.0;
+            if (hit->fModuleName == "U") {
+                z_offset = -12.0; // U Layer at -12 mm
+                fU2_hits.push_back(Hit(u_pos, hit->fEnergyDeposit, z_offset));
+            }
+            if (hit->fModuleName == "V") {
+                z_offset = +12.0; // V Layer at +12 mm
+                fV2_hits.push_back(Hit(v_pos, hit->fEnergyDeposit, z_offset));
+            }
         }
     }
 
@@ -80,7 +106,7 @@ void PDCSimAna::ProcessEvent(TClonesArray* fragSimData, RecoEvent& outEvent) {
     if (!gRandom) gRandom = new TRandom3(0);
     auto smear_vector = [&](const std::vector<Hit>& in_hits, std::vector<Hit>& out_hits, double sigma) {
         for (const auto& hit : in_hits) {
-            out_hits.push_back({hit.position + gRandom->Gaus(0, sigma), hit.energy});
+            out_hits.push_back(Hit(hit.position + gRandom->Gaus(0, sigma), hit.energy, hit.z));
         }
     };
 
@@ -122,13 +148,35 @@ std::vector<TVector3> PDCSimAna::GetSmearedGlobalPositions() const {
         // A more advanced method would handle multiple combinations.
         if (u_hits.empty() || v_hits.empty()) return;
         double v_avg = CalculateCoM(v_hits);
+        
+        // 获取 v_hits 的平均 z 偏移
+        double v_z_avg = 12.0; // 默认 V 层位置
+        if (!v_hits.empty()) {
+            double z_sum = 0.0, e_sum = 0.0;
+            for (const auto& hit : v_hits) {
+                z_sum += hit.z * hit.energy;
+                e_sum += hit.energy;
+            }
+            if (e_sum > 0) v_z_avg = z_sum / e_sum;
+        }
+        
         for (const auto& u_hit : u_hits) {
-            positions.push_back(ReconstructPDC({{u_hit.position, 1.0}}, {{v_avg, 1.0}}, pdc_pos));
+            std::vector<Hit> temp_u;
+            std::vector<Hit> temp_v;
+            temp_u.push_back(Hit(u_hit.position, 1.0, u_hit.z));
+            temp_v.push_back(Hit(v_avg, 1.0, v_z_avg));
+            positions.push_back(ReconstructPDC(temp_u, temp_v, pdc_pos));
         }
     };
 
-    add_positions(fU1_hits_smeared, fV1_hits_smeared, fGeoManager.GetPDC1Position());
-    add_positions(fU2_hits_smeared, fV2_hits_smeared, fGeoManager.GetPDC2Position());
+    // Rotate PDC center positions to match the coordinate system used above
+    TVector3 pdc1_pos_rot = fGeoManager.GetPDC1Position();
+    pdc1_pos_rot.RotateY(-fGeoManager.GetAngleRad());
+    TVector3 pdc2_pos_rot = fGeoManager.GetPDC2Position();
+    pdc2_pos_rot.RotateY(-fGeoManager.GetAngleRad());
+
+    add_positions(fU1_hits_smeared, fV1_hits_smeared, pdc1_pos_rot);
+    add_positions(fU2_hits_smeared, fV2_hits_smeared, pdc2_pos_rot);
 
     return positions;
 }
@@ -140,18 +188,39 @@ TVector3 PDCSimAna::ReconstructPDC(const std::vector<Hit>& u_hits, const std::ve
 
     double u_com = CalculateCoM(u_hits);
     double v_com = CalculateCoM(v_hits);
+    
+    // // 计算 z 坐标的加权平均，每层的 z 偏移在之前已经设置
+    // double z_offset_u = 0.0;
+    // double total_energy_u = 0.0;
+    // for (const auto& hit : u_hits) {
+    //     z_offset_u += hit.z * hit.energy;
+    //     total_energy_u += hit.energy;
+    // }
+    // z_offset_u = (total_energy_u > 0) ? (z_offset_u / total_energy_u) : -12.0; // 默认值为 U 层位置
+    
+    // double z_offset_v = 0.0;
+    // double total_energy_v = 0.0;
+    // for (const auto& hit : v_hits) {
+    //     z_offset_v += hit.z * hit.energy;
+    //     total_energy_v += hit.energy;
+    // }
+    // z_offset_v = (total_energy_v > 0) ? (z_offset_v / total_energy_v) : 12.0; // 默认值为 V 层位置
+    
+    // // 使用两层的平均 z 偏移
+    // double z_offset = (z_offset_u + z_offset_v) / 2.0;
 
     const double sqrt2 = TMath::Sqrt(2.0);
-    double y_global = (u_com - v_com) / sqrt2;
-    double x_local = (u_com + v_com) / sqrt2;
+    double y_global = (u_com + v_com) / sqrt2;
+    double x_local = (u_com - v_com) / sqrt2;
 
+    // TVector3 pdc_in_global = pdc_position;
     const double angle = fGeoManager.GetAngleRad();
-    double x_rotated = x_local * TMath::Cos(angle);
-    double z_rotated = x_local * TMath::Sin(angle);
+    double x_rotatedBack = x_local * TMath::Cos(angle);
+    double z_rotatedBack = x_local * TMath::Sin(angle);
 
-    double final_X = x_rotated + pdc_position.X();
+    double final_X = x_rotatedBack + pdc_position.X();
     double final_Y = y_global + pdc_position.Y();
-    double final_Z = z_rotated + pdc_position.Z();
+    double final_Z = z_rotatedBack + pdc_position.Z(); // 加上 z 层的偏移
 
     return TVector3(final_X, final_Y, final_Z);
 }
