@@ -11,7 +11,23 @@
 // 主函数
 void run_display(Long64_t event_id = 0) {
     // 1. 加载我们编译好的库
-    gSystem->Load("libPDCAnalysisTools.so");
+    // 加载库，确保只加载一次
+    static bool loaded = false;
+    if (!loaded) {
+        if (gSystem->Load("libPDCAnalysisTools.so") < 0) {
+            Error("run_display_safe", "无法加载 libPDCAnalysisTools.so 库");
+            return;
+        }
+        loaded = true;
+        Info("run_display_safe", "库已成功加载");
+    }
+
+      // 添加 WSL 稳定性设置  
+    gEnv->SetValue("OpenGL.Highlight.Select", 0);  
+    gEnv->SetValue("OpenGL.EventHandler.EnableMouseOver", 0);  
+    gEnv->SetValue("OpenGL.EventHandler.EnableSelection", 0);  
+    gEnv->SetValue("OpenGL.Timer.MouseOver", 0);  
+      
 
     // 2. 创建并设置所有分析工具 (对象在栈上创建，函数结束时自动销毁)
     GeometryManager geo;

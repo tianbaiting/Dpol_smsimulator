@@ -39,7 +39,7 @@ try/
 __pycache__/
 *.pyc
 *.ipynb_checkpoints
-
+doc
 # 其他
 *.swp
 *.swo
