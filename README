@@ -70,12 +70,20 @@ http://ribf.riken.jp/RIBFDAQ/
 (3) Compile smsimulator
 Modify smsimulator/setup.sh for your system.
 
+Method A: Traditional Make build
 $ . setup.sh
 $ cd smg4lib
 $ make
 $ cd ../simtrace
 $ make
 ... (same for simdayone, get_pdgmass, crosssection, ...)
+
+Method B: CMake build (recommended)
+$ . setup.sh
+$ mkdir build && cd build
+$ cmake ..
+$ make -j$(nproc)
+The sim_deuteron executable will be automatically copied to bin/ directory
 
 (4) Run Geant4
 Copy the working directory "smsimulator/work" to somewhere. (Working
@@ -158,9 +166,16 @@ Modify rootlogon.C to load the library and to add include
 path. You can find an example to use TArtCrosstalk_XXX classes in
 smsimulator/work/sim_samurai21/macros/examples/analysis_crosstalk_example.cc.
 
------------
+-----
 UPDATE INFO
------------
+-----
+- version 5.5 (CMake support)
+  - Added CMake build system alongside traditional Make
+  - Reorganized sources into sources/ directory with smg4lib/ and sim_deuteron/ 
+  - ROOT dictionary generation integrated into CMake
+  - Automatic binary copying to bin/ directory
+  - Improved dependency management
+
 - version 4.2
   - TargetThickness is added in TFragSimData
 
@@ -182,6 +197,17 @@ UPDATE INFO
 -----
 HINTS
 -----
+- Build system choice
+  You can choose between two build systems:
+  - Traditional Make: Use for compatibility with older workflows
+  - CMake: Recommended for new development, better dependency management
+  
+- CMake benefits
+  - Automatic dependency resolution
+  - Parallel compilation support
+  - Better integration with modern IDEs
+  - Simplified ROOT dictionary generation
+
 - Simulating a lot of events
   To avoid abortion, put the follwoing line in your g4mac/xxx.mac.
   /control/suppressAbortion 1

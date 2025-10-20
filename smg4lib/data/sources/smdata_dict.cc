@@ -1012,7 +1012,7 @@ nullptr
     static const char* includePaths[] = {
 "..",
 "/home/tbt/Software/root/include",
-"/home/tbt/Software/anaroot/install/include",
+"/home/tbt/workspace/dpol/tbt_anaroot/src/include",
 "/home/tbt/Software/root/include/",
 "/home/tbt/workspace/dpol/smsimulator5.5/smg4lib/data/sources/",
 nullptr
