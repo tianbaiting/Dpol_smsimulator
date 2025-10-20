@@ -7,6 +7,7 @@
 *.dll
 *.gdml
 *.d
+lib/
 # CMake/Makefile 生成目录
 build/
 CMakeFiles/
