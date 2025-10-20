@@ -34,7 +34,7 @@ target_link_libraries(
   smphysics
   ${ANAROOT_LIBRARIES} 
   ${ROOT_LIBRARIES} 
-  ${Geant4_LIBRARIES}  # 现在包含所有可视化库
+  ${Geant4_LIBRARIES}
   ${CMAKE_DL_LIBS}
   ${XercesC_LIBRARIES}
 )
@@ -48,7 +48,7 @@ target_link_libraries(
   smphysics
   ${ANAROOT_LIBRARIES} 
   ${ROOT_LIBRARIES} 
-  ${Geant4_LIBRARIES}  # 现在包含所有可视化库
+  ${Geant4_LIBRARIES}
   ${CMAKE_DL_LIBS}
   ${XercesC_LIBRARIES}
 )
