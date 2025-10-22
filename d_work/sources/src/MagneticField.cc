@@ -175,21 +175,53 @@ TVector3 MagneticField::GetField(const TVector3& position) const
 
 TVector3 MagneticField::GetFieldRaw(double x, double y, double z) const 
 {
-    if (!IsInRange(x, y, z)) {
-        return TVector3(0, 0, 0);
-    }
-    
-    // 三线性插值
-    double bx = InterpolateTrilinear(fBx, x, y, z);
-    double by = InterpolateTrilinear(fBy, x, y, z);
-    double bz = InterpolateTrilinear(fBz, x, y, z);
-    
-    return TVector3(bx, by, bz);
+    // 使用对称性处理所有坐标
+    return GetFieldWithSymmetry(x, y, z);
 }
 
 TVector3 MagneticField::GetFieldRaw(const TVector3& position) const 
 {
     return GetFieldRaw(position.X(), position.Y(), position.Z());
+}
+
+TVector3 MagneticField::GetFieldWithSymmetry(double x, double y, double z) const 
+{
+    // 处理坐标对称性，将所有坐标映射到原始数据覆盖的区域 (x>=0, z>=0)
+    double map_x = x;
+    double map_z = z;
+    
+    // 用于跟踪是否需要翻转磁场分量
+    bool flip_bx = false;  // x坐标翻转时需要翻转Bx
+    bool flip_bz = false;  // z坐标翻转时需要翻转Bz
+    
+    // 处理x坐标对称性
+    if (x < 0) {
+        map_x = -x;      // 映射到正x区域
+        flip_bx = true;  // 需要翻转Bx分量
+    }
+    
+    // 处理z坐标对称性  
+    if (z < 0) {
+        map_z = -z;      // 映射到正z区域
+        flip_bz = true;  // 需要翻转Bz分量
+    }
+    
+    // 检查映射后的坐标是否在数据范围内
+    if (!IsInRange(map_x, y, map_z)) {
+        return TVector3(0, 0, 0);
+    }
+    
+    // 在映射坐标处进行三线性插值
+    double bx = InterpolateTrilinear(fBx, map_x, y, map_z);
+    double by = InterpolateTrilinear(fBy, map_x, y, map_z);
+    double bz = InterpolateTrilinear(fBz, map_x, y, map_z);
+    
+    // 根据对称性规律调整磁场分量符号
+    if (flip_bx) bx = -bx;  // x → -x: Bx → -Bx
+    if (flip_bz) bz = -bz;  // z → -z: Bz → -Bz
+    // By 分量在x和z翻转时都保持不变
+    
+    return TVector3(bx, by, bz);
 }
 
 double MagneticField::InterpolateTrilinear(const std::vector<double>& data, 

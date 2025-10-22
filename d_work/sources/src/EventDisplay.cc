@@ -1,5 +1,6 @@
 #include "EventDisplay.hh"
 #include "TSimData.hh"
+#include "../../../sources/smg4lib/include/TBeamSimData.hh"
 #include "TROOT.h"
 #include "TEnv.h"
 #include "TGeoNode.h"
@@ -116,6 +117,176 @@ void EventDisplay::DisplayEvent(const RecoEvent& event) {
 // Backward-compatible helper: accept reader and event (reader unused here)
 void EventDisplay::DisplayEvent(EventDataReader& /*reader*/, const RecoEvent& event) {
     DisplayEvent(event);
+}
+
+// 新增：显示事件与粒子轨迹
+void EventDisplay::DisplayEventWithTrajectories(EventDataReader& reader, const RecoEvent& event,
+                                               MagneticField* magField) {
+    // 首先显示普通事件
+    DisplayEvent(event);
+    
+    // 然后添加粒子轨迹
+    if (magField) {
+        const std::vector<TBeamSimData>* beamData = reader.GetBeamData();
+        if (beamData && !beamData->empty()) {
+            DrawParticleTrajectories(beamData, magField);
+        } else {
+            std::cout << "EventDisplay: No beam data available for trajectory calculation" << std::endl;
+        }
+    } else {
+        std::cout << "EventDisplay: No magnetic field provided for trajectory calculation" << std::endl;
+    }
+    
+    Redraw();
+}
+
+void EventDisplay::DrawParticleTrajectories(const std::vector<TBeamSimData>* beamData, MagneticField* magField) {
+    if (!beamData || !magField) return;
+    
+    std::cout << "Drawing trajectories for " << beamData->size() << " particles" << std::endl;
+    
+    // 创建轨迹计算对象
+    ParticleTrajectory trajectory(magField);
+    trajectory.SetStepSize(5.0);      // 5 mm steps
+    trajectory.SetMaxTime(50.0);      // 50 ns max time
+    trajectory.SetMaxDistance(4000.0); // 4 m max distance
+    trajectory.SetMinMomentum(10.0);   // 10 MeV/c min momentum
+    
+    for (size_t i = 0; i < beamData->size(); i++) {
+        const TBeamSimData& particle = (*beamData)[i];
+        
+        // 从TBeamSimData对象中提取信息
+        int pdgCode = particle.fPDGCode;
+        double charge = particle.fCharge;
+        double mass = particle.fMass;
+        const char* particleName = particle.fParticleName.Data();
+        TLorentzVector momentum = particle.fMomentum;
+        TVector3 position = particle.fPosition;
+        
+        if (TMath::Abs(charge) < 1e-6) {
+            std::cout << "Skipping neutral particle: " << particleName << std::endl;
+            continue; // Skip neutral particles
+        }
+        
+        // 计算轨迹
+        std::vector<ParticleTrajectory::TrajectoryPoint> traj = 
+            trajectory.CalculateTrajectory(position, momentum, charge, mass);
+        
+        if (traj.size() < 2) {
+            std::cout << "Trajectory too short for particle " << particleName << std::endl;
+            continue;
+        }
+        
+        // 转换为绘图数据
+        std::vector<double> x, y, z;
+        trajectory.GetTrajectoryPoints(traj, x, y, z);
+        
+        // 绘制轨迹
+        int color = (charge > 0) ? kRed : kBlue;
+        DrawTrajectoryLine(x, y, z, particleName, color);
+        
+        // 打印轨迹信息
+        trajectory.PrintTrajectoryInfo(traj);
+    }
+}
+
+void EventDisplay::DrawTrajectoryLine(const std::vector<double>& x, 
+                                    const std::vector<double>& y,
+                                    const std::vector<double>& z,
+                                    const char* particleName, 
+                                    int color) {
+    if (x.size() < 2) return;
+    
+    // 创建TEveLine对象来绘制轨迹
+    TEveLine* trajLine = new TEveLine(Form("Trajectory_%s", particleName));
+    trajLine->SetLineColor(color);
+    trajLine->SetLineWidth(2);
+    
+    // 添加轨迹点
+    for (size_t i = 0; i < x.size(); i++) {
+        trajLine->SetPoint(i, x[i], y[i], z[i]);
+    }
+    
+    // 添加到事件显示
+    if (m_currentEventElements) {
+        m_currentEventElements->AddElement(trajLine);
+    }
+    
+    // 添加起始点标记
+    TEvePointSet* startPoint = new TEvePointSet(Form("Start_%s", particleName));
+    startPoint->SetMarkerColor(color);
+    startPoint->SetMarkerStyle(29); // Star marker
+    startPoint->SetMarkerSize(2.0);
+    startPoint->SetNextPoint(x[0], y[0], z[0]);
+    
+    if (m_currentEventElements) {
+        m_currentEventElements->AddElement(startPoint);
+    }
+    
+    std::cout << "Drew trajectory for " << particleName << " with " 
+              << x.size() << " points" << std::endl;
+}
+
+void EventDisplay::GetParticleInfo(int pdgCode, double& charge, double& mass, const char*& name) {
+    // 根据PDG代码设置粒子信息
+    switch (pdgCode) {
+        case 2212:  // proton
+            charge = 1.0;
+            mass = 938.272; // MeV/c²
+            name = "proton";
+            break;
+        case -2212: // antiproton
+            charge = -1.0;
+            mass = 938.272;
+            name = "antiproton";
+            break;
+        case 211:   // pi+
+            charge = 1.0;
+            mass = 139.57;
+            name = "pi+";
+            break;
+        case -211:  // pi-
+            charge = -1.0;
+            mass = 139.57;
+            name = "pi-";
+            break;
+        case 11:    // electron
+            charge = -1.0;
+            mass = 0.511;
+            name = "electron";
+            break;
+        case -11:   // positron
+            charge = 1.0;
+            mass = 0.511;
+            name = "positron";
+            break;
+        case 13:    // muon-
+            charge = -1.0;
+            mass = 105.66;
+            name = "muon-";
+            break;
+        case -13:   // muon+
+            charge = 1.0;
+            mass = 105.66;
+            name = "muon+";
+            break;
+        case 2112:  // neutron
+            charge = 0.0;
+            mass = 939.565;
+            name = "neutron";
+            break;
+        case 22:    // photon
+            charge = 0.0;
+            mass = 0.0;
+            name = "photon";
+            break;
+        default:
+            charge = 0.0;
+            mass = 1.0;
+            name = "unknown";
+            std::cout << "Unknown PDG code: " << pdgCode << std::endl;
+            break;
+    }
 }
 
 // Other control methods from header...

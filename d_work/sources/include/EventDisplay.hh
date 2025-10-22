@@ -9,16 +9,25 @@
 #include "TGeoVolume.h"
 #include "TEveElement.h"
 #include "TEvePointSet.h"
+#include "TEveTrack.h"
+#include "TEveTrackPropagator.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TClonesArray.h"
 #include "TString.h"
+#include "TLorentzVector.h"
 #include <string>
 #include <iostream>
+#include <vector>
 
 #include "EventDataReader.hh"
 #include "RecoEvent.hh"
 #include "GeometryManager.hh"
+#include "ParticleTrajectory.hh"
+#include "MagneticField.hh"
+
+// Forward declaration
+class TBeamSimData;
 
 
 // ===================================================================
@@ -38,6 +47,10 @@ public:
     // 为了向后兼容的接口（已不推荐使用）
     void DisplayEvent(EventDataReader& reader, const RecoEvent& event);
 
+    // 新增：显示事件与粒子轨迹
+    void DisplayEventWithTrajectories(EventDataReader& reader, const RecoEvent& event,
+                                     MagneticField* magField);
+
     // 清除当前显示的事件
     void ClearCurrentEvent();
 
@@ -56,6 +69,17 @@ private:
     void InitEve();
     void LoadGeometry(const char* geom_file);
     void SetupCamera();
+    
+    // 轨迹相关私有方法
+    void DrawParticleTrajectories(const std::vector<TBeamSimData>* beamData, MagneticField* magField);
+    void DrawTrajectoryLine(const std::vector<double>& x, 
+                           const std::vector<double>& y,
+                           const std::vector<double>& z,
+                           const char* particleName, 
+                           int color = kRed);
+    
+    // 从PDG代码获取粒子信息
+    void GetParticleInfo(int pdgCode, double& charge, double& mass, const char*& name);
     
     // 私有成员变量
     const GeometryManager& m_geo; // 几何管理器引用

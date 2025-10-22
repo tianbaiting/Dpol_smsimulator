@@ -47,6 +47,9 @@ private:
     // 坐标旋转函数
     TVector3 RotateToMagnetFrame(const TVector3& labPos) const;
     TVector3 RotateToLabFrame(const TVector3& magnetField) const;
+    
+    // 对称性处理函数
+    TVector3 GetFieldWithSymmetry(double x, double y, double z) const;
 
 public:
     // 构造函数和析构函数

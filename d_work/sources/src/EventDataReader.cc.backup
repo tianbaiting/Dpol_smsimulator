@@ -1,11 +1,10 @@
 #include "EventDataReader.hh"
 #include "TSystem.h"
-#include "TBeamSimData.hh"
 #include <iostream>
 
 EventDataReader::EventDataReader(const char* filePath) 
     : m_file(nullptr), m_tree(nullptr), m_fragSimDataArray(nullptr), 
-      m_beamDataVector(nullptr), m_currentEvent(-1), m_totalEvents(0), m_filePath(filePath) 
+      m_beamSimDataArray(nullptr), m_currentEvent(-1), m_totalEvents(0), m_filePath(filePath) 
 {
     // It is good practice to load libraries in the main macro,
     // but loading here ensures the class is self-contained.
@@ -25,13 +24,13 @@ EventDataReader::EventDataReader(const char* filePath)
     }
     m_tree->SetBranchAddress("FragSimData", &m_fragSimDataArray);
     
-    // Try to set beam branch using vector<TBeamSimData> format
+    // Try to set beam branch - it may not exist in all files
     if (m_tree->GetBranch("beam")) {
-        m_tree->SetBranchAddress("beam", &m_beamDataVector);
-        std::cout << "EventDataReader: Found beam branch (vector<TBeamSimData> format)" << std::endl;
+        m_tree->SetBranchAddress("beam", &m_beamSimDataArray);
+        std::cout << "EventDataReader: Found beam branch" << std::endl;
     } else {
         std::cout << "EventDataReader: No beam branch found in file" << std::endl;
-        m_beamDataVector = nullptr;
+        m_beamSimDataArray = nullptr;
     }
     
     m_totalEvents = m_tree->GetEntries();
@@ -64,16 +63,4 @@ bool EventDataReader::NextEvent() {
 bool EventDataReader::PrevEvent() {
     if (m_currentEvent <= 0) return false;
     return GoToEvent(m_currentEvent - 1);
-}
-
-int EventDataReader::GetBeamParticleCount() const {
-    if (!m_beamDataVector) return 0;
-    return m_beamDataVector->size();
-}
-
-const TBeamSimData* EventDataReader::GetBeamParticle(int index) const {
-    if (!m_beamDataVector || index < 0 || index >= (int)m_beamDataVector->size()) {
-        return nullptr;
-    }
-    return &((*m_beamDataVector)[index]);
 }
