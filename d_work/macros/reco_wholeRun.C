@@ -1,26 +1,37 @@
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTree.h"
+#include <cstdlib>
+#include <string>
 
 #include "GeometryManager.hh"
 #include "PDCSimAna.hh"
 #include "EventDataReader.hh"
 #include "RecoEvent.hh"
 
-void reco_wholeRun(const char* inputFile = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root",
-                   const char* outputFile = "reco_output.root") {
+void reco_wholeRun(const char* inputFile /*= SMSIMDIR-based default*/, const char* outputFile = "reco_output.root") {
+    // if inputFile is nullptr, build default from SMSIMDIR
+    const char* smsDir = getenv("SMSIMDIR");
+    if (!smsDir && inputFile == nullptr) {
+        std::cerr << "Environment variable SMSIMDIR is not set and no inputFile provided" << std::endl;
+        return;
+    }
+    std::string smsBase = smsDir ? std::string(smsDir) : std::string();
+    std::string inputPath;
+    if (inputFile && inputFile[0] != '\0') inputPath = inputFile;
+    else inputPath = smsBase + "/d_work/output_tree/test0000.root";
     // 1. 加载库
     gSystem->Load("libPDCAnalysisTools.so");
     
     // 2. 设置几何和重建器
     GeometryManager geo;
-    geo.LoadGeometry("/home/tbt/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac");
+    geo.LoadGeometry((smsBase + "/d_work/geometry/5deg_1.2T.mac").c_str());
     
     PDCSimAna ana(geo);
     ana.SetSmearing(0.5, 0.5);
     
     // 3. 打开输入文件
-    EventDataReader reader(inputFile);
+    EventDataReader reader(inputPath.c_str());
     if (!reader.IsOpen()) {
         std::cerr << "无法打开输入文件: " << inputFile << std::endl;
         return;

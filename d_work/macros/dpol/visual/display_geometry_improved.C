@@ -14,7 +14,13 @@ void display_geometry_improved() {
     TEveManager::Create();
     
     // 导入探测器几何
-    TString gdmlFile = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/detector_geometry.gdml";
+    const char* smsDir = getenv("SMSIMDIR");
+    if (!smsDir) {
+        std::cerr << "Environment variable SMSIMDIR is not set" << std::endl;
+        return;
+    }
+    std::string smsBase(smsDir);
+    TString gdmlFile = (smsBase + "/d_work/detector_geometry.gdml").c_str();
     if (!TGeoManager::Import(gdmlFile)) {
         std::cout << "Error: Could not import " << gdmlFile << std::endl;
         return;

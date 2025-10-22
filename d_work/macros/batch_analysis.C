@@ -1,20 +1,30 @@
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTree.h"
+#include <cstdlib>
+#include <string>
 
 #include "GeometryManager.hh"
 #include "PDCSimAna.hh"
 #include "EventDataReader.hh"
 #include "RecoEvent.hh"
 
-void batch_analysis(const char* inputFile = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root",
+void batch_analysis(const char* inputFile /*= SMSIMDIR-based default*/,
                     const char* outputFile = "reco_output.root") {
     // 1. 加载库
     gSystem->Load("libPDCAnalysisTools.so");
     
+    const char* smsDir = getenv("SMSIMDIR");
+    if (!smsDir && (inputFile == nullptr || inputFile[0] == '\0')) {
+        std::cerr << "Environment variable SMSIMDIR is not set and no inputFile provided" << std::endl;
+        return;
+    }
+    std::string smsBase = smsDir ? std::string(smsDir) : std::string();
+    std::string inputPath = (inputFile && inputFile[0] != '\0') ? std::string(inputFile) : (smsBase + "/d_work/output_tree/test0000.root");
+
     // 2. 设置几何和重建器
     GeometryManager geo;
-    geo.LoadGeometry("/home/tbt/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac");
+    geo.LoadGeometry((smsBase + "/d_work/geometry/5deg_1.2T.mac").c_str());
     
     PDCSimAna ana(geo);
     ana.SetSmearing(0.5, 0.5);

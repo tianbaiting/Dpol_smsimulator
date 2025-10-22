@@ -4,6 +4,8 @@
 #include "TStyle.h"
 #include "TError.h"
 #include "TEveManager.h"
+#include <cstdlib>
+#include <string>
 
 // 包含我们所有自定义类的头文件
 #include "GeometryManager.hh"
@@ -31,8 +33,15 @@ void run_display_fixed(Long64_t event_id = 0) {
     
     try {
         // 2. 创建并设置所有分析工具 (对象在栈上创建，函数结束时自动销毁)
+        const char* smsDir = getenv("SMSIMDIR");
+        if (!smsDir) {
+            Error("run_display_fixed", "环境变量 SMSIMDIR 未设置!");
+            return;
+        }
+        std::string smsBase(smsDir);
+
         GeometryManager geo;
-        if (!geo.LoadGeometry("/home/tbt/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac")) {
+        if (!geo.LoadGeometry((smsBase + "/d_work/geometry/5deg_1.2T.mac").c_str())) {
             Error("run_display_fixed", "无法加载几何文件");
             return;
         }
@@ -46,13 +55,13 @@ void run_display_fixed(Long64_t event_id = 0) {
         PDCSimAna ana(geo);
         ana.SetSmearing(0.5, 0.5); // 设置模糊参数
 
-        EventDataReader reader("/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root");
+        EventDataReader reader((smsBase + "/d_work/output_tree/test0000.root").c_str());
         if (!reader.IsOpen()) {
             Error("run_display_fixed", "无法打开数据文件");
             return;
         }
 
-        EventDisplay display("/home/tbt/workspace/dpol/smsimulator5.5/d_work/detector_geometry.gdml", geo);
+        EventDisplay display((smsBase + "/d_work/detector_geometry.gdml").c_str(), geo);
 
         // 3. 定位到指定事件，执行重建，然后显示
         if (reader.GoToEvent(event_id)) {

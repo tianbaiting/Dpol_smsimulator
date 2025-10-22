@@ -4,20 +4,28 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cstdlib>
+#include <string>
 #include <TFile.h>
 #include <TTree.h>
 #include "TBeamSimData.hh"
 
 int TransDat2root() {
+    const char* smsDir = getenv("SMSIMDIR");
+    if (!smsDir) {
+        std::cerr << "Environment variable SMSIMDIR is not set" << std::endl;
+        return 1;
+    }
+    std::string smsBase(smsDir);
     // 输入文件路径
-    std::string inputFile = "/home/tbt/workspace/dpol/smsimulator5.5/inputdat/unpol/d+Pb208E190g050xyz/dbreakb01.dat";
+    std::string inputFile = smsBase + "/inputdat/unpol/d+Pb208E190g050xyz/dbreakb01.dat";
     // 输出文件夹路径
-    std::string outDir = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/rootfiles/d+Pb208E190g050xyz/";
+    std::string outDir = smsBase + "/d_work/rootfiles/d+Pb208E190g050xyz/";
     // 输出ROOT文件名
     std::string outFile = outDir + "dbreakb01_seperate.root";
 
     // 创建输出文件夹
-    system(("mkdir -p " + outDir).c_str());
+    system((std::string("mkdir -p ") + outDir).c_str());
 
     // 打开输入文件
     std::ifstream fin(inputFile);
