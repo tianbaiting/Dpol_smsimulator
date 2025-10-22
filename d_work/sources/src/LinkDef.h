@@ -12,5 +12,7 @@
 #pragma link C++ class GeometryManager+;
 #pragma link C++ class EventProcessor+;
 #pragma link C++ class MagneticField+;
+#pragma link C++ class ParticleTrajectory+;
+#pragma link C++ class ParticleTrajectory::TrajectoryPoint+;
 
 #endif
