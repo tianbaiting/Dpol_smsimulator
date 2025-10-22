@@ -33,16 +33,20 @@ else
 fi
 
 if [[ $LIBRARY_PATH == "" ]]; then
-    export LIBRARY_PATH=$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics
+    export LIBRARY_PATH=$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/d_work/build/
 else
-    export LIBRARY_PATH=$LIBRARY_PATH:$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics
+    export LIBRARY_PATH=$LIBRARY_PATH:$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/d_work/build/
 fi
 
+## 得加自己的库的东西
 if [[ $ROOT_INCLUDE_PATH == "" ]]; then
-    export ROOT_INCLUDE_PATH=$SMSIMDIR/sources/smg4lib/data/include:$TARTSYS/include
+    export ROOT_INCLUDE_PATH=$SMSIMDIR/sources/smg4lib/data/include:$TARTSYS/include:$SMSIMDIR/d_work/sources/include:$SMSIMDIR/d_work
 else
-    export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$SMSIMDIR/sources/smg4lib/data/include:$TARTSYS/include
+    export ROOT_INCLUDE_PATH=$ROOT_INCLUDE_PATH:$SMSIMDIR/sources/smg4lib/data/include:$TARTSYS/include:$SMSIMDIR/d_work/sources/include:$SMSIMDIR/d_work
 fi
+
+
+
 
 ## ----> for kondo
 #export TEMPDIRKONDO=/home/kondo/exp/samurai21/anaroot/mysrc
