@@ -23,15 +23,19 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
         loaded = true;
         Info("run_display_safe", "库已成功加载");
     }
-
+    const char* smsDir = getenv("SMSIMDIR"); // 确保环境变量已加载
+    if (!smsDir) {
+        Error("run_display_safe", "环境变量 SMSIMDIR 未设置!");
+        return;
+    }
     // 2. 创建并设置所有分析工具
     GeometryManager geo;
-    geo.LoadGeometry("/home/tian/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac");
+    geo.LoadGeometry(Form("%s/d_work/geometry/5deg_1.2T.mac", smsDir));
 
     PDCSimAna ana(geo);
     ana.SetSmearing(0.5, 0.5);
 
-    EventDataReader reader("/home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/testry0000.root");
+    EventDataReader reader(Form("%s/d_work/output_tree/testry0000.root", smsDir));
     if (!reader.IsOpen()) {
         Error("run_display_safe", "无法打开数据文件!");
         return;
@@ -40,9 +44,11 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
     // 使用静态持久对象，防止函数返回时被析构（这样EVE显示保持）
     static EventDisplay* s_display = nullptr;
     if (!s_display) {
-        s_display = new EventDisplay("/home/tian/workspace/dpol/smsimulator5.5/d_work/detector_geometry.gdml", geo);
+        s_display = new EventDisplay(Form("%s/d_work/detector_geometry.gdml", smsDir), geo);
     }
     EventDisplay* display = s_display;
+
+
 
     // 加载磁场用于轨迹计算，使用静态持久对象
     static MagneticField* s_magField = nullptr;
@@ -52,7 +58,7 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
         if (!s_magField) s_magField = new MagneticField();
         if (!s_magLoaded) {
             // 使用真实磁场文件
-            if (s_magField->LoadFieldMap("/home/tian/workspace/dpol/smsimulator5.5/d_work/geometry/filed_map/180626-1,20T-3000.table")) {
+            if (s_magField->LoadFieldMap(Form("%s/d_work/geometry/filed_map/180626-1,20T-3000.table", smsDir))) {
                 s_magField->SetRotationAngle(30.0);
                 s_magLoaded = true;
                 Info("run_display_safe", "已加载真实磁场文件: 180626-1,20T-3000.table");

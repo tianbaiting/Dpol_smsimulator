@@ -39,7 +39,13 @@ void display_geometrycopy() {
     std::cout << "Info: Disabled OpenGL mouse-over highlight for stability on WSL." << std::endl;
     
     // 导入探测器几何
-    const char* geom_file = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/detector_geometry.gdml";
+    const char* smsDir = getenv("SMSIMDIR");
+    if (!smsDir) {
+        std::cerr << "Environment variable SMSIMDIR is not set" << std::endl;
+        return;
+    }
+    std::string smsBase(smsDir);
+    const char* geom_file = (smsBase + "/d_work/detector_geometry.gdml").c_str();
     if (!TGeoManager::Import(geom_file)) {
         std::cout << "Error: Could not import geometry from " << geom_file << std::endl;
         // 清理已创建的TEveManager

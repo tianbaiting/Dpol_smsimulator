@@ -33,7 +33,7 @@ smsimulator5.5/doc/doxyfile
 # ROOT 文件和数据
 *.root
 *.dat
-d_work/geometry/
+d_work/geometry/*
 /bin
 
 # 可执行文件
@@ -49,3 +49,6 @@ doc
 # 其他
 *.swp
 *.swo
+
+# 不被排除的文件
+!d_work/geometry/*.mac

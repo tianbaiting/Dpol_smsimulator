@@ -4,12 +4,23 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cstdlib>
+#include <string>
 #include <TFile.h>
 #include <TTree.h>
 #include "TBeamSimData.hh"
 
-void GenInputRoot_np_atime(const std::string& inputFile = "/home/tbt/workspace/dpol/smsimulator5.5/inputdat/pol/y_pol/phi_fixed/d+Sn124E190g050ynp/dbreakb09.dat", const TVector3& position = TVector3(0, 0, 0))
+void GenInputRoot_np_atime(const std::string& inputFile /*= SMSIMDIR-based default*/, const TVector3& position = TVector3(0, 0, 0))
 {
+    std::string resolvedInput = inputFile;
+    if (resolvedInput.empty()) {
+        const char* smsDir = getenv("SMSIMDIR");
+        if (!smsDir) {
+            std::cerr << "Environment variable SMSIMDIR is not set and no inputFile provided" << std::endl;
+            return;
+        }
+        resolvedInput = std::string(smsDir) + "/inputdat/pol/y_pol/phi_fixed/d+Sn124E190g050ynp/dbreakb09.dat";
+    }
 
     //get the inputfile dir (last two)
 
@@ -33,7 +44,10 @@ void GenInputRoot_np_atime(const std::string& inputFile = "/home/tbt/workspace/d
     }
 
     // 拼接输出目录和文件名
-    std::string outDir = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/rootfiles/" + folderName + "/";
+    const char* smsDir = getenv("SMSIMDIR");
+    std::string outDir;
+    if (smsDir) outDir = std::string(smsDir) + "/d_work/rootfiles/" + folderName + "/";
+    else outDir = "/d_work/rootfiles/" + folderName + "/"; // fallback
     std::string outFile = outDir + fileName;
 
 

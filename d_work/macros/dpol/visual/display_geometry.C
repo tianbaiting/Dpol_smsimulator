@@ -33,9 +33,9 @@ void reset_view();
 void show_positions();
 
 // Energy deposition visualization functions
-// void load_energy_deposits_file(const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root");
-// void load_energy_deposits_file(const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/d+Pb208E190g050xyz_np_sametime_vis0000.root");
-void load_energy_deposits_file(const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/d+Sn124E190g050ynp_same0000.root");
+// void load_energy_deposits_file(const char* filePath = "SMSIMDIR/d_work/output_tree/test0000.root");
+// void load_energy_deposits_file(const char* filePath = "SMSIMDIR/d_work/output_tree/d+Pb208E190g050xyz_np_sametime_vis0000.root");
+void load_energy_deposits_file(const char* filePath /*= SMSIMDIR/d_work/output_tree/d+Sn124E190g050ynp_same0000.root*/){
 
 
 void show_event(Long64_t eventNumber = -1);
