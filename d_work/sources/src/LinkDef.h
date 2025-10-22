@@ -11,5 +11,6 @@
 #pragma link C++ class PDCSimAna+;
 #pragma link C++ class GeometryManager+;
 #pragma link C++ class EventProcessor+;
+#pragma link C++ class MagneticField+;
 
 #endif
