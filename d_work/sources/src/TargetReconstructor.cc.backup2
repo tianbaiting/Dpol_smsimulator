@@ -1,0 +1,276 @@
+#include "TargetReconstructor.hh"
+#include "ParticleTrajectory.hh"
+#include <limits>
+#include <cmath>
+#include <iostream>
+
+TargetReconstructor::TargetReconstructor(MagneticField* magField)
+    : fMagField(magField), fProtonMass(938.272) {
+}
+
+TargetReconstructor::~TargetReconstructor() {}
+
+// (No standalone EvaluateTrial implementation; functionality implemented inside ReconstructAtTarget.)
+
+TLorentzVector TargetReconstructor::ReconstructAtTarget(const RecoTrack& track,
+                                                        const TVector3& targetPos,
+                                                        double pMin,
+                                                        double pMax,
+                                                        double tol,
+                                                        int maxRounds) const {
+    // PDC reconstruction gives us two points: track.start and track.end
+    // Calculate direction from PDC1 to PDC2
+    TVector3 direction = (track.end - track.start);
+    if (direction.Mag() < 1e-6) {
+        std::cerr << "TargetReconstructor: track has zero length" << std::endl;
+        return TLorentzVector(0,0,0,0);
+    }
+
+    // Determine which PDC point is farther from target (start from farther one)
+    double distStart = (track.start - targetPos).Mag();
+    double distEnd = (track.end - targetPos).Mag();
+    TVector3 startPos = (distEnd > distStart) ? track.end : track.start;
+    
+    // For backward propagation: use negative charge to simulate time reversal
+    double charge = -1.0; // negative charge for backward propagation
+    double mass = fProtonMass;
+
+    std::cout << "TargetReconstructor: Starting from " 
+              << (distEnd > distStart ? "PDC2" : "PDC1") 
+              << " at (" << startPos.X() << ", " << startPos.Y() << ", " << startPos.Z() 
+              << ") mm, target at (" << targetPos.X() << ", " << targetPos.Y() 
+              << ", " << targetPos.Z() << ") mm" << std::endl;
+
+    double bestP = (pMin + pMax) * 0.5;
+    TLorentzVector bestP4;
+    double searchMin = pMin, searchMax = pMax;
+
+    for (int round = 0; round < maxRounds; ++round) {
+        int nSamples = 25;
+        double localBestDist = std::numeric_limits<double>::max();
+        double localBestP = bestP;
+        ParticleTrajectory::TrajectoryPoint localBestPt;
+
+        for (int i = 0; i < nSamples; ++i) {
+            double frac = (double)i / (nSamples - 1);
+            double pTrial = searchMin + frac * (searchMax - searchMin);
+
+            // Build initial momentum along track direction (toward target from farther PDC)
+            TVector3 towardTarget = (targetPos - startPos).Unit();
+            TVector3 pvec = towardTarget * pTrial;
+            TLorentzVector p4(pvec, std::sqrt(pTrial*pTrial + mass*mass));
+            
+            ParticleTrajectory traj(fMagField);
+            traj.SetStepSize(2.0);
+            traj.SetMaxDistance(10000.0);
+            traj.SetMaxTime(200.0);
+            std::vector<ParticleTrajectory::TrajectoryPoint> pts =
+                traj.CalculateTrajectory(startPos, p4, charge, mass);
+
+            // find closest approach to targetPos
+            double bestDist = std::numeric_limits<double>::max();
+            ParticleTrajectory::TrajectoryPoint bestPt;
+            for (const auto& pt : pts) {
+                double d = (pt.position - targetPos).Mag();
+                if (d < bestDist) {
+                    bestDist = d;
+                    bestPt = pt;
+                }
+            }
+
+            if (bestDist < localBestDist) {
+                localBestDist = bestDist;
+                localBestP = pTrial;
+                localBestPt = bestPt;
+            }
+        }
+
+        // Narrow search around localBestP
+        double halfRange = (searchMax - searchMin) / 10.0;
+        searchMin = std::max(pMin, localBestP - halfRange);
+        searchMax = std::min(pMax, localBestP + halfRange);
+        bestP = localBestP;
+
+        // Save best 4-momentum at closest point (flip momentum sign for physical interpretation)
+        // Since we used negative charge, flip momentum to get actual proton momentum at target
+        bestP4.SetXYZT(-localBestPt.momentum.X(), -localBestPt.momentum.Y(), -localBestPt.momentum.Z(),
+                       std::sqrt(localBestPt.momentum.Mag2() + mass*mass));
+
+        std::cout << "Round " << round << ": bestP=" << bestP << " MeV/c, dist=" << localBestDist << " mm" << std::endl;
+
+        if (localBestDist <= tol) break;
+    }
+
+    return bestP4;
+}
+
+TargetReconstructionResult TargetReconstructor::ReconstructAtTargetWithDetails(const RecoTrack& track,
+                                                                                          const TVector3& targetPos,
+                                                                                          bool saveTrajectories,
+                                                                                          double pMin,
+                                                                                          double pMax,
+                                                                                          double tol,
+                                                                                          int maxRounds) const {
+    TargetReconstructionResult result;
+    result.success = false;
+    
+    TVector3 direction = (track.end - track.start);
+    if (direction.Mag() < 1e-6) {
+        std::cerr << "TargetReconstructor: track has zero length" << std::endl;
+        return result;
+    }
+
+    // Determine which PDC point is farther from target
+    double distStart = (track.start - targetPos).Mag();
+    double distEnd = (track.end - targetPos).Mag();
+    TVector3 startPos = (distEnd > distStart) ? track.end : track.start;
+    
+    double charge = -1.0; // negative charge for backward propagation
+    double mass = fProtonMass;
+
+    std::cout << "TargetReconstructor: Starting from " 
+              << (distEnd > distStart ? "PDC2" : "PDC1") 
+              << " at (" << startPos.X() << ", " << startPos.Y() << ", " << startPos.Z() 
+              << ") mm, target at (" << targetPos.X() << ", " << targetPos.Y() 
+              << ", " << targetPos.Z() << ") mm" << std::endl;
+
+    double bestP = (pMin + pMax) * 0.5;
+    double searchMin = pMin, searchMax = pMax;
+
+    for (int round = 0; round < maxRounds; ++round) {
+        int nSamples = showTrials ? 15 : 25; // Fewer samples when visualizing to avoid clutter
+        double localBestDist = std::numeric_limits<double>::max();
+        double localBestP = bestP;
+        ParticleTrajectory::TrajectoryPoint localBestPt;
+        std::vector<ParticleTrajectory::TrajectoryPoint> localBestTraj;
+
+        for (int i = 0; i < nSamples; ++i) {
+            double frac = (double)i / (nSamples - 1);
+            double pTrial = searchMin + frac * (searchMax - searchMin);
+
+            // Build initial momentum along track direction
+            TVector3 towardTarget = (targetPos - startPos).Unit();
+            TVector3 pvec = towardTarget * pTrial;
+            TLorentzVector p4(pvec, std::sqrt(pTrial*pTrial + mass*mass));
+            
+            ParticleTrajectory traj(fMagField);
+            traj.SetStepSize(2.0);
+            traj.SetMaxDistance(10000.0);
+            traj.SetMaxTime(200.0);
+            std::vector<ParticleTrajectory::TrajectoryPoint> pts =
+                traj.CalculateTrajectory(startPos, p4, charge, mass);
+
+            // Find closest approach to targetPos
+            double bestDist = std::numeric_limits<double>::max();
+            ParticleTrajectory::TrajectoryPoint bestPt;
+            for (const auto& pt : pts) {
+                double d = (pt.position - targetPos).Mag();
+                if (d < bestDist) {
+                    bestDist = d;
+                    bestPt = pt;
+                }
+            }
+
+            // Visualize trial trajectories if requested
+            if (showTrials && eventElements && pts.size() > 1) {
+                std::vector<double> x, y, z;
+                traj.GetTrajectoryPoints(pts, x, y, z);
+                DrawTrialTrajectory(x, y, z, pTrial, bestDist, eventElements, round, i);
+            }
+
+            if (bestDist < localBestDist) {
+                localBestDist = bestDist;
+                localBestP = pTrial;
+                localBestPt = bestPt;
+                localBestTraj = pts;
+            }
+        }
+
+        // Narrow search around localBestP
+        double halfRange = (searchMax - searchMin) / 10.0;
+        searchMin = std::max(pMin, localBestP - halfRange);
+        searchMax = std::min(pMax, localBestP + halfRange);
+        bestP = localBestP;
+        bestTrajectory = localBestTraj;
+
+        // Save best 4-momentum at closest point
+        bestP4.SetXYZT(-localBestPt.momentum.X(), -localBestPt.momentum.Y(), -localBestPt.momentum.Z(),
+                       std::sqrt(localBestPt.momentum.Mag2() + mass*mass));
+
+        std::cout << "Round " << round << ": bestP=" << bestP << " MeV/c, dist=" << localBestDist << " mm" << std::endl;
+
+        if (localBestDist <= tol) break;
+    }
+
+    // Draw the final best trajectory
+    if (eventElements && !bestTrajectory.empty()) {
+        ParticleTrajectory trajHelper(fMagField);
+        std::vector<double> x, y, z;
+        trajHelper.GetTrajectoryPoints(bestTrajectory, x, y, z);
+        DrawBestTrajectory(x, y, z, bestP, eventElements);
+    }
+
+    return bestP4;
+}
+
+void TargetReconstructor::DrawTrialTrajectory(const std::vector<double>& x,
+                                             const std::vector<double>& y,
+                                             const std::vector<double>& z,
+                                             double momentum,
+                                             double distance,
+                                             TEveElementList* eventElements,
+                                             int round, int trial) const {
+    if (x.size() < 2 || !eventElements) return;
+
+    // Create a line for the trial trajectory
+    TEveLine* trajLine = new TEveLine(Form("TrialTraj_R%d_T%d_p%.0f", round, trial, momentum));
+    trajLine->SetLineColor(kGray + round); // Different shades for different rounds
+    trajLine->SetLineWidth(1);
+    trajLine->SetLineStyle(2); // Dashed line for trials
+    
+    // Add points to the line (sample every few points to reduce clutter)
+    int step = std::max(1, (int)x.size() / 20); // Show max 20 points per trajectory
+    for (size_t i = 0; i < x.size(); i += step) {
+        trajLine->SetPoint(i/step, x[i], y[i], z[i]);
+    }
+    
+    eventElements->AddElement(trajLine);
+}
+
+void TargetReconstructor::DrawBestTrajectory(const std::vector<double>& x,
+                                            const std::vector<double>& y,
+                                            const std::vector<double>& z,
+                                            double momentum,
+                                            TEveElementList* eventElements) const {
+    if (x.size() < 2 || !eventElements) return;
+
+    // Create a bold line for the best trajectory
+    TEveLine* trajLine = new TEveLine(Form("BestBackpropTraj_p%.0f", momentum));
+    trajLine->SetLineColor(kMagenta);
+    trajLine->SetLineWidth(4);
+    
+    // Add all points to the line
+    for (size_t i = 0; i < x.size(); ++i) {
+        trajLine->SetPoint(i, x[i], y[i], z[i]);
+    }
+    
+    eventElements->AddElement(trajLine);
+    
+    // Add markers at start and end
+    TEvePointSet* startMarker = new TEvePointSet("BackpropStart");
+    startMarker->SetMarkerColor(kMagenta);
+    startMarker->SetMarkerStyle(29); // Star
+    startMarker->SetMarkerSize(2.5);
+    startMarker->SetNextPoint(x[0], y[0], z[0]);
+    eventElements->AddElement(startMarker);
+    
+    TEvePointSet* endMarker = new TEvePointSet("BackpropEnd");
+    endMarker->SetMarkerColor(kMagenta);
+    endMarker->SetMarkerStyle(28); // Open circle
+    endMarker->SetMarkerSize(2.0);
+    startMarker->SetNextPoint(x.back(), y.back(), z.back());
+    eventElements->AddElement(endMarker);
+    
+    std::cout << "Drew best backpropagation trajectory with " << x.size() 
+              << " points, p=" << momentum << " MeV/c" << std::endl;
+}
