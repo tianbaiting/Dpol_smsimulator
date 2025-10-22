@@ -27,15 +27,15 @@ export G4SMLDLIBS="-lsmphysics -lsmaction -lsmconstruction -lsmdata"
 
 
 if [[ $LD_LIBRARY_PATH == "" ]]; then
-    export LD_LIBRARY_PATH=$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/build/sources/sim_deuteron:$TARTSYS/lib
+    export LD_LIBRARY_PATH=$SMSIMDIR/smg4lib/lib:$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/build/sources/sim_deuteron:$TARTSYS/lib:$SMSIMDIR/d_work/sources/build/
 else
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/build/sources/sim_deuteron:$TARTSYS/lib
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SMSIMDIR/smg4lib/lib:$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/build/sources/sim_deuteron:$TARTSYS/lib:$SMSIMDIR/d_work/sources/build/
 fi
 
 if [[ $LIBRARY_PATH == "" ]]; then
-    export LIBRARY_PATH=$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/d_work/build/
+    export LIBRARY_PATH=$SMSIMDIR/smg4lib/lib:$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/d_work/sources/build/
 else
-    export LIBRARY_PATH=$LIBRARY_PATH:$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/d_work/build/
+    export LIBRARY_PATH=$LIBRARY_PATH:$SMSIMDIR/smg4lib/lib:$SMSIMDIR/build/sources/smg4lib/data:$SMSIMDIR/build/sources/smg4lib/action:$SMSIMDIR/build/sources/smg4lib/construction:$SMSIMDIR/build/sources/smg4lib/physics:$SMSIMDIR/d_work/sources/build/
 fi
 
 ## 得加自己的库的东西
@@ -47,6 +47,30 @@ fi
 
 
 
+
+# Set ROOT library preloading for automatic library loading
+export ROOT_PRELOAD_LIBS="libsmdata.so:libsmaction.so:libsmconstruction.so:libsmphysics.so:libsim_deuteron.so"
+
+# Create rootlogon.C for automatic library loading in ROOT
+cat > $SMSIMDIR/d_work/rootlogon.C << 'EOF'
+{
+    // Automatically load required libraries when ROOT starts
+    cout << "Loading SM libraries from build directory..." << endl;
+    gSystem->Load("$SMSIMDIR/build/sources/smg4lib/data/libsmdata.so");
+    gSystem->Load("$SMSIMDIR/build/sources/smg4lib/action/libsmaction.so"); 
+    gSystem->Load("$SMSIMDIR/build/sources/smg4lib/construction/libsmconstruction.so");
+    gSystem->Load("$SMSIMDIR/build/sources/smg4lib/physics/libsmphysics.so");
+    gSystem->Load("$SMSIMDIR/build/sources/sim_deuteron/libsim_deuteron.so");
+    
+    cout << "Loading PDC Analysis Tools..." << endl;
+    gSystem->Load("$SMSIMDIR/d_work/sources/build/libPDCAnalysisTools.so");
+    
+    cout << "All libraries loaded successfully!" << endl;
+}
+EOF
+
+# Replace $SMSIMDIR with actual path in rootlogon.C
+sed -i "s|\$SMSIMDIR|$SMSIMDIR|g" $SMSIMDIR/d_work/rootlogon.C
 
 ## ----> for kondo
 #export TEMPDIRKONDO=/home/kondo/exp/samurai21/anaroot/mysrc

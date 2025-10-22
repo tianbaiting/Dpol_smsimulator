@@ -26,8 +26,10 @@
 #include "ParticleTrajectory.hh"
 #include "MagneticField.hh"
 
-// Forward declaration
+// Forward declarations
 class TBeamSimData;
+struct TargetReconstructionResult;
+struct TrajectoryPoint;
 
 
 // ===================================================================
@@ -51,6 +53,14 @@ public:
     void DisplayEventWithTrajectories(EventDataReader& reader, const RecoEvent& event,
                                      MagneticField* magField);
 
+    // 新增：显示靶点重建结果
+    void DrawReconstructionResults(const struct TargetReconstructionResult& result, 
+                                  bool showTrials = false);
+    
+    // 新增：绘制单个轨迹
+    void DrawTrajectory(const std::vector<struct TrajectoryPoint>& trajectory,
+                       const char* name, int color, int style = 1);
+
     // 清除当前显示的事件
     void ClearCurrentEvent();
 
@@ -63,6 +73,9 @@ public:
 
     // 强制重绘
     void Redraw() { if(gEve) gEve->Redraw3D(kTRUE); }
+    
+    // 公开访问当前事件元素列表（用于添加额外的可视化元素）
+    TEveElementList* GetCurrentEventElements() { return m_currentEventElements; }
     
 private:
     // 初始化函数

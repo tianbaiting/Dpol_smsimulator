@@ -72,29 +72,39 @@ void EventDisplay::DisplayEvent(const RecoEvent& event) {
     m_currentEventElements = new TEveElementList(Form("Event_%lld", event.eventID));
     gEve->AddElement(m_currentEventElements);
 
-    // 1. Raw Hits
-    TEvePointSet* raw_hits = new TEvePointSet("Raw Hits");
-    raw_hits->SetMarkerColor(kRed);
-    raw_hits->SetMarkerStyle(20);
-    raw_hits->SetMarkerSize(1.0);
-    for (const auto& hit : event.rawHits) {
-        raw_hits->SetNextPoint(hit.position.X(), hit.position.Y(), hit.position.Z());
+    // 1. Raw Hits - 每个hit使用单独的点集以便按能量调整大小/颜色
+    for (size_t i = 0; i < event.rawHits.size(); ++i) {
+        const auto& hit = event.rawHits[i];
+        // marker size scale: base + log-energy mapping (protect against zero)
+        double eng = hit.energy;
+        double msize = 1.0 + (eng > 0 ? std::log10(1.0 + eng) : 0.0);
+        TEvePointSet* hitMarker = new TEvePointSet(Form("RawHit_%zu", i));
+        // Color map: low energy -> red, high energy -> orange
+        Int_t color = (eng > 0) ? kRed + std::min(5, (int)std::floor(std::log10(1.0 + eng))) : kRed;
+        hitMarker->SetMarkerColor(color);
+        hitMarker->SetMarkerStyle(20);
+        hitMarker->SetMarkerSize(msize);
+        hitMarker->SetNextPoint(hit.position.X(), hit.position.Y(), hit.position.Z());
+        m_currentEventElements->AddElement(hitMarker);
+        // 同时在控制台打印能量（便于调试）
+        std::cout << "RawHit " << i << ": pos=(" << hit.position.X() << ", " << hit.position.Y()
+                  << ", " << hit.position.Z() << ") mm, E=" << eng << "" << std::endl;
     }
-    m_currentEventElements->AddElement(raw_hits);
 
-    // 2. Smeared Hits
+    // 2. Smeared Hits - 显示重建后的点，使用统一样式但更醒目
     TEvePointSet* smeared_hits = new TEvePointSet("Smeared Hits");
     smeared_hits->SetMarkerColor(kBlue);
-    smeared_hits->SetMarkerStyle(20);
-    smeared_hits->SetMarkerSize(1.0);
+    smeared_hits->SetMarkerStyle(4);
+    smeared_hits->SetMarkerSize(2.0);
     for (const auto& hit : event.smearedHits) {
         smeared_hits->SetNextPoint(hit.position.X(), hit.position.Y(), hit.position.Z());
     }
     m_currentEventElements->AddElement(smeared_hits);
 
     // 3. Reconstructed Tracks
-    for (const auto& track : event.tracks) {
-        TEvePointSet* reco_pts = new TEvePointSet("Reco Points");
+    for (size_t ti = 0; ti < event.tracks.size(); ++ti) {
+        const auto& track = event.tracks[ti];
+        TEvePointSet* reco_pts = new TEvePointSet(Form("RecoPoints_%zu", ti));
         reco_pts->SetMarkerColor(kGreen+2);
         reco_pts->SetMarkerStyle(4);
         reco_pts->SetMarkerSize(2.5);
@@ -102,7 +112,7 @@ void EventDisplay::DisplayEvent(const RecoEvent& event) {
         reco_pts->SetNextPoint(track.end.X(), track.end.Y(), track.end.Z());
         m_currentEventElements->AddElement(reco_pts);
 
-        TEveLine* track_line = new TEveLine("Track");
+        TEveLine* track_line = new TEveLine(Form("Track_%zu", ti));
         track_line->SetPoint(0, track.start.X(), track.start.Y(), track.start.Z());
         track_line->SetPoint(1, track.end.X(), track.end.Y(), track.end.Z());
         track_line->SetLineColor(kGreen+2);
@@ -163,12 +173,7 @@ void EventDisplay::DrawParticleTrajectories(const std::vector<TBeamSimData>* bea
         TLorentzVector momentum = particle.fMomentum;
         TVector3 position = particle.fPosition;
         
-        if (TMath::Abs(charge) < 1e-6) {
-            std::cout << "Skipping neutral particle: " << particleName << std::endl;
-            continue; // Skip neutral particles
-        }
-        
-        // 计算轨迹
+        // 允许绘制中性粒子轨迹（ParticleTrajectory 对中性粒子将返回直线）
         std::vector<ParticleTrajectory::TrajectoryPoint> traj = 
             trajectory.CalculateTrajectory(position, momentum, charge, mass);
         
@@ -182,7 +187,12 @@ void EventDisplay::DrawParticleTrajectories(const std::vector<TBeamSimData>* bea
         trajectory.GetTrajectoryPoints(traj, x, y, z);
         
         // 绘制轨迹
-        int color = (charge > 0) ? kRed : kBlue;
+        int color;
+        if (TMath::Abs(charge) < 1e-6) {
+            color = kGray+1; // 中性粒子用灰色
+        } else {
+            color = (charge > 0) ? kRed : kBlue;
+        }
         DrawTrajectoryLine(x, y, z, particleName, color);
         
         // 打印轨迹信息
@@ -293,6 +303,62 @@ void EventDisplay::GetParticleInfo(int pdgCode, double& charge, double& mass, co
 void EventDisplay::ResetView() {
     SetupCamera();
     Redraw();
+}
+
+// New methods for TargetReconstructor visualization
+#include "TargetReconstructor.hh"  // Include here to access structs
+#include "TEveLine.h"
+#include "TColor.h"
+
+void EventDisplay::DrawReconstructionResults(const TargetReconstructionResult& result, bool showTrials) {
+    if (!m_currentEventElements) {
+        std::cerr << "EventDisplay::DrawReconstructionResults: No current event elements!" << std::endl;
+        return;
+    }
+    
+    // Draw trial trajectories if requested
+    if (showTrials) {
+        for (size_t i = 0; i < result.trialTrajectories.size(); ++i) {
+            TString trialName = Form("TrialTraj_%lu_p%.0f", i, result.trialMomenta[i]);
+            int color = kBlue + i % 4; // Different shades of blue
+            DrawTrajectory(result.trialTrajectories[i], trialName.Data(), color, 2); // dashed line
+            
+            std::cout << "Drew trial trajectory " << i << ": p=" << result.trialMomenta[i] 
+                      << " MeV/c, dist=" << result.distances[i] << " mm" << std::endl;
+        }
+    }
+    
+    // Draw best trajectory
+    if (!result.bestTrajectory.empty()) {
+        DrawTrajectory(result.bestTrajectory, "BestBackpropTraj", kRed, 1); // solid red line
+        
+        std::cout << "Drew best backpropagation trajectory with " << result.bestTrajectory.size() 
+                  << " points, p=" << result.bestMomentum.P() << " MeV/c" << std::endl;
+    }
+    
+    // Redraw the display
+    Redraw();
+}
+
+void EventDisplay::DrawTrajectory(const std::vector<TrajectoryPoint>& trajectory, 
+                                 const char* name, int color, int style) {
+    if (trajectory.empty() || !m_currentEventElements) {
+        return;
+    }
+    
+    // Create EVE line object
+    TEveLine* trajLine = new TEveLine(name);
+    trajLine->SetMainColor(color);
+    trajLine->SetLineStyle(style);
+    trajLine->SetLineWidth(2);
+    
+    // Add all trajectory points
+    for (const auto& pt : trajectory) {
+        trajLine->SetNextPoint(pt.position.X(), pt.position.Y(), pt.position.Z());
+    }
+    
+    // Add to current event elements
+    m_currentEventElements->AddElement(trajLine);
 }
 
 // ... Implementations for SetComponentVisibility and PrintComponentPositions if needed ...

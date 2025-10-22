@@ -14,5 +14,6 @@
 #pragma link C++ class MagneticField+;
 #pragma link C++ class ParticleTrajectory+;
 #pragma link C++ class ParticleTrajectory::TrajectoryPoint+;
+#pragma link C++ class TargetReconstructor+;
 
 #endif
