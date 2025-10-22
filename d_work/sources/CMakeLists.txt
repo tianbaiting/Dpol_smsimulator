@@ -12,8 +12,8 @@ find_package(ROOT REQUIRED)
 # Include ROOT's CMake file
 include(${ROOT_USE_FILE})
 
-# Set C++ standard to 14 as required by ROOT
-set(CMAKE_CXX_STANDARD 14)
+# Set C++ standard to 17 as required by ROOT
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Define include directories
@@ -33,7 +33,19 @@ ROOT_GENERATE_DICTIONARY(G__PDCAnalysisTools ${HEADERS} LINKDEF src/LinkDef.h)
 add_library(PDCAnalysisTools SHARED ${SOURCES} G__PDCAnalysisTools.cxx)
 
 # Link against ROOT libraries
-target_link_libraries(PDCAnalysisTools ${ROOT_LIBRARIES})
+# 需要显式链接 Eve, Geom, Tree, Physics 等库
+target_link_libraries(PDCAnalysisTools 
+    ${ROOT_LIBRARIES}
+    ROOT::Core
+    ROOT::Tree
+    ROOT::Physics
+    ROOT::Geom
+    ROOT::GeomPainter
+    ROOT::Eve
+    ROOT::EG
+    ROOT::Gui
+    ROOT::RGL
+)
 
 # Installation (optional)
 # install(TARGETS PDCAnalysisTools DESTINATION lib)
