@@ -38,6 +38,8 @@ G4bool FragmentSD::ProcessHits(G4Step* aStep, G4TouchableHistory* /*ROhist*/)
   G4StepPoint* postStepPoint = aStep->GetPostStepPoint();
   const G4DynamicParticle* dynamicParticle = aStep->GetTrack()->GetDynamicParticle();
   const G4ParticleDefinition* particleDefinition = aStep->GetTrack()->GetParticleDefinition();
+  //新加energydeposit支持
+  Double_t energyDeposit_MeV = aStep->GetTotalEnergyDeposit()/MeV;  // 能量沉积
 
   Double_t preKineticEnergy_MeV  = preStepPoint->GetKineticEnergy()/MeV;
   Double_t postKineticEnergy_MeV = postStepPoint->GetKineticEnergy()/MeV;
@@ -95,6 +97,7 @@ G4bool FragmentSD::ProcessHits(G4Step* aStep, G4TouchableHistory* /*ROhist*/)
 			      postPosition.y()/mm,
 			      postPosition.z()/mm);
     data->fPreTime  = preStepPoint->GetGlobalTime()/ns;
+    data->fEnergyDeposit = energyDeposit_MeV; // 能量沉积
     data->fPostTime = postStepPoint->GetGlobalTime()/ns;
     data->fFlightLength = aStep->GetTrack()->GetTrackLength()/mm 
       - aStep->GetStepLength()/mm;// up to entrance of material

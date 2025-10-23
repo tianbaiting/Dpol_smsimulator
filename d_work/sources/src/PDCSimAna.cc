@@ -125,7 +125,9 @@ void PDCSimAna::ProcessEvent(TClonesArray* fragSimData, RecoEvent& outEvent) {
         TSimData* hit = (TSimData*)fragSimData->At(i);
         if (!hit || !hit->fDetectorName.Contains("PDC")) continue;
         
+        // outEvent.rawHits.push_back(RecoHit(hit->fPrePosition, hit->fEnergyDeposit));
         outEvent.rawHits.push_back(RecoHit(hit->fPrePosition, hit->fEnergyDeposit));
+        //没有energyDeposit 得用get preenergy--energy
     }
     
     // 添加涂抹后的点（获取完整的全局位置列表）
@@ -144,29 +146,19 @@ std::vector<TVector3> PDCSimAna::GetSmearedGlobalPositions() const {
     std::vector<TVector3> positions;
     // Re-calculate global positions from the 1D smeared hits
     auto add_positions = [&](const std::vector<Hit>& u_hits, const std::vector<Hit>& v_hits, const TVector3& pdc_pos) {
-        // This is a simplified approach: for each u hit, find the average v, and reconstruct.
+        // This is a simplified approach: for each   v hit, find the average u, and reconstruct.
         // A more advanced method would handle multiple combinations.
-        if (u_hits.empty() || v_hits.empty()) return;
+
+        if (u_hits.empty() && v_hits.empty()) return;
         double v_avg = CalculateCoM(v_hits);
-        
-        // 获取 v_hits 的平均 z 偏移
-        double v_z_avg = 12.0; // 默认 V 层位置
-        if (!v_hits.empty()) {
-            double z_sum = 0.0, e_sum = 0.0;
-            for (const auto& hit : v_hits) {
-                z_sum += hit.z * hit.energy;
-                e_sum += hit.energy;
-            }
-            if (e_sum > 0) v_z_avg = z_sum / e_sum;
-        }
-        
-        for (const auto& u_hit : u_hits) {
-            std::vector<Hit> temp_u;
-            std::vector<Hit> temp_v;
-            temp_u.push_back(Hit(u_hit.position, 1.0, u_hit.z));
-            temp_v.push_back(Hit(v_avg, 1.0, v_z_avg));
-            positions.push_back(ReconstructPDC(temp_u, temp_v, pdc_pos));
-        }
+        double u_avg = CalculateCoM(u_hits);
+
+        std::vector<Hit> temp_u;
+        std::vector<Hit> temp_v;
+        temp_v.push_back(Hit(v_avg, 1.0, 0.0)); // z offset is 0 for average point
+        temp_u.push_back(Hit(u_avg, 1.0, 0.0));
+        positions.push_back(ReconstructPDC(temp_u, temp_v, pdc_pos));
+
     };
 
     // Rotate PDC center positions to match the coordinate system used above
@@ -179,6 +171,7 @@ std::vector<TVector3> PDCSimAna::GetSmearedGlobalPositions() const {
     add_positions(fU2_hits_smeared, fV2_hits_smeared, pdc2_pos_rot);
 
     return positions;
+
 }
 
 TVector3 PDCSimAna::ReconstructPDC(const std::vector<Hit>& u_hits, const std::vector<Hit>& v_hits, const TVector3& pdc_position) const {
@@ -187,28 +180,11 @@ TVector3 PDCSimAna::ReconstructPDC(const std::vector<Hit>& u_hits, const std::ve
     }
 
     double u_com = CalculateCoM(u_hits);
+    // std::cout << "U CoM: " << u_com << std::endl;
     double v_com = CalculateCoM(v_hits);
-    
-    // // 计算 z 坐标的加权平均，每层的 z 偏移在之前已经设置
-    // double z_offset_u = 0.0;
-    // double total_energy_u = 0.0;
-    // for (const auto& hit : u_hits) {
-    //     z_offset_u += hit.z * hit.energy;
-    //     total_energy_u += hit.energy;
-    // }
-    // z_offset_u = (total_energy_u > 0) ? (z_offset_u / total_energy_u) : -12.0; // 默认值为 U 层位置
-    
-    // double z_offset_v = 0.0;
-    // double total_energy_v = 0.0;
-    // for (const auto& hit : v_hits) {
-    //     z_offset_v += hit.z * hit.energy;
-    //     total_energy_v += hit.energy;
-    // }
-    // z_offset_v = (total_energy_v > 0) ? (z_offset_v / total_energy_v) : 12.0; // 默认值为 V 层位置
-    
-    // // 使用两层的平均 z 偏移
-    // double z_offset = (z_offset_u + z_offset_v) / 2.0;
+    // std::cout << "V CoM: " << v_com << std::endl;
 
+    
     const double sqrt2 = TMath::Sqrt(2.0);
     double y_global = (u_com + v_com) / sqrt2;
     double x_local = (u_com - v_com) / sqrt2;

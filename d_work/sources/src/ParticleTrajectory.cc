@@ -1,10 +1,10 @@
 // 计算单位
 
-// 动量单位
-// 质量单位
-// 时间单位
-// 长度单位
-// 电荷单位
+// 动量单位 MeV/C
+// 质量单位 MeV/c²  
+// 时间单位 ns
+// 长度单位 mm
+// 电荷单位 e
 
 
 #include "ParticleTrajectory.hh"
@@ -130,21 +130,20 @@ TVector3 ParticleTrajectory::CalculateForce(const TVector3& position,
     double momentumMag = momentum.Mag();
     if (momentumMag < 1e-6) return TVector3(0, 0, 0);
     
-    // 使用标准的粒子物理公式，避免复杂的单位转换
-    // 
-    // 在粒子物理中，带电粒子在磁场中的运动方程通常写为:
+
     // dp/dt = q * (v × B)，其中 v = pc²/E
     // 
-    // 对于我们的单位系统 (mm, ns, MeV/c, Tesla)，
+    // 对于我们的单位系统 (mm, ns, MeV/c, Tesla)，c= 299.8 ~300 mm/ns
     // 使用经验转换系数，这是从实验中确定的标准值
-    
-    // 标准转换系数：0.2998 对应 c = 2.998×10^8 m/s 的量纲分析
-    // 这个系数确保在 (mm, ns, MeV/c, Tesla) 单位系统中得到正确的物理结果
-    const double physics_constant = 0.2998e5; // 经验物理常数
+    // （e*1*c）/（MeV/c/ns）= 89.87551787
+
+
+
+    const double physics_constant = 89.87551787; // 经验物理常数
     
     // 洛伦兹力: F = q * (p × B) * 常数 / |p|
     // 这里的常数包含了所有必要的单位转换
-    TVector3 force = momentum.Cross(B) * (charge * physics_constant / momentumMag);
+    TVector3 force = momentum.Cross(B) * (charge * physics_constant  / momentumMag);
     
     return force;
 }
