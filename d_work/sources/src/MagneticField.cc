@@ -252,7 +252,7 @@ double MagneticField::InterpolateTrilinear(const std::vector<double>& data,
     dy = std::max(0.0, std::min(1.0, dy));
     dz = std::max(0.0, std::min(1.0, dz));
     
-    // 三线性插值
+    // 插值
     double result = 0.0;
     
     for (int i = 0; i < 2; i++) {
