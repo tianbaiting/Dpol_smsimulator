@@ -83,14 +83,18 @@ void run_display(Long64_t event_id = 0, bool show_trajectories = true) {
         Error("run_display", "无法定位到事件 %lld", event_id);
     }
 
-    // 清理磁场对象
-    if (magField) {
-        delete magField;
-    }
+    // // 清理磁场对象
+    // if (magField) {
+    //     delete magField;
+    // }
 
-    // 4. 启动ROOT应用程序事件循环
-    // 这会使程序暂停，保持3D显示窗口打开，直到用户手动关闭它
-    gApplication->Run();
+    // 4. 保持3D显示窗口打开，但不启动事件循环
+    // 注释掉 gApplication->Run() 来避免循环执行
+    // gApplication->Run();
+    
+    // 替代方案：只是等待用户交互
+    Info("run_display", "3D显示已准备完成。窗口将保持打开状态。");
+    Info("run_display", "要关闭程序，请在ROOT命令行输入 .q 或关闭窗口。");
 }
 
 // 自动调用函数 - 这样可以直接运行 root -l macros/run_display.C

@@ -35,6 +35,7 @@ smsimulator5.5/doc/doxyfile
 *.dat
 d_work/geometry/*
 /bin
+QMDdata
 
 # 可执行文件
 bin/sim_deuteron
