@@ -56,9 +56,26 @@ public:
                                                               double tol = 1.0,
                                                               int maxRounds = 4) const;
 
+    // 梯度下降方法：更高效的优化算法
+    TargetReconstructionResult ReconstructAtTargetGradientDescent(const RecoTrack& track,
+                                                                  const TVector3& targetPos,
+                                                                  bool saveTrajectories = false,
+                                                                  double pInit = 1000.0,
+                                                                  double learningRate = 50.0,
+                                                                  double tol = 1.0,
+                                                                  int maxIterations = 100) const;
+
 private:
     MagneticField* fMagField;
     double fProtonMass; // MeV/c^2
+    
+    // 辅助函数：计算给定动量下到目标点的最小距离
+    double CalculateMinimumDistance(double momentum, 
+                                   const TVector3& startPos, 
+                                   const TVector3& direction,
+                                   const TVector3& targetPos,
+                                   double charge, 
+                                   double mass) const;
 };
 
 #endif // TARGET_RECONSTRUCTOR_H

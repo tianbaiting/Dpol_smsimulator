@@ -14,7 +14,6 @@
 
 // Physics constants
 const double ParticleTrajectory::kSpeedOfLight = 299.792458; // mm/ns (c in natural units)
-const double ParticleTrajectory::kChargeUnit = 1.602176634e-19 * 1e-6; // Elementary charge factor for Tesla field
 
 ParticleTrajectory::ParticleTrajectory(MagneticField* magField)
     : fMagField(magField), fStepSize(1.0), fMaxTime(100.0), 
@@ -120,7 +119,7 @@ bool ParticleTrajectory::IsValidStep(const TrajectoryPoint& point) const
 
 TVector3 ParticleTrajectory::CalculateForce(const TVector3& position, 
                                           const TVector3& momentum, 
-                                          double charge) const
+                                          double charge,double E) const
 {
     if (!fMagField) return TVector3(0, 0, 0);
     
@@ -143,7 +142,16 @@ TVector3 ParticleTrajectory::CalculateForce(const TVector3& position,
     
     // 洛伦兹力: F = q * (p × B) * 常数 / |p|
     // 这里的常数包含了所有必要的单位转换
-    TVector3 force = momentum.Cross(B) * (charge * physics_constant  / momentumMag);
+    TVector3 force = momentum.Cross(B) * (charge * physics_constant  / E);
+
+
+    // std::cout << "CalculateForce: position=(" << position.X() << ", " 
+    //           << position.Y() << ", " << position.Z() << ") mm, "
+    //           << "momentum=(" << momentum.X() << ", " << momentum.Y() 
+    //           << ", " << momentum.Z() << ") MeV/c, "
+    //           << "B=(" << B.X() << ", " << B.Y() << ", " << B.Z() << ") T, "
+    //           << "force=(" << force.X() << ", " << force.Y() 
+    //           << ", " << force.Z() << ") MeV/c/ns" << std::endl;
     
     return force;
 }
@@ -163,29 +171,31 @@ ParticleTrajectory::RungeKuttaStep(const TrajectoryPoint& current,
     
     // K1: derivatives at t0
     // velocity = pc²/E, in our units: v [mm/ns] = p [MeV/c] × c² [mm²/ns²] / E [MeV]
-    TVector3 k1_r = p0 * (kSpeedOfLight * kSpeedOfLight / E0);
-    TVector3 k1_p = CalculateForce(r0, p0, charge);
+    TVector3 k1_r = p0 * (kSpeedOfLight / E0);
+    TVector3 k1_p = CalculateForce(r0, p0, charge,E0);
+
+    
     
     // K2: derivatives at t0 + dt/2
     TVector3 r1 = r0 + k1_r * (dt/2);
     TVector3 p1 = p0 + k1_p * (dt/2);
     double E1 = TMath::Sqrt(p1.Mag2() + mass*mass);
-    TVector3 k2_r = p1 * (kSpeedOfLight * kSpeedOfLight / E1);
-    TVector3 k2_p = CalculateForce(r1, p1, charge);
+    TVector3 k2_r = p1 * (kSpeedOfLight / E1);
+    TVector3 k2_p = CalculateForce(r1, p1, charge,E1);
     
     // K3: derivatives at t0 + dt/2 (second estimate)
     TVector3 r2 = r0 + k2_r * (dt/2);
     TVector3 p2 = p0 + k2_p * (dt/2);
     double E2 = TMath::Sqrt(p2.Mag2() + mass*mass);
-    TVector3 k3_r = p2 * (kSpeedOfLight * kSpeedOfLight / E2);
-    TVector3 k3_p = CalculateForce(r2, p2, charge);
+    TVector3 k3_r = p2 * (kSpeedOfLight / E2);
+    TVector3 k3_p = CalculateForce(r2, p2, charge,E2);
     
     // K4: derivatives at t0 + dt
     TVector3 r3 = r0 + k3_r * dt;
     TVector3 p3 = p0 + k3_p * dt;
     double E3 = TMath::Sqrt(p3.Mag2() + mass*mass);
-    TVector3 k4_r = p3 * (kSpeedOfLight * kSpeedOfLight / E3);
-    TVector3 k4_p = CalculateForce(r3, p3, charge);
+    TVector3 k4_r = p3 * ( kSpeedOfLight / E3);
+    TVector3 k4_p = CalculateForce(r3, p3, charge,E3);
     
     // Final step
     TVector3 r_new = r0 + (k1_r + 2*k2_r + 2*k3_r + k4_r) * (dt/6);

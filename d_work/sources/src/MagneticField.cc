@@ -165,6 +165,13 @@ TVector3 MagneticField::GetField(double x, double y, double z) const
     TVector3 magnetField = GetFieldRaw(magnetPos.X(), magnetPos.Y(), magnetPos.Z());
     
     // 将磁场转换回实验室坐标系
+    // std::cout<<"Debug: Magnet Frame Field = (" << magnetField.X() << ", " << magnetField.Y() << ", " << magnetField.Z() << ")" << std::endl;
+
+    // std::cout<<"Debug: Lab Pos = (" << labPos.X() << ", " << labPos.Y() << ", " << labPos.Z() << ")" << std::endl;
+
+    // std::cout<<"--"<<std::endl;
+
+
     return RotateToLabFrame(magnetField);
 }
 

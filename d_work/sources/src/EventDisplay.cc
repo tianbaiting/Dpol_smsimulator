@@ -19,6 +19,7 @@ EventDisplay::EventDisplay(const char* geom_file, const GeometryManager& geo)
     InitEve();
     LoadGeometry(geom_file);
     SetupCamera();
+    DrawCoordinateSystem();
 }
 
 EventDisplay::~EventDisplay() {
@@ -42,6 +43,32 @@ void EventDisplay::LoadGeometry(const char* geom_file) {
 
         TGeoManager::Import(geom_file);
         std::cout << "EventDisplay: Geometry loaded from " << geom_file << std::endl;
+        
+        // 增强几何体的透明度以便更好地观察内部结构
+        if (gGeoManager) {
+            TObjArray* volumes = gGeoManager->GetListOfVolumes();
+            if (volumes) {
+                for (int i = 0; i < volumes->GetEntries(); i++) {
+                    TGeoVolume* vol = (TGeoVolume*)volumes->At(i);
+                    if (vol && vol->GetMedium()) {
+                        // 设置透明度：80表示20%不透明度（80%透明）
+                        vol->SetTransparency(80);
+                        
+                        // 对于特定体积名称，可以设置不同的透明度
+                        TString volName = vol->GetName();
+                        if (volName.Contains("yoke") || volName.Contains("Yoke")) {
+                            vol->SetTransparency(60); // 磁轭更透明
+                        } else if (volName.Contains("coil") || volName.Contains("Coil")) {
+                            vol->SetTransparency(60); // 线圈稍微不透明一些
+                        } else if (volName.Contains("PDC") || volName.Contains("pdc")) {
+                            vol->SetTransparency(60); // PDC探测器保持一定可见性
+                        }
+                    }
+                }
+                std::cout << "EventDisplay: Applied transparency settings to " 
+                         << volumes->GetEntries() << " volumes" << std::endl;
+            }
+        }
     }
     if (gEve && gGeoManager) {
         gEve->AddGlobalElement(new TEveGeoTopNode(gGeoManager, gGeoManager->GetTopNode()));
@@ -155,9 +182,18 @@ void EventDisplay::DrawParticleTrajectories(const std::vector<TBeamSimData>* bea
     
     std::cout << "Drawing trajectories for " << beamData->size() << " particles" << std::endl;
     
+    // 获取 Target 角度用于旋转入射粒子动量
+    double targetAngleRad = m_geo.GetTargetAngleRad();
+    TVector3 targetPos = m_geo.GetTargetPosition();
+    
+    std::cout << "Applying rotation of " << (targetAngleRad * TMath::RadToDeg()) 
+              << " deg to incident particles" << std::endl;
+    std::cout << "Using target position: (" << targetPos.X() << ", " 
+              << targetPos.Y() << ", " << targetPos.Z() << ") mm" << std::endl;
+    
     // 创建轨迹计算对象
     ParticleTrajectory trajectory(magField);
-    trajectory.SetStepSize(5.0);      // 5 mm steps
+    trajectory.SetStepSize(10.0);      // 10 mm steps
     trajectory.SetMaxTime(50.0);      // 50 ns max time
     trajectory.SetMaxDistance(4000.0); // 4 m max distance
     trajectory.SetMinMomentum(10.0);   // 10 MeV/c min momentum
@@ -170,8 +206,28 @@ void EventDisplay::DrawParticleTrajectories(const std::vector<TBeamSimData>* bea
         double charge = particle.fCharge;
         double mass = particle.fMass;
         const char* particleName = particle.fParticleName.Data();
+        
+        // 应用旋转到动量：RotateY(-targetAngle)
         TLorentzVector momentum = particle.fMomentum;
-        TVector3 position = particle.fPosition;
+        TVector3 mom3 = momentum.Vect();
+        mom3.RotateY(-targetAngleRad);  // 注意：负角度
+        momentum.SetVect(mom3);
+        
+        // 使用 Target 位置作为起始位置
+        TVector3 position = targetPos;
+
+
+
+        // std::cout<<"zhengxiang chuanbo" << std::endl;
+        
+        // std::cout << "Particle " << i << " (" << particleName << "): "
+        //           << "Original p=(" << particle.fMomentum.Px() << ", " 
+        //           << particle.fMomentum.Py() << ", " << particle.fMomentum.Pz() << "), "
+        //           << "Rotated p=(" << momentum.Px() << ", " 
+        //           << momentum.Py() << ", " << momentum.Pz() << ") MeV/c" << std::endl;
+
+
+
         
         // 允许绘制中性粒子轨迹（ParticleTrajectory 对中性粒子将返回直线）
         std::vector<ParticleTrajectory::TrajectoryPoint> traj = 
@@ -315,6 +371,7 @@ void EventDisplay::DrawReconstructionResults(const TargetReconstructionResult& r
         std::cerr << "EventDisplay::DrawReconstructionResults: No current event elements!" << std::endl;
         return;
     }
+    std::cout << "Drawing Target Reconstruction Results..." << std::endl;
     
     // Draw trial trajectories if requested
     if (showTrials) {
@@ -359,6 +416,107 @@ void EventDisplay::DrawTrajectory(const std::vector<TrajectoryPoint>& trajectory
     
     // Add to current event elements
     m_currentEventElements->AddElement(trajLine);
+}
+
+void EventDisplay::DrawCoordinateSystem() {
+    if (!gEve) return;
+    
+    // 创建坐标系元素列表
+    TEveElementList* coordSys = new TEveElementList("CoordinateSystem");
+    
+    // 坐标轴长度 (1000 mm = 1 m)
+    double axisLength = 1000.0; // mm
+    
+    // X轴 (红色)
+    TEveLine* xAxis = new TEveLine("X-Axis");
+    xAxis->SetLineColor(kRed);
+    xAxis->SetLineWidth(3);
+    xAxis->SetPoint(0, 0, 0, 0);
+    xAxis->SetPoint(1, axisLength, 0, 0);
+    coordSys->AddElement(xAxis);
+    
+    // Y轴 (绿色)
+    TEveLine* yAxis = new TEveLine("Y-Axis");
+    yAxis->SetLineColor(kGreen);
+    yAxis->SetLineWidth(3);
+    yAxis->SetPoint(0, 0, 0, 0);
+    yAxis->SetPoint(1, 0, axisLength, 0);
+    coordSys->AddElement(yAxis);
+    
+    // Z轴 (蓝色)
+    TEveLine* zAxis = new TEveLine("Z-Axis");
+    zAxis->SetLineColor(kBlue);
+    zAxis->SetLineWidth(3);
+    zAxis->SetPoint(0, 0, 0, 0);
+    zAxis->SetPoint(1, 0, 0, axisLength);
+    coordSys->AddElement(zAxis);
+    
+    // 添加坐标轴标签点
+    TEvePointSet* originPoint = new TEvePointSet("Origin");
+    originPoint->SetMarkerColor(kBlack);
+    originPoint->SetMarkerStyle(29); // Star
+    originPoint->SetMarkerSize(3.0);
+    originPoint->SetNextPoint(0, 0, 0);
+    coordSys->AddElement(originPoint);
+    
+    // 添加轴端点标记
+    TEvePointSet* xEnd = new TEvePointSet("X-End");
+    xEnd->SetMarkerColor(kRed);
+    xEnd->SetMarkerStyle(20);
+    xEnd->SetMarkerSize(2.0);
+    xEnd->SetNextPoint(axisLength, 0, 0);
+    coordSys->AddElement(xEnd);
+    
+    TEvePointSet* yEnd = new TEvePointSet("Y-End");
+    yEnd->SetMarkerColor(kGreen);
+    yEnd->SetMarkerStyle(20);
+    yEnd->SetMarkerSize(2.0);
+    yEnd->SetNextPoint(0, axisLength, 0);
+    coordSys->AddElement(yEnd);
+    
+    TEvePointSet* zEnd = new TEvePointSet("Z-End");
+    zEnd->SetMarkerColor(kBlue);
+    zEnd->SetMarkerStyle(20);
+    zEnd->SetMarkerSize(2.0);
+    zEnd->SetNextPoint(0, 0, axisLength);
+    coordSys->AddElement(zEnd);
+    
+    // 添加长度标尺刻度 (每100mm一个刻度)
+    TEveElementList* ruler = new TEveElementList("1000mm_Ruler");
+    
+    for (int i = 1; i <= 10; i++) {
+        double pos = i * 100.0; // 每100mm一个刻度
+        
+        // X轴刻度
+        TEveLine* xTick = new TEveLine(Form("X-Tick_%d00mm", i));
+        xTick->SetLineColor(kRed);
+        xTick->SetLineWidth(1);
+        xTick->SetPoint(0, pos, -20, 0);
+        xTick->SetPoint(1, pos, 20, 0);
+        ruler->AddElement(xTick);
+        
+        // Y轴刻度
+        TEveLine* yTick = new TEveLine(Form("Y-Tick_%d00mm", i));
+        yTick->SetLineColor(kGreen);
+        yTick->SetLineWidth(1);
+        yTick->SetPoint(0, -20, pos, 0);
+        yTick->SetPoint(1, 20, pos, 0);
+        ruler->AddElement(yTick);
+        
+        // Z轴刻度
+        TEveLine* zTick = new TEveLine(Form("Z-Tick_%d00mm", i));
+        zTick->SetLineColor(kBlue);
+        zTick->SetLineWidth(1);
+        zTick->SetPoint(0, -20, 0, pos);
+        zTick->SetPoint(1, 20, 0, pos);
+        ruler->AddElement(zTick);
+    }
+    
+    // 添加到EVE显示
+    gEve->AddGlobalElement(coordSys);
+    gEve->AddGlobalElement(ruler);
+    
+    std::cout << "EventDisplay: Added coordinate system with 1000mm axes and ruler marks" << std::endl;
 }
 
 // ... Implementations for SetComponentVisibility and PrintComponentPositions if needed ...

@@ -17,6 +17,11 @@ public:
     double GetAngleRad() const { return fAngleRad; }
     TVector3 GetPDC1Position() const { return fPDC1_Position; }
     TVector3 GetPDC2Position() const { return fPDC2_Position; }
+    
+    // Target parameters
+    TVector3 GetTargetPosition() const { return fTarget_Position; }
+    double GetTargetAngleRad() const { return fTargetAngleRad; }
+    double GetTargetAngleDeg() const { return fTargetAngleRad * TMath::RadToDeg(); }
 
 private:
     // Map to store key-value pairs from the macro file
@@ -26,6 +31,10 @@ private:
     double fAngleRad;
     TVector3 fPDC1_Position;
     TVector3 fPDC2_Position;
+    
+    // Target parameters
+    TVector3 fTarget_Position;
+    double fTargetAngleRad;
 
     // Helper to parse a line from the macro file
     void ParseLine(const std::string& line);
