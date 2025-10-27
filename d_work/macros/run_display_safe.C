@@ -33,7 +33,7 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
     geo.LoadGeometry(Form("%s/d_work/geometry/5deg_1.2T.mac", smsDir));
 
     PDCSimAna ana(geo);
-    ana.SetSmearing(0.5, 0.5);
+    ana.SetSmearing(0.5, 0.5); // 不
 
     EventDataReader reader(Form("%s/d_work/output_tree/testry0000.root", smsDir));
     if (!reader.IsOpen()) {
@@ -95,7 +95,12 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
         // 对每条重建轨迹进行靶点重建（解耦版本）
         if (!event.tracks.empty() && magField && display) {
             TargetReconstructor targetRecon(magField);
-            TVector3 targetPos(0, 0, 0); // 假设靶点在原点
+            
+            // 从 GeometryManager 获取 Target 位置，而不是假设在原点
+            TVector3 targetPos = geo.GetTargetPosition();
+            
+            Info("run_display_safe", "使用 Target 位置: (%.2f, %.2f, %.2f) mm, 角度: %.2f deg", 
+                 targetPos.X(), targetPos.Y(), targetPos.Z(), geo.GetTargetAngleDeg());
             
             // 添加靶点标记
             TEvePointSet* targetMarker = new TEvePointSet("Target");

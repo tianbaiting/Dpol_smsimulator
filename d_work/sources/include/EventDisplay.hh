@@ -82,6 +82,7 @@ private:
     void InitEve();
     void LoadGeometry(const char* geom_file);
     void SetupCamera();
+    void DrawCoordinateSystem();
     
     // 轨迹相关私有方法
     void DrawParticleTrajectories(const std::vector<TBeamSimData>* beamData, MagneticField* magField);

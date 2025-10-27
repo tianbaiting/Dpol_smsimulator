@@ -63,7 +63,7 @@ public:
     // Utility methods
     bool IsValidStep(const TrajectoryPoint& point) const;
     TVector3 CalculateForce(const TVector3& position, const TVector3& momentum, 
-                           double charge) const;
+                           double charge, double E) const;
     
     // Runge-Kutta integration step
     TrajectoryPoint RungeKuttaStep(const TrajectoryPoint& current, 
