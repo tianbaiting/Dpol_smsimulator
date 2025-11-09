@@ -6,14 +6,17 @@
 
 // Include the header for the custom data class
 // The setup.sh script should configure ROOT_INCLUDE_PATH correctly
+
+// 
 #include "TSimData.hh"
 
 // Define the function that will be executed by ROOT
 void extract_pdc_data() {
     // --- Configuration ---
-    const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root"; // 数目不够
-    // const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/d+Pb208E190g050xyz_np_sametime_vis0000.root";
-    // const char* filePath = "/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/d+Pb208E190g050xyz_np_sametime_vis0000.root";
+    const char* smsDir = getenv("SMSIMDIR"); // Ensure the environment variable is loaded
+    const char* filePath = Form("%s/d_work/output_tree/testry0000.root", smsDir); //
+    // const char* filePath = Form("%s/d_work/output_tree/d+Pb208E190g050xyz_np_sametime_vis0000.root", smsDir);
+    // const char* filePath = Form("%s/d_work/output_tree/d+Pb208E190g050xyz_np_sametime_vis0000.root", smsDir);
 
     const char* treeName = "tree"; // Default tree name, change if necessary
     TString targetDetector = "PDC";
@@ -81,11 +84,15 @@ void extract_pdc_data() {
                 Double_t preKinE = preMom.E() - mass;
                 Double_t postKinE = postMom.E() - mass;
                 Double_t energyDeposited = preKinE - postKinE;
+                Double_t energyDeposited_check = hit->fEnergyDeposit;
+
+
 
                 // Print the information
                 std::cout << "  Hit " << j << " in " << hit->fDetectorName.Data() << ":" << std::endl;
                 printf("    Position (x,y,z) [mm]: (%.2f, %.2f, %.2f)\n", position.X(), position.Y(), position.Z());
                 printf("    Energy Deposited [MeV]: %.4f\n", energyDeposited);
+                std::cout << "    (Check) Energy Deposited from fEnergyDeposit [MeV]: " << energyDeposited_check << std::endl;
             }
         }
         if (pdcHitCounter == 0){

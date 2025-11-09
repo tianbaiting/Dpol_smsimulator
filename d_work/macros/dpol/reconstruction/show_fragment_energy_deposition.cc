@@ -1,8 +1,9 @@
 void show_fragment_energy_deposition()
 {
-    gSystem->Load("/home/tbt/workspace/dpol/smsimulator5.5/smg4lib/lib/libsmdata.so");
+    const char* smsDir = getenv("SMSIMDIR"); // 确保环境变量已加载  
+    gSystem->Load("libsmdata.so");
     // 打开ROOT文件
-    TFile* file = TFile::Open("/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/d+Pb208E190g050xyz_np_sametime0000.root");
+    TFile* file = TFile::Open(Form("%s/d_work/output_tree/testry0000.root", smsDir));
     if (!file || file->IsZombie()) {
         std::cerr << "Error: Cannot open ROOT file!" << std::endl;
         return;
