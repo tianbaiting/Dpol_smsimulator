@@ -1,0 +1,93 @@
+Loading SM libraries from build directory...
+Loading PDC Analysis Tools...
+All libraries loaded successfully!
+
+Processing /home/tian/workspace/dpol/smsimulator5.5/d_work/macros/run_display_fixed.C...
+Geometry loaded from /home/tian/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac
+  PDC Angle: 42.5 deg
+  PDC1 Pos: (-1000, 0, 3000) mm
+  PDC2 Pos: (-1000, 0, 4000) mm
+EventDataReader: Found beam branch (vector<TBeamSimData> format)
+EventDataReader: Opened /home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root with 1 events.
+EventDisplay: EVE manager initialized with stability settings.
+EventDisplay: Geometry loaded from /home/tian/workspace/dpol/smsimulator5.5/d_work/detector_geometry.gdml
+U CoM: 0
+V CoM: 0
+U CoM: 0
+V CoM: 0
+U CoM: 0
+V CoM: 0
+U CoM: 0
+V CoM: 0
+RawHit 0: pos=(-2777.98, -20.1489, 1501.77) mm, E=0
+RawHit 1: pos=(-2784.99, -20.2156, 1505.22) mm, E=0
+RawHit 2: pos=(-2785.68, -20.2223, 1505.56) mm, E=0
+RawHit 3: pos=(-2785.86, -20.224, 1505.65) mm, E=0
+RawHit 4: pos=(-2801.09, -20.3685, 1513.15) mm, E=0
+RawHit 5: pos=(-3743.58, -30.5741, 1973.31) mm, E=0
+RawHit 6: pos=(-3751.31, -30.6512, 1977.07) mm, E=0
+RawHit 7: pos=(-3762.66, -30.7673, 1982.59) mm, E=0
+RawHit 8: pos=(-3766.78, -30.8122, 1984.6) mm, E=0
+Displayed Event: -1
+
+Processing /home/tian/workspace/dpol/smsimulator5.5/d_work/macros/run_display_fixed.C...
+Geometry loaded from /home/tian/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac
+  PDC Angle: 42.5 deg
+  PDC1 Pos: (-1000, 0, 3000) mm
+  PDC2 Pos: (-1000, 0, 4000) mm
+EventDataReader: Found beam branch (vector<TBeamSimData> format)
+EventDataReader: Opened /home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root with 1 events.
+EventDisplay: EVE manager initialized with stability settings.
+U CoM: 0
+V CoM: 0
+U CoM: 0
+V CoM: 0
+U CoM: 0
+V CoM: 0
+U CoM: 0
+V CoM: 0
+RawHit 0: pos=(-2777.98, -20.1489, 1501.77) mm, E=0
+RawHit 1: pos=(-2784.99, -20.2156, 1505.22) mm, E=0
+RawHit 2: pos=(-2785.68, -20.2223, 1505.56) mm, E=0
+RawHit 3: pos=(-2785.86, -20.224, 1505.65) mm, E=0
+RawHit 4: pos=(-2801.09, -20.3685, 1513.15) mm, E=0
+RawHit 5: pos=(-3743.58, -30.5741, 1973.31) mm, E=0
+RawHit 6: pos=(-3751.31, -30.6512, 1977.07) mm, E=0
+RawHit 7: pos=(-3762.66, -30.7673, 1982.59) mm, E=0
+RawHit 8: pos=(-3766.78, -30.8122, 1984.6) mm, E=0
+Displayed Event: -1
+
+Processing /home/tian/workspace/dpol/smsimulator5.5/d_work/macros/run_display_fixed.C...
+Geometry loaded from /home/tian/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac
+  PDC Angle: 42.5 deg
+  PDC1 Pos: (-1000, 0, 3000) mm
+  PDC2 Pos: (-1000, 0, 4000) mm
+EventDataReader: Found beam branch (vector<TBeamSimData> format)
+EventDataReader: Opened /home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root with 1 events.
+EventDisplay: EVE manager initialized with stability settings.
+U CoM: 0
+V CoM: 0
+U CoM: 0
+V CoM: 0
+U CoM: 0
+V CoM: 0
+U CoM: 0
+V CoM: 0
+RawHit 0: pos=(-2777.98, -20.1489, 1501.77) mm, E=0
+RawHit 1: pos=(-2784.99, -20.2156, 1505.22) mm, E=0
+RawHit 2: pos=(-2785.68, -20.2223, 1505.56) mm, E=0
+RawHit 3: pos=(-2785.86, -20.224, 1505.65) mm, E=0
+RawHit 4: pos=(-2801.09, -20.3685, 1513.15) mm, E=0
+RawHit 5: pos=(-3743.58, -30.5741, 1973.31) mm, E=0
+RawHit 6: pos=(-3751.31, -30.6512, 1977.07) mm, E=0
+RawHit 7: pos=(-3762.66, -30.7673, 1982.59) mm, E=0
+RawHit 8: pos=(-3766.78, -30.8122, 1984.6) mm, E=0
+Displayed Event: -1
+
+Processing /home/tian/workspace/dpol/smsimulator5.5/d_work/macros/run_display_fixed.C...
+Geometry loaded from /home/tian/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac
+  PDC Angle: 42.5 deg
+  PDC1 Pos: (-1000, 0, 3000) mm
+  PDC2 Pos: (-1000, 0, 4000) mm
+EventDataReader: Found beam branch (vector<TBeamSimData> format)
+EventDataReader: Opened /home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root with 1 events.

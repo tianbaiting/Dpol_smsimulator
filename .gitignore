@@ -36,6 +36,10 @@ smsimulator5.5/doc/doxyfile
 d_work/geometry/*
 /bin
 QMDdata
+output/
+output_tree/
+rootfiles
+plots/
 
 # 可执行文件
 bin/sim_deuteron
@@ -50,6 +54,8 @@ doc
 # 其他
 *.swp
 *.swo
+
+assets/
 
 # 不被排除的文件
 !d_work/geometry/*.mac

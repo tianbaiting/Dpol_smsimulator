@@ -3,14 +3,24 @@
 #include <TClonesArray.h>
 #include <TSystem.h>
 #include <iostream>
-#include "TArtNEBULAPla.hh"
+// #include "TArtNEBULAPla.hh"
 #include "TBeamSimData.hh"
 
+#include "TSystem.h"
+#include "TApplication.h"
 void reconstruct_one_event()
 {
-    gSystem->Load("/home/tbt/workspace/dpol/smsimulator5.5/smg4lib/lib/libsmdata.so");
 
-    TFile* file = TFile::Open("/home/tbt/workspace/dpol/smsimulator5.5/d_work/output_tree/test0000.root");
+    const char* smsDir = getenv("SMSIMDIR"); // 确保环境变量已加载
+    if (!smsDir) {
+        Error("run_display_safe", "环境变量 SMSIMDIR 未设置!");
+        return;
+    }
+    // 2. 
+    gSystem->Load("libsmdata.so");
+
+    TFile* file = TFile::Open(Form("%s/d_work/output_tree/testry0000.root", smsDir));
+
     if (!file || file->IsZombie()) {
         std::cerr << "Error: Cannot open ROOT file!" << std::endl;
         return;
