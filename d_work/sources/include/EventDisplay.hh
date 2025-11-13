@@ -60,6 +60,9 @@ public:
     // 新增：绘制单个轨迹
     void DrawTrajectory(const std::vector<struct TrajectoryPoint>& trajectory,
                        const char* name, int color, int style = 1);
+    
+    // 新增：绘制中子轨迹
+    void DrawNeutrons(const std::vector<RecoNeutron>& neutrons, const TVector3& targetPos);
 
     // 清除当前显示的事件
     void ClearCurrentEvent();

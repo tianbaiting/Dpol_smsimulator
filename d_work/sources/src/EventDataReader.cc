@@ -4,7 +4,7 @@
 #include <iostream>
 
 EventDataReader::EventDataReader(const char* filePath) 
-    : m_file(nullptr), m_tree(nullptr), m_fragSimDataArray(nullptr), 
+    : m_file(nullptr), m_tree(nullptr), m_fragSimDataArray(nullptr), m_nebulaDataArray(nullptr),
       m_beamDataVector(nullptr), m_currentEvent(-1), m_totalEvents(0), m_filePath(filePath) 
 {
     // It is good practice to load libraries in the main macro,
@@ -24,6 +24,15 @@ EventDataReader::EventDataReader(const char* filePath)
         return;
     }
     m_tree->SetBranchAddress("FragSimData", &m_fragSimDataArray);
+    
+    // Try to set NEBULA branch
+    if (m_tree->GetBranch("NEBULAPla")) {
+        m_tree->SetBranchAddress("NEBULAPla", &m_nebulaDataArray);
+        std::cout << "EventDataReader: Found NEBULAPla branch" << std::endl;
+    } else {
+        std::cout << "EventDataReader: No NEBULAPla branch found in file" << std::endl;
+        m_nebulaDataArray = nullptr;
+    }
     
     // Try to set beam branch using vector<TBeamSimData> format
     if (m_tree->GetBranch("beam")) {

@@ -10,6 +10,7 @@
 #include "MagneticField.hh"
 #include "ParticleTrajectory.hh"
 #include "TargetReconstructor.hh"
+#include "NEBULAReconstructor.hh"
 
 // 主函数 - 安全版本，不会陷入循环
 void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool interactive = false) {
@@ -35,7 +36,12 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
     PDCSimAna ana(geo);
     ana.SetSmearing(0.5, 0.5); // 不
 
-    EventDataReader reader(Form("%s/d_work/output_tree/testry0000.root", smsDir));
+    // 使用事件ID构建完整文件路径
+    TString filename = Form("/home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/ypol_5000events/Pb208_g050/ypol_np_Pb208_g0500000.root");
+    // TString filename = Form("%s/d_work/output_tree/testry0000.root", smsDir);
+    
+    // 创建EventDataReader对象
+    EventDataReader reader(filename.Data());
     if (!reader.IsOpen()) {
         Error("run_display_safe", "无法打开数据文件!");
         return;
@@ -75,8 +81,30 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
     // 3. 定位到指定事件，执行重建，然后显示
     if (reader.GoToEvent(event_id)) {
         TClonesArray* hits = reader.GetHits();
+        TClonesArray* nebulaHits = reader.GetNEBULAHits(); // 获取NEBULA数据
+        
+        // PDC重建
         RecoEvent event = ana.ProcessEvent(hits);
         event.eventID = event_id; // 确保显示正确的事件号
+        
+        // NEBULA中子重建
+        static NEBULAReconstructor* s_nebulaRecon = nullptr;
+        if (!s_nebulaRecon) {
+            s_nebulaRecon = new NEBULAReconstructor(geo);
+            s_nebulaRecon->SetTargetPosition(geo.GetTargetPosition());
+            s_nebulaRecon->SetTimeWindow(10.0);     // 10 ns时间窗口
+            s_nebulaRecon->SetEnergyThreshold(1.0); // 1 MeV能量阈值
+            Info("run_display_safe", "NEBULA重建器已初始化");
+        }
+        
+        // 处理NEBULA数据
+        if (nebulaHits) {
+            Info("run_display_safe", "NEBULA数据: %d 个原始hits", nebulaHits->GetEntries());
+            s_nebulaRecon->ProcessEvent(nebulaHits, event);
+            Info("run_display_safe", "NEBULA重建完成，发现 %zu 个中子", event.neutrons.size());
+        } else {
+            Info("run_display_safe", "NEBULA数据为空或未找到");
+        }
         
         // 显示事件和粒子轨迹
         if (show_trajectories && magField) {

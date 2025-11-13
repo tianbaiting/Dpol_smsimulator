@@ -23,6 +23,7 @@ public:
     bool GoToEvent(Long64_t eventNumber);
 
     TClonesArray* GetHits() const { return m_fragSimDataArray; }
+    TClonesArray* GetNEBULAHits() const { return m_nebulaDataArray; }
     
     // Beam data access methods
     const std::vector<TBeamSimData>* GetBeamData() const { return m_beamDataVector; }
@@ -37,6 +38,7 @@ private:
     TFile* m_file;
     TTree* m_tree;
     TClonesArray* m_fragSimDataArray;
+    TClonesArray* m_nebulaDataArray;
     std::vector<TBeamSimData>* m_beamDataVector;
     Long64_t        m_currentEvent;
     Long64_t        m_totalEvents;
