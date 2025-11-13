@@ -89,16 +89,16 @@ ParticleTrajectory::CalculateTrajectory(const TVector3& initialPosition,
         stepCount++;
         
         // Print progress every 100 steps
-        if (stepCount % 100 == 0) {
-            std::cout << "  Step " << stepCount << ": position=(" 
-                      << currentPoint.position.X() << ", " << currentPoint.position.Y() 
-                      << ", " << currentPoint.position.Z() << ") mm, |p|=" 
-                      << currentPoint.momentum.Mag() << " MeV/c" << std::endl;
-        }
+        // if (stepCount % 100 == 0) {
+        //     std::cout << "  Step " << stepCount << ": position=(" 
+        //               << currentPoint.position.X() << ", " << currentPoint.position.Y() 
+        //               << ", " << currentPoint.position.Z() << ") mm, |p|=" 
+        //               << currentPoint.momentum.Mag() << " MeV/c" << std::endl;
+        // }
     }
     
-    std::cout << "Trajectory calculation completed with " << trajectory.size() 
-              << " points over " << currentPoint.time << " ns" << std::endl;
+    // std::cout << "Trajectory calculation completed with " << trajectory.size() 
+            //   << " points over " << currentPoint.time << " ns" << std::endl;
     
     return trajectory;
 }
@@ -234,24 +234,24 @@ void ParticleTrajectory::PrintTrajectoryInfo(const std::vector<TrajectoryPoint>&
     const TrajectoryPoint& start = trajectory.front();
     const TrajectoryPoint& end = trajectory.back();
     
-    std::cout << "\n=== Trajectory Summary ===" << std::endl;
-    std::cout << "Number of points: " << trajectory.size() << std::endl;
-    std::cout << "Total time: " << end.time << " ns" << std::endl;
-    std::cout << "Total distance: " << (end.position - start.position).Mag() << " mm" << std::endl;
+    // std::cout << "\n=== Trajectory Summary ===" << std::endl;
+    // std::cout << "Number of points: " << trajectory.size() << std::endl;
+    // std::cout << "Total time: " << end.time << " ns" << std::endl;
+    // std::cout << "Total distance: " << (end.position - start.position).Mag() << " mm" << std::endl;
     
-    std::cout << "Start: position=(" << start.position.X() << ", " << start.position.Y() 
-              << ", " << start.position.Z() << ") mm" << std::endl;
-    std::cout << "       momentum=(" << start.momentum.X() << ", " << start.momentum.Y() 
-              << ", " << start.momentum.Z() << ") MeV/c" << std::endl;
+    // std::cout << "Start: position=(" << start.position.X() << ", " << start.position.Y() 
+    //           << ", " << start.position.Z() << ") mm" << std::endl;
+    // std::cout << "       momentum=(" << start.momentum.X() << ", " << start.momentum.Y() 
+    //           << ", " << start.momentum.Z() << ") MeV/c" << std::endl;
     
-    std::cout << "End:   position=(" << end.position.X() << ", " << end.position.Y() 
-              << ", " << end.position.Z() << ") mm" << std::endl;
-    std::cout << "       momentum=(" << end.momentum.X() << ", " << end.momentum.Y() 
-              << ", " << end.momentum.Z() << ") MeV/c" << std::endl;
+    // std::cout << "End:   position=(" << end.position.X() << ", " << end.position.Y() 
+    //           << ", " << end.position.Z() << ") mm" << std::endl;
+    // std::cout << "       momentum=(" << end.momentum.X() << ", " << end.momentum.Y() 
+    //           << ", " << end.momentum.Z() << ") MeV/c" << std::endl;
     
     double initialMomentum = start.momentum.Mag();
     double finalMomentum = end.momentum.Mag();
-    std::cout << "Momentum change: " << ((finalMomentum - initialMomentum)/initialMomentum * 100) 
-              << "%" << std::endl;
-    std::cout << "=========================" << std::endl;
+    // std::cout << "Momentum change: " << ((finalMomentum - initialMomentum)/initialMomentum * 100) 
+    //           << "%" << std::endl;
+    // std::cout << "=========================" << std::endl;
 }

@@ -62,8 +62,8 @@ def main():
         sys.exit(1)
     
     # Define directories
-    input_dir = os.path.join(smsim_dir, 'd_work/rootfiles/ypol')
-    output_base_dir = os.path.join(smsim_dir, 'd_work/output_tree/ypol')
+    input_dir = os.path.join(smsim_dir, 'd_work/rootfiles/ypol_slect_rotate_back')
+    output_base_dir = os.path.join(smsim_dir, 'd_work/output_tree/ypol_slect_rotate_back')
     macro_dir = os.path.join(smsim_dir, 'd_work/macros_temp')
     geometry_mac = os.path.join(smsim_dir, 'd_work/geometry/5deg_1.2T.mac')
     simulator_exe = os.path.join(smsim_dir, 'bin/sim_deuteron')

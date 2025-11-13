@@ -146,6 +146,12 @@ void EventDisplay::DisplayEvent(const RecoEvent& event) {
         track_line->SetLineWidth(3);
         m_currentEventElements->AddElement(track_line);
     }
+    
+    // 4. Reconstructed Neutrons
+    if (!event.neutrons.empty()) {
+        TVector3 targetPos = m_geo.GetTargetPosition();
+        DrawNeutrons(event.neutrons, targetPos);
+    }
 
     Redraw();
     std::cout << "Displayed Event: " << event.eventID << std::endl;
@@ -517,6 +523,63 @@ void EventDisplay::DrawCoordinateSystem() {
     gEve->AddGlobalElement(ruler);
     
     std::cout << "EventDisplay: Added coordinate system with 1000mm axes and ruler marks" << std::endl;
+}
+
+void EventDisplay::DrawNeutrons(const std::vector<RecoNeutron>& neutrons, const TVector3& targetPos) {
+    if (neutrons.empty()) return;
+    
+    // 创建中子显示元素组
+    TEveElementList* neutronGroup = new TEveElementList("Neutrons");
+    neutronGroup->SetMainColor(kOrange);
+    
+    for (size_t i = 0; i < neutrons.size(); ++i) {
+        const RecoNeutron& neutron = neutrons[i];
+        
+        // 绘制中子飞行路径（直线）
+        TEveLine* neutronPath = new TEveLine(Form("Neutron_%zu_Path", i));
+        neutronPath->SetLineColor(kOrange);
+        neutronPath->SetLineWidth(3);
+        neutronPath->SetLineStyle(2); // 虚线，因为中子不带电
+        
+        // 从靶点到击中位置
+        neutronPath->SetPoint(0, targetPos.X(), targetPos.Y(), targetPos.Z());
+        neutronPath->SetPoint(1, neutron.position.X(), neutron.position.Y(), neutron.position.Z());
+        neutronGroup->AddElement(neutronPath);
+        
+        // 在击中位置创建一个标记
+        TEvePointSet* neutronHit = new TEvePointSet(Form("Neutron_%zu_Hit", i));
+        neutronHit->SetMarkerColor(kOrange);
+        neutronHit->SetMarkerStyle(20); // 实心圆
+        neutronHit->SetMarkerSize(2.0);
+        neutronHit->SetNextPoint(neutron.position.X(), neutron.position.Y(), neutron.position.Z());
+        neutronGroup->AddElement(neutronHit);
+        
+        // 添加能量和速度信息标签
+        TEveLine* infoLabel = new TEveLine(Form("Neutron_%zu_Info", i));
+        infoLabel->SetTitle(Form("n: E=%.1f MeV, β=%.3f, ToF=%.1f ns", 
+                                neutron.energy, neutron.beta, neutron.timeOfFlight));
+        infoLabel->SetLineColor(kOrange);
+        infoLabel->SetLineWidth(1);
+        
+        // 创建一个小的标记线来显示信息
+        TVector3 labelPos = neutron.position + TVector3(50, 50, 0); // 偏移50mm
+        infoLabel->SetPoint(0, neutron.position.X(), neutron.position.Y(), neutron.position.Z());
+        infoLabel->SetPoint(1, labelPos.X(), labelPos.Y(), labelPos.Z());
+        neutronGroup->AddElement(infoLabel);
+        
+        std::cout << "EventDisplay: Added neutron " << i << " -> "
+                  << "pos=(" << neutron.position.X() << "," << neutron.position.Y() << "," << neutron.position.Z() << ") mm, "
+                  << "E=" << neutron.energy << " MeV, β=" << neutron.beta << std::endl;
+    }
+    
+    // 添加到当前事件
+    if (m_currentEventElements) {
+        m_currentEventElements->AddElement(neutronGroup);
+    } else {
+        gEve->AddElement(neutronGroup);
+    }
+    
+    std::cout << "EventDisplay: Added " << neutrons.size() << " neutrons to display" << std::endl;
 }
 
 // ... Implementations for SetComponentVisibility and PrintComponentPositions if needed ...

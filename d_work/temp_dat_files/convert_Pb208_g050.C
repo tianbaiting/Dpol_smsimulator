@@ -19,7 +19,7 @@ void convert_Pb208_g050() {
         return;
     }
 
-    TFile *f = new TFile("/home/tian/workspace/dpol/smsimulator5.5/d_work/rootfiles/ypol_native/ypol_np_Pb208_g050.root", "RECREATE");
+    TFile *f = new TFile("/home/tian/workspace/dpol/smsimulator5.5/d_work/rootfiles/ypol_sle_rotate_back/ypol_np_Pb208_g050.root", "RECREATE");
     TTree *tree = new TTree("tree", "Input tree for simultaneous n-p");
 
     gBeamSimDataArray = new TBeamSimDataArray();
@@ -70,5 +70,5 @@ void convert_Pb208_g050() {
     f->Close();
     fin.close();
 
-    std::cout << "Converted " << eventCount << " events to " << "/home/tian/workspace/dpol/smsimulator5.5/d_work/rootfiles/ypol_native/ypol_np_Pb208_g050.root" << std::endl;
+    std::cout << "Converted " << eventCount << " events to " << "/home/tian/workspace/dpol/smsimulator5.5/d_work/rootfiles/ypol_sle_rotate_back/ypol_np_Pb208_g050.root" << std::endl;
 }
