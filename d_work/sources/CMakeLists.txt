@@ -33,7 +33,7 @@ ROOT_GENERATE_DICTIONARY(G__PDCAnalysisTools ${HEADERS} LINKDEF src/LinkDef.h)
 add_library(PDCAnalysisTools SHARED ${SOURCES} G__PDCAnalysisTools.cxx)
 
 # Link against ROOT libraries
-# 需要显式链接 Eve, Geom, Tree, Physics 等库
+# 需要显式链接 Eve, Geom, Tree, Physics, Minuit 等库
 target_link_libraries(PDCAnalysisTools 
     ${ROOT_LIBRARIES}
     ROOT::Core
@@ -45,6 +45,7 @@ target_link_libraries(PDCAnalysisTools
     ROOT::EG
     ROOT::Gui
     ROOT::RGL
+    ROOT::Minuit
 )
 
 # Installation (optional)

@@ -25,6 +25,9 @@ smsimulator5.5/doc/doxyfile
 *.bak
 */tmp/
 *.last
+macros_temp
+temp_dat_files
+
 # VSCode 配置
 .vscode/
 .ipch/

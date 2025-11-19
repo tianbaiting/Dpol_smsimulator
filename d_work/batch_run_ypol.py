@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+#  this is to run batch jobs for y-polarization data.
+#  geant4 macro files will be created automatically for each input root file.
+#  all root files in rootfiles/ypol/ will be processed.
+#  output will be organized by target and gamma in output_tree/ypol/
+
+
 """
 Batch run script for Y-polarization ROOT data files
 Automatically processes all files in rootfiles/ypol/ directory
@@ -39,7 +46,7 @@ def create_macro_file(input_file, output_dir, run_name, geometry_mac, num_events
 /control/execute {geometry_mac}
 
 # Tracking settings
-/tracking/storeTrajectory 1
+# /tracking/storeTrajectory 1
 
 # Gun settings - use Tree input
 /action/gun/Type Tree
@@ -63,7 +70,7 @@ def main():
     
     # Define directories
     input_dir = os.path.join(smsim_dir, 'd_work/rootfiles/ypol_slect_rotate_back')
-    output_base_dir = os.path.join(smsim_dir, 'd_work/output_tree/ypol_slect_rotate_back')
+    output_base_dir = os.path.join(smsim_dir, 'd_work/output_tree/test')
     macro_dir = os.path.join(smsim_dir, 'd_work/macros_temp')
     geometry_mac = os.path.join(smsim_dir, 'd_work/geometry/5deg_1.2T.mac')
     simulator_exe = os.path.join(smsim_dir, 'bin/sim_deuteron')

@@ -62,13 +62,13 @@ ParticleTrajectory::CalculateTrajectory(const TVector3& initialPosition,
     TrajectoryPoint currentPoint(initialPosition, initialMomentum.Vect(), 0.0, bField);
     trajectory.push_back(currentPoint);
     
-    std::cout << "Starting trajectory calculation:" << std::endl;
-    std::cout << "  Initial position: (" << initialPosition.X() << ", " 
-              << initialPosition.Y() << ", " << initialPosition.Z() << ") mm" << std::endl;
-    std::cout << "  Initial momentum: (" << initialMomentum.Px() << ", " 
-              << initialMomentum.Py() << ", " << initialMomentum.Pz() << ") MeV/c" << std::endl;
-    std::cout << "  Charge: " << charge << " e" << std::endl;
-    std::cout << "  Mass: " << mass << " MeV/c²" << std::endl;
+    // std::cout << "Starting trajectory calculation:" << std::endl;
+    // std::cout << "  Initial position: (" << initialPosition.X() << ", " 
+    //           << initialPosition.Y() << ", " << initialPosition.Z() << ") mm" << std::endl;
+    // std::cout << "  Initial momentum: (" << initialMomentum.Px() << ", " 
+    //           << initialMomentum.Py() << ", " << initialMomentum.Pz() << ") MeV/c" << std::endl;
+    // std::cout << "  Charge: " << charge << " e" << std::endl;
+    // std::cout << "  Mass: " << mass << " MeV/c²" << std::endl;
     
     // Integration parameters
     double dt = fStepSize / (initialMomentum.Beta() * kSpeedOfLight); // Time step [ns]

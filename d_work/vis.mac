@@ -47,11 +47,11 @@
 
 /action/gun/Type Tree
 # /action/gun/tree/InputFileName $SMSIMDIR/d_work/rootfiles/d+Sn124E190g050ynp/dbreakb09.root
-/action/gun/tree/InputFileName $SMSIMDIR/d_work/rootfiles/ypol/ypol_np_Pb208_g050.root
+/action/gun/tree/InputFileName $SMSIMDIR/d_work/rootfiles/ypol_slect_rotate_back/ypol_np_Pb208_g050.root
 # /action/gun/tree/InputFileName $SMSIMDIR/d_work/roo   tfiles/d+Pb208E190g050xyz/dbreakb01.root
 
 /action/gun/tree/TreeName tree
-/action/gun/tree/beamOn 3000
+/action/gun/tree/beamOn 23
 /vis/viewer/flush
 # /event/verbose 1
 # /tracking/verbose 1

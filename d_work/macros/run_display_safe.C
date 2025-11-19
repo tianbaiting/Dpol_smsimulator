@@ -37,8 +37,13 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
     ana.SetSmearing(0.5, 0.5); // 不
 
     // 使用事件ID构建完整文件路径
-    TString filename = Form("/home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/ypol_5000events/Pb208_g050/ypol_np_Pb208_g0500000.root");
+    TString filename = Form("/home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/ypol_slect_rotate_back/Pb208_g050/ypol_np_Pb208_g0500000.root");
     // TString filename = Form("%s/d_work/output_tree/testry0000.root", smsDir);
+    // TString filename = Form("%s/d_work/output_tree/test/Pb208_g050/ypol_np_Pb208_g0500000.root", smsDir);
+
+    // TString filename = Form("%s/d_work/output_tree/ypol_np_Pb208_g0500000.root", smsDir);
+
+
     
     // 创建EventDataReader对象
     EventDataReader reader(filename.Data());
@@ -63,14 +68,52 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
     if (show_trajectories) {
         if (!s_magField) s_magField = new MagneticField();
         if (!s_magLoaded) {
-            // 使用真实磁场文件
-            if (s_magField->LoadFieldMap(Form("%s/d_work/geometry/filed_map/180626-1,20T-3000.table", smsDir))) {
-                s_magField->SetRotationAngle(30.0);
-                s_magLoaded = true;
-                Info("run_display_safe", "已加载真实磁场文件: 180626-1,20T-3000.table");
-            } else {
-                Warning("run_display_safe", "真实磁场文件加载失败，将不显示粒子轨迹");
-                // do not delete s_magField here to keep it available for retry
+            // 智能磁场文件加载逻辑：优先使用ROOT格式，没有则用table格式并转换
+            TString rootFieldFile = Form("%s/d_work/geometry/filed_map/180626-1,20T-3000.root", smsDir);
+            TString tableFieldFile = Form("%s/d_work/geometry/filed_map/180626-1,20T-3000.table", smsDir);
+            
+            bool loadSuccess = false;
+            
+            // 检查是否存在ROOT格式磁场文件
+            if (gSystem->AccessPathName(rootFieldFile.Data()) == 0) {
+                // ROOT文件存在，直接加载
+                Info("run_display_safe", "发现ROOT格式磁场文件，正在加载: %s", rootFieldFile.Data());
+                if (s_magField->LoadFromROOTFile(rootFieldFile.Data())) {
+                    s_magField->SetRotationAngle(30.0);
+                    s_magLoaded = true;
+                    loadSuccess = true;
+                    Info("run_display_safe", "ROOT格式磁场文件加载成功");
+                } else {
+                    Warning("run_display_safe", "ROOT格式磁场文件加载失败，尝试table格式");
+                }
+            }
+            
+            // 如果ROOT格式加载失败或不存在，尝试table格式
+            if (!loadSuccess && gSystem->AccessPathName(tableFieldFile.Data()) == 0) {
+                Info("run_display_safe", "加载table格式磁场文件: %s", tableFieldFile.Data());
+                if (s_magField->LoadFieldMap(tableFieldFile.Data())) {
+                    s_magField->SetRotationAngle(30.0);
+                    s_magLoaded = true;
+                    loadSuccess = true;
+                    Info("run_display_safe", "table格式磁场文件加载成功");
+                    
+                    // 将table格式转换并保存为ROOT格式以便下次快速加载
+                    Info("run_display_safe", "正在将磁场数据保存为ROOT格式: %s", rootFieldFile.Data());
+                    try {
+                        s_magField->SaveAsROOTFile(rootFieldFile.Data());
+                        Info("run_display_safe", "磁场数据已成功保存为ROOT格式，下次将直接使用");
+                    } catch (...) {
+                        Warning("run_display_safe", "保存ROOT格式磁场文件失败，但不影响当前使用");
+                    }
+                } else {
+                    Warning("run_display_safe", "table格式磁场文件加载失败");
+                }
+            }
+            
+            // 如果两种格式都加载失败
+            if (!loadSuccess) {
+                Warning("run_display_safe", "无法加载任何磁场文件 (尝试了 %s 和 %s)，将不显示粒子轨迹", 
+                       rootFieldFile.Data(), tableFieldFile.Data());
                 s_magLoaded = false;
             }
         }
@@ -144,24 +187,36 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
             for (size_t i = 0; i < event.tracks.size(); ++i) {
                 const RecoTrack& track = event.tracks[i];
                 
-                // 步骤1: 纯计算重建（高效，用于批处理）
-                TLorentzVector pAtTarget = targetRecon.ReconstructAtTarget(track, targetPos, 100.0, 2000.0, 2.0, 3);
+                // 步骤1: 使用TMinuit方法进行高精度重建（替代原始的网格搜索）
+                TargetReconstructionResult minuitResult = targetRecon.ReconstructAtTargetMinuit(
+                    track, targetPos, 
+                    false,  // saveTrajectories = false（纯计算模式）
+                    700.0, // 初始动量猜测 MeV/c
+                    100.0,    // 容差 mm
+                    5000     // 最大迭代次数
+                );
+                
+                TLorentzVector pAtTarget = minuitResult.bestMomentum;
                 
                 // 步骤2: 如果需要可视化，单独获取详细结果（包含轨迹数据）
                 bool showVisualization = true; // 可根据需要控制
                 if (showVisualization) {
-                    TargetReconstructionResult detailedResult = targetRecon.ReconstructAtTargetWithDetails(
+                    TargetReconstructionResult detailedResult = targetRecon.ReconstructAtTargetMinuit(
                         track, targetPos, 
-                        true, // saveTrajectories = true（用于可视化）
-                        100.0, 2000.0, 2.0, 3);
+                        true,   // saveTrajectories = true（用于可视化）
+                        700, // 初始动量猜测 MeV/c
+                        100.0,    // 容差 mm
+                        5000     // 最大迭代次数
+                    );
                     
                     // 步骤3: 让EventDisplay负责可视化
                     bool showTrials = false; // 可设为true显示试探轨迹
                     display->DrawReconstructionResults(detailedResult, showTrials);
                 }
                 
-                Info("run_display_safe", "轨迹 %zu -> 靶点动量: |p|=%.1f MeV/c, px=%.1f, py=%.1f, pz=%.1f", 
-                     i, pAtTarget.Vect().Mag(), pAtTarget.Px(), pAtTarget.Py(), pAtTarget.Pz());
+                Info("run_display_safe", "轨迹 %zu -> 靶点动量 (TMinuit): |p|=%.1f MeV/c, px=%.1f, py=%.1f, pz=%.1f, 重建成功: %s, 最终距离: %.2f mm", 
+                     i, pAtTarget.Vect().Mag(), pAtTarget.Px(), pAtTarget.Py(), pAtTarget.Pz(),
+                     minuitResult.success ? "是" : "否", minuitResult.finalDistance);
             }
             
             // 强制重绘以显示新添加的轨迹

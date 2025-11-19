@@ -1,8 +1,17 @@
 #include "TargetReconstructor.hh"
 #include "ParticleTrajectory.hh"
+#include "TMinuit.h"
 #include <limits>
 #include <cmath>
 #include <iostream>
+
+// 静态成员变量初始化
+TargetReconstructor* TargetReconstructor::fgCurrentInstance = nullptr;
+TVector3 TargetReconstructor::fgStartPos(0, 0, 0);
+TVector3 TargetReconstructor::fgDirection(0, 0, 1);
+TVector3 TargetReconstructor::fgTargetPos(0, 0, 0);
+double TargetReconstructor::fgCharge = -1.0;
+double TargetReconstructor::fgMass = 938.272;
 
 TargetReconstructor::TargetReconstructor(MagneticField* magField)
     : fMagField(magField), fProtonMass(938.272) {
@@ -373,6 +382,179 @@ TargetReconstructionResult TargetReconstructor::ReconstructAtTargetGradientDesce
     }
     
     std::cout << "Final result: P=" << bestP << " MeV/c, distance=" << bestDistance << " mm" << std::endl;
+    
+    return result;
+}
+
+// TMinuit 回调函数：计算目标函数值 (最小化与目标点的距离)
+void TargetReconstructor::MinuitFunction(Int_t& npar, Double_t* grad, Double_t& result, 
+                                        Double_t* parameters, Int_t flag) {
+    // parameters[0] 是动量大小
+    double momentum = parameters[0];
+    
+    // 计算到目标点的最小距离
+    if (fgCurrentInstance) {
+        result = fgCurrentInstance->CalculateMinimumDistance(momentum, fgStartPos, fgDirection,
+                                                           fgTargetPos, fgCharge, fgMass);
+    } else {
+        result = 1e6; // 如果实例无效，返回大值
+    }
+}
+
+// TMinuit 优化方法实现
+TargetReconstructionResult TargetReconstructor::ReconstructAtTargetMinuit(
+    const RecoTrack& track,
+    const TVector3& targetPos,
+    bool saveTrajectories,
+    double pInit,
+    double tol,
+    int maxIterations) const {
+    
+    TargetReconstructionResult result;
+    result.success = false;
+    result.finalDistance = std::numeric_limits<double>::max();
+    
+    // Calculate distances from both PDC points to target
+    double distStart = (track.start - targetPos).Mag();
+    double distEnd = (track.end - targetPos).Mag();
+    
+    // Choose the PDC point farther from target as starting point
+    bool useEndPoint = (distEnd > distStart);
+    TVector3 startPos = useEndPoint ? track.end : track.start;
+    TVector3 otherPos = useEndPoint ? track.start : track.end;
+    
+    // Calculate backward direction
+    TVector3 backwardDirection = (otherPos - startPos);
+    if (backwardDirection.Mag() < 1e-6) {
+        std::cerr << "TargetReconstructor (TMinuit): track has zero length" << std::endl;
+        return result;
+    }
+    
+    std::cout << "TargetReconstructor (TMinuit): Starting from " 
+              << (useEndPoint ? "PDC2" : "PDC1") 
+              << " at (" << startPos.X() << ", " << startPos.Y() << ", " << startPos.Z() 
+              << ") mm, target at (" << targetPos.X() << ", " << targetPos.Y() 
+              << ", " << targetPos.Z() << ") mm" << std::endl;
+    
+    double mass = fProtonMass;
+    double charge = -1.0; // Use negative charge for backward propagation
+    
+    // 设置静态变量供回调函数使用
+    fgCurrentInstance = const_cast<TargetReconstructor*>(this);
+    fgStartPos = startPos;
+    fgDirection = backwardDirection;
+    fgTargetPos = targetPos;
+    fgCharge = charge;
+    fgMass = mass;
+    
+    // 创建 TMinuit 实例
+    TMinuit minuit(1); // 1个参数 (动量大小)
+    minuit.SetPrintLevel(-1); // 减少输出
+    
+    // 设置目标函数
+    minuit.SetFCN(MinuitFunction);
+    
+    // 定义参数：momentum
+    Int_t ierflg = 0;
+    minuit.mnparm(0, "momentum", pInit, 10.0, 50.0, 5000.0, ierflg);
+    
+    if (ierflg != 0) {
+        std::cerr << "TMinuit parameter setup failed" << std::endl;
+        return result;
+    }
+    
+    // 设置策略和容差 (使用正确的TMinuit命令)
+    Double_t arglist[10];
+    arglist[0] = 2; // 策略 2 = 最精确的策略
+    minuit.mnexcm("SET STR", arglist, 1, ierflg); 
+    
+    arglist[0] = tol * tol; // 设置误差定义
+    minuit.mnexcm("SET ERR", arglist, 1, ierflg);
+    
+    // 设置最大迭代次数
+    arglist[0] = maxIterations;
+    minuit.mnexcm("SET LIM", arglist, 1, ierflg);
+    
+    std::cout << "Starting TMinuit MIGRAD optimization..." << std::endl;
+    std::cout << "Initial momentum: " << pInit << " MeV/c" << std::endl;
+    
+    // 运行 MIGRAD 算法 (拟牛顿法)
+    Double_t args[2];
+    args[0] = maxIterations; // 最大迭代次数
+    args[1] = tol;          // 容差
+    minuit.mnexcm("MIGRAD", args, 2, ierflg);
+    
+    if (ierflg != 0) {
+        std::cout << "MIGRAD failed with error code: " << ierflg << std::endl;
+        // 尝试 SIMPLEX 算法作为备选
+        std::cout << "Trying SIMPLEX algorithm..." << std::endl;
+        minuit.mnexcm("SIMPLEX", args, 2, ierflg);
+    }
+    
+    // 获取优化结果
+    Double_t bestP, errorP;
+    minuit.GetParameter(0, bestP, errorP);
+    
+    // 获取最小函数值 (最小距离)
+    Double_t amin, edm, errdef;
+    Int_t nvpar, nparx, icstat;
+    minuit.mnstat(amin, edm, errdef, nvpar, nparx, icstat);
+    
+    std::cout << "TMinuit optimization completed:" << std::endl;
+    std::cout << "  Best momentum: " << bestP << " ± " << errorP << " MeV/c" << std::endl;
+    std::cout << "  Final distance: " << sqrt(amin) << " mm" << std::endl;
+    std::cout << "  Convergence status: " << icstat << " (3=converged)" << std::endl;
+    std::cout << "  EDM (estimated distance to minimum): " << edm << std::endl;
+    
+    // 验证收敛
+    if (icstat >= 3 || sqrt(amin) <= tol) {
+        result.success = true;
+    }
+    result.finalDistance = sqrt(amin);
+    
+    // 计算最终轨迹和动量
+    TVector3 pDirection = backwardDirection.Unit();
+    TVector3 initialP = bestP * pDirection;
+    double energy = sqrt(initialP.Mag2() + mass * mass);
+    TLorentzVector initialP4(initialP.X(), initialP.Y(), initialP.Z(), energy);
+
+    ParticleTrajectory traj(fMagField);
+    std::vector<ParticleTrajectory::TrajectoryPoint> finalTraj = traj.CalculateTrajectory(
+        startPos, initialP4, charge, mass
+    );
+    
+    if (!finalTraj.empty()) {
+        // 找到最接近目标的点
+        ParticleTrajectory::TrajectoryPoint closestPt;
+        double minDist = std::numeric_limits<double>::max();
+        for (const auto& pt : finalTraj) {
+            double dist = (pt.position - targetPos).Mag();
+            if (dist < minDist) {
+                minDist = dist;
+                closestPt = pt;
+            }
+        }
+        
+        // Convert back to original particle momentum (reverse the charge flip)
+        result.bestMomentum.SetXYZT(-closestPt.momentum.X(), -closestPt.momentum.Y(), 
+                                   -closestPt.momentum.Z(), 
+                                   sqrt(closestPt.momentum.Mag2() + mass * mass));
+        
+        // 保存最佳轨迹
+        if (saveTrajectories) {
+            result.bestTrajectory.clear();
+            for (const auto& pt : finalTraj) {
+                TrajectoryPoint tp;
+                tp.position = pt.position;
+                tp.momentum = pt.momentum;
+                tp.time = pt.time;
+                result.bestTrajectory.push_back(tp);
+            }
+        }
+    }
+    
+    // 清理静态变量
+    fgCurrentInstance = nullptr;
     
     return result;
 }

@@ -6,6 +6,7 @@
 #include "RecoEvent.hh"
 #include "MagneticField.hh"
 #include "ParticleTrajectory.hh"
+#include "TMinuit.h"
 #include <utility>
 #include <vector>
 
@@ -65,9 +66,25 @@ public:
                                                                   double tol = 1.0,
                                                                   int maxIterations = 100) const;
 
+    // TMinuit 优化方法：使用 ROOT 内置的 MIGRAD 算法 (拟牛顿法)
+    TargetReconstructionResult ReconstructAtTargetMinuit(const RecoTrack& track,
+                                                         const TVector3& targetPos,
+                                                         bool saveTrajectories = false,
+                                                         double pInit = 1000.0,
+                                                         double tol = 1.0,
+                                                         int maxIterations = 1000) const;
+
 private:
     MagneticField* fMagField;
     double fProtonMass; // MeV/c^2
+    
+    // Static data for TMinuit callback function
+    static TargetReconstructor* fgCurrentInstance;
+    static TVector3 fgStartPos;
+    static TVector3 fgDirection;  
+    static TVector3 fgTargetPos;
+    static double fgCharge;
+    static double fgMass;
     
     // 辅助函数：计算给定动量下到目标点的最小距离
     double CalculateMinimumDistance(double momentum, 
@@ -76,6 +93,10 @@ private:
                                    const TVector3& targetPos,
                                    double charge, 
                                    double mass) const;
+
+    // TMinuit 回调函数 (必须是静态函数)
+    static void MinuitFunction(Int_t& npar, Double_t* grad, Double_t& result, 
+                              Double_t* parameters, Int_t flag);
 };
 
 #endif // TARGET_RECONSTRUCTOR_H
