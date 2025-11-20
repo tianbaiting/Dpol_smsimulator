@@ -1,0 +1,2010 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+
+      background: var(--background-color);
+    }
+    :root{--background-color: #f5fffa;--selected-color: #4fe1f4;--edge-color: #548f9e;--edge-incoming-color: #698b69;--edge-outgoing-color: #008acd;--edge-incoming-outgoing-color: black;--cluster-label-bg-color: #e8eaed;--node-bg-color: #f4f5f1;--symbol-default-bg-color: var(--node-bg-color);--symbol-default-border-color: #889f4e;--symbol-default-text-color: #363636;--interface-bg-color: #fff8dc;--interface-border-color: #a69348;--module-bg-color: #ffebcd;--module-border-color: #a67e43;--constructor-bg-color: #ffdab9;--constructor-border-color: #a66e3c;--method-bg-color: #fff8c5;--method-border-color: #d4a72c;--function-bg-color: #bafbd0;--function-border-color: #4ac26b;--struct-bg-color: #ddf4ff;--struct-border-color: #54aeff;--type-icon-color: #8969da;--property-icon-color: #5f9348}.callgraph{--bold-border: 3.2;width:100%;height:100%;outline:none;cursor:default;-webkit-user-select:none;user-select:none}.callgraph>#graph0>polygon:first-of-type{fill:var(--background-color)}.callgraph>#graph0>#faded-group>:where(.node,.cluster){opacity:.2}.callgraph>#graph0>#faded-group>.edge{opacity:.05}.callgraph .edge>path:not(.hover-path){stroke:var(--edge-color);stroke-width:3}.callgraph .edge>polygon{stroke:var(--edge-color);fill:var(--edge-color)}.callgraph .edge>path.hover-path{stroke:transparent;stroke-width:15}.callgraph .edge.impl>path{stroke-dasharray:8,3}.callgraph .edge.impl>polygon{stroke-width:2;fill:none!important}.callgraph .edge:hover{--edge-color: var(--selected-color)}.callgraph .edge.incoming{--edge-color: var(--edge-incoming-color)}.callgraph .edge.outgoing{--edge-color: var(--edge-outgoing-color)}.callgraph .edge.incoming.outgoing{--edge-color: var(--edge-incoming-outgoing-color)}.callgraph .cluster polygon{stroke-width:1.6}.callgraph .cluster .cluster-label{cursor:pointer;fill:var(--cluster-label-bg-color);rx:18px}.callgraph .cluster text{pointer-events:none}.callgraph .cluster.selected{--cluster-label-bg-color: color-mix(in srgb, var(--selected-color) 30%, transparent)}.callgraph .cluster.selected polygon{stroke-width:var(--bold-border);stroke:var(--selected-color)}.callgraph .node>rect{rx:20px;fill:var(--node-bg-color);filter:url(#shadow)}.callgraph .node.selected>rect{stroke:var(--selected-color);stroke-width:var(--bold-border)}.callgraph .node>.title{cursor:pointer}.callgraph .node>.title>text{font-weight:700}.callgraph .cell{--bg-color: var(--symbol-default-bg-color);--border-color: var(--symbol-default-border-color);--border-width: 1.6}.callgraph .cell>rect{rx:10px;fill:var(--bg-color);stroke:var(--border-color);stroke-width:var(--border-width)}.callgraph .cell>text{fill:var(--symbold-default-text-color)}.callgraph .cell:where(.highlight,.selected,:not(:has(>.cell:hover)):hover){--border-width: var(--bold-border)}.callgraph .cell.highlight>rect{stroke:url(#highlightGradient)}.callgraph .cell.selected>rect{filter:drop-shadow(3px 3px 6px var(--border-color))}.callgraph .cell.interface{--bg-color: var(--interface-bg-color);--border-color: var(--interface-border-color)}.callgraph .cell.interface>rect{stroke-dasharray:7,5}.callgraph .cell.module{--bg-color: var(--module-bg-color);--border-color: var(--module-border-color)}.callgraph .cell.constructor{--bg-color: var(--constructor-bg-color);--border-color: var(--constructor-border-color)}.callgraph .cell.function{--bg-color: var(--function-bg-color);--border-color: var(--function-border-color)}.callgraph .cell.method{--bg-color: var(--method-bg-color);--border-color: var(--method-border-color)}.callgraph .cell:where(.class,.struct,.enum){--bg-color: var(--struct-bg-color);--border-color: var(--struct-border-color)}.callgraph .cell:where(.class,.struct,.enum)>rect{rx:unset}.callgraph .cell:where(.class,.struct,.enum)>text{transform:translateY(1.5px)}.callgraph .cell:where(.class,.struct,.enum)>text:first-of-type{fill:var(--type-icon-color)}.callgraph .cell:where(.field,.property)>rect{rx:unset}.callgraph .cell:where(.field,.property)>text:first-of-type{font-style:italic;fill:var(--property-icon-color)}
+
+  </style>
+</head>
+<body>
+  <svg class="callgraph" viewBox="0 0 3054.31005859375 2178">
+    
+<g id="graph0" class="graph" transform="matrix(0.2704376031544583 0 0 0.2704376031544583 337.816713973518 583.2890839379681)">
+<polygon fill="white" stroke="none" points="-4,4 -4,-2174 3050.31,-2174 3050.31,4 -4,4"></polygon>
+<g id="clust1" class="cluster">
+
+<polygon fill="none" stroke="black" points="259.38,-8 259.38,-2162 3038.31,-2162 3038.31,-8 259.38,-8"></polygon>
+<rect x="1498.1300048828125" y="-2158" width="301.4300537109375" height="35.199951171875" class="cluster-label"></rect>
+<text text-anchor="start" x="1506.13" y="-2135.6" font-family="Arial" font-size="16.00">dpol/smsimulator5.5/d_work/sources/src</text>
+</g>
+<!-- 2 -->
+<g id="2" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/EventDisplay.cc">
+
+<rect x="267.3800048828125" y="-608.0999755859375" width="908" height="592.1999759674072"></rect>
+<g id="2_0" class="title">
+<text text-anchor="start" x="611.13" y="-575.7" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;EventDisplay.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="2:15_14" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-556.9000244140625" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="527.08" y="-538.5" font-family="Arial" font-size="16.00">EventDisplay(const char *, const GeometryManager &amp;)</text>
+
+</g>
+<g id="2:23_14" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-521.7000122070312" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="664.69" y="-503.3" font-family="Arial" font-size="16.00">~EventDisplay()</text>
+
+</g>
+<g id="2:27_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-486.5" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="691.6" y="-468.1" font-family="Arial" font-size="16.00">InitEve()</text>
+
+</g>
+<g id="2:35_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-451.29998779296875" width="876" height="27.199981689453125"></rect>
+<text text-anchor="start" x="620.89" y="-432.9" font-family="Arial" font-size="16.00">LoadGeometry(const char *)</text>
+
+</g>
+<g id="2:51_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-416.1000061035156" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="666.69" y="-397.7" font-family="Arial" font-size="16.00">SetupCamera()</text>
+
+</g>
+<g id="2:60_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-380.8999938964844" width="876" height="27.199981689453125"></rect>
+<text text-anchor="start" x="649.8" y="-362.5" font-family="Arial" font-size="16.00">ClearCurrentEvent()</text>
+
+</g>
+<g id="2:68_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-345.70001220703125" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="601.33" y="-327.3" font-family="Arial" font-size="16.00">DisplayEvent(const RecoEvent &amp;)</text>
+
+</g>
+<g id="2:127_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-310.5" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="525.73" y="-292.1" font-family="Arial" font-size="16.00">DisplayEvent(EventDataReader &amp;, const RecoEvent &amp;)</text>
+
+</g>
+<g id="2:132_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-275.29998779296875" width="876" height="27.199981689453125"></rect>
+<text text-anchor="start" x="408.36" y="-256.9" font-family="Arial" font-size="16.00">DisplayEventWithTrajectories(EventDataReader &amp;, const RecoEvent &amp;, MagneticField *)</text>
+
+</g>
+<g id="2:152_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-240.10000610351562" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="442.17" y="-221.7" font-family="Arial" font-size="16.00">DrawParticleTrajectories(const std::vector&lt;TBeamSimData&gt;*, MagneticField *)</text>
+
+</g>
+<g id="2:202_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-204.89999389648438" width="876" height="27.199996948242188"></rect>
+<text text-anchor="start" x="287.38" y="-186.5" font-family="Arial" font-size="16.00">DrawTrajectoryLine(const std::vector&lt;double&gt;&amp;, const std::vector&lt;double&gt;&amp;, const std::vector&lt;double&gt;&amp;, const char *, int)</text>
+
+</g>
+<g id="2:239_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-169.6999969482422" width="876" height="27.199996948242188"></rect>
+<text text-anchor="start" x="530.61" y="-151.3" font-family="Arial" font-size="16.00">GetParticleInfo(int, double &amp;, double &amp;, const char *&amp;)</text>
+
+</g>
+<g id="2:302_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-134.5" width="876" height="27.199996948242188"></rect>
+<text text-anchor="start" x="677.81" y="-116.1" font-family="Arial" font-size="16.00">ResetView()</text>
+
+</g>
+<g id="2:312_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-99.30000305175781" width="876" height="27.20000457763672"></rect>
+<text text-anchor="start" x="469.72" y="-80.9" font-family="Arial" font-size="16.00">DrawReconstructionResults(const TargetReconstructionResult &amp;, bool)</text>
+
+</g>
+<g id="2:342_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-64.0999984741211" width="876" height="27.199996948242188"></rect>
+<text text-anchor="start" x="462.62" y="-45.7" font-family="Arial" font-size="16.00">DrawTrajectory(const std::vector&lt;TrajectoryPoint&gt;&amp;, const char *, int, int)</text>
+
+</g>
+</g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:15_14-2:27_19" class="edge" data-from="2:15_14" data-to="2:27_19">
+
+<path fill="none" stroke="black" d="M283.71,-545.96C129.06,-541.78 3.5,-530.74 3.5,-508.1 3.5,-486.26 120.39,-475.21 267.51,-470.71"></path>
+<polygon fill="black" stroke="black" points="267.36,-475.96 282.2,-470.28 267.05,-465.47 267.36,-475.96"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-545.96C129.06,-541.78 3.5,-530.74 3.5,-508.1 3.5,-486.26 120.39,-475.21 267.51,-470.71" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:68_19-2:60_19" class="edge" data-from="2:68_19" data-to="2:60_19">
+
+<path fill="none" stroke="black" d="M283.71,-327.4C129.06,-329.43 3.5,-336.08 3.5,-349.7 3.5,-362.85 120.39,-369.49 267.51,-371.77"></path>
+<polygon fill="black" stroke="black" points="267.12,-377.02 282.2,-371.98 267.27,-366.52 267.12,-377.02"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-327.4C129.06,-329.43 3.5,-336.08 3.5,-349.7 3.5,-362.85 120.39,-369.49 267.51,-371.77" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:302_19-2:51_19" class="edge" data-from="2:302_19" data-to="2:51_19">
+
+<path fill="none" stroke="black" d="M283.71,-130.5C129.06,-147.54 3.5,-184.97 3.5,-261.7 3.5,-335.73 120.39,-373.18 267.51,-391.03"></path>
+<polygon fill="black" stroke="black" points="266.7,-396.22 282.21,-392.73 267.91,-385.79 266.7,-396.22"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-130.5C129.06,-147.54 3.5,-184.97 3.5,-261.7 3.5,-335.73 120.39,-373.18 267.51,-391.03" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:23_14-2:60_19" class="edge" data-from="2:23_14" data-to="2:60_19">
+
+<path fill="none" stroke="black" d="M283.71,-506.67C129.06,-498.21 3.5,-478.37 3.5,-437.7 3.5,-398.46 120.39,-378.61 267.51,-369.66"></path>
+<polygon fill="black" stroke="black" points="267.53,-374.92 282.2,-368.81 266.92,-364.44 267.53,-374.92"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-506.67C129.06,-498.21 3.5,-478.37 3.5,-437.7 3.5,-398.46 120.39,-378.61 267.51,-369.66" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:127_19-2:68_19" class="edge" data-from="2:127_19" data-to="2:68_19">
+
+<path fill="none" stroke="black" d="M283.71,-292.2C129.06,-294.23 3.5,-300.88 3.5,-314.5 3.5,-327.65 120.39,-334.29 267.51,-336.57"></path>
+<polygon fill="black" stroke="black" points="267.12,-341.82 282.2,-336.78 267.27,-331.32 267.12,-341.82"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-292.2C129.06,-294.23 3.5,-300.88 3.5,-314.5 3.5,-327.65 120.39,-334.29 267.51,-336.57" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:132_19-2:68_19" class="edge" data-from="2:132_19" data-to="2:68_19">
+
+<path fill="none" stroke="black" d="M283.71,-259.04C129.06,-263.22 3.5,-274.26 3.5,-296.9 3.5,-318.74 120.39,-329.79 267.51,-334.29"></path>
+<polygon fill="black" stroke="black" points="267.05,-339.53 282.2,-334.72 267.36,-329.04 267.05,-339.53"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-259.04C129.06,-263.22 3.5,-274.26 3.5,-296.9 3.5,-318.74 120.39,-329.79 267.51,-334.29" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:15_14-2:51_19" class="edge" data-from="2:15_14" data-to="2:51_19">
+
+<path fill="none" stroke="black" d="M283.71,-541.87C129.06,-533.41 3.5,-513.57 3.5,-472.9 3.5,-433.66 120.39,-413.81 267.51,-404.86"></path>
+<polygon fill="black" stroke="black" points="267.53,-410.12 282.2,-404.01 266.92,-399.64 267.53,-410.12"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-541.87C129.06,-533.41 3.5,-513.57 3.5,-472.9 3.5,-433.66 120.39,-413.81 267.51,-404.86" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:152_19-2:202_19" class="edge" data-from="2:152_19" data-to="2:202_19">
+
+<path fill="none" stroke="black" d="M283.71,-231.2C129.06,-229.17 3.5,-222.52 3.5,-208.9 3.5,-195.75 120.39,-189.11 267.51,-186.83"></path>
+<polygon fill="black" stroke="black" points="267.27,-192.08 282.2,-186.62 267.12,-181.58 267.27,-192.08"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-231.2C129.06,-229.17 3.5,-222.52 3.5,-208.9 3.5,-195.75 120.39,-189.11 267.51,-186.83" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:312_19-2:342_19" class="edge" data-from="2:312_19" data-to="2:342_19">
+
+<path fill="none" stroke="black" d="M283.71,-90.4C129.06,-88.37 3.5,-81.72 3.5,-68.1 3.5,-54.95 120.39,-48.31 267.51,-46.03"></path>
+<polygon fill="black" stroke="black" points="267.27,-51.28 282.2,-45.82 267.12,-40.78 267.27,-51.28"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-90.4C129.06,-88.37 3.5,-81.72 3.5,-68.1 3.5,-54.95 120.39,-48.31 267.51,-46.03" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:15_14-2:35_19" class="edge" data-from="2:15_14" data-to="2:35_19">
+
+<path fill="none" stroke="black" d="M283.71,-543.92C129.06,-537.6 3.5,-522.15 3.5,-490.5 3.5,-459.96 120.39,-444.51 267.51,-437.78"></path>
+<polygon fill="black" stroke="black" points="267.44,-443.04 282.2,-437.15 266.99,-432.55 267.44,-443.04"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-543.92C129.06,-537.6 3.5,-522.15 3.5,-490.5 3.5,-459.96 120.39,-444.51 267.51,-437.78" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:132_19-2:152_19" class="edge" data-from="2:132_19" data-to="2:152_19">
+
+<path fill="none" stroke="black" d="M283.71,-266.4C129.06,-264.37 3.5,-257.72 3.5,-244.1 3.5,-230.95 120.39,-224.31 267.51,-222.03"></path>
+<polygon fill="black" stroke="black" points="267.27,-227.28 282.2,-221.82 267.12,-216.78 267.27,-227.28"></polygon>
+<text text-anchor="middle" x="1.75" y="-307.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-266.4C129.06,-264.37 3.5,-257.72 3.5,-244.1 3.5,-230.95 120.39,-224.31 267.51,-222.03" class="hover-path"></path></g>
+<!-- 6 -->
+<g id="6" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/ParticleTrajectory.cc">
+
+<rect x="1322.8800048828125" y="-629.9000244140625" width="968.4801025390625" height="345.8000183105469"></rect>
+<g id="6_1" class="title">
+<text text-anchor="start" x="1681.32" y="-597.5" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ParticleTrajectory.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="6:18_20" data-kind="12" class="cell function">
+<rect x="1338.8800048828125" y="-578.7000122070312" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1684.42" y="-560.3" font-family="Arial" font-size="16.00">ParticleTrajectory(MagneticField *)</text>
+
+</g>
+<g id="6:27_20" data-kind="12" class="cell function">
+<rect x="1338.8800048828125" y="-543.5" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1734.88" y="-525.1" font-family="Arial" font-size="16.00">~ParticleTrajectory()</text>
+
+</g>
+<g id="6:33_20" data-kind="12" class="cell function">
+<rect x="1338.8800048828125" y="-508.29998779296875" width="936.4801025390625" height="27.199981689453125"></rect>
+<text text-anchor="start" x="1505.2" y="-489.9" font-family="Arial" font-size="16.00">CalculateTrajectory(const TVector3 &amp;, const TLorentzVector &amp;, double, double) const</text>
+
+</g>
+<g id="6:106_25" data-kind="12" class="cell function">
+<rect x="1338.8800048828125" y="-473.1000061035156" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1657.28" y="-454.7" font-family="Arial" font-size="16.00">IsValidStep(const TrajectoryPoint &amp;) const</text>
+
+</g>
+<g id="6:120_29" data-kind="12" class="cell function">
+<rect x="1338.8800048828125" y="-437.8999938964844" width="936.4801025390625" height="27.199981689453125"></rect>
+<text text-anchor="start" x="1571.02" y="-419.5" font-family="Arial" font-size="16.00">CalculateForce(const TVector3 &amp;, const TVector3 &amp;, double) const</text>
+
+</g>
+<g id="6:153_20" data-kind="12" class="cell function">
+<rect x="1338.8800048828125" y="-402.70001220703125" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1553.63" y="-384.3" font-family="Arial" font-size="16.00">RungeKuttaStep(const TrajectoryPoint &amp;, double, double, double) const</text>
+
+</g>
+<g id="6:199_25" data-kind="12" class="cell function">
+<rect x="1338.8800048828125" y="-367.5" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1342.88" y="-349.1" font-family="Arial" font-size="16.00">GetTrajectoryPoints(const std::vector&lt;TrajectoryPoint&gt;&amp;, std::vector&lt;double&gt;&amp;, std::vector&lt;double&gt;&amp;, std::vector&lt;double&gt;&amp;) const</text>
+
+</g>
+<g id="6:218_25" data-kind="12" class="cell function">
+<rect x="1338.8800048828125" y="-332.29998779296875" width="936.4801025390625" height="27.199981689453125"></rect>
+<text text-anchor="start" x="1588.37" y="-313.9" font-family="Arial" font-size="16.00">PrintTrajectoryInfo(const std::vector&lt;TrajectoryPoint&gt;&amp;) const</text>
+
+</g>
+</g>
+<!-- 2&#45;&gt;6 -->
+<g id="2:152_19-6:33_20" class="edge" data-from="2:152_19" data-to="6:33_20">
+
+<path fill="none" stroke="black" d="M1160.38,-226.5C1297.46,-226.5 1203.41,-473.15 1321.53,-493.38"></path>
+<polygon fill="black" stroke="black" points="1321,-498.61 1336.38,-494.58 1321.85,-488.14 1321,-498.61"></polygon>
+<text text-anchor="middle" x="1249.13" y="-372.84" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-226.5C1297.46,-226.5 1203.41,-473.15 1321.53,-493.38" class="hover-path"></path></g>
+<!-- 2&#45;&gt;6 -->
+<g id="2:152_19-6:199_25" class="edge" data-from="2:152_19" data-to="6:199_25">
+
+<path fill="none" stroke="black" d="M1160.38,-226.5C1251.61,-226.5 1242.39,-338.94 1321.45,-352.56"></path>
+<polygon fill="black" stroke="black" points="1321,-357.79 1336.38,-353.78 1321.85,-347.32 1321,-357.79"></polygon>
+<text text-anchor="middle" x="1249.13" y="-294.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-226.5C1251.61,-226.5 1242.39,-338.94 1321.45,-352.56" class="hover-path"></path></g>
+<!-- 2&#45;&gt;6 -->
+<g id="2:152_19-6:218_25" class="edge" data-from="2:152_19" data-to="6:218_25">
+
+<path fill="none" stroke="black" d="M1160.38,-226.5C1204.86,-226.5 1211.42,-248.7 1250.88,-269.2 1284.97,-286.9 1291.89,-310.93 1321.76,-317.17"></path>
+<polygon fill="black" stroke="black" points="1320.95,-322.37 1336.38,-318.56 1321.94,-311.91 1320.95,-322.37"></polygon>
+<text text-anchor="middle" x="1249.13" y="-273.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-226.5C1204.86,-226.5 1211.42,-248.7 1250.88,-269.2 1284.97,-286.9 1291.89,-310.93 1321.76,-317.17" class="hover-path"></path></g>
+<!-- 6&#45;&gt;6 -->
+<g id="6:33_20-6:153_20" class="edge" data-from="6:33_20" data-to="6:153_20">
+
+<path fill="none" stroke="black" d="M1338.99,-495.21C1175.86,-488.82 1043.89,-473.37 1043.89,-441.9 1043.89,-411.47 1167.24,-396.03 1322.84,-389.26"></path>
+<polygon fill="black" stroke="black" points="1322.7,-394.52 1337.47,-388.65 1322.27,-384.03 1322.7,-394.52"></polygon>
+<text text-anchor="middle" x="1042.14" y="-452.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1338.99,-495.21C1175.86,-488.82 1043.89,-473.37 1043.89,-441.9 1043.89,-411.47 1167.24,-396.03 1322.84,-389.26" class="hover-path"></path></g>
+<!-- 6&#45;&gt;6 -->
+<g id="6:33_20-6:106_25" class="edge" data-from="6:33_20" data-to="6:106_25">
+
+<path fill="none" stroke="black" d="M1338.99,-499.37C1175.86,-497.29 1043.89,-490.65 1043.89,-477.1 1043.89,-464 1167.24,-457.35 1322.84,-455.05"></path>
+<polygon fill="black" stroke="black" points="1322.55,-460.31 1337.47,-454.85 1322.4,-449.81 1322.55,-460.31"></polygon>
+<text text-anchor="middle" x="1042.14" y="-452.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1338.99,-499.37C1175.86,-497.29 1043.89,-490.65 1043.89,-477.1 1043.89,-464 1167.24,-457.35 1322.84,-455.05" class="hover-path"></path></g>
+<!-- 6&#45;&gt;6 -->
+<g id="6:153_20-6:120_29" class="edge" data-from="6:153_20" data-to="6:120_29">
+
+<path fill="none" stroke="black" d="M1338.99,-384.43C1175.86,-386.51 1043.89,-393.15 1043.89,-406.7 1043.89,-419.8 1167.24,-426.45 1322.84,-428.75"></path>
+<polygon fill="black" stroke="black" points="1322.4,-433.99 1337.47,-428.95 1322.55,-423.49 1322.4,-433.99"></polygon>
+<text text-anchor="middle" x="1042.14" y="-452.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1338.99,-384.43C1175.86,-386.51 1043.89,-393.15 1043.89,-406.7 1043.89,-419.8 1167.24,-426.45 1322.84,-428.75" class="hover-path"></path></g>
+<!-- 5 -->
+<g id="5" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/MagneticField.cc">
+
+<rect x="2438.860107421875" y="-854.2999877929688" width="591.449951171875" height="838.5999879837036"></rect>
+<g id="5_2" class="title">
+<text text-anchor="start" x="2621.22" y="-821.9" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;MagneticField.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="5:12_15" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-803.0999755859375" width="559.449951171875" height="27.199951171875"></rect>
+<text text-anchor="start" x="2679.46" y="-784.7" font-family="Arial" font-size="16.00">MagneticField()</text>
+
+</g>
+<g id="5:21_15" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-767.9000244140625" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2615.88" y="-749.5" font-family="Arial" font-size="16.00">MagneticField(const std::string &amp;)</text>
+
+</g>
+<g id="5:31_15" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-732.7000122070312" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2674.79" y="-714.3" font-family="Arial" font-size="16.00">~MagneticField()</text>
+
+</g>
+<g id="5:38_20" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-697.5" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2614.98" y="-679.1" font-family="Arial" font-size="16.00">LoadFieldMap(const std::string &amp;)</text>
+
+</g>
+<g id="5:125_20" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-662.2999877929688" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2642.97" y="-643.9" font-family="Arial" font-size="16.00">SetRotationAngle(double)</text>
+
+</g>
+<g id="5:135_24" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-627.0999755859375" width="559.449951171875" height="27.199951171875"></rect>
+<text text-anchor="start" x="2563.85" y="-608.7" font-family="Arial" font-size="16.00">RotateToMagnetFrame(const TVector3 &amp;) const</text>
+
+</g>
+<g id="5:146_24" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-591.9000244140625" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2577.19" y="-573.5" font-family="Arial" font-size="16.00">RotateToLabFrame(const TVector3 &amp;) const</text>
+
+</g>
+<g id="5:157_24" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-556.7000122070312" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2596.72" y="-538.3" font-family="Arial" font-size="16.00">GetField(double, double, double) const</text>
+
+</g>
+<g id="5:170_24" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-521.5" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2616.32" y="-503.1" font-family="Arial" font-size="16.00">GetField(const TVector3 &amp;) const</text>
+
+</g>
+<g id="5:175_24" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-486.29998779296875" width="559.449951171875" height="27.199981689453125"></rect>
+<text text-anchor="start" x="2580.72" y="-467.9" font-family="Arial" font-size="16.00">GetFieldRaw(double, double, double) const</text>
+
+</g>
+<g id="5:181_24" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-451.1000061035156" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2600.32" y="-432.7" font-family="Arial" font-size="16.00">GetFieldRaw(const TVector3 &amp;) const</text>
+
+</g>
+<g id="5:186_24" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-415.8999938964844" width="559.449951171875" height="27.199981689453125"></rect>
+<text text-anchor="start" x="2544.72" y="-397.5" font-family="Arial" font-size="16.00">GetFieldWithSymmetry(double, double, double) const</text>
+
+</g>
+<g id="5:226_22" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-380.70001220703125" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2458.86" y="-362.3" font-family="Arial" font-size="16.00">InterpolateTrilinear(const std::vector&lt;double&gt;&amp;, double, double, double) const</text>
+
+</g>
+<g id="5:275_19" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-345.5" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2641.21" y="-327.1" font-family="Arial" font-size="16.00">GetIndex(int, int, int) const</text>
+
+</g>
+<g id="5:283_20" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-310.29998779296875" width="559.449951171875" height="27.199981689453125"></rect>
+<text text-anchor="start" x="2630.1" y="-291.9" font-family="Arial" font-size="16.00">IsValidIndex(int, int, int) const</text>
+
+</g>
+<g id="5:290_20" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-275.1000061035156" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2584.75" y="-256.7" font-family="Arial" font-size="16.00">GetGridIndices(int, int &amp;, int &amp;, int &amp;) const</text>
+
+</g>
+<g id="5:298_20" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-239.89999389648438" width="559.449951171875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="2590.49" y="-221.5" font-family="Arial" font-size="16.00">IsInRange(double, double, double) const</text>
+
+</g>
+<g id="5:305_20" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-204.6999969482422" width="559.449951171875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="2610.09" y="-186.3" font-family="Arial" font-size="16.00">IsInRange(const TVector3 &amp;) const</text>
+
+</g>
+<g id="5:310_24" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-169.5" width="559.449951171875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="2617.21" y="-151.1" font-family="Arial" font-size="16.00">GetGridPosition(int, int, int) const</text>
+
+</g>
+<g id="5:318_20" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-134.3000030517578" width="559.449951171875" height="27.20000457763672"></rect>
+<text text-anchor="start" x="2512.74" y="-115.9" font-family="Arial" font-size="16.00">SaveAsROOTFile(const std::string &amp;, const std::string &amp;) const</text>
+
+</g>
+<g id="5:357_20" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-99.0999984741211" width="559.449951171875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="2525.19" y="-80.7" font-family="Arial" font-size="16.00">LoadFromROOTFile(const std::string &amp;, const std::string &amp;)</text>
+
+</g>
+<g id="5:406_20" data-kind="12" class="cell function">
+<rect x="2454.860107421875" y="-63.900001525878906" width="559.449951171875" height="27.200000762939453"></rect>
+<text text-anchor="start" x="2678.12" y="-45.5" font-family="Arial" font-size="16.00">PrintInfo() const</text>
+
+</g>
+</g>
+<!-- 6&#45;&gt;5 -->
+<g id="6:33_20-5:170_24" class="edge" data-from="6:33_20" data-to="5:170_24">
+
+<path fill="none" stroke="black" d="M2276.36,-494.7C2349.75,-494.7 2371.65,-506.06 2437.6,-507.7"></path>
+<polygon fill="black" stroke="black" points="2437.29,-512.95 2452.35,-507.88 2437.41,-502.45 2437.29,-512.95"></polygon>
+<text text-anchor="middle" x="2365.11" y="-505.5" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2276.36,-494.7C2349.75,-494.7 2371.65,-506.06 2437.6,-507.7" class="hover-path"></path></g>
+<!-- 6&#45;&gt;5 -->
+<g id="6:120_29-5:170_24" class="edge" data-from="6:120_29" data-to="5:170_24">
+
+<path fill="none" stroke="black" d="M2276.36,-424.3C2357.77,-424.3 2365.88,-497.17 2437.55,-506.84"></path>
+<polygon fill="black" stroke="black" points="2437.04,-512.07 2452.35,-507.8 2437.72,-501.59 2437.04,-512.07"></polygon>
+<text text-anchor="middle" x="2365.11" y="-470.3" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2276.36,-424.3C2357.77,-424.3 2365.88,-497.17 2437.55,-506.84" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:186_24-5:226_22" class="edge" data-from="5:186_24" data-to="5:226_22">
+
+<path fill="none" stroke="black" d="M2455.09,-407.24C2345.52,-405.53 2254.12,-398.91 2254.12,-384.7 2254.12,-371.2 2336.65,-364.55 2438.86,-362.45"></path>
+<polygon fill="black" stroke="black" points="2438.67,-367.71 2453.57,-362.19 2438.48,-357.21 2438.67,-367.71"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-407.24C2345.52,-405.53 2254.12,-398.91 2254.12,-384.7 2254.12,-371.2 2336.65,-364.55 2438.86,-362.45" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:357_20-5:406_20" class="edge" data-from="5:357_20" data-to="5:406_20">
+
+<path fill="none" stroke="black" d="M2455.09,-90.44C2345.52,-88.73 2254.12,-82.11 2254.12,-67.9 2254.12,-54.4 2336.65,-47.75 2438.86,-45.65"></path>
+<polygon fill="black" stroke="black" points="2438.67,-50.91 2453.57,-45.39 2438.48,-40.41 2438.67,-50.91"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-90.44C2345.52,-88.73 2254.12,-82.11 2254.12,-67.9 2254.12,-54.4 2336.65,-47.75 2438.86,-45.65" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:226_22-5:275_19" class="edge" data-from="5:226_22" data-to="5:275_19">
+
+<path fill="none" stroke="black" d="M2455.09,-372.04C2345.52,-370.33 2254.12,-363.71 2254.12,-349.5 2254.12,-336 2336.65,-329.35 2438.86,-327.25"></path>
+<polygon fill="black" stroke="black" points="2438.67,-332.51 2453.57,-326.99 2438.48,-322.01 2438.67,-332.51"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-372.04C2345.52,-370.33 2254.12,-363.71 2254.12,-349.5 2254.12,-336 2336.65,-329.35 2438.86,-327.25" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:21_15-5:38_20" class="edge" data-from="5:21_15" data-to="5:38_20">
+
+<path fill="none" stroke="black" d="M2455.09,-757.46C2345.52,-753.71 2254.12,-742.71 2254.12,-719.1 2254.12,-696.67 2336.65,-685.62 2438.86,-681.35"></path>
+<polygon fill="black" stroke="black" points="2438.78,-686.61 2453.57,-680.8 2438.39,-676.12 2438.78,-686.61"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-757.46C2345.52,-753.71 2254.12,-742.71 2254.12,-719.1 2254.12,-696.67 2336.65,-685.62 2438.86,-681.35" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:175_24-5:186_24" class="edge" data-from="5:175_24" data-to="5:186_24">
+
+<path fill="none" stroke="black" d="M2455.09,-475.86C2345.52,-472.11 2254.12,-461.11 2254.12,-437.5 2254.12,-415.07 2336.65,-404.02 2438.86,-399.75"></path>
+<polygon fill="black" stroke="black" points="2438.78,-405.01 2453.57,-399.2 2438.39,-394.52 2438.78,-405.01"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-475.86C2345.52,-472.11 2254.12,-461.11 2254.12,-437.5 2254.12,-415.07 2336.65,-404.02 2438.86,-399.75" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:157_24-5:175_24" class="edge" data-from="5:157_24" data-to="5:175_24">
+
+<path fill="none" stroke="black" d="M2455.09,-546.26C2345.52,-542.51 2254.12,-531.51 2254.12,-507.9 2254.12,-485.47 2336.65,-474.42 2438.86,-470.15"></path>
+<polygon fill="black" stroke="black" points="2438.78,-475.41 2453.57,-469.6 2438.39,-464.92 2438.78,-475.41"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-546.26C2345.52,-542.51 2254.12,-531.51 2254.12,-507.9 2254.12,-485.47 2336.65,-474.42 2438.86,-470.15" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:170_24-5:157_24" class="edge" data-from="5:170_24" data-to="5:157_24">
+
+<path fill="none" stroke="black" d="M2455.09,-502.96C2345.52,-504.67 2254.12,-511.29 2254.12,-525.5 2254.12,-539 2336.65,-545.65 2438.86,-547.75"></path>
+<polygon fill="black" stroke="black" points="2438.48,-552.99 2453.57,-548.01 2438.67,-542.49 2438.48,-552.99"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-502.96C2345.52,-504.67 2254.12,-511.29 2254.12,-525.5 2254.12,-539 2336.65,-545.65 2438.86,-547.75" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:157_24-5:146_24" class="edge" data-from="5:157_24" data-to="5:146_24">
+
+<path fill="none" stroke="black" d="M2455.09,-538.16C2345.52,-539.87 2254.12,-546.49 2254.12,-560.7 2254.12,-574.2 2336.65,-580.85 2438.86,-582.95"></path>
+<polygon fill="black" stroke="black" points="2438.48,-588.19 2453.57,-583.21 2438.67,-577.69 2438.48,-588.19"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-538.16C2345.52,-539.87 2254.12,-546.49 2254.12,-560.7 2254.12,-574.2 2336.65,-580.85 2438.86,-582.95" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:38_20-5:406_20" class="edge" data-from="5:38_20" data-to="5:406_20">
+
+<path fill="none" stroke="black" d="M2497.27,-670.33C2370.04,-641.18 2254.12,-563.09 2254.12,-367.1 2254.12,-179.34 2360.51,-99.79 2481.31,-67.8"></path>
+<polygon fill="black" stroke="black" points="2482.49,-72.92 2495.8,-64.23 2479.98,-62.72 2482.49,-72.92"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2497.27,-670.33C2370.04,-641.18 2254.12,-563.09 2254.12,-367.1 2254.12,-179.34 2360.51,-99.79 2481.31,-67.8" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:275_19-5:283_20" class="edge" data-from="5:275_19" data-to="5:283_20">
+
+<path fill="none" stroke="black" d="M2455.09,-336.84C2345.52,-335.13 2254.12,-328.51 2254.12,-314.3 2254.12,-300.8 2336.65,-294.15 2438.86,-292.05"></path>
+<polygon fill="black" stroke="black" points="2438.67,-297.31 2453.57,-291.79 2438.48,-286.81 2438.67,-297.31"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-336.84C2345.52,-335.13 2254.12,-328.51 2254.12,-314.3 2254.12,-300.8 2336.65,-294.15 2438.86,-292.05" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:21_15-5:125_20" class="edge" data-from="5:21_15" data-to="5:125_20">
+
+<path fill="none" stroke="black" d="M2455.09,-755.68C2345.52,-749.89 2254.12,-734.51 2254.12,-701.5 2254.12,-670.13 2336.65,-654.69 2438.86,-648.26"></path>
+<polygon fill="black" stroke="black" points="2438.9,-653.51 2453.58,-647.41 2438.3,-643.03 2438.9,-653.51"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-755.68C2345.52,-749.89 2254.12,-734.51 2254.12,-701.5 2254.12,-670.13 2336.65,-654.69 2438.86,-648.26" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:181_24-5:175_24" class="edge" data-from="5:181_24" data-to="5:175_24">
+
+<path fill="none" stroke="black" d="M2455.09,-432.56C2345.52,-434.27 2254.12,-440.89 2254.12,-455.1 2254.12,-468.6 2336.65,-475.25 2438.86,-477.35"></path>
+<polygon fill="black" stroke="black" points="2438.48,-482.59 2453.57,-477.61 2438.67,-472.09 2438.48,-482.59"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-432.56C2345.52,-434.27 2254.12,-440.89 2254.12,-455.1 2254.12,-468.6 2336.65,-475.25 2438.86,-477.35" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:12_15-5:125_20" class="edge" data-from="5:12_15" data-to="5:125_20">
+
+<path fill="none" stroke="black" d="M2455.09,-789.1C2345.52,-781.27 2254.12,-761.51 2254.12,-719.1 2254.12,-678.8 2336.65,-658.95 2438.86,-650.36"></path>
+<polygon fill="black" stroke="black" points="2439.03,-655.61 2453.58,-649.21 2438.22,-645.14 2439.03,-655.61"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-789.1C2345.52,-781.27 2254.12,-761.51 2254.12,-719.1 2254.12,-678.8 2336.65,-658.95 2438.86,-650.36" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:157_24-5:135_24" class="edge" data-from="5:157_24" data-to="5:135_24">
+
+<path fill="none" stroke="black" d="M2455.09,-539.94C2345.52,-543.69 2254.12,-554.69 2254.12,-578.3 2254.12,-600.73 2336.65,-611.78 2438.86,-616.05"></path>
+<polygon fill="black" stroke="black" points="2438.39,-621.28 2453.57,-616.6 2438.78,-610.79 2438.39,-621.28"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-539.94C2345.52,-543.69 2254.12,-554.69 2254.12,-578.3 2254.12,-600.73 2336.65,-611.78 2438.86,-616.05" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:305_20-5:298_20" class="edge" data-from="5:305_20" data-to="5:298_20">
+
+<path fill="none" stroke="black" d="M2455.09,-186.16C2345.52,-187.87 2254.12,-194.49 2254.12,-208.7 2254.12,-222.2 2336.65,-228.85 2438.86,-230.95"></path>
+<polygon fill="black" stroke="black" points="2438.48,-236.19 2453.57,-231.21 2438.67,-225.69 2438.48,-236.19"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-186.16C2345.52,-187.87 2254.12,-194.49 2254.12,-208.7 2254.12,-222.2 2336.65,-228.85 2438.86,-230.95" class="hover-path"></path></g>
+<!-- 5&#45;&gt;5 -->
+<g id="5:186_24-5:298_20" class="edge" data-from="5:186_24" data-to="5:298_20">
+
+<path fill="none" stroke="black" d="M2455.09,-400.12C2345.52,-390.25 2254.12,-366.12 2254.12,-314.3 2254.12,-265.07 2336.65,-240.82 2438.86,-230.06"></path>
+<polygon fill="black" stroke="black" points="2439.16,-235.3 2453.58,-228.62 2438.14,-224.85 2439.16,-235.3"></polygon>
+<text text-anchor="middle" x="2252.37" y="-430.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2455.09,-400.12C2345.52,-390.25 2254.12,-366.12 2254.12,-314.3 2254.12,-265.07 2336.65,-240.82 2438.86,-230.06" class="hover-path"></path></g>
+<!-- 4 -->
+<g id="4" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/GeometryManager.cc">
+
+<rect x="569.1199951171875" y="-831.5" width="304.52001953125" height="205"></rect>
+<g id="4_3" class="title">
+<text text-anchor="start" x="591.12" y="-799.1" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GeometryManager.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="4:6_17" data-kind="12" class="cell function">
+<rect x="585.1199951171875" y="-780.2999877929688" width="272.52001953125" height="27.20001220703125"></rect>
+<text text-anchor="start" x="649.36" y="-761.9" font-family="Arial" font-size="16.00">GeometryManager()</text>
+
+</g>
+<g id="4:9_17" data-kind="12" class="cell function">
+<rect x="585.1199951171875" y="-745.0999755859375" width="272.52001953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="644.69" y="-726.7" font-family="Arial" font-size="16.00">~GeometryManager()</text>
+
+</g>
+<g id="4:11_22" data-kind="12" class="cell function">
+<rect x="585.1199951171875" y="-709.9000244140625" width="272.52001953125" height="27.20001220703125"></rect>
+<text text-anchor="start" x="599.55" y="-691.5" font-family="Arial" font-size="16.00">LoadGeometry(const std::string &amp;)</text>
+
+</g>
+<g id="4:54_22" data-kind="12" class="cell function">
+<rect x="585.1199951171875" y="-674.7000122070312" width="272.52001953125" height="27.20001220703125"></rect>
+<text text-anchor="start" x="616.45" y="-656.3" font-family="Arial" font-size="16.00">ParseLine(const std::string &amp;)</text>
+
+</g>
+</g>
+<!-- 4&#45;&gt;4 -->
+<g id="4:11_22-4:54_22" class="edge" data-from="4:11_22" data-to="4:54_22">
+
+<path fill="none" stroke="black" d="M585.26,-701.3C451.89,-703.32 305.24,-698.04 305.24,-678.7 305.24,-660.15 440.11,-654.54 568.79,-655.89"></path>
+<polygon fill="black" stroke="black" points="568.68,-661.14 583.74,-656.08 568.81,-650.64 568.68,-661.14"></polygon>
+<text text-anchor="middle" x="303.49" y="-724.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M585.26,-701.3C451.89,-703.32 305.24,-698.04 305.24,-678.7 305.24,-660.15 440.11,-654.54 568.79,-655.89" class="hover-path"></path></g>
+<!-- 8 -->
+<g id="8" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/PDCSimAna.cc">
+
+<rect x="379.4800109863281" y="-1266.0999755859375" width="683.8000183105469" height="416.199951171875"></rect>
+<g id="8_4" class="title">
+<text text-anchor="start" x="612.91" y="-1233.7" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;PDCSimAna.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="8:8_0" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1214.9000244140625" width="651.8000183105469" height="27.2000732421875"></rect>
+<text text-anchor="start" x="637.81" y="-1196.5" font-family="Arial" font-size="16.00">ClassImp(PDCSimAna)</text>
+
+</g>
+<g id="8:10_11" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1179.699951171875" width="651.8000183105469" height="27.199951171875"></rect>
+<text text-anchor="start" x="575.55" y="-1161.3" font-family="Arial" font-size="16.00">PDCSimAna(const GeometryManager &amp;)</text>
+
+</g>
+<g id="8:15_11" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1144.5" width="651.8000183105469" height="27.199951171875"></rect>
+<text text-anchor="start" x="666.48" y="-1126.1" font-family="Arial" font-size="16.00">~PDCSimAna()</text>
+
+</g>
+<g id="8:17_16" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1109.300048828125" width="651.8000183105469" height="27.2000732421875"></rect>
+<text text-anchor="start" x="617.31" y="-1090.9" font-family="Arial" font-size="16.00">SetSmearing(double, double)</text>
+
+</g>
+<g id="8:22_16" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1074.0999755859375" width="651.8000183105469" height="27.199951171875"></rect>
+<text text-anchor="start" x="688.04" y="-1055.7" font-family="Arial" font-size="16.00">ClearAll()</text>
+
+</g>
+<g id="8:36_21" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1038.9000244140625" width="651.8000183105469" height="27.20001220703125"></rect>
+<text text-anchor="start" x="612.46" y="-1020.5" font-family="Arial" font-size="16.00">ProcessEvent(TClonesArray *)</text>
+
+</g>
+<g id="8:43_16" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1003.7000122070312" width="651.8000183105469" height="27.20001220703125"></rect>
+<text text-anchor="start" x="561.32" y="-985.3" font-family="Arial" font-size="16.00">ProcessEvent(TClonesArray *, RecoEvent &amp;)</text>
+
+</g>
+<g id="8:142_33" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-968.5" width="651.8000183105469" height="27.20001220703125"></rect>
+<text text-anchor="start" x="593.77" y="-950.1" font-family="Arial" font-size="16.00">GetSmearedGlobalPositions() const</text>
+
+</g>
+<g id="8:183_20" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-933.2999877929688" width="651.8000183105469" height="27.20001220703125"></rect>
+<text text-anchor="start" x="399.48" y="-914.9" font-family="Arial" font-size="16.00">ReconstructPDC(const std::vector&lt;Hit&gt;&amp;, const std::vector&lt;Hit&gt;&amp;, const TVector3 &amp;) const</text>
+
+</g>
+<g id="8:227_18" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-898.0999755859375" width="651.8000183105469" height="27.199951171875"></rect>
+<text text-anchor="start" x="561.76" y="-879.7" font-family="Arial" font-size="16.00">CalculateCoM(const std::vector&lt;Hit&gt;&amp;) const</text>
+
+</g>
+</g>
+<!-- 8&#45;&gt;8 -->
+<g id="8:36_21-8:43_16" class="edge" data-from="8:36_21" data-to="8:43_16">
+
+<path fill="none" stroke="black" d="M395.75,-1030.51C246.06,-1029.34 115.6,-1022.82 115.6,-1007.7 115.6,-993.13 236.8,-986.54 379.61,-985.04"></path>
+<polygon fill="black" stroke="black" points="379.29,-990.29 394.24,-984.91 379.19,-979.79 379.29,-990.29"></polygon>
+<text text-anchor="middle" x="113.85" y="-1053.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-1030.51C246.06,-1029.34 115.6,-1022.82 115.6,-1007.7 115.6,-993.13 236.8,-986.54 379.61,-985.04" class="hover-path"></path></g>
+<!-- 8&#45;&gt;8 -->
+<g id="8:43_16-8:142_33" class="edge" data-from="8:43_16" data-to="8:142_33">
+
+<path fill="none" stroke="black" d="M395.75,-995.31C246.06,-994.14 115.6,-987.62 115.6,-972.5 115.6,-957.93 236.8,-951.34 379.61,-949.84"></path>
+<polygon fill="black" stroke="black" points="379.29,-955.09 394.24,-949.71 379.19,-944.59 379.29,-955.09"></polygon>
+<text text-anchor="middle" x="113.85" y="-1053.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-995.31C246.06,-994.14 115.6,-987.62 115.6,-972.5 115.6,-957.93 236.8,-951.34 379.61,-949.84" class="hover-path"></path></g>
+<!-- 8&#45;&gt;8 -->
+<g id="8:43_16-8:22_16" class="edge" data-from="8:43_16" data-to="8:22_16">
+
+<path fill="none" stroke="black" d="M395.75,-986.31C246.06,-989.34 115.6,-1000.18 115.6,-1025.3 115.6,-1049.51 236.8,-1060.46 379.61,-1063.93"></path>
+<polygon fill="black" stroke="black" points="379.13,-1069.17 394.24,-1064.26 379.36,-1058.68 379.13,-1069.17"></polygon>
+<text text-anchor="middle" x="113.85" y="-1053.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-986.31C246.06,-989.34 115.6,-1000.18 115.6,-1025.3 115.6,-1049.51 236.8,-1060.46 379.61,-1063.93" class="hover-path"></path></g>
+<!-- 8&#45;&gt;8 -->
+<g id="8:43_16-8:183_20" class="edge" data-from="8:43_16" data-to="8:183_20">
+
+<path fill="none" stroke="black" d="M395.75,-993.89C246.06,-990.86 115.6,-980.02 115.6,-954.9 115.6,-930.69 236.8,-919.74 379.61,-916.27"></path>
+<polygon fill="black" stroke="black" points="379.36,-921.52 394.24,-915.94 379.13,-911.03 379.36,-921.52"></polygon>
+<text text-anchor="middle" x="113.85" y="-1053.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-993.89C246.06,-990.86 115.6,-980.02 115.6,-954.9 115.6,-930.69 236.8,-919.74 379.61,-916.27" class="hover-path"></path></g>
+<!-- 8&#45;&gt;8 -->
+<g id="8:10_11-8:22_16" class="edge" data-from="8:10_11" data-to="8:22_16">
+
+<path fill="none" stroke="black" d="M395.75,-1168.48C246.06,-1163.59 115.6,-1148.42 115.6,-1113.3 115.6,-1079.44 236.8,-1064.14 379.61,-1058.69"></path>
+<polygon fill="black" stroke="black" points="379.44,-1063.95 394.24,-1058.18 379.07,-1053.46 379.44,-1063.95"></polygon>
+<text text-anchor="middle" x="113.85" y="-1053.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-1168.48C246.06,-1163.59 115.6,-1148.42 115.6,-1113.3 115.6,-1079.44 236.8,-1064.14 379.61,-1058.69" class="hover-path"></path></g>
+<!-- 8&#45;&gt;8 -->
+<g id="8:183_20-8:227_18" class="edge" data-from="8:183_20" data-to="8:227_18">
+
+<path fill="none" stroke="black" d="M395.75,-924.91C246.06,-923.74 115.6,-917.22 115.6,-902.1 115.6,-887.53 236.8,-880.94 379.61,-879.44"></path>
+<polygon fill="black" stroke="black" points="379.29,-884.69 394.24,-879.31 379.19,-874.19 379.29,-884.69"></polygon>
+<text text-anchor="middle" x="113.85" y="-1053.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-924.91C246.06,-923.74 115.6,-917.22 115.6,-902.1 115.6,-887.53 236.8,-880.94 379.61,-879.44" class="hover-path"></path></g>
+<!-- 1 -->
+<g id="1" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/EventDataReader.cc">
+
+<rect x="572.219970703125" y="-1594.300048828125" width="298.32000732421875" height="310.60009765625"></rect>
+<g id="1_5" class="title">
+<text text-anchor="start" x="594.22" y="-1561.9" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;EventDataReader.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="1:5_17" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1543.0999755859375" width="266.32000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="610.22" y="-1524.7" font-family="Arial" font-size="16.00">EventDataReader(const char *)</text>
+
+</g>
+<g id="1:40_17" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1507.9000244140625" width="266.32000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="647.79" y="-1489.5" font-family="Arial" font-size="16.00">~EventDataReader()</text>
+
+</g>
+<g id="1:47_22" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1472.699951171875" width="266.32000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="642.22" y="-1454.3" font-family="Arial" font-size="16.00">GoToEvent(Long64_t)</text>
+
+</g>
+<g id="1:58_22" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1437.5" width="266.32000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="679.15" y="-1419.1" font-family="Arial" font-size="16.00">NextEvent()</text>
+
+</g>
+<g id="1:63_22" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1402.300048828125" width="266.32000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="679.15" y="-1383.9" font-family="Arial" font-size="16.00">PrevEvent()</text>
+
+</g>
+<g id="1:68_21" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1367.0999755859375" width="266.32000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="612.89" y="-1348.7" font-family="Arial" font-size="16.00">GetBeamParticleCount() const</text>
+
+</g>
+<g id="1:73_37" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1331.9000244140625" width="266.32000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="625.79" y="-1313.5" font-family="Arial" font-size="16.00">GetBeamParticle(int) const</text>
+
+</g>
+</g>
+<!-- 1&#45;&gt;1 -->
+<g id="1:63_22-1:47_22" class="edge" data-from="1:63_22" data-to="1:47_22">
+
+<path fill="none" stroke="black" d="M588.4,-1384.08C455.47,-1382.9 308.34,-1391.59 308.34,-1423.9 308.34,-1454.88 443.65,-1464.15 571.98,-1463.82"></path>
+<polygon fill="black" stroke="black" points="571.92,-1469.07 586.89,-1463.73 571.86,-1458.57 571.92,-1469.07"></polygon>
+<text text-anchor="middle" x="306.59" y="-1434.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M588.4,-1384.08C455.47,-1382.9 308.34,-1391.59 308.34,-1423.9 308.34,-1454.88 443.65,-1464.15 571.98,-1463.82" class="hover-path"></path></g>
+<!-- 1&#45;&gt;1 -->
+<g id="1:58_22-1:47_22" class="edge" data-from="1:58_22" data-to="1:47_22">
+
+<path fill="none" stroke="black" d="M588.4,-1418.93C455.47,-1416.83 308.34,-1422.06 308.34,-1441.5 308.34,-1460.15 443.65,-1465.72 571.98,-1464.29"></path>
+<polygon fill="black" stroke="black" points="571.96,-1469.54 586.89,-1464.09 571.82,-1459.04 571.96,-1469.54"></polygon>
+<text text-anchor="middle" x="306.59" y="-1434.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M588.4,-1418.93C455.47,-1416.83 308.34,-1422.06 308.34,-1441.5 308.34,-1460.15 443.65,-1465.72 571.98,-1464.29" class="hover-path"></path></g>
+<!-- 7 -->
+<g id="7" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/TargetReconstructor.cc">
+
+<rect x="309.6400146484375" y="-1817.5" width="823.47998046875" height="205"></rect>
+<g id="7_6" class="title">
+<text text-anchor="start" x="584.9" y="-1785.1" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;TargetReconstructor.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="7:6_21" data-kind="12" class="cell function">
+<rect x="325.6400146484375" y="-1766.300048828125" width="791.47998046875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="588" y="-1747.9" font-family="Arial" font-size="16.00">TargetReconstructor(MagneticField *)</text>
+
+</g>
+<g id="7:10_21" data-kind="12" class="cell function">
+<rect x="325.6400146484375" y="-1731.0999755859375" width="791.47998046875" height="27.199951171875"></rect>
+<text text-anchor="start" x="638.46" y="-1712.7" font-family="Arial" font-size="16.00">~TargetReconstructor()</text>
+
+</g>
+<g id="7:12_36" data-kind="12" class="cell function">
+<rect x="325.6400146484375" y="-1695.9000244140625" width="791.47998046875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="389.66" y="-1677.5" font-family="Arial" font-size="16.00">ReconstructAtTarget(const RecoTrack &amp;, const TVector3 &amp;, double, double, double, int) const</text>
+
+</g>
+<g id="7:23_48" data-kind="12" class="cell function">
+<rect x="325.6400146484375" y="-1660.699951171875" width="791.47998046875" height="27.199951171875"></rect>
+<text text-anchor="start" x="329.64" y="-1642.3" font-family="Arial" font-size="16.00">ReconstructAtTargetWithDetails(const RecoTrack &amp;, const TVector3 &amp;, bool, double, double, double, int) const</text>
+
+</g>
+</g>
+<!-- 7&#45;&gt;6 -->
+<g id="7:23_48-6:33_20" class="edge" data-from="7:23_48" data-to="6:33_20">
+
+<path fill="none" stroke="black" d="M1118.12,-1647.1C1373.1,-1647.1 1090.17,-544.79 1321.5,-496.34"></path>
+<polygon fill="black" stroke="black" points="1321.98,-501.57 1336.38,-494.85 1320.93,-491.13 1321.98,-501.57"></polygon>
+<text text-anchor="middle" x="1249.13" y="-587.49" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1118.12,-1647.1C1373.1,-1647.1 1090.17,-544.79 1321.5,-496.34" class="hover-path"></path></g>
+<!-- 7&#45;&gt;7 -->
+<g id="7:12_36-7:23_48" class="edge" data-from="7:12_36" data-to="7:23_48">
+
+<path fill="none" stroke="black" d="M325.82,-1687.21C172.88,-1685.46 45.76,-1678.83 45.76,-1664.7 45.76,-1651.08 163.86,-1644.43 309.35,-1642.4"></path>
+<polygon fill="black" stroke="black" points="309.37,-1647.65 324.31,-1642.21 309.24,-1637.15 309.37,-1647.65"></polygon>
+<text text-anchor="middle" x="44.01" y="-1710.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M325.82,-1687.21C172.88,-1685.46 45.76,-1678.83 45.76,-1664.7 45.76,-1651.08 163.86,-1644.43 309.35,-1642.4" class="hover-path"></path></g>
+<!-- 3 -->
+<g id="3" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/EventProcessor.cc">
+
+<rect x="579.3499755859375" y="-2110.699951171875" width="284.07000732421875" height="275.39990234375"></rect>
+<g id="3_7" class="title">
+<text text-anchor="start" x="601.35" y="-2078.3" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;EventProcessor.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="3:5_0" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-2059.5" width="252.07000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="626.24" y="-2041.1" font-family="Arial" font-size="16.00">ClassImp(EventProcessor)</text>
+
+</g>
+<g id="3:7_16" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-2024.300048828125" width="252.07000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="601.79" y="-2005.9" font-family="Arial" font-size="16.00">EventProcessor(TTree *, TTree *)</text>
+
+</g>
+<g id="3:21_16" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-1989.0999755859375" width="252.07000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="654.91" y="-1970.7" font-family="Arial" font-size="16.00">~EventProcessor()</text>
+
+</g>
+<g id="3:25_21" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-1953.9000244140625" width="252.07000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="695.59" y="-1935.5" font-family="Arial" font-size="16.00">Begin()</text>
+
+</g>
+<g id="3:30_21" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-1918.699951171875" width="252.07000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="666.7" y="-1900.3" font-family="Arial" font-size="16.00">ProcessEvent()</text>
+
+</g>
+<g id="3:39_21" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-1883.5" width="252.07000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="701.82" y="-1865.1" font-family="Arial" font-size="16.00">End()</text>
+
+</g>
+</g>
+<g id="faded-group"></g></g>
+<defs><filter id="shadow"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-opacity="0.5"></feDropShadow></filter>
+    <linearGradient id="highlightGradient">
+      <stop offset="0%" stop-color="var(--edge-incoming-color)"></stop>
+      <stop offset="100%" stop-color="var(--edge-outgoing-color)"></stop>
+    </linearGradient></defs>
+  </svg>
+
+  <script type="module">
+    var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: !0 });
+function getDefaultExportFromCjs(x) {
+  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x.default : x;
+}
+__name(getDefaultExportFromCjs, "getDefaultExportFromCjs");
+var wheel = { exports: {} }, hasRequiredWheel;
+function requireWheel() {
+  if (hasRequiredWheel) return wheel.exports;
+  hasRequiredWheel = 1, wheel.exports = addWheelListener, wheel.exports.addWheelListener = addWheelListener, wheel.exports.removeWheelListener = removeWheelListener;
+  function addWheelListener(element, listener, useCapture) {
+    element.addEventListener("wheel", listener, useCapture);
+  }
+  __name(addWheelListener, "addWheelListener");
+  function removeWheelListener(element, listener, useCapture) {
+    element.removeEventListener("wheel", listener, useCapture);
+  }
+  return __name(removeWheelListener, "removeWheelListener"), wheel.exports;
+}
+__name(requireWheel, "requireWheel");
+var amator = { exports: {} }, src, hasRequiredSrc;
+function requireSrc() {
+  if (hasRequiredSrc) return src;
+  hasRequiredSrc = 1;
+  var NEWTON_ITERATIONS = 4, NEWTON_MIN_SLOPE = 1e-3, SUBDIVISION_PRECISION = 1e-7, SUBDIVISION_MAX_ITERATIONS = 10, kSplineTableSize = 11, kSampleStepSize = 1 / (kSplineTableSize - 1), float32ArraySupported = typeof Float32Array == "function";
+  function A(aA1, aA2) {
+    return 1 - 3 * aA2 + 3 * aA1;
+  }
+  __name(A, "A");
+  function B(aA1, aA2) {
+    return 3 * aA2 - 6 * aA1;
+  }
+  __name(B, "B");
+  function C(aA1) {
+    return 3 * aA1;
+  }
+  __name(C, "C");
+  function calcBezier(aT, aA1, aA2) {
+    return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT;
+  }
+  __name(calcBezier, "calcBezier");
+  function getSlope(aT, aA1, aA2) {
+    return 3 * A(aA1, aA2) * aT * aT + 2 * B(aA1, aA2) * aT + C(aA1);
+  }
+  __name(getSlope, "getSlope");
+  function binarySubdivide(aX, aA, aB, mX1, mX2) {
+    var currentX, currentT, i = 0;
+    do
+      currentT = aA + (aB - aA) / 2, currentX = calcBezier(currentT, mX1, mX2) - aX, currentX > 0 ? aB = currentT : aA = currentT;
+    while (Math.abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
+    return currentT;
+  }
+  __name(binarySubdivide, "binarySubdivide");
+  function newtonRaphsonIterate(aX, aGuessT, mX1, mX2) {
+    for (var i = 0; i < NEWTON_ITERATIONS; ++i) {
+      var currentSlope = getSlope(aGuessT, mX1, mX2);
+      if (currentSlope === 0)
+        return aGuessT;
+      var currentX = calcBezier(aGuessT, mX1, mX2) - aX;
+      aGuessT -= currentX / currentSlope;
+    }
+    return aGuessT;
+  }
+  __name(newtonRaphsonIterate, "newtonRaphsonIterate");
+  function LinearEasing(x) {
+    return x;
+  }
+  return __name(LinearEasing, "LinearEasing"), src = /* @__PURE__ */ __name(function(mX1, mY1, mX2, mY2) {
+    if (!(0 <= mX1 && mX1 <= 1 && 0 <= mX2 && mX2 <= 1))
+      throw new Error("bezier x values must be in [0, 1] range");
+    if (mX1 === mY1 && mX2 === mY2)
+      return LinearEasing;
+    for (var sampleValues = float32ArraySupported ? new Float32Array(kSplineTableSize) : new Array(kSplineTableSize), i = 0; i < kSplineTableSize; ++i)
+      sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2);
+    function getTForX(aX) {
+      for (var intervalStart = 0, currentSample = 1, lastSample = kSplineTableSize - 1; currentSample !== lastSample && sampleValues[currentSample] <= aX; ++currentSample)
+        intervalStart += kSampleStepSize;
+      --currentSample;
+      var dist = (aX - sampleValues[currentSample]) / (sampleValues[currentSample + 1] - sampleValues[currentSample]), guessForT = intervalStart + dist * kSampleStepSize, initialSlope = getSlope(guessForT, mX1, mX2);
+      return initialSlope >= NEWTON_MIN_SLOPE ? newtonRaphsonIterate(aX, guessForT, mX1, mX2) : initialSlope === 0 ? guessForT : binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2);
+    }
+    return __name(getTForX, "getTForX"), /* @__PURE__ */ __name(function(x) {
+      return x === 0 ? 0 : x === 1 ? 1 : calcBezier(getTForX(x), mY1, mY2);
+    }, "BezierEasing");
+  }, "bezier"), src;
+}
+__name(requireSrc, "requireSrc");
+var hasRequiredAmator;
+function requireAmator() {
+  if (hasRequiredAmator) return amator.exports;
+  hasRequiredAmator = 1;
+  var BezierEasing = requireSrc(), animations = {
+    ease: BezierEasing(0.25, 0.1, 0.25, 1),
+    easeIn: BezierEasing(0.42, 0, 1, 1),
+    easeOut: BezierEasing(0, 0, 0.58, 1),
+    easeInOut: BezierEasing(0.42, 0, 0.58, 1),
+    linear: BezierEasing(0, 0, 1, 1)
+  };
+  amator.exports = animate, amator.exports.makeAggregateRaf = makeAggregateRaf, amator.exports.sharedScheduler = makeAggregateRaf();
+  function animate(source, target, options) {
+    var start = /* @__PURE__ */ Object.create(null), diff = /* @__PURE__ */ Object.create(null);
+    options = options || {};
+    var easing = typeof options.easing == "function" ? options.easing : animations[options.easing];
+    easing || (options.easing && console.warn("Unknown easing function in amator: " + options.easing), easing = animations.ease);
+    var step = typeof options.step == "function" ? options.step : noop, done = typeof options.done == "function" ? options.done : noop, scheduler = getScheduler(options.scheduler), keys = Object.keys(target);
+    keys.forEach(function(key) {
+      start[key] = source[key], diff[key] = target[key] - source[key];
+    });
+    var durationInMs = typeof options.duration == "number" ? options.duration : 400, durationInFrames = Math.max(1, durationInMs * 0.06), previousAnimationId, frame = 0;
+    return previousAnimationId = scheduler.next(loop), {
+      cancel
+    };
+    function cancel() {
+      scheduler.cancel(previousAnimationId), previousAnimationId = 0;
+    }
+    __name(cancel, "cancel");
+    function loop() {
+      var t = easing(frame / durationInFrames);
+      frame += 1, setValues(t), frame <= durationInFrames ? (previousAnimationId = scheduler.next(loop), step(source)) : (previousAnimationId = 0, setTimeout(function() {
+        done(source);
+      }, 0));
+    }
+    __name(loop, "loop");
+    function setValues(t) {
+      keys.forEach(function(key) {
+        source[key] = diff[key] * t + start[key];
+      });
+    }
+    __name(setValues, "setValues");
+  }
+  __name(animate, "animate");
+  function noop() {
+  }
+  __name(noop, "noop");
+  function getScheduler(scheduler) {
+    if (!scheduler) {
+      var canRaf = typeof window < "u" && window.requestAnimationFrame;
+      return canRaf ? rafScheduler() : timeoutScheduler();
+    }
+    if (typeof scheduler.next != "function") throw new Error("Scheduler is supposed to have next(cb) function");
+    if (typeof scheduler.cancel != "function") throw new Error("Scheduler is supposed to have cancel(handle) function");
+    return scheduler;
+  }
+  __name(getScheduler, "getScheduler");
+  function rafScheduler() {
+    return {
+      next: window.requestAnimationFrame.bind(window),
+      cancel: window.cancelAnimationFrame.bind(window)
+    };
+  }
+  __name(rafScheduler, "rafScheduler");
+  function timeoutScheduler() {
+    return {
+      next: /* @__PURE__ */ __name(function(cb) {
+        return setTimeout(cb, 1e3 / 60);
+      }, "next"),
+      cancel: /* @__PURE__ */ __name(function(id) {
+        return clearTimeout(id);
+      }, "cancel")
+    };
+  }
+  __name(timeoutScheduler, "timeoutScheduler");
+  function makeAggregateRaf() {
+    var frontBuffer = /* @__PURE__ */ new Set(), backBuffer = /* @__PURE__ */ new Set(), frameToken = 0;
+    return {
+      next,
+      cancel: next,
+      clearAll
+    };
+    function clearAll() {
+      frontBuffer.clear(), backBuffer.clear(), cancelAnimationFrame(frameToken), frameToken = 0;
+    }
+    function next(callback) {
+      backBuffer.add(callback), renderNextFrame();
+    }
+    function renderNextFrame() {
+      frameToken || (frameToken = requestAnimationFrame(renderFrame));
+    }
+    function renderFrame() {
+      frameToken = 0;
+      var t = backBuffer;
+      backBuffer = frontBuffer, frontBuffer = t, frontBuffer.forEach(function(callback) {
+        callback();
+      }), frontBuffer.clear();
+    }
+  }
+  return __name(makeAggregateRaf, "makeAggregateRaf"), amator.exports;
+}
+__name(requireAmator, "requireAmator");
+var ngraph_events, hasRequiredNgraph_events;
+function requireNgraph_events() {
+  if (hasRequiredNgraph_events) return ngraph_events;
+  hasRequiredNgraph_events = 1, ngraph_events = /* @__PURE__ */ __name(function(subject) {
+    validateSubject(subject);
+    var eventsStorage = createEventsStorage(subject);
+    return subject.on = eventsStorage.on, subject.off = eventsStorage.off, subject.fire = eventsStorage.fire, subject;
+  }, "eventify");
+  function createEventsStorage(subject) {
+    var registeredEvents = /* @__PURE__ */ Object.create(null);
+    return {
+      on: /* @__PURE__ */ __name(function(eventName, callback, ctx) {
+        if (typeof callback != "function")
+          throw new Error("callback is expected to be a function");
+        var handlers = registeredEvents[eventName];
+        return handlers || (handlers = registeredEvents[eventName] = []), handlers.push({ callback, ctx }), subject;
+      }, "on"),
+      off: /* @__PURE__ */ __name(function(eventName, callback) {
+        var wantToRemoveAll = typeof eventName > "u";
+        if (wantToRemoveAll)
+          return registeredEvents = /* @__PURE__ */ Object.create(null), subject;
+        if (registeredEvents[eventName]) {
+          var deleteAllCallbacksForEvent = typeof callback != "function";
+          if (deleteAllCallbacksForEvent)
+            delete registeredEvents[eventName];
+          else
+            for (var callbacks = registeredEvents[eventName], i = 0; i < callbacks.length; ++i)
+              callbacks[i].callback === callback && callbacks.splice(i, 1);
+        }
+        return subject;
+      }, "off"),
+      fire: /* @__PURE__ */ __name(function(eventName) {
+        var callbacks = registeredEvents[eventName];
+        if (!callbacks)
+          return subject;
+        var fireArguments;
+        arguments.length > 1 && (fireArguments = Array.prototype.splice.call(arguments, 1));
+        for (var i = 0; i < callbacks.length; ++i) {
+          var callbackInfo = callbacks[i];
+          callbackInfo.callback.apply(callbackInfo.ctx, fireArguments);
+        }
+        return subject;
+      }, "fire")
+    };
+  }
+  __name(createEventsStorage, "createEventsStorage");
+  function validateSubject(subject) {
+    if (!subject)
+      throw new Error("Eventify cannot use falsy object as events subject");
+    for (var reservedWords = ["on", "fire", "off"], i = 0; i < reservedWords.length; ++i)
+      if (subject.hasOwnProperty(reservedWords[i]))
+        throw new Error("Subject cannot be eventified, since it already has property '" + reservedWords[i] + "'");
+  }
+  return __name(validateSubject, "validateSubject"), ngraph_events;
+}
+__name(requireNgraph_events, "requireNgraph_events");
+var kinetic_1, hasRequiredKinetic;
+function requireKinetic() {
+  if (hasRequiredKinetic) return kinetic_1;
+  hasRequiredKinetic = 1, kinetic_1 = kinetic;
+  function kinetic(getPoint, scroll, settings) {
+    typeof settings != "object" && (settings = {});
+    var minVelocity = typeof settings.minVelocity == "number" ? settings.minVelocity : 5, amplitude = typeof settings.amplitude == "number" ? settings.amplitude : 0.25, cancelAnimationFrame2 = typeof settings.cancelAnimationFrame == "function" ? settings.cancelAnimationFrame : getCancelAnimationFrame(), requestAnimationFrame2 = typeof settings.requestAnimationFrame == "function" ? settings.requestAnimationFrame : getRequestAnimationFrame(), lastPoint, timestamp, timeConstant = 342, ticker, vx, targetX, ax, vy, targetY, ay, raf;
+    return {
+      start,
+      stop,
+      cancel: dispose
+    };
+    function dispose() {
+      cancelAnimationFrame2(ticker), cancelAnimationFrame2(raf);
+    }
+    function start() {
+      lastPoint = getPoint(), ax = ay = vx = vy = 0, timestamp = /* @__PURE__ */ new Date(), cancelAnimationFrame2(ticker), cancelAnimationFrame2(raf), ticker = requestAnimationFrame2(track);
+    }
+    function track() {
+      var now = Date.now(), elapsed = now - timestamp;
+      timestamp = now;
+      var currentPoint = getPoint(), dx = currentPoint.x - lastPoint.x, dy = currentPoint.y - lastPoint.y;
+      lastPoint = currentPoint;
+      var dt = 1e3 / (1 + elapsed);
+      vx = 0.8 * dx * dt + 0.2 * vx, vy = 0.8 * dy * dt + 0.2 * vy, ticker = requestAnimationFrame2(track);
+    }
+    function stop() {
+      cancelAnimationFrame2(ticker), cancelAnimationFrame2(raf);
+      var currentPoint = getPoint();
+      targetX = currentPoint.x, targetY = currentPoint.y, timestamp = Date.now(), (vx < -minVelocity || vx > minVelocity) && (ax = amplitude * vx, targetX += ax), (vy < -minVelocity || vy > minVelocity) && (ay = amplitude * vy, targetY += ay), raf = requestAnimationFrame2(autoScroll);
+    }
+    function autoScroll() {
+      var elapsed = Date.now() - timestamp, moving = !1, dx = 0, dy = 0;
+      ax && (dx = -ax * Math.exp(-elapsed / timeConstant), dx > 0.5 || dx < -0.5 ? moving = !0 : dx = ax = 0), ay && (dy = -ay * Math.exp(-elapsed / timeConstant), dy > 0.5 || dy < -0.5 ? moving = !0 : dy = ay = 0), moving && (scroll(targetX + dx, targetY + dy), raf = requestAnimationFrame2(autoScroll));
+    }
+  }
+  __name(kinetic, "kinetic");
+  function getCancelAnimationFrame() {
+    return typeof cancelAnimationFrame == "function" ? cancelAnimationFrame : clearTimeout;
+  }
+  __name(getCancelAnimationFrame, "getCancelAnimationFrame");
+  function getRequestAnimationFrame() {
+    return typeof requestAnimationFrame == "function" ? requestAnimationFrame : function(handler) {
+      return setTimeout(handler, 16);
+    };
+  }
+  return __name(getRequestAnimationFrame, "getRequestAnimationFrame"), kinetic_1;
+}
+__name(requireKinetic, "requireKinetic");
+var createTextSelectionInterceptor_1, hasRequiredCreateTextSelectionInterceptor;
+function requireCreateTextSelectionInterceptor() {
+  if (hasRequiredCreateTextSelectionInterceptor) return createTextSelectionInterceptor_1;
+  hasRequiredCreateTextSelectionInterceptor = 1, createTextSelectionInterceptor_1 = createTextSelectionInterceptor;
+  function createTextSelectionInterceptor(useFake) {
+    if (useFake)
+      return {
+        capture: noop,
+        release: noop
+      };
+    var dragObject, prevSelectStart, prevDragStart, wasCaptured = !1;
+    return {
+      capture,
+      release
+    };
+    function capture(domObject) {
+      wasCaptured = !0, prevSelectStart = window.document.onselectstart, prevDragStart = window.document.ondragstart, window.document.onselectstart = disabled, dragObject = domObject, dragObject.ondragstart = disabled;
+    }
+    function release() {
+      wasCaptured && (wasCaptured = !1, window.document.onselectstart = prevSelectStart, dragObject && (dragObject.ondragstart = prevDragStart));
+    }
+  }
+  __name(createTextSelectionInterceptor, "createTextSelectionInterceptor");
+  function disabled(e) {
+    return e.stopPropagation(), !1;
+  }
+  __name(disabled, "disabled");
+  function noop() {
+  }
+  return __name(noop, "noop"), createTextSelectionInterceptor_1;
+}
+__name(requireCreateTextSelectionInterceptor, "requireCreateTextSelectionInterceptor");
+var transform, hasRequiredTransform;
+function requireTransform() {
+  if (hasRequiredTransform) return transform;
+  hasRequiredTransform = 1, transform = Transform;
+  function Transform() {
+    this.x = 0, this.y = 0, this.scale = 1;
+  }
+  return __name(Transform, "Transform"), transform;
+}
+__name(requireTransform, "requireTransform");
+var svgController = { exports: {} }, hasRequiredSvgController;
+function requireSvgController() {
+  if (hasRequiredSvgController) return svgController.exports;
+  hasRequiredSvgController = 1, svgController.exports = makeSvgController, svgController.exports.canAttach = isSVGElement;
+  function makeSvgController(svgElement, options) {
+    if (!isSVGElement(svgElement))
+      throw new Error("svg element is required for svg.panzoom to work");
+    var owner = svgElement.ownerSVGElement;
+    if (!owner)
+      throw new Error(
+        "Do not apply panzoom to the root <svg> element. Use its child instead (e.g. <g></g>). As of March 2016 only FireFox supported transform on the root element"
+      );
+    options.disableKeyboardInteraction || owner.setAttribute("tabindex", 0);
+    var api = {
+      getBBox,
+      getScreenCTM,
+      getOwner,
+      applyTransform,
+      initTransform
+    };
+    return api;
+    function getOwner() {
+      return owner;
+    }
+    function getBBox() {
+      var bbox = svgElement.getBBox();
+      return {
+        left: bbox.x,
+        top: bbox.y,
+        width: bbox.width,
+        height: bbox.height
+      };
+    }
+    function getScreenCTM() {
+      var ctm = owner.getCTM();
+      return ctm || owner.getScreenCTM();
+    }
+    function initTransform(transform2) {
+      var screenCTM = svgElement.getCTM();
+      screenCTM === null && (screenCTM = document.createElementNS("http://www.w3.org/2000/svg", "svg").createSVGMatrix()), transform2.x = screenCTM.e, transform2.y = screenCTM.f, transform2.scale = screenCTM.a, owner.removeAttributeNS(null, "viewBox");
+    }
+    function applyTransform(transform2) {
+      svgElement.setAttribute("transform", "matrix(" + transform2.scale + " 0 0 " + transform2.scale + " " + transform2.x + " " + transform2.y + ")");
+    }
+  }
+  __name(makeSvgController, "makeSvgController");
+  function isSVGElement(element) {
+    return element && element.ownerSVGElement && element.getCTM;
+  }
+  return __name(isSVGElement, "isSVGElement"), svgController.exports;
+}
+__name(requireSvgController, "requireSvgController");
+var domController = { exports: {} }, hasRequiredDomController;
+function requireDomController() {
+  if (hasRequiredDomController) return domController.exports;
+  hasRequiredDomController = 1, domController.exports = makeDomController, domController.exports.canAttach = isDomElement;
+  function makeDomController(domElement, options) {
+    var elementValid = isDomElement(domElement);
+    if (!elementValid)
+      throw new Error("panzoom requires DOM element to be attached to the DOM tree");
+    var owner = domElement.parentElement;
+    domElement.scrollTop = 0, options.disableKeyboardInteraction || owner.setAttribute("tabindex", 0);
+    var api = {
+      getBBox,
+      getOwner,
+      applyTransform
+    };
+    return api;
+    function getOwner() {
+      return owner;
+    }
+    function getBBox() {
+      return {
+        left: 0,
+        top: 0,
+        width: domElement.clientWidth,
+        height: domElement.clientHeight
+      };
+    }
+    function applyTransform(transform2) {
+      domElement.style.transformOrigin = "0 0 0", domElement.style.transform = "matrix(" + transform2.scale + ", 0, 0, " + transform2.scale + ", " + transform2.x + ", " + transform2.y + ")";
+    }
+  }
+  __name(makeDomController, "makeDomController");
+  function isDomElement(element) {
+    return element && element.parentElement && element.style;
+  }
+  return __name(isDomElement, "isDomElement"), domController.exports;
+}
+__name(requireDomController, "requireDomController");
+var panzoom, hasRequiredPanzoom;
+function requirePanzoom() {
+  if (hasRequiredPanzoom) return panzoom;
+  hasRequiredPanzoom = 1;
+  var wheel2 = requireWheel(), animate = requireAmator(), eventify = requireNgraph_events(), kinetic = requireKinetic(), createTextSelectionInterceptor = requireCreateTextSelectionInterceptor(), domTextSelectionInterceptor = createTextSelectionInterceptor(), fakeTextSelectorInterceptor = createTextSelectionInterceptor(!0), Transform = requireTransform(), makeSvgController = requireSvgController(), makeDomController = requireDomController(), defaultZoomSpeed = 1, defaultDoubleTapZoomSpeed = 1.75, doubleTapSpeedInMS = 300, clickEventTimeInMS = 200;
+  panzoom = createPanZoom2;
+  function createPanZoom2(domElement, options) {
+    options = options || {};
+    var panController = options.controller;
+    if (panController || (makeSvgController.canAttach(domElement) ? panController = makeSvgController(domElement, options) : makeDomController.canAttach(domElement) && (panController = makeDomController(domElement, options))), !panController)
+      throw new Error(
+        "Cannot create panzoom for the current type of dom element"
+      );
+    var owner = panController.getOwner(), storedCTMResult = { x: 0, y: 0 }, isDirty = !1, transform2 = new Transform();
+    panController.initTransform && panController.initTransform(transform2);
+    var filterKey = typeof options.filterKey == "function" ? options.filterKey : noop, pinchSpeed = typeof options.pinchSpeed == "number" ? options.pinchSpeed : 1, bounds = options.bounds, maxZoom = typeof options.maxZoom == "number" ? options.maxZoom : Number.POSITIVE_INFINITY, minZoom = typeof options.minZoom == "number" ? options.minZoom : 0, boundsPadding = typeof options.boundsPadding == "number" ? options.boundsPadding : 0.05, zoomDoubleClickSpeed = typeof options.zoomDoubleClickSpeed == "number" ? options.zoomDoubleClickSpeed : defaultDoubleTapZoomSpeed, beforeWheel = options.beforeWheel || noop, beforeMouseDown = options.beforeMouseDown || noop, speed = typeof options.zoomSpeed == "number" ? options.zoomSpeed : defaultZoomSpeed, transformOrigin = parseTransformOrigin(options.transformOrigin), textSelection = options.enableTextSelection ? fakeTextSelectorInterceptor : domTextSelectionInterceptor;
+    validateBounds(bounds), options.autocenter && autocenter();
+    var frameAnimation, lastTouchEndTime = 0, lastTouchStartTime = 0, pendingClickEventTimeout = 0, lastMouseDownedEvent = null, lastMouseDownTime = /* @__PURE__ */ new Date(), lastSingleFingerOffset, touchInProgress = !1, panstartFired = !1, mouseX, mouseY, clickX, clickY, pinchZoomLength, smoothScroll;
+    "smoothScroll" in options && !options.smoothScroll ? smoothScroll = rigidScroll() : smoothScroll = kinetic(getPoint, scroll, options.smoothScroll);
+    var moveByAnimation, zoomToAnimation, multiTouch, paused = !1;
+    listenForEvents();
+    var api = {
+      dispose,
+      moveBy: internalMoveBy,
+      moveTo,
+      smoothMoveTo,
+      centerOn,
+      zoomTo: publicZoomTo,
+      zoomAbs,
+      smoothZoom,
+      smoothZoomAbs,
+      showRectangle,
+      pause,
+      resume,
+      isPaused,
+      getTransform: getTransformModel,
+      getMinZoom,
+      setMinZoom,
+      getMaxZoom,
+      setMaxZoom,
+      getTransformOrigin,
+      setTransformOrigin,
+      getZoomSpeed,
+      setZoomSpeed
+    };
+    eventify(api);
+    var initialX = typeof options.initialX == "number" ? options.initialX : transform2.x, initialY = typeof options.initialY == "number" ? options.initialY : transform2.y, initialZoom = typeof options.initialZoom == "number" ? options.initialZoom : transform2.scale;
+    return (initialX != transform2.x || initialY != transform2.y || initialZoom != transform2.scale) && zoomAbs(initialX, initialY, initialZoom), api;
+    function pause() {
+      releaseEvents(), paused = !0;
+    }
+    __name(pause, "pause");
+    function resume() {
+      paused && (listenForEvents(), paused = !1);
+    }
+    __name(resume, "resume");
+    function isPaused() {
+      return paused;
+    }
+    __name(isPaused, "isPaused");
+    function showRectangle(rect) {
+      var clientRect = owner.getBoundingClientRect(), size = transformToScreen(clientRect.width, clientRect.height), rectWidth = rect.right - rect.left, rectHeight = rect.bottom - rect.top;
+      if (!Number.isFinite(rectWidth) || !Number.isFinite(rectHeight))
+        throw new Error("Invalid rectangle");
+      var dw = size.x / rectWidth, dh = size.y / rectHeight, scale = Math.min(dw, dh);
+      transform2.x = -(rect.left + rectWidth / 2) * scale + size.x / 2, transform2.y = -(rect.top + rectHeight / 2) * scale + size.y / 2, transform2.scale = scale;
+    }
+    __name(showRectangle, "showRectangle");
+    function transformToScreen(x, y) {
+      if (panController.getScreenCTM) {
+        var parentCTM = panController.getScreenCTM(), parentScaleX = parentCTM.a, parentScaleY = parentCTM.d, parentOffsetX = parentCTM.e, parentOffsetY = parentCTM.f;
+        storedCTMResult.x = x * parentScaleX - parentOffsetX, storedCTMResult.y = y * parentScaleY - parentOffsetY;
+      } else
+        storedCTMResult.x = x, storedCTMResult.y = y;
+      return storedCTMResult;
+    }
+    __name(transformToScreen, "transformToScreen");
+    function autocenter() {
+      var w, h, left = 0, top = 0, sceneBoundingBox = getBoundingBox();
+      if (sceneBoundingBox)
+        left = sceneBoundingBox.left, top = sceneBoundingBox.top, w = sceneBoundingBox.right - sceneBoundingBox.left, h = sceneBoundingBox.bottom - sceneBoundingBox.top;
+      else {
+        var ownerRect = owner.getBoundingClientRect();
+        w = ownerRect.width, h = ownerRect.height;
+      }
+      var bbox = panController.getBBox();
+      if (!(bbox.width === 0 || bbox.height === 0)) {
+        var dh = h / bbox.height, dw = w / bbox.width, scale = Math.min(dw, dh);
+        transform2.x = -(bbox.left + bbox.width / 2) * scale + w / 2 + left, transform2.y = -(bbox.top + bbox.height / 2) * scale + h / 2 + top, transform2.scale = scale;
+      }
+    }
+    __name(autocenter, "autocenter");
+    function getTransformModel() {
+      return transform2;
+    }
+    __name(getTransformModel, "getTransformModel");
+    function getMinZoom() {
+      return minZoom;
+    }
+    __name(getMinZoom, "getMinZoom");
+    function setMinZoom(newMinZoom) {
+      minZoom = newMinZoom;
+    }
+    __name(setMinZoom, "setMinZoom");
+    function getMaxZoom() {
+      return maxZoom;
+    }
+    __name(getMaxZoom, "getMaxZoom");
+    function setMaxZoom(newMaxZoom) {
+      maxZoom = newMaxZoom;
+    }
+    __name(setMaxZoom, "setMaxZoom");
+    function getTransformOrigin() {
+      return transformOrigin;
+    }
+    __name(getTransformOrigin, "getTransformOrigin");
+    function setTransformOrigin(newTransformOrigin) {
+      transformOrigin = parseTransformOrigin(newTransformOrigin);
+    }
+    __name(setTransformOrigin, "setTransformOrigin");
+    function getZoomSpeed() {
+      return speed;
+    }
+    __name(getZoomSpeed, "getZoomSpeed");
+    function setZoomSpeed(newSpeed) {
+      if (!Number.isFinite(newSpeed))
+        throw new Error("Zoom speed should be a number");
+      speed = newSpeed;
+    }
+    __name(setZoomSpeed, "setZoomSpeed");
+    function getPoint() {
+      return {
+        x: transform2.x,
+        y: transform2.y
+      };
+    }
+    __name(getPoint, "getPoint");
+    function moveTo(x, y) {
+      transform2.x = x, transform2.y = y, keepTransformInsideBounds(), triggerEvent("pan"), makeDirty();
+    }
+    __name(moveTo, "moveTo");
+    function moveBy(dx, dy) {
+      moveTo(transform2.x + dx, transform2.y + dy);
+    }
+    __name(moveBy, "moveBy");
+    function keepTransformInsideBounds() {
+      var boundingBox = getBoundingBox();
+      if (boundingBox) {
+        var adjusted = !1, clientRect = getClientRect(), diff = boundingBox.left - clientRect.right;
+        return diff > 0 && (transform2.x += diff, adjusted = !0), diff = boundingBox.right - clientRect.left, diff < 0 && (transform2.x += diff, adjusted = !0), diff = boundingBox.top - clientRect.bottom, diff > 0 && (transform2.y += diff, adjusted = !0), diff = boundingBox.bottom - clientRect.top, diff < 0 && (transform2.y += diff, adjusted = !0), adjusted;
+      }
+    }
+    __name(keepTransformInsideBounds, "keepTransformInsideBounds");
+    function getBoundingBox() {
+      if (bounds) {
+        if (typeof bounds == "boolean") {
+          var ownerRect = owner.getBoundingClientRect(), sceneWidth = ownerRect.width, sceneHeight = ownerRect.height;
+          return {
+            left: sceneWidth * boundsPadding,
+            top: sceneHeight * boundsPadding,
+            right: sceneWidth * (1 - boundsPadding),
+            bottom: sceneHeight * (1 - boundsPadding)
+          };
+        }
+        return bounds;
+      }
+    }
+    __name(getBoundingBox, "getBoundingBox");
+    function getClientRect() {
+      var bbox = panController.getBBox(), leftTop = client(bbox.left, bbox.top);
+      return {
+        left: leftTop.x,
+        top: leftTop.y,
+        right: bbox.width * transform2.scale + leftTop.x,
+        bottom: bbox.height * transform2.scale + leftTop.y
+      };
+    }
+    __name(getClientRect, "getClientRect");
+    function client(x, y) {
+      return {
+        x: x * transform2.scale + transform2.x,
+        y: y * transform2.scale + transform2.y
+      };
+    }
+    __name(client, "client");
+    function makeDirty() {
+      isDirty = !0, frameAnimation = window.requestAnimationFrame(frame);
+    }
+    __name(makeDirty, "makeDirty");
+    function zoomByRatio(clientX, clientY, ratio) {
+      if (isNaN(clientX) || isNaN(clientY) || isNaN(ratio))
+        throw new Error("zoom requires valid numbers");
+      var newScale = transform2.scale * ratio;
+      if (newScale < minZoom) {
+        if (transform2.scale === minZoom) return;
+        ratio = minZoom / transform2.scale;
+      }
+      if (newScale > maxZoom) {
+        if (transform2.scale === maxZoom) return;
+        ratio = maxZoom / transform2.scale;
+      }
+      var size = transformToScreen(clientX, clientY);
+      if (transform2.x = size.x - ratio * (size.x - transform2.x), transform2.y = size.y - ratio * (size.y - transform2.y), bounds && boundsPadding === 1 && minZoom === 1)
+        transform2.scale *= ratio, keepTransformInsideBounds();
+      else {
+        var transformAdjusted = keepTransformInsideBounds();
+        transformAdjusted || (transform2.scale *= ratio);
+      }
+      triggerEvent("zoom"), makeDirty();
+    }
+    __name(zoomByRatio, "zoomByRatio");
+    function zoomAbs(clientX, clientY, zoomLevel) {
+      var ratio = zoomLevel / transform2.scale;
+      zoomByRatio(clientX, clientY, ratio);
+    }
+    __name(zoomAbs, "zoomAbs");
+    function centerOn(ui) {
+      var parent = ui.ownerSVGElement;
+      if (!parent)
+        throw new Error("ui element is required to be within the scene");
+      var clientRect = ui.getBoundingClientRect(), cx = clientRect.left + clientRect.width / 2, cy = clientRect.top + clientRect.height / 2, container = parent.getBoundingClientRect(), dx = container.width / 2 - cx, dy = container.height / 2 - cy;
+      internalMoveBy(dx, dy, !0);
+    }
+    __name(centerOn, "centerOn");
+    function smoothMoveTo(x, y) {
+      internalMoveBy(x - transform2.x, y - transform2.y, !0);
+    }
+    __name(smoothMoveTo, "smoothMoveTo");
+    function internalMoveBy(dx, dy, smooth) {
+      if (!smooth)
+        return moveBy(dx, dy);
+      moveByAnimation && moveByAnimation.cancel();
+      var from = { x: 0, y: 0 }, to = { x: dx, y: dy }, lastX = 0, lastY = 0;
+      moveByAnimation = animate(from, to, {
+        step: /* @__PURE__ */ __name(function(v) {
+          moveBy(v.x - lastX, v.y - lastY), lastX = v.x, lastY = v.y;
+        }, "step")
+      });
+    }
+    __name(internalMoveBy, "internalMoveBy");
+    function scroll(x, y) {
+      cancelZoomAnimation(), moveTo(x, y);
+    }
+    __name(scroll, "scroll");
+    function dispose() {
+      releaseEvents();
+    }
+    __name(dispose, "dispose");
+    function listenForEvents() {
+      owner.addEventListener("mousedown", onMouseDown, { passive: !1 }), owner.addEventListener("dblclick", onDoubleClick, { passive: !1 }), owner.addEventListener("touchstart", onTouch, { passive: !1 }), owner.addEventListener("keydown", onKeyDown, { passive: !1 }), wheel2.addWheelListener(owner, onMouseWheel, { passive: !1 }), makeDirty();
+    }
+    __name(listenForEvents, "listenForEvents");
+    function releaseEvents() {
+      wheel2.removeWheelListener(owner, onMouseWheel), owner.removeEventListener("mousedown", onMouseDown), owner.removeEventListener("keydown", onKeyDown), owner.removeEventListener("dblclick", onDoubleClick), owner.removeEventListener("touchstart", onTouch), frameAnimation && (window.cancelAnimationFrame(frameAnimation), frameAnimation = 0), smoothScroll.cancel(), releaseDocumentMouse(), releaseTouches(), textSelection.release(), triggerPanEnd();
+    }
+    __name(releaseEvents, "releaseEvents");
+    function frame() {
+      isDirty && applyTransform();
+    }
+    __name(frame, "frame");
+    function applyTransform() {
+      isDirty = !1, panController.applyTransform(transform2), triggerEvent("transform"), frameAnimation = 0;
+    }
+    __name(applyTransform, "applyTransform");
+    function onKeyDown(e) {
+      var x = 0, y = 0, z = 0;
+      if (e.keyCode === 38 ? y = 1 : e.keyCode === 40 ? y = -1 : e.keyCode === 37 ? x = 1 : e.keyCode === 39 ? x = -1 : e.keyCode === 189 || e.keyCode === 109 ? z = 1 : (e.keyCode === 187 || e.keyCode === 107) && (z = -1), !filterKey(e, x, y, z)) {
+        if (x || y) {
+          e.preventDefault(), e.stopPropagation();
+          var clientRect = owner.getBoundingClientRect(), offset = Math.min(clientRect.width, clientRect.height), moveSpeedRatio = 0.05, dx = offset * moveSpeedRatio * x, dy = offset * moveSpeedRatio * y;
+          internalMoveBy(dx, dy);
+        }
+        if (z) {
+          var scaleMultiplier = getScaleMultiplier(z * 100), offset = transformOrigin ? getTransformOriginOffset() : midPoint();
+          publicZoomTo(offset.x, offset.y, scaleMultiplier);
+        }
+      }
+    }
+    __name(onKeyDown, "onKeyDown");
+    function midPoint() {
+      var ownerRect = owner.getBoundingClientRect();
+      return {
+        x: ownerRect.width / 2,
+        y: ownerRect.height / 2
+      };
+    }
+    __name(midPoint, "midPoint");
+    function onTouch(e) {
+      if (beforeTouch(e), clearPendingClickEventTimeout(), e.touches.length === 1)
+        return handleSingleFingerTouch(e, e.touches[0]);
+      e.touches.length === 2 && (pinchZoomLength = getPinchZoomLength(e.touches[0], e.touches[1]), multiTouch = !0, startTouchListenerIfNeeded());
+    }
+    __name(onTouch, "onTouch");
+    function beforeTouch(e) {
+      options.onTouch && !options.onTouch(e) || (e.stopPropagation(), e.preventDefault());
+    }
+    __name(beforeTouch, "beforeTouch");
+    function beforeDoubleClick(e) {
+      clearPendingClickEventTimeout(), !(options.onDoubleClick && !options.onDoubleClick(e)) && (e.preventDefault(), e.stopPropagation());
+    }
+    __name(beforeDoubleClick, "beforeDoubleClick");
+    function handleSingleFingerTouch(e) {
+      lastTouchStartTime = /* @__PURE__ */ new Date();
+      var touch = e.touches[0], offset = getOffsetXY(touch);
+      lastSingleFingerOffset = offset;
+      var point = transformToScreen(offset.x, offset.y);
+      mouseX = point.x, mouseY = point.y, clickX = mouseX, clickY = mouseY, smoothScroll.cancel(), startTouchListenerIfNeeded();
+    }
+    __name(handleSingleFingerTouch, "handleSingleFingerTouch");
+    function startTouchListenerIfNeeded() {
+      touchInProgress || (touchInProgress = !0, document.addEventListener("touchmove", handleTouchMove), document.addEventListener("touchend", handleTouchEnd), document.addEventListener("touchcancel", handleTouchEnd));
+    }
+    __name(startTouchListenerIfNeeded, "startTouchListenerIfNeeded");
+    function handleTouchMove(e) {
+      if (e.touches.length === 1) {
+        e.stopPropagation();
+        var touch = e.touches[0], offset = getOffsetXY(touch), point = transformToScreen(offset.x, offset.y), dx = point.x - mouseX, dy = point.y - mouseY;
+        dx !== 0 && dy !== 0 && triggerPanStart(), mouseX = point.x, mouseY = point.y, internalMoveBy(dx, dy);
+      } else if (e.touches.length === 2) {
+        multiTouch = !0;
+        var t1 = e.touches[0], t2 = e.touches[1], currentPinchLength = getPinchZoomLength(t1, t2), scaleMultiplier = 1 + (currentPinchLength / pinchZoomLength - 1) * pinchSpeed, firstTouchPoint = getOffsetXY(t1), secondTouchPoint = getOffsetXY(t2);
+        if (mouseX = (firstTouchPoint.x + secondTouchPoint.x) / 2, mouseY = (firstTouchPoint.y + secondTouchPoint.y) / 2, transformOrigin) {
+          var offset = getTransformOriginOffset();
+          mouseX = offset.x, mouseY = offset.y;
+        }
+        publicZoomTo(mouseX, mouseY, scaleMultiplier), pinchZoomLength = currentPinchLength, e.stopPropagation(), e.preventDefault();
+      }
+    }
+    __name(handleTouchMove, "handleTouchMove");
+    function clearPendingClickEventTimeout() {
+      pendingClickEventTimeout && (clearTimeout(pendingClickEventTimeout), pendingClickEventTimeout = 0);
+    }
+    __name(clearPendingClickEventTimeout, "clearPendingClickEventTimeout");
+    function handlePotentialClickEvent(e) {
+      if (options.onClick) {
+        clearPendingClickEventTimeout();
+        var dx = mouseX - clickX, dy = mouseY - clickY, l = Math.sqrt(dx * dx + dy * dy);
+        l > 5 || (pendingClickEventTimeout = setTimeout(function() {
+          pendingClickEventTimeout = 0, options.onClick(e);
+        }, doubleTapSpeedInMS));
+      }
+    }
+    __name(handlePotentialClickEvent, "handlePotentialClickEvent");
+    function handleTouchEnd(e) {
+      if (clearPendingClickEventTimeout(), e.touches.length > 0) {
+        var offset = getOffsetXY(e.touches[0]), point = transformToScreen(offset.x, offset.y);
+        mouseX = point.x, mouseY = point.y;
+      } else {
+        var now = /* @__PURE__ */ new Date();
+        if (now - lastTouchEndTime < doubleTapSpeedInMS)
+          if (transformOrigin) {
+            var offset = getTransformOriginOffset();
+            smoothZoom(offset.x, offset.y, zoomDoubleClickSpeed);
+          } else
+            smoothZoom(lastSingleFingerOffset.x, lastSingleFingerOffset.y, zoomDoubleClickSpeed);
+        else now - lastTouchStartTime < clickEventTimeInMS && handlePotentialClickEvent(e);
+        lastTouchEndTime = now, triggerPanEnd(), releaseTouches();
+      }
+    }
+    __name(handleTouchEnd, "handleTouchEnd");
+    function getPinchZoomLength(finger1, finger2) {
+      var dx = finger1.clientX - finger2.clientX, dy = finger1.clientY - finger2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    __name(getPinchZoomLength, "getPinchZoomLength");
+    function onDoubleClick(e) {
+      beforeDoubleClick(e);
+      var offset = getOffsetXY(e);
+      transformOrigin && (offset = getTransformOriginOffset()), smoothZoom(offset.x, offset.y, zoomDoubleClickSpeed);
+    }
+    __name(onDoubleClick, "onDoubleClick");
+    function onMouseDown(e) {
+      if (clearPendingClickEventTimeout(), !beforeMouseDown(e)) {
+        if (lastMouseDownedEvent = e, lastMouseDownTime = /* @__PURE__ */ new Date(), touchInProgress)
+          return e.stopPropagation(), !1;
+        var isLeftButton = e.button === 1 && window.event !== null || e.button === 0;
+        if (isLeftButton) {
+          smoothScroll.cancel();
+          var offset = getOffsetXY(e), point = transformToScreen(offset.x, offset.y);
+          return clickX = mouseX = point.x, clickY = mouseY = point.y, document.addEventListener("mousemove", onMouseMove), document.addEventListener("mouseup", onMouseUp), textSelection.capture(e.target || e.srcElement), !1;
+        }
+      }
+    }
+    __name(onMouseDown, "onMouseDown");
+    function onMouseMove(e) {
+      if (!touchInProgress) {
+        triggerPanStart();
+        var offset = getOffsetXY(e), point = transformToScreen(offset.x, offset.y), dx = point.x - mouseX, dy = point.y - mouseY;
+        mouseX = point.x, mouseY = point.y, internalMoveBy(dx, dy);
+      }
+    }
+    __name(onMouseMove, "onMouseMove");
+    function onMouseUp() {
+      var now = /* @__PURE__ */ new Date();
+      now - lastMouseDownTime < clickEventTimeInMS && handlePotentialClickEvent(lastMouseDownedEvent), textSelection.release(), triggerPanEnd(), releaseDocumentMouse();
+    }
+    __name(onMouseUp, "onMouseUp");
+    function releaseDocumentMouse() {
+      document.removeEventListener("mousemove", onMouseMove), document.removeEventListener("mouseup", onMouseUp), panstartFired = !1;
+    }
+    __name(releaseDocumentMouse, "releaseDocumentMouse");
+    function releaseTouches() {
+      document.removeEventListener("touchmove", handleTouchMove), document.removeEventListener("touchend", handleTouchEnd), document.removeEventListener("touchcancel", handleTouchEnd), panstartFired = !1, multiTouch = !1, touchInProgress = !1;
+    }
+    __name(releaseTouches, "releaseTouches");
+    function onMouseWheel(e) {
+      if (!beforeWheel(e)) {
+        smoothScroll.cancel();
+        var delta = e.deltaY;
+        e.deltaMode > 0 && (delta *= 100);
+        var scaleMultiplier = getScaleMultiplier(delta);
+        if (scaleMultiplier !== 1) {
+          var offset = transformOrigin ? getTransformOriginOffset() : getOffsetXY(e);
+          publicZoomTo(offset.x, offset.y, scaleMultiplier), e.preventDefault();
+        }
+      }
+    }
+    __name(onMouseWheel, "onMouseWheel");
+    function getOffsetXY(e) {
+      var offsetX, offsetY, ownerRect = owner.getBoundingClientRect();
+      return offsetX = e.clientX - ownerRect.left, offsetY = e.clientY - ownerRect.top, { x: offsetX, y: offsetY };
+    }
+    __name(getOffsetXY, "getOffsetXY");
+    function smoothZoom(clientX, clientY, scaleMultiplier) {
+      var fromValue = transform2.scale, from = { scale: fromValue }, to = { scale: scaleMultiplier * fromValue };
+      smoothScroll.cancel(), cancelZoomAnimation(), zoomToAnimation = animate(from, to, {
+        step: /* @__PURE__ */ __name(function(v) {
+          zoomAbs(clientX, clientY, v.scale);
+        }, "step"),
+        done: triggerZoomEnd
+      });
+    }
+    __name(smoothZoom, "smoothZoom");
+    function smoothZoomAbs(clientX, clientY, toScaleValue) {
+      var fromValue = transform2.scale, from = { scale: fromValue }, to = { scale: toScaleValue };
+      smoothScroll.cancel(), cancelZoomAnimation(), zoomToAnimation = animate(from, to, {
+        step: /* @__PURE__ */ __name(function(v) {
+          zoomAbs(clientX, clientY, v.scale);
+        }, "step")
+      });
+    }
+    __name(smoothZoomAbs, "smoothZoomAbs");
+    function getTransformOriginOffset() {
+      var ownerRect = owner.getBoundingClientRect();
+      return {
+        x: ownerRect.width * transformOrigin.x,
+        y: ownerRect.height * transformOrigin.y
+      };
+    }
+    __name(getTransformOriginOffset, "getTransformOriginOffset");
+    function publicZoomTo(clientX, clientY, scaleMultiplier) {
+      return smoothScroll.cancel(), cancelZoomAnimation(), zoomByRatio(clientX, clientY, scaleMultiplier);
+    }
+    __name(publicZoomTo, "publicZoomTo");
+    function cancelZoomAnimation() {
+      zoomToAnimation && (zoomToAnimation.cancel(), zoomToAnimation = null);
+    }
+    __name(cancelZoomAnimation, "cancelZoomAnimation");
+    function getScaleMultiplier(delta) {
+      var sign = Math.sign(delta), deltaAdjustedSpeed = Math.min(0.25, Math.abs(speed * delta / 128));
+      return 1 - sign * deltaAdjustedSpeed;
+    }
+    __name(getScaleMultiplier, "getScaleMultiplier");
+    function triggerPanStart() {
+      panstartFired || (triggerEvent("panstart"), panstartFired = !0, smoothScroll.start());
+    }
+    __name(triggerPanStart, "triggerPanStart");
+    function triggerPanEnd() {
+      panstartFired && (multiTouch || smoothScroll.stop(), triggerEvent("panend"));
+    }
+    __name(triggerPanEnd, "triggerPanEnd");
+    function triggerZoomEnd() {
+      triggerEvent("zoomend");
+    }
+    __name(triggerZoomEnd, "triggerZoomEnd");
+    function triggerEvent(name) {
+      api.fire(name, api);
+    }
+    __name(triggerEvent, "triggerEvent");
+  }
+  __name(createPanZoom2, "createPanZoom");
+  function parseTransformOrigin(options) {
+    if (options) {
+      if (typeof options == "object")
+        return (!isNumber(options.x) || !isNumber(options.y)) && failTransformOrigin(options), options;
+      failTransformOrigin();
+    }
+  }
+  __name(parseTransformOrigin, "parseTransformOrigin");
+  function failTransformOrigin(options) {
+    throw console.error(options), new Error(
+      [
+        "Cannot parse transform origin.",
+        "Some good examples:",
+        '  "center center" can be achieved with {x: 0.5, y: 0.5}',
+        '  "top center" can be achieved with {x: 0.5, y: 0}',
+        '  "bottom right" can be achieved with {x: 1, y: 1}'
+      ].join(`
+`)
+    );
+  }
+  __name(failTransformOrigin, "failTransformOrigin");
+  function noop() {
+  }
+  __name(noop, "noop");
+  function validateBounds(bounds) {
+    var boundsType = typeof bounds;
+    if (!(boundsType === "undefined" || boundsType === "boolean")) {
+      var validBounds = isNumber(bounds.left) && isNumber(bounds.top) && isNumber(bounds.bottom) && isNumber(bounds.right);
+      if (!validBounds)
+        throw new Error(
+          "Bounds object is not valid. It can be: undefined, boolean (true|false) or an object {left, top, right, bottom}"
+        );
+    }
+  }
+  __name(validateBounds, "validateBounds");
+  function isNumber(x) {
+    return Number.isFinite(x);
+  }
+  __name(isNumber, "isNumber");
+  function isNaN(value) {
+    return Number.isNaN ? Number.isNaN(value) : value !== value;
+  }
+  __name(isNaN, "isNaN");
+  function rigidScroll() {
+    return {
+      start: noop,
+      stop: noop,
+      cancel: noop
+    };
+  }
+  __name(rigidScroll, "rigidScroll");
+  function autoRun() {
+    if (typeof document > "u") return;
+    var scripts = document.getElementsByTagName("script");
+    if (!scripts) return;
+    for (var panzoomScript, i = 0; i < scripts.length; ++i) {
+      var x = scripts[i];
+      if (x.src && x.src.match(/\bpanzoom(\.min)?\.js/)) {
+        panzoomScript = x;
+        break;
+      }
+    }
+    if (!panzoomScript) return;
+    var query = panzoomScript.getAttribute("query");
+    if (!query) return;
+    var globalName = panzoomScript.getAttribute("name") || "pz", started = Date.now();
+    tryAttach();
+    function tryAttach() {
+      var el = document.querySelector(query);
+      if (!el) {
+        var now = Date.now(), elapsed = now - started;
+        if (elapsed < 2e3) {
+          setTimeout(tryAttach, 100);
+          return;
+        }
+        console.error("Cannot find the panzoom element", globalName);
+        return;
+      }
+      var options = collectOptions(panzoomScript);
+      console.log(options), window[globalName] = createPanZoom2(el, options);
+    }
+    __name(tryAttach, "tryAttach");
+    function collectOptions(script) {
+      for (var attrs = script.attributes, options = {}, j = 0; j < attrs.length; ++j) {
+        var attr = attrs[j], nameValue = getPanzoomAttributeNameValue(attr);
+        nameValue && (options[nameValue.name] = nameValue.value);
+      }
+      return options;
+    }
+    __name(collectOptions, "collectOptions");
+    function getPanzoomAttributeNameValue(attr) {
+      if (attr.name) {
+        var isPanZoomAttribute = attr.name[0] === "p" && attr.name[1] === "z" && attr.name[2] === "-";
+        if (isPanZoomAttribute) {
+          var name = attr.name.substr(3), value = JSON.parse(attr.value);
+          return { name, value };
+        }
+      }
+    }
+    __name(getPanzoomAttributeNameValue, "getPanzoomAttributeNameValue");
+  }
+  return __name(autoRun, "autoRun"), autoRun(), panzoom;
+}
+__name(requirePanzoom, "requirePanzoom");
+var panzoomExports = requirePanzoom();
+const createPanZoom = /* @__PURE__ */ getDefaultExportFromCjs(panzoomExports), _CallGraph = class _CallGraph {
+  svg;
+  nodes;
+  edges;
+  clusters;
+  width;
+  height;
+  selectedElem = null;
+  panZoomState;
+  focus;
+  incomings;
+  outgoings;
+  constructor(svg, focus, onSelectElem) {
+    if (this.svg = svg, this.nodes = svg.querySelectorAll("g.node"), this.edges = svg.querySelectorAll("g.edge"), this.clusters = svg.querySelectorAll("g.cluster"), this.width = this.svg.viewBox.baseVal.width, this.height = this.svg.viewBox.baseVal.height, this.setUpInteraction(onSelectElem ?? this.onSelectElem), this.focus = focus, focus) {
+      const incomings = /* @__PURE__ */ new Map(), outgoings = /* @__PURE__ */ new Map();
+      this.edges.forEach((edge) => {
+        const fromCell = edge.dataset.from, toCell = edge.dataset.to;
+        incomings.get(toCell)?.push(edge) ?? incomings.set(toCell, [edge]), outgoings.get(fromCell)?.push(edge) ?? outgoings.set(fromCell, [edge]);
+      }), this.incomings = incomings, this.outgoings = outgoings;
+    }
+  }
+  setUpInteraction(onSelectElem) {
+    const svg = this.svg;
+    let clickPoint = [0, 0];
+    svg.onmousedown = function(e) {
+      clickPoint = [e.pageX, e.pageY];
+    }, svg.onmouseup = function(e) {
+      const [x, y] = clickPoint, diffX = Math.abs(e.pageX - x), diffY = Math.abs(e.pageY - y);
+      if (!(diffX > 6 || diffY > 6)) {
+        for (let elem = e.target; elem && elem instanceof SVGElement && elem !== svg; elem = elem.parentNode) {
+          const classes = elem.classList;
+          if (classes.contains("node") || classes.contains("cell") || classes.contains("edge") || classes.contains("cluster-label")) {
+            onSelectElem(elem);
+            return;
+          }
+        }
+        onSelectElem(null);
+      }
+    };
+  }
+  setUpPanZoom() {
+    this.panZoomState = this.createPanZoomState();
+  }
+  createPanZoomState() {
+    const g0 = this.svg.querySelector("#graph0"), pz = createPanZoom(g0, {
+      smoothScroll: !1,
+      autocenter: !0
+    }), { x, y, scale } = structuredClone(pz.getTransform()), cRect = g0.getBoundingClientRect(), cx = cRect.x + cRect.width / 2, cy = cRect.y + cRect.height / 2, sRect = this.svg.getBoundingClientRect();
+    return {
+      pz,
+      scale,
+      x,
+      y,
+      cx,
+      cy,
+      sRect
+    };
+  }
+  resetStyles() {
+    const g0 = this.svg.getElementById("graph0"), fadedGroup = this.svg.getElementById("faded-group");
+    this.selectedElem?.closest(".selected")?.classList.remove("selected"), g0.querySelectorAll(":scope > .edge").forEach(
+      (edge) => edge.classList.remove("incoming", "outgoing")
+    );
+    const firstNode = g0.querySelector(".node");
+    for (const cluster of fadedGroup.querySelectorAll(".cluster"))
+      g0.insertBefore(cluster, firstNode);
+    for (const node of fadedGroup.querySelectorAll(".node"))
+      g0.insertBefore(node, firstNode);
+    g0.append(...fadedGroup.childNodes);
+  }
+  smoothZoom(scale) {
+    if (!this.panZoomState)
+      return;
+    const { pz, cx, cy } = this.panZoomState;
+    pz.smoothZoom(cx, cy, scale);
+  }
+  resetPanZoom() {
+    if (!this.panZoomState)
+      return;
+    const { pz, x, y, scale } = this.panZoomState;
+    pz.moveTo(x, y), pz.zoomAbs(x, y, scale);
+  }
+  onSelectElem = /* @__PURE__ */ __name((elem) => {
+    if (this.resetStyles(), this.selectedElem = elem, !elem)
+      return;
+    const { pz, scale, cx, cy, sRect } = this.panZoomState, eRect = elem.getBoundingClientRect();
+    eRect.width > sRect.width || eRect.height > sRect.height ? (pz.smoothZoomAbs(cx, cy, scale), setTimeout(() => pz.centerOn(elem), 1e3)) : (eRect.left < sRect.left || eRect.top < sRect.top || eRect.right > sRect.right || eRect.bottom > sRect.bottom) && pz.centerOn(elem);
+    const classes = elem.classList;
+    classes.contains("node") ? this.onSelectNode(elem) : classes.contains("cell") ? this.onSelectCell(elem) : classes.contains("edge") ? this.onSelectEdge(elem) : classes.contains("cluster-label") && this.onSelctCluster(elem);
+  }, "onSelectElem");
+  onSelectNode(node) {
+    const id = node.id;
+    this.highlightEdges((edge) => [
+      edge.dataset.to.startsWith(`${id}:`),
+      edge.dataset.from.startsWith(`${id}:`)
+    ]), node.classList.add("selected"), this.fadeOutNodes(/* @__PURE__ */ new Set([id]));
+  }
+  onSelectCell(cell) {
+    const id = cell.id;
+    if (this.focus)
+      this.onSelectCellInFocusMode(id);
+    else {
+      const cellIds = /* @__PURE__ */ new Set([cell.id]);
+      cell.querySelectorAll(".cell").forEach((c) => {
+        cellIds.add(c.id);
+      }), this.highlightEdges((edge) => [
+        cellIds.has(edge.dataset.to),
+        cellIds.has(edge.dataset.from)
+      ]);
+    }
+    cell.classList.add("selected"), this.fadeOutNodes(/* @__PURE__ */ new Set([this.getNodeId(cell.id)]));
+  }
+  onSelectCellInFocusMode(cellId) {
+    const highlights = [/* @__PURE__ */ new Set(), /* @__PURE__ */ new Set()], inout = [this.incomings, this.outgoings];
+    for (let i = 0; i < inout.length; ++i) {
+      const visited = /* @__PURE__ */ new Set([cellId, this.focus]), map = inout[i], highlightEdges = highlights[i];
+      for (let newEdges = map.get(cellId) ?? []; newEdges.length > 0; )
+        newEdges = newEdges.flatMap((edge) => {
+          highlightEdges.add(edge);
+          const id = i == 0 ? edge.dataset.from : edge.dataset.to;
+          return visited.has(id) ? [] : (visited.add(id), map.get(id) ?? []);
+        });
+    }
+    this.highlightEdges((edge) => [
+      highlights[0].has(edge),
+      highlights[1].has(edge)
+    ]), this.fadeOutNodes(/* @__PURE__ */ new Set([this.getNodeId(cellId)]));
+  }
+  onSelectEdge(edge) {
+    const g0 = this.svg.getElementById("graph0");
+    this.svg.getElementById("faded-group").append(...this.edges), g0.appendChild(edge), this.fadeOutNodes();
+  }
+  onSelctCluster(clusterLabel) {
+    const cluster = clusterLabel.parentNode, rect = cluster.getBoundingClientRect();
+    cluster.classList.add("selected");
+    const selected = /* @__PURE__ */ new Set();
+    this.nodes.forEach((node) => {
+      this.rectContains(rect, node.getBoundingClientRect()) && selected.add(node.id);
+    }), this.highlightEdges((edge) => [
+      selected.has(this.getNodeId(edge.dataset.to)),
+      selected.has(this.getNodeId(edge.dataset.from))
+    ]), this.fadeOutNodes(selected);
+  }
+  highlightEdges(judge) {
+    const fadedGroup = this.svg.getElementById("faded-group");
+    for (const edge of this.edges) {
+      const [incoming, outgoing] = judge(edge);
+      incoming && edge.classList.add("incoming"), outgoing && edge.classList.add("outgoing"), incoming || outgoing || fadedGroup.appendChild(edge);
+    }
+  }
+  fadeOutNodes(kept) {
+    kept || (kept = /* @__PURE__ */ new Set());
+    const fadedGroup = this.svg.getElementById("faded-group");
+    for (const edge of this.edges)
+      edge.parentElement !== fadedGroup && kept.add(this.getNodeId(edge.dataset.from)).add(this.getNodeId(edge.dataset.to));
+    const clusters = new Set(this.clusters);
+    for (const node of this.nodes) {
+      if (!kept.has(node.id)) {
+        fadedGroup.appendChild(node);
+        continue;
+      }
+      const rect = node.getBoundingClientRect();
+      for (const cluster of clusters)
+        this.rectContains(cluster.getBoundingClientRect(), rect) && clusters.delete(cluster);
+    }
+    fadedGroup.append(...clusters);
+  }
+  getNodeId(id) {
+    return id.substring(0, id.indexOf(":"));
+  }
+  rectContains(rect1, rect2) {
+    return rect1.left < rect2.left && rect1.right > rect2.right && rect1.bottom > rect2.bottom && rect1.top < rect2.top;
+  }
+};
+__name(_CallGraph, "CallGraph");
+let CallGraph = _CallGraph;
+export {
+  CallGraph
+};
+
+
+    const graph = new CallGraph(document.querySelector(".callgraph"), null);
+    graph.setUpPanZoom();
+  </script>
+</body>
+</html>

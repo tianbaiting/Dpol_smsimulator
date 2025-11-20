@@ -1,0 +1,41 @@
+# libs/smg4lib/src/action/CMakeLists.txt
+
+project(smaction)
+
+# 查找所有源文件
+file(GLOB_RECURSE ACTION_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cc")
+file(GLOB_RECURSE ACTION_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hh")
+
+# 创建共享库
+add_library(smaction SHARED ${ACTION_SOURCES})
+
+# 设置包含目录
+target_include_directories(smaction PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/src/data/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+# 链接依赖
+target_link_libraries(smaction PUBLIC
+    smdata
+    ${ROOT_LIBRARIES}
+    ${Geant4_LIBRARIES}
+    ${CMAKE_DL_LIBS}
+)
+
+# 设置属性
+set_target_properties(smaction PROPERTIES
+    SOVERSION 5
+)
+
+# 安装
+install(TARGETS smaction
+    EXPORT SMSimulatorTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(DIRECTORY include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/smg4lib/action)

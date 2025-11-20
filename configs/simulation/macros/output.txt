@@ -1,0 +1,1891 @@
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      54.7515
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -791                 ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            113
+fpl                           -1
+name                          Neut113
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(-791,63.1538,8225.72), Time=54.7515ns, Energy=1.9338
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 1
+重建位置: (-786.005, 60.98, 8229.63) mm
+飞行方向: (-0.0830701, 0.00665036, 0.996522)
+飞行距离: 9169.42 mm
+飞行时间: 55.251 ns
+Beta值: 0.553581
+总能量: 1.9338 MeV
+中子动能: 188.642 MeV
+极角θ: 4.78034°
+方位角φ: 175.423°
+=========================
+*** 重建总结: 发现 1 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (-786.005, 60.98, 8229.63) mm, tar
+get at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 95.7571 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+
+*** NEBULAReconstructor::ProcessEvent 开始 ***
+ExtractHits: 处理 5 个NEBULA原始hits
+  Debug: 对象 0 的数据结构:
+==> Dumping object at: 0x0000000011848600, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     1
+fDetPos[3]                    -423.8               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        2.42003
+fQDCal                        2.74214
+fQAvePed                      -1
+fQAveCal                      2.94759
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      51.613
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -423.8               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            20
+fpl                           -1
+name                          Neut20
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(-423.8,-452.444,7249.72), Time=51.613ns, Energy=2.94759
+  Debug: 对象 1 的数据结构:
+==> Dumping object at: 0x00000000118487d0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     2
+fDetPos[3]                    -423.8               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0
+fQDCal                        0
+fQAvePed                      -1
+fQAveCal                      0
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      52.7185
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -423.8               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            50
+fpl                           -1
+name                          Neut50
+name.fRep                     ->118487f0          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 1: ID=1, Pos=(-423.8,-509.889,7379.72), Time=52.7185ns, Energy=0
+  Debug: 对象 2 的数据结构:
+==> Dumping object at: 0x000000000e345cd0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        2
+fSubLayer                     1
+fDetPos[3]                    -546.2               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        11.9409
+fQDCal                        15.1673
+fQAvePed                      -1
+fQAveCal                      15.3988
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      61.0363
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -546.2               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            81
+fpl                           -1
+name                          Neut81
+name.fRep                     ->e345cf0           ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 2: ID=2, Pos=(-546.2,-787.75,8095.72), Time=61.0363ns, Energy=15.3988
+  Hit 3: ID=3, Pos=(-546.2,-746.468,8225.72), Time=64.6513ns, Energy=1.22812
+  Hit 4: ID=4, Pos=(-648,-16.0693,6974.72), Time=47.531ns, Energy=5.91417
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 2
+重建位置: (-568.432, -163.39, 7070.1) mm
+飞行方向: (-0.0680318, -0.0204283, 0.997474)
+飞行距离: 7998.2 mm
+飞行时间: 49.3883 ns
+Beta值: 0.540192
+总能量: 8.86176 MeV
+中子动能: 176.915 MeV
+极角θ: 4.0733°
+方位角φ: -163.286°
+=========================
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 2
+重建位置: (-541.205, -786.874, 8109.23) mm
+飞行方向: (-0.0570149, -0.0867926, 0.994594)
+飞行距离: 9066.15 mm
+飞行时间: 61.8028 ns
+Beta值: 0.489321
+总能量: 16.6269 MeV
+中子动能: 137.79 MeV
+极角θ: 5.96059°
+方位角φ: -123.301°
+=========================
+*** 重建总结: 发现 2 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3248.88, 12.9787, 2448.32) mm, t
+arget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 5000 ± 62.4397 MeV/c
+  Final distance: 33.6133 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 1.49269e-09
+TargetReconstructor (TMinuit): Starting from PDC2 at (-568.432, -163.39, 7070.1) mm, ta
+rget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 89.4327 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+TargetReconstructor (TMinuit): Starting from PDC2 at (-541.205, -786.874, 8109.23) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 95.2163 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+
+*** NEBULAReconstructor::ProcessEvent 开始 ***
+ExtractHits: 处理 2 个NEBULA原始hits
+  Debug: 对象 0 的数据结构:
+==> Dumping object at: 0x0000000011848600, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     1
+fDetPos[3]                    -1647.8              ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        3.82728
+fQDCal                        3.8865
+fQAvePed                      -1
+fQAveCal                      4.41304
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      72.2233
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -1647.8              ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            30
+fpl                           -1
+name                          Neut30
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(-1647.8,-31.3211,7249.72), Time=72.2233ns, Energy=4.41304
+  Debug: 对象 1 的数据结构:
+==> Dumping object at: 0x00000000118487d0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     0
+fDetPos[3]                    -648                 ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0
+fQDCal                        0
+fQAvePed                      -1
+fQAveCal                      0
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      47.5396
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -648                 ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            129
+fpl                           -1
+name                          Veto129
+name.fRep                     ->118487f0          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 1: ID=1, Pos=(-648,44.9047,6974.72), Time=47.5396ns, Energy=0
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 1
+重建位置: (-1642.81, -33.4949, 7253.63) mm
+飞行方向: (-0.194519, -0.00402558, 0.98089)
+飞行距离: 8320.53 mm
+飞行时间: 72.7228 ns
+Beta值: 0.381645
+总能量: 4.41304 MeV
+中子动能: 76.9404 MeV
+极角θ: 11.2191°
+方位角φ: -178.814°
+=========================
+*** 重建总结: 发现 1 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3518.38, 4.38142, 2201.36) mm, t
+arget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 622.336 ± 4082.45 MeV/c
+  Final distance: 1.98555 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 6.64273e-11
+TargetReconstructor (TMinuit): Starting from PDC2 at (-1642.81, -33.4949, 7253.63) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 91.2169 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3381.96, -1.20585, 2326.37) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 5000 ± 75.4279 MeV/c
+  Final distance: 33.1356 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 4.41207e-12
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3869.43, -48.8654, 1879.69) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 602.345 ± 2794.16 MeV/c
+  Final distance: 2.61036 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0.178527
+
+*** NEBULAReconstructor::ProcessEvent 开始 ***
+ExtractHits: 处理 11 个NEBULA原始hits
+  Debug: 对象 0 的数据结构:
+==> Dumping object at: 0x0000000011848600, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     1
+fDetPos[3]                    1289.8               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        3.80102
+fQDCal                        4.17262
+fQAvePed                      -1
+fQAveCal                      4.55688
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      58.0058
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       1289.8               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            6
+fpl                           -1
+name                          Neut6
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(1289.8,-315.961,7249.72), Time=58.0058ns, Energy=4.55688
+  Debug: 对象 1 的数据结构:
+==> Dumping object at: 0x00000000118487d0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     1
+fDetPos[3]                    1167.4               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0.417031
+fQDCal                        0.429871
+fQAvePed                      -1
+fQAveCal                      0.484469
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      53.9537
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       1167.4               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            7
+fpl                           -1
+name                          Neut7
+name.fRep                     ->118487f0          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 1: ID=1, Pos=(1167.4,-42.5799,7249.72), Time=53.9537ns, Energy=0.484469
+  Debug: 对象 2 的数据结构:
+==> Dumping object at: 0x000000000e345cd0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     1
+fDetPos[3]                    1045                 ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0.0204714
+fQDCal                        0.021133
+fQAvePed                      -1
+fQAveCal                      0.0237995
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      54.5212
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       1045                 ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            8
+fpl                           -1
+name                          Neut8
+name.fRep                     ->e345cf0           ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 2: ID=2, Pos=(1045,-85.8828,7249.72), Time=54.5212ns, Energy=0.0237995
+  Hit 3: ID=3, Pos=(1412.2,-203.781,7379.72), Time=58.3488ns, Energy=0.0904916
+  Hit 4: ID=4, Pos=(1289.8,-60.127,7379.72), Time=58.5676ns, Energy=1.13262
+  Hit 5: ID=5, Pos=(1167.4,-115.549,7379.72), Time=57.2607ns, Energy=2.8709
+  Hit 6: ID=6, Pos=(1045,185.678,7379.72), Time=58.0843ns, Energy=0.047118
+  Hit 7: ID=7, Pos=(677.8,29.3929,8095.72), Time=79.1189ns, Energy=1.671
+  Hit 8: ID=8, Pos=(922.6,-516.468,8225.72), Time=63.3633ns, Energy=8.30765
+  Hit 9: ID=9, Pos=(800.2,-401.67,8225.72), Time=65.2748ns, Energy=15.2274
+  Hit 10: ID=10, Pos=(1212,-403.413,6974.72), Time=61.0246ns, Energy=0.00390492
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 5
+重建位置: (956.513, -383.743, 7985.53) mm
+飞行方向: (0.10952, -0.0428497, 0.993061)
+飞行距离: 8955.58 mm
+飞行时间: 63.2939 ns
+Beta值: 0.471966
+总能量: 32.0955 MeV
+中子动能: 126.165 MeV
+极角θ: 6.75384°
+方位角φ: -21.3679°
+=========================
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 1
+重建位置: (682.795, 27.219, 8099.63) mm
+飞行方向: (0.0782593, 0.00301253, 0.996928)
+飞行距离: 9035.28 mm
+飞行时间: 79.6184 ns
+Beta值: 0.378536
+总能量: 1.671 MeV
+中子动能: 75.5374 MeV
+极角θ: 4.49185°
+方位角φ: 2.20447°
+=========================
+*** 重建总结: 发现 2 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3851.29, 72.6114, 1896.31) mm, t
+arget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 622.043 ± 2794.16 MeV/c
+  Final distance: 2.91009 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0.459385
+TargetReconstructor (TMinuit): Starting from PDC2 at (956.513, -383.743, 7985.53) mm, t
+arget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 94.6339 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+TargetReconstructor (TMinuit): Starting from PDC2 at (682.795, 27.219, 8099.63) mm, tar
+get at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 95.0541 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3194.57, 19.4932, 2498.09) mm, t
+arget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 5000 ± 63.5182 MeV/c
+  Final distance: 34.8762 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 1.30338e-06
+
+*** NEBULAReconstructor::ProcessEvent 开始 ***
+ExtractHits: 处理 2 个NEBULA原始hits
+  Debug: 对象 0 的数据结构:
+==> Dumping object at: 0x0000000011848600, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     2
+fDetPos[3]                    -668.6               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        2.87553
+fQDCal                        2.36968
+fQAvePed                      -1
+fQAveCal                      2.98687
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      52.0534
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -668.6               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            52
+fpl                           -1
+name                          Neut52
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(-668.6,703.651,7379.72), Time=52.0534ns, Energy=2.98687
+  Debug: 对象 1 的数据结构:
+==> Dumping object at: 0x00000000118487d0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     2
+fDetPos[3]                    -791                 ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        46.6105
+fQDCal                        46.3865
+fQAvePed                      -1
+fQAveCal                      53.2048
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      49.715
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -791                 ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            53
+fpl                           -1
+name                          Neut53
+name.fRep                     ->118487f0          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 1: ID=1, Pos=(-791,2.8821,7379.72), Time=49.715ns, Energy=53.2048
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 2
+重建位置: (-779.499, 37.9577, 7383.63) mm
+飞行方向: (-0.0907044, 0.00455897, 0.995867)
+飞行距离: 8325.94 mm
+飞行时间: 50.3387 ns
+Beta值: 0.551709
+总能量: 56.1917 MeV
+中子动能: 186.962 MeV
+极角θ: 5.21072°
+方位角φ: 177.123°
+=========================
+*** 重建总结: 发现 1 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3314.63, -12.4978, 2388.07) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 5000 ± 59.2077 MeV/c
+  Final distance: 33.4304 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 3.11112e-08
+TargetReconstructor (TMinuit): Starting from PDC2 at (-779.499, 37.9577, 7383.63) mm, t
+arget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 91.2466 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+
+*** NEBULAReconstructor::ProcessEvent 开始 ***
+ExtractHits: 处理 4 个NEBULA原始hits
+  Debug: 对象 0 的数据结构:
+==> Dumping object at: 0x0000000011848600, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     2
+fDetPos[3]                    555.4                ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        29.5832
+fQDCal                        29.1033
+fQAvePed                      -1
+fQAveCal                      33.5743
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      50.2137
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       555.4                ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            42
+fpl                           -1
+name                          Neut42
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(555.4,46.16,7379.72), Time=50.2137ns, Energy=33.5743
+  Debug: 对象 1 的数据结构:
+==> Dumping object at: 0x00000000118487d0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     2
+fDetPos[3]                    -1403                ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0
+fQDCal                        0
+fQAvePed                      -1
+fQAveCal                      0
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      150.381
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -1403                ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            58
+fpl                           -1
+name                          Neut58
+name.fRep                     ->118487f0          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 1: ID=1, Pos=(-1403,-698.572,7379.72), Time=150.381ns, Energy=0
+  Debug: 对象 2 的数据结构:
+==> Dumping object at: 0x000000000e345cd0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        2
+fSubLayer                     1
+fDetPos[3]                    -301.4               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0.0244185
+fQDCal                        0.0262882
+fQAvePed                      -1
+fQAveCal                      0.0289903
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      228.44
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -301.4               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            79
+fpl                           -1
+name                          Neut79
+name.fRep                     ->e345cf0           ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 2: ID=2, Pos=(-301.4,-264.769,8095.72), Time=228.44ns, Energy=0.0289903
+  Hit 3: ID=3, Pos=(-28,-218.421,7820.72), Time=74.8865ns, Energy=1.33804
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 1
+重建位置: (560.395, 43.9862, 7383.63) mm
+飞行方向: (0.0703414, 0.00529174, 0.997509)
+飞行距离: 8312.24 mm
+飞行时间: 50.7132 ns
+Beta值: 0.546734
+总能量: 33.5743 MeV
+中子动能: 182.563 MeV
+极角θ: 4.04502°
+方位角φ: 4.30222°
+=========================
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 1
+重建位置: (-23.0053, -220.594, 7824.63) mm
+飞行方向: (0.00014821, -0.0252532, 0.999681)
+飞行距离: 8735.31 mm
+飞行时间: 75.386 ns
+Beta值: 0.386516
+总能量: 1.33804 MeV
+中子动能: 79.1736 MeV
+极角θ: 1.44708°
+方位角φ: -89.6637°
+=========================
+*** 重建总结: 发现 2 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3958.05, -33.3427, 1798.48) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 433.579 ± 2.19792 MeV/c
+  Final distance: 4.46574 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 7.60629e-06
+TargetReconstructor (TMinuit): Starting from PDC2 at (560.395, 43.9862, 7383.63) mm, ta
+rget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 91.1715 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+TargetReconstructor (TMinuit): Starting from PDC2 at (-23.0053, -220.594, 7824.63) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 93.4629 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+
+*** NEBULAReconstructor::ProcessEvent 开始 ***
+ExtractHits: 处理 5 个NEBULA原始hits
+  Debug: 对象 0 的数据结构:
+==> Dumping object at: 0x0000000011848600, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     1
+fDetPos[3]                    65.8                 ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0.136277
+fQDCal                        0.132394
+fQAvePed                      -1
+fQAveCal                      0.153694
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      60.1196
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       65.8                 ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            16
+fpl                           -1
+name                          Neut16
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(65.8,96.4021,7249.72), Time=60.1196ns, Energy=0.153694
+  Debug: 对象 1 的数据结构:
+==> Dumping object at: 0x00000000118487d0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        2
+fSubLayer                     1
+fDetPos[3]                    -546.2               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        3.42516
+fQDCal                        3.59589
+fQAvePed                      -1
+fQAveCal                      4.01565
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      56.7342
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -546.2               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            81
+fpl                           -1
+name                          Neut81
+name.fRep                     ->118487f0          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 1: ID=1, Pos=(-546.2,-126.349,8095.72), Time=56.7342ns, Energy=4.01565
+  Debug: 对象 2 的数据结构:
+==> Dumping object at: 0x000000000e345cd0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        2
+fSubLayer                     2
+fDetPos[3]                    -791                 ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        19.2569
+fQDCal                        19.2477
+fQAvePed                      -1
+fQAveCal                      22.029
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      55.1237
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -791                 ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            113
+fpl                           -1
+name                          Neut113
+name.fRep                     ->e345cf0           ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 2: ID=2, Pos=(-791,10.8143,8225.72), Time=55.1237ns, Energy=22.029
+  Hit 3: ID=3, Pos=(-913.4,-334.141,8225.72), Time=56.7379ns, Energy=4.21332
+  Hit 4: ID=4, Pos=(-338,4.06602,7835.72), Time=58.0471ns, Energy=0.247746
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 3
+重建位置: (-770.561, -57.5967, 8212.38) mm
+飞行方向: (-0.0815502, -0.00629408, 0.996649)
+飞行距离: 9150.94 mm
+飞行时间: 56.0617 ns
+Beta值: 0.544476
+总能量: 30.258 MeV
+中子动能: 180.597 MeV
+极角θ: 4.69162°
+方位角φ: -175.587°
+=========================
+*** 重建总结: 发现 1 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3503.62, -13.8314, 2214.89) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 646.583 ± 5.31802 MeV/c
+  Final distance: 5.47467 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 0.000235846
+TargetReconstructor (TMinuit): Starting from PDC2 at (-770.561, -57.5967, 8212.38) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 95.6605 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3945.97, 192.516, 1809.55) mm, t
+arget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 445.093 ± 4.80843 MeV/c
+  Final distance: 9.64707 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 3.36404e-09
+
+*** NEBULAReconstructor::ProcessEvent 开始 ***
+ExtractHits: 处理 1 个NEBULA原始hits
+  Debug: 对象 0 的数据结构:
+==> Dumping object at: 0x0000000011848600, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     1
+fDetPos[3]                    -668.6               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        19.5685
+fQDCal                        19.9783
+fQAvePed                      -1
+fQAveCal                      22.624
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      49.406
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -668.6               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            22
+fpl                           -1
+name                          Neut22
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(-668.6,-75.8766,7249.72), Time=49.406ns, Energy=22.624
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 1
+重建位置: (-663.605, -78.0504, 7253.63) mm
+飞行方向: (-0.0780888, -0.00953357, 0.996901)
+飞行距离: 8186.9 mm
+飞行时间: 49.9055 ns
+Beta值: 0.547206
+总能量: 22.624 MeV
+中子动能: 182.977 MeV
+极角θ: 4.51204°
+方位角φ: -173.039°
+=========================
+*** 重建总结: 发现 1 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3142.22, 41.0181, 2546.06) mm, t
+arget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 5000 ± 68.3057 MeV/c
+  Final distance: 33.816 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 8.3473e-13
+TargetReconstructor (TMinuit): Starting from PDC2 at (-663.605, -78.0504, 7253.63) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 90.4815 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+
+*** NEBULAReconstructor::ProcessEvent 开始 ***
+ExtractHits: 处理 20 个NEBULA原始hits
+  Debug: 对象 0 的数据结构:
+==> Dumping object at: 0x0000000011848600, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     1
+fDetPos[3]                    1289.8               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0.345688
+fQDCal                        0.450585
+fQAvePed                      -1
+fQAveCal                      0.451589
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      61.4291
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       1289.8               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            6
+fpl                           -1
+name                          Neut6
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(1289.8,-879.206,7249.72), Time=61.4291ns, Energy=0.451589
+  Debug: 对象 1 的数据结构:
+==> Dumping object at: 0x00000000118487d0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     2
+fDetPos[3]                    1901.8               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0.0280151
+fQDCal                        0.026625
+fQAvePed                      -1
+fQAveCal                      0.0312503
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      59.1256
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       1901.8               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            31
+fpl                           -1
+name                          Neut31
+name.fRep                     ->118487f0          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 1: ID=1, Pos=(1901.8,165.208,7379.72), Time=59.1256ns, Energy=0.0312503
+  Debug: 对象 2 的数据结构:
+==> Dumping object at: 0x000000000e345cd0, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        1
+fSubLayer                     2
+fDetPos[3]                    1657                 ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0.00618837
+fQDCal                        0.004948
+fQAvePed                      -1
+fQAveCal                      0.00633164
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      66.0644
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       1657                 ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            33
+fpl                           -1
+name                          Neut33
+name.fRep                     ->e345cf0           ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 2: ID=2, Pos=(1657,747.011,7379.72), Time=66.0644ns, Energy=0.00633164
+  Hit 3: ID=3, Pos=(1289.8,-28.1097,7379.72), Time=52.9224ns, Energy=2.32006
+  Hit 4: ID=4, Pos=(1167.4,-82.7221,7379.72), Time=53.8926ns, Energy=0.057846
+  Hit 5: ID=5, Pos=(1045,63.2566,7379.72), Time=51.972ns, Energy=1.57489
+  Hit 6: ID=6, Pos=(922.6,-94.8609,7379.72), Time=52.6069ns, Energy=0.158109
+  Hit 7: ID=7, Pos=(800.2,317.027,7379.72), Time=50.9802ns, Energy=0.0296653
+  Hit 8: ID=8, Pos=(1901.8,731.216,8095.72), Time=63.0062ns, Energy=0.0150641
+  Hit 9: ID=9, Pos=(1779.4,893.007,8095.72), Time=62.4574ns, Energy=0.0237813
+  Hit 10: ID=10, Pos=(1657,857.885,8095.72), Time=63.9309ns, Energy=0.0200242
+  Hit 11: ID=11, Pos=(800.2,59.511,8095.72), Time=55.6914ns, Energy=0.0453004
+  Hit 12: ID=12, Pos=(677.8,19.9735,8095.72), Time=55.6859ns, Energy=0.0149272
+  Hit 13: ID=13, Pos=(433,151.455,8095.72), Time=72.2ns, Energy=0.0536672
+  Hit 14: ID=14, Pos=(310.6,220.864,8095.72), Time=75.0316ns, Energy=0.0331405
+  Hit 15: ID=15, Pos=(1534.6,718.648,8225.72), Time=68.7785ns, Energy=0.0371217
+  Hit 16: ID=16, Pos=(800.2,128.873,8225.72), Time=72.5458ns, Energy=0
+  Hit 17: ID=17, Pos=(677.8,173.154,8225.72), Time=56.31ns, Energy=53.1398
+  Hit 18: ID=18, Pos=(555.4,102.433,8225.72), Time=58.9035ns, Energy=5.78371
+  Hit 19: ID=19, Pos=(902,-384.137,7835.72), Time=55.2896ns, Energy=0.109904
+
+=== NEBULA中子重建结果 ===
+聚类包含hits数: 4
+重建位置: (703.334, 154.281, 8177.17) mm
+飞行方向: (0.0798241, 0.0169252, 0.996665)
+飞行距离: 9115.47 mm
+飞行时间: 56.8144 ns
+Beta值: 0.53518
+总能量: 62.8185 MeV
+中子动能: 172.691 MeV
+极角θ: 4.68046°
+方位角φ: 11.9712°
+=========================
+*** 重建总结: 发现 1 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (703.334, 154.281, 8177.17) mm, ta
+rget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+MIGRAD failed with error code: 4
+Trying SIMPLEX algorithm...
+TMinuit optimization completed:
+  Best momentum: 1000 ± 10.0001 MeV/c
+  Final distance: 95.475 mm
+  Convergence status: 1 (3=converged)
+  EDM (estimated distance to minimum): 0
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3311.54, 355.717, 2390.9) mm, ta
+rget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 5000 ± 74.5725 MeV/c
+  Final distance: 33.1564 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 2.30005e-05
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3432.7, -8.97262, 2279.88) mm, t
+arget at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+TMinuit optimization completed:
+  Best momentum: 5000 ± 67.422 MeV/c
+  Final distance: 33.601 mm
+  Convergence status: 3 (3=converged)
+  EDM (estimated distance to minimum): 4.31577e-07
+
+*** NEBULAReconstructor::ProcessEvent 开始 ***
+ExtractHits: 处理 1 个NEBULA原始hits
+  Debug: 对象 0 的数据结构:
+==> Dumping object at: 0x0000000011848600, name=TArtNEBULAPla, class=TArtNEBULAPla
+
+fLayer                        2
+fSubLayer                     1
+fDetPos[3]                    -668.6               ...
+fHit                          0
+fQURaw                        -1
+fQDRaw                        -1
+fQUPed                        -2.35344e-185
+fQDPed                        -2.35344e-185
+fQUCal                        0
+fQDCal                        0
+fQAvePed                      -1
+fQAveCal                      0
+fLogQPed                      0
+fLogQCal                      0
+fIvSqrtQUPed                  -1
+fIvSqrtQDPed                  -1
+fIvSqrtQAvePed                -1
+fTURaw                        -1
+fTDRaw                        -1
+fTURaw_Trailing               -1
+fTDRaw_Trailing               -1
+fTURaw_Width                  -1
+fTDRaw_Width                  -1
+fTURawRef                     -1
+fTDRawRef                     -1
+fTURaw_SubTRef                -99999
+fTDRaw_SubTRef                -99999
+fTUMulti                      0
+fTDMulti                      0
+fTUCal                        -1
+fTDCal                        -1
+fTUCal_Width                  -1
+fTDCal_Width                  -1
+fTUSlw                        -1
+fTDSlw                        -1
+fDTRaw                        -1
+fDTCal                        -1
+fDTSlw                        -1
+fTAveRaw                      -1
+fTAveCal                      53.9904
+fTAveSlw                      -1
+fTUCalT0                      -1
+fTDCalT0                      -1
+fTUSlwT0                      -1
+fTDSlwT0                      -1
+fTAveCalT0                    -1
+fTAveSlwT0                    -1
+fTTOFGamma                    -90000
+fTTOFNeutron                  -90000
+fPosCal                       0
+fPosSlw                       0
+fPos[3]                       -668.6               ...
+fFlightLength                 -1
+fFlightAngle                  -1
+id                            82
+fpl                           -1
+name                          Neut82
+name.fRep                     ->11848620          ! String data
+fDataState                    0
+fUniqueID                     0                   object unique identifier
+fBits                         0x03000000          bit field status word
+  Hit 0: ID=0, Pos=(-668.6,91.5593,8095.72), Time=53.9904ns, Energy=0
+*** 重建总结: 发现 0 个中子 ***
+TargetReconstructor (TMinuit): Starting from PDC2 at (-3158.19, -17.9846, 2531.42) mm,
+target at (-24.3, 0, -907.9) mm
+Starting TMinuit MIGRAD optimization...
+Initial momentum: 1000 MeV/c
+^C
+ *** Break *** keyboard interrupt
+Root > %
+
+
+smsimulator5.5/d_work/macros on  main [$⇡] via 🐍 v2.7.18 (.venv) took 4d20h37m13s
+❯
+
+smsimulator5.5/d_work/macros on  main [$⇡] via 🐍 v2.7.18 (.venv)
+❯ .q
+zsh: command not found: .q
+
+smsimulator5.5/d_work/macros on  main [$⇡] via 🐍 v2.7.18 (.venv)
+❯ tmux capture-pane -p -S -10000 > output.txt
+

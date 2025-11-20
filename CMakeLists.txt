@@ -1,53 +1,153 @@
-cmake_minimum_required(VERSION 3.12)  # 降低版本要求以兼容更多系统
-project(smsimulator CXX)
+cmake_minimum_required(VERSION 3.16)
+project(SMSimulator VERSION 5.5 LANGUAGES CXX)
 
+# 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# 包含GNUInstallDirs以获取标准安装目录变量
+# 包含标准模块
 include(GNUInstallDirs)
+include(CMakePrintHelpers)
 
-# 安全检查：防止在源码目录构建
+# 选项
+option(BUILD_TESTS "Build unit and integration tests" ON)
+option(BUILD_APPS "Build all applications" ON)
+option(BUILD_ANALYSIS "Build analysis library" ON)
+option(WITH_ANAROOT "Build with ANAROOT support" ON)
+option(WITH_GEANT4_UIVIS "Build with Geant4 UI and Vis drivers" ON)
+
+# 防止源码目录构建
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-    message(WARNING "In-source builds are not recommended. Please create a separate build directory.")
-    message(WARNING "To clean up: rm -rf CMakeCache.txt CMakeFiles/")
+    message(FATAL_ERROR 
+        "In-source builds are not allowed!\n"
+        "Please create a separate build directory:\n"
+        "  mkdir build && cd build && cmake ..\n"
+        "To clean up: rm -rf CMakeCache.txt CMakeFiles/")
 endif()
 
-# 确保bin目录存在
-file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+# 设置输出目录
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-# Find ROOT (removed Imt component to avoid TBB version conflicts)
-find_package(ROOT REQUIRED COMPONENTS Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread)
+# 添加 cmake 模块路径
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+##############################################################################
+# 查找依赖包
+##############################################################################
+
+message(STATUS "========================================")
+message(STATUS "Finding required packages...")
+message(STATUS "========================================")
+
+# Find ROOT
+find_package(ROOT REQUIRED COMPONENTS 
+    Core RIO Net Hist Graf Graf3d Gpad Tree Rint 
+    Postscript Matrix Physics MathCore Thread)
 include(${ROOT_USE_FILE})
 
-# Workaround for TBB linking issue: ROOT's libImt.so may require TBB but we don't use it
-# Remove libImt from ROOT_LIBRARIES if present
+# 移除可能导致冲突的 TBB 库
 list(FILTER ROOT_LIBRARIES EXCLUDE REGEX ".*libImt.*")
+message(STATUS "ROOT found: ${ROOT_VERSION}")
+message(STATUS "ROOT libraries: ${ROOT_LIBRARIES}")
 
-# Find Geant4 package with all UI and Vis drivers (like B1 example)
-option(WITH_GEANT4_UIVIS "Build with Geant4 UI and Vis drivers" ON)
+# Find Geant4
 if(WITH_GEANT4_UIVIS)
-  find_package(Geant4 REQUIRED ui_all vis_all)
+    find_package(Geant4 REQUIRED ui_all vis_all)
 else()
-  find_package(Geant4 REQUIRED)
+    find_package(Geant4 REQUIRED)
 endif()
-
-# Setup Geant4 include directories and compile definitions
 include(${Geant4_USE_FILE})
-include_directories(${Geant4_INCLUDE_DIRS})
-# Find ANAROOT
-if(DEFINED ENV{TARTSYS})
-  message(STATUS "Found ANAROOT, TARTSYS = " $ENV{TARTSYS})
-  include_directories($ENV{TARTSYS}/include)
-  link_directories($ENV{TARTSYS}/lib)
-  set(ANAROOT_LIBRARIES anasamurai anabrips anacore XMLParser)
-else()
-  message(FATAL_ERROR "$TARTSYS is not defined. please define the environment for ANAROOT.")
+message(STATUS "Geant4 found: ${Geant4_VERSION}")
+
+# Find ANAROOT (可选)
+if(WITH_ANAROOT)
+    if(DEFINED ENV{TARTSYS})
+        message(STATUS "ANAROOT found: $ENV{TARTSYS}")
+        include_directories($ENV{TARTSYS}/include)
+        link_directories($ENV{TARTSYS}/lib)
+        set(ANAROOT_LIBRARIES anasamurai anabrips anacore XMLParser)
+    else()
+        message(WARNING "TARTSYS not defined. Building without ANAROOT support.")
+        set(WITH_ANAROOT OFF)
+    endif()
 endif()
 
 # Find Xerces-C
 find_package(XercesC REQUIRED)
-include_directories(${XERCESC_INCLUDE_DIR})
+include_directories(${XercesC_INCLUDE_DIRS})
+message(STATUS "Xerces-C found")
 
-# Add smg4lib and sim_deuteron
-add_subdirectory(sources)
+message(STATUS "========================================")
 
+##############################################################################
+# 全局编译设置
+##############################################################################
+
+# 添加编译标志
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(
+        -Wall
+        -Wextra
+        -Wpedantic
+    )
+    # 分别设置 Debug 和 Release 的编译选项
+    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+endif()
+
+# 设置 RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+##############################################################################
+# 添加子目录
+##############################################################################
+
+message(STATUS "Building libraries...")
+add_subdirectory(libs)
+
+if(BUILD_APPS)
+    message(STATUS "Building applications...")
+    add_subdirectory(apps)
+endif()
+
+if(BUILD_TESTS)
+    message(STATUS "Enabling tests...")
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+##############################################################################
+# 安装配置文件
+##############################################################################
+
+install(DIRECTORY configs/ DESTINATION share/smsimulator/configs)
+install(DIRECTORY scripts/ DESTINATION share/smsimulator/scripts
+    PATTERN "*.pyc" EXCLUDE
+    PATTERN "__pycache__" EXCLUDE)
+
+##############################################################################
+# 打印配置摘要
+##############################################################################
+
+message(STATUS "")
+message(STATUS "========================================")
+message(STATUS "SMSimulator Configuration Summary")
+message(STATUS "========================================")
+message(STATUS "Version:              ${PROJECT_VERSION}")
+message(STATUS "Build type:           ${CMAKE_BUILD_TYPE}")
+message(STATUS "C++ Standard:         ${CMAKE_CXX_STANDARD}")
+message(STATUS "")
+message(STATUS "Options:")
+message(STATUS "  BUILD_TESTS:        ${BUILD_TESTS}")
+message(STATUS "  BUILD_APPS:         ${BUILD_APPS}")
+message(STATUS "  BUILD_ANALYSIS:     ${BUILD_ANALYSIS}")
+message(STATUS "  WITH_ANAROOT:       ${WITH_ANAROOT}")
+message(STATUS "  WITH_GEANT4_UIVIS:  ${WITH_GEANT4_UIVIS}")
+message(STATUS "")
+message(STATUS "Install prefix:       ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "========================================")
+message(STATUS "")

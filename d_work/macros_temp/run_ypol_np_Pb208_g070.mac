@@ -1,0 +1,24 @@
+# Auto-generated macro for ypol_np_Pb208_g070
+# Generated on: 2025-11-14 17:46:15
+
+# File settings
+/action/file/OverWrite y
+/action/file/RunName ypol_np_Pb208_g070
+/action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/test/Pb208_g070
+
+# Load geometry
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/d_work/geometry/5deg_1.2T.mac
+
+# Tracking settings
+# /tracking/storeTrajectory 1
+
+# Gun settings - use Tree input
+/action/gun/Type Tree
+/action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/d_work/rootfiles/ypol_slect_rotate_back/ypol_np_Pb208_g070.root
+/action/gun/tree/TreeName tree
+
+# Run simulation
+/action/gun/tree/beamOn 230
+
+# Exit
+exit

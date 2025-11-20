@@ -1,0 +1,2961 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+
+      background: var(--background-color);
+    }
+    :root{--background-color: #f5fffa;--selected-color: #4fe1f4;--edge-color: #548f9e;--edge-incoming-color: #698b69;--edge-outgoing-color: #008acd;--edge-incoming-outgoing-color: black;--cluster-label-bg-color: #e8eaed;--node-bg-color: #f4f5f1;--symbol-default-bg-color: var(--node-bg-color);--symbol-default-border-color: #889f4e;--symbol-default-text-color: #363636;--interface-bg-color: #fff8dc;--interface-border-color: #a69348;--module-bg-color: #ffebcd;--module-border-color: #a67e43;--constructor-bg-color: #ffdab9;--constructor-border-color: #a66e3c;--method-bg-color: #fff8c5;--method-border-color: #d4a72c;--function-bg-color: #bafbd0;--function-border-color: #4ac26b;--struct-bg-color: #ddf4ff;--struct-border-color: #54aeff;--type-icon-color: #8969da;--property-icon-color: #5f9348}.callgraph{--bold-border: 3.2;width:100%;height:100%;outline:none;cursor:default;-webkit-user-select:none;user-select:none}.callgraph>#graph0>polygon:first-of-type{fill:var(--background-color)}.callgraph>#graph0>#faded-group>:where(.node,.cluster){opacity:.2}.callgraph>#graph0>#faded-group>.edge{opacity:.05}.callgraph .edge>path:not(.hover-path){stroke:var(--edge-color);stroke-width:3}.callgraph .edge>polygon{stroke:var(--edge-color);fill:var(--edge-color)}.callgraph .edge>path.hover-path{stroke:transparent;stroke-width:15}.callgraph .edge.impl>path{stroke-dasharray:8,3}.callgraph .edge.impl>polygon{stroke-width:2;fill:none!important}.callgraph .edge:hover{--edge-color: var(--selected-color)}.callgraph .edge.incoming{--edge-color: var(--edge-incoming-color)}.callgraph .edge.outgoing{--edge-color: var(--edge-outgoing-color)}.callgraph .edge.incoming.outgoing{--edge-color: var(--edge-incoming-outgoing-color)}.callgraph .cluster polygon{stroke-width:1.6}.callgraph .cluster .cluster-label{cursor:pointer;fill:var(--cluster-label-bg-color);rx:18px}.callgraph .cluster text{pointer-events:none}.callgraph .cluster.selected{--cluster-label-bg-color: color-mix(in srgb, var(--selected-color) 30%, transparent)}.callgraph .cluster.selected polygon{stroke-width:var(--bold-border);stroke:var(--selected-color)}.callgraph .node>rect{rx:20px;fill:var(--node-bg-color);filter:url(#shadow)}.callgraph .node.selected>rect{stroke:var(--selected-color);stroke-width:var(--bold-border)}.callgraph .node>.title{cursor:pointer}.callgraph .node>.title>text{font-weight:700}.callgraph .cell{--bg-color: var(--symbol-default-bg-color);--border-color: var(--symbol-default-border-color);--border-width: 1.6}.callgraph .cell>rect{rx:10px;fill:var(--bg-color);stroke:var(--border-color);stroke-width:var(--border-width)}.callgraph .cell>text{fill:var(--symbold-default-text-color)}.callgraph .cell:where(.highlight,.selected,:not(:has(>.cell:hover)):hover){--border-width: var(--bold-border)}.callgraph .cell.highlight>rect{stroke:url(#highlightGradient)}.callgraph .cell.selected>rect{filter:drop-shadow(3px 3px 6px var(--border-color))}.callgraph .cell.interface{--bg-color: var(--interface-bg-color);--border-color: var(--interface-border-color)}.callgraph .cell.interface>rect{stroke-dasharray:7,5}.callgraph .cell.module{--bg-color: var(--module-bg-color);--border-color: var(--module-border-color)}.callgraph .cell.constructor{--bg-color: var(--constructor-bg-color);--border-color: var(--constructor-border-color)}.callgraph .cell.function{--bg-color: var(--function-bg-color);--border-color: var(--function-border-color)}.callgraph .cell.method{--bg-color: var(--method-bg-color);--border-color: var(--method-border-color)}.callgraph .cell:where(.class,.struct,.enum){--bg-color: var(--struct-bg-color);--border-color: var(--struct-border-color)}.callgraph .cell:where(.class,.struct,.enum)>rect{rx:unset}.callgraph .cell:where(.class,.struct,.enum)>text{transform:translateY(1.5px)}.callgraph .cell:where(.class,.struct,.enum)>text:first-of-type{fill:var(--type-icon-color)}.callgraph .cell:where(.field,.property)>rect{rx:unset}.callgraph .cell:where(.field,.property)>text:first-of-type{font-style:italic;fill:var(--property-icon-color)}
+
+  </style>
+</head>
+<body>
+  <svg class="callgraph" viewBox="0 0 3078.31005859375 8232">
+    
+<g id="graph0" class="graph" transform="matrix(0.203591618127911 0 0 0.203591618127911 332.6889633257456 405.7686658635991)">
+<polygon fill="white" stroke="none" points="-4,4 -4,-8228 3074.31,-8228 3074.31,4 -4,4"></polygon>
+<g id="clust1" class="cluster">
+
+<polygon fill="none" stroke="black" points="251.38,-8 251.38,-8216 3062.31,-8216 3062.31,-8 251.38,-8"></polygon>
+<rect x="1519.010009765625" y="-8212" width="275.6700439453125" height="35.2001953125" class="cluster-label"></rect>
+<text text-anchor="start" x="1527.01" y="-8189.6" font-family="Arial" font-size="16.00">dpol/smsimulator5.5/d_work/sources</text>
+</g>
+<g id="clust2" class="cluster">
+
+<polygon fill="none" stroke="black" points="1314.88,-2178 1314.88,-8165 2315.36,-8165 2315.36,-2178 1314.88,-2178"></polygon>
+<rect x="1781.77001953125" y="-8161" width="66.699951171875" height="35.2001953125" class="cluster-label"></rect>
+<text text-anchor="start" x="1789.77" y="-8138.6" font-family="Arial" font-size="16.00">include</text>
+</g>
+<g id="clust3" class="cluster">
+
+<polygon fill="none" stroke="black" points="259.38,-16 259.38,-2170 3054.31,-2170 3054.31,-16 259.38,-16"></polygon>
+<rect x="1638.1800537109375" y="-2166" width="37.3299560546875" height="35.199951171875" class="cluster-label"></rect>
+<text text-anchor="start" x="1646.18" y="-2143.6" font-family="Arial" font-size="16.00">src</text>
+</g>
+<!-- 3 -->
+<g id="3" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/EventDisplay.cc">
+
+<rect x="267.3800048828125" y="-839.0999755859375" width="908" height="592.1999816894531"></rect>
+<g id="3_0" class="title">
+<text text-anchor="start" x="611.13" y="-806.7" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;EventDisplay.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="3:15_14" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-787.9000244140625" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="527.08" y="-769.5" font-family="Arial" font-size="16.00">EventDisplay(const char *, const GeometryManager &amp;)</text>
+
+</g>
+<g id="3:23_14" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-752.7000122070312" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="664.69" y="-734.3" font-family="Arial" font-size="16.00">~EventDisplay()</text>
+
+</g>
+<g id="3:27_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-717.5" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="691.6" y="-699.1" font-family="Arial" font-size="16.00">InitEve()</text>
+
+</g>
+<g id="3:35_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-682.2999877929688" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="620.89" y="-663.9" font-family="Arial" font-size="16.00">LoadGeometry(const char *)</text>
+
+</g>
+<g id="3:51_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-647.0999755859375" width="876" height="27.199951171875"></rect>
+<text text-anchor="start" x="666.69" y="-628.7" font-family="Arial" font-size="16.00">SetupCamera()</text>
+
+</g>
+<g id="3:60_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-611.9000244140625" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="649.8" y="-593.5" font-family="Arial" font-size="16.00">ClearCurrentEvent()</text>
+
+</g>
+<g id="3:68_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-576.7000122070312" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="601.33" y="-558.3" font-family="Arial" font-size="16.00">DisplayEvent(const RecoEvent &amp;)</text>
+
+</g>
+<g id="3:127_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-541.5" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="525.73" y="-523.1" font-family="Arial" font-size="16.00">DisplayEvent(EventDataReader &amp;, const RecoEvent &amp;)</text>
+
+</g>
+<g id="3:132_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-506.29998779296875" width="876" height="27.199981689453125"></rect>
+<text text-anchor="start" x="408.36" y="-487.9" font-family="Arial" font-size="16.00">DisplayEventWithTrajectories(EventDataReader &amp;, const RecoEvent &amp;, MagneticField *)</text>
+
+</g>
+<g id="3:152_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-471.1000061035156" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="442.17" y="-452.7" font-family="Arial" font-size="16.00">DrawParticleTrajectories(const std::vector&lt;TBeamSimData&gt;*, MagneticField *)</text>
+
+</g>
+<g id="3:202_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-435.8999938964844" width="876" height="27.199981689453125"></rect>
+<text text-anchor="start" x="287.38" y="-417.5" font-family="Arial" font-size="16.00">DrawTrajectoryLine(const std::vector&lt;double&gt;&amp;, const std::vector&lt;double&gt;&amp;, const std::vector&lt;double&gt;&amp;, const char *, int)</text>
+
+</g>
+<g id="3:239_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-400.70001220703125" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="530.61" y="-382.3" font-family="Arial" font-size="16.00">GetParticleInfo(int, double &amp;, double &amp;, const char *&amp;)</text>
+
+</g>
+<g id="3:302_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-365.5" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="677.81" y="-347.1" font-family="Arial" font-size="16.00">ResetView()</text>
+
+</g>
+<g id="3:312_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-330.29998779296875" width="876" height="27.199981689453125"></rect>
+<text text-anchor="start" x="469.72" y="-311.9" font-family="Arial" font-size="16.00">DrawReconstructionResults(const TargetReconstructionResult &amp;, bool)</text>
+
+</g>
+<g id="3:342_19" data-kind="12" class="cell function">
+<rect x="283.3800048828125" y="-295.1000061035156" width="876" height="27.20001220703125"></rect>
+<text text-anchor="start" x="462.62" y="-276.7" font-family="Arial" font-size="16.00">DrawTrajectory(const std::vector&lt;TrajectoryPoint&gt;&amp;, const char *, int, int)</text>
+
+</g>
+</g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:15_14-3:35_19" class="edge" data-from="3:15_14" data-to="3:35_19">
+
+<path fill="none" stroke="black" d="M283.71,-774.92C129.06,-768.6 3.5,-753.15 3.5,-721.5 3.5,-690.96 120.39,-675.51 267.51,-668.78"></path>
+<polygon fill="black" stroke="black" points="267.44,-674.04 282.2,-668.15 266.99,-663.55 267.44,-674.04"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-774.92C129.06,-768.6 3.5,-753.15 3.5,-721.5 3.5,-690.96 120.39,-675.51 267.51,-668.78" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:302_19-3:51_19" class="edge" data-from="3:302_19" data-to="3:51_19">
+
+<path fill="none" stroke="black" d="M283.71,-361.5C129.06,-378.54 3.5,-415.97 3.5,-492.7 3.5,-566.73 120.39,-604.18 267.51,-622.03"></path>
+<polygon fill="black" stroke="black" points="266.7,-627.22 282.21,-623.73 267.91,-616.79 266.7,-627.22"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-361.5C129.06,-378.54 3.5,-415.97 3.5,-492.7 3.5,-566.73 120.39,-604.18 267.51,-622.03" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:15_14-3:27_19" class="edge" data-from="3:15_14" data-to="3:27_19">
+
+<path fill="none" stroke="black" d="M283.71,-776.96C129.06,-772.78 3.5,-761.74 3.5,-739.1 3.5,-717.26 120.39,-706.21 267.51,-701.71"></path>
+<polygon fill="black" stroke="black" points="267.36,-706.96 282.2,-701.28 267.05,-696.47 267.36,-706.96"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-776.96C129.06,-772.78 3.5,-761.74 3.5,-739.1 3.5,-717.26 120.39,-706.21 267.51,-701.71" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:132_19-3:152_19" class="edge" data-from="3:132_19" data-to="3:152_19">
+
+<path fill="none" stroke="black" d="M283.71,-497.4C129.06,-495.37 3.5,-488.72 3.5,-475.1 3.5,-461.95 120.39,-455.31 267.51,-453.03"></path>
+<polygon fill="black" stroke="black" points="267.27,-458.28 282.2,-452.82 267.12,-447.78 267.27,-458.28"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-497.4C129.06,-495.37 3.5,-488.72 3.5,-475.1 3.5,-461.95 120.39,-455.31 267.51,-453.03" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:15_14-3:51_19" class="edge" data-from="3:15_14" data-to="3:51_19">
+
+<path fill="none" stroke="black" d="M283.71,-772.87C129.06,-764.41 3.5,-744.57 3.5,-703.9 3.5,-664.66 120.39,-644.81 267.51,-635.86"></path>
+<polygon fill="black" stroke="black" points="267.53,-641.12 282.2,-635.01 266.92,-630.64 267.53,-641.12"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-772.87C129.06,-764.41 3.5,-744.57 3.5,-703.9 3.5,-664.66 120.39,-644.81 267.51,-635.86" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:23_14-3:60_19" class="edge" data-from="3:23_14" data-to="3:60_19">
+
+<path fill="none" stroke="black" d="M283.71,-737.67C129.06,-729.21 3.5,-709.37 3.5,-668.7 3.5,-629.46 120.39,-609.61 267.51,-600.66"></path>
+<polygon fill="black" stroke="black" points="267.53,-605.92 282.2,-599.81 266.92,-595.44 267.53,-605.92"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-737.67C129.06,-729.21 3.5,-709.37 3.5,-668.7 3.5,-629.46 120.39,-609.61 267.51,-600.66" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:152_19-3:202_19" class="edge" data-from="3:152_19" data-to="3:202_19">
+
+<path fill="none" stroke="black" d="M283.71,-462.2C129.06,-460.17 3.5,-453.52 3.5,-439.9 3.5,-426.75 120.39,-420.11 267.51,-417.83"></path>
+<polygon fill="black" stroke="black" points="267.27,-423.08 282.2,-417.62 267.12,-412.58 267.27,-423.08"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-462.2C129.06,-460.17 3.5,-453.52 3.5,-439.9 3.5,-426.75 120.39,-420.11 267.51,-417.83" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:127_19-3:68_19" class="edge" data-from="3:127_19" data-to="3:68_19">
+
+<path fill="none" stroke="black" d="M283.71,-523.2C129.06,-525.23 3.5,-531.88 3.5,-545.5 3.5,-558.65 120.39,-565.29 267.51,-567.57"></path>
+<polygon fill="black" stroke="black" points="267.12,-572.82 282.2,-567.78 267.27,-562.32 267.12,-572.82"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-523.2C129.06,-525.23 3.5,-531.88 3.5,-545.5 3.5,-558.65 120.39,-565.29 267.51,-567.57" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:312_19-3:342_19" class="edge" data-from="3:312_19" data-to="3:342_19">
+
+<path fill="none" stroke="black" d="M283.71,-321.4C129.06,-319.37 3.5,-312.72 3.5,-299.1 3.5,-285.95 120.39,-279.31 267.51,-277.03"></path>
+<polygon fill="black" stroke="black" points="267.27,-282.28 282.2,-276.82 267.12,-271.78 267.27,-282.28"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-321.4C129.06,-319.37 3.5,-312.72 3.5,-299.1 3.5,-285.95 120.39,-279.31 267.51,-277.03" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:132_19-3:68_19" class="edge" data-from="3:132_19" data-to="3:68_19">
+
+<path fill="none" stroke="black" d="M283.71,-490.04C129.06,-494.22 3.5,-505.26 3.5,-527.9 3.5,-549.74 120.39,-560.79 267.51,-565.29"></path>
+<polygon fill="black" stroke="black" points="267.05,-570.53 282.2,-565.72 267.36,-560.04 267.05,-570.53"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-490.04C129.06,-494.22 3.5,-505.26 3.5,-527.9 3.5,-549.74 120.39,-560.79 267.51,-565.29" class="hover-path"></path></g>
+<!-- 3&#45;&gt;3 -->
+<g id="3:68_19-3:60_19" class="edge" data-from="3:68_19" data-to="3:60_19">
+
+<path fill="none" stroke="black" d="M283.71,-558.4C129.06,-560.43 3.5,-567.08 3.5,-580.7 3.5,-593.85 120.39,-600.49 267.51,-602.77"></path>
+<polygon fill="black" stroke="black" points="267.12,-608.02 282.2,-602.98 267.27,-597.52 267.12,-608.02"></polygon>
+<text text-anchor="middle" x="1.75" y="-538.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M283.71,-558.4C129.06,-560.43 3.5,-567.08 3.5,-580.7 3.5,-593.85 120.39,-600.49 267.51,-602.77" class="hover-path"></path></g>
+<!-- 4 -->
+<g id="4" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/include/EventDisplay.hh">
+
+<rect x="1353.1199951171875" y="-3858.300048828125" width="924.0098876953125" height="854.60009765625"></rect>
+<g id="4_1" class="title">
+<text text-anchor="start" x="1703.97" y="-3825.9" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;EventDisplay.hh &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="4:38_6" data-kind="5" class="cell class">
+<rect x="1369.1199951171875" y="-3807.10009765625" width="892.0098876953125" height="782.400146484375"></rect>
+<text text-anchor="start" x="1758.21" y="-3781.7" font-family="Arial" font-weight="bold" font-size="16.00">C</text>
+<text text-anchor="start" x="1769.77" y="-3781.7" font-family="Arial" font-size="16.00"> &#160;EventDisplay</text>
+<g id="4:41_4" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3763.89990234375" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1620.82" y="-3745.5" font-family="Arial" font-size="16.00">EventDisplay(const char *, const GeometryManager &amp;)</text>
+
+</g>
+<g id="4:43_4" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3728.699951171875" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1758.44" y="-3710.3" font-family="Arial" font-size="16.00">~EventDisplay()</text>
+
+</g>
+<g id="4:46_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3693.5" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1695.07" y="-3675.1" font-family="Arial" font-size="16.00">DisplayEvent(const RecoEvent &amp;)</text>
+
+</g>
+<g id="4:49_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3658.300048828125" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1619.47" y="-3639.9" font-family="Arial" font-size="16.00">DisplayEvent(EventDataReader &amp;, const RecoEvent &amp;)</text>
+
+</g>
+<g id="4:64_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3623.10009765625" width="876.0098876953125" height="27.2001953125"></rect>
+<text text-anchor="start" x="1743.54" y="-3604.7" font-family="Arial" font-size="16.00">ClearCurrentEvent()</text>
+
+</g>
+<g id="4:67_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3587.89990234375" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1631.49" y="-3569.5" font-family="Arial" font-size="16.00">SetComponentVisibility(const std::string &amp;, bool, int)</text>
+
+</g>
+<g id="4:68_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3552.699951171875" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1775.11" y="-3534.3" font-family="Arial" font-size="16.00">HideYoke()</text>
+
+</g>
+<g id="4:69_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3517.5" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1771.55" y="-3499.1" font-family="Arial" font-size="16.00">ShowYoke()</text>
+
+</g>
+<g id="4:70_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3482.300048828125" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1771.56" y="-3463.9" font-family="Arial" font-size="16.00">ResetView()</text>
+
+</g>
+<g id="4:71_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3447.10009765625" width="876.0098876953125" height="27.2001953125"></rect>
+<text text-anchor="start" x="1719.53" y="-3428.7" font-family="Arial" font-size="16.00">PrintComponentPositions()</text>
+
+</g>
+<g id="4:74_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3411.89990234375" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1782.23" y="-3393.5" font-family="Arial" font-size="16.00">Redraw()</text>
+
+</g>
+<g id="4:81_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3376.699951171875" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1785.34" y="-3358.3" font-family="Arial" font-size="16.00">InitEve()</text>
+
+</g>
+<g id="4:82_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3341.5" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1714.63" y="-3323.1" font-family="Arial" font-size="16.00">LoadGeometry(const char *)</text>
+
+</g>
+<g id="4:83_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3306.300048828125" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1760.44" y="-3287.9" font-family="Arial" font-size="16.00">SetupCamera()</text>
+
+</g>
+<g id="4:52_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3271.10009765625" width="876.0098876953125" height="27.2001953125"></rect>
+<text text-anchor="start" x="1502.1" y="-3252.7" font-family="Arial" font-size="16.00">DisplayEventWithTrajectories(EventDataReader &amp;, const RecoEvent &amp;, MagneticField *)</text>
+
+</g>
+<g id="4:56_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3235.89990234375" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1563.46" y="-3217.5" font-family="Arial" font-size="16.00">DrawReconstructionResults(const TargetReconstructionResult &amp;, bool)</text>
+
+</g>
+<g id="4:60_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3200.699951171875" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1534.58" y="-3182.3" font-family="Arial" font-size="16.00">DrawTrajectory(const std::vector&lt;struct TrajectoryPoint&gt;&amp;, const char *, int, int)</text>
+
+</g>
+<g id="4:77_21" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3165.5" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1716.42" y="-3147.1" font-family="Arial" font-size="16.00">GetCurrentEventElements()</text>
+
+</g>
+<g id="4:86_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3130.300048828125" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1535.92" y="-3111.9" font-family="Arial" font-size="16.00">DrawParticleTrajectories(const std::vector&lt;TBeamSimData&gt;*, MagneticField *)</text>
+
+</g>
+<g id="4:87_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3095.10009765625" width="876.0098876953125" height="27.2001953125"></rect>
+<text text-anchor="start" x="1381.12" y="-3076.7" font-family="Arial" font-size="16.00">DrawTrajectoryLine(const std::vector&lt;double&gt;&amp;, const std::vector&lt;double&gt;&amp;, const std::vector&lt;double&gt;&amp;, const char *, int)</text>
+
+</g>
+<g id="4:94_9" data-kind="6" class="cell method">
+<rect x="1377.1199951171875" y="-3059.89990234375" width="876.0098876953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="1624.35" y="-3041.5" font-family="Arial" font-size="16.00">GetParticleInfo(int, double &amp;, double &amp;, const char *&amp;)</text>
+
+</g>
+
+</g>
+</g>
+<!-- 3&#45;&gt;4 -->
+<g id="3:68_19-4:74_9" class="edge" data-from="3:68_19" data-to="4:74_9">
+
+<path fill="none" stroke="black" d="M1160.38,-563.1C1181.44,-563.1 1248.03,-910.34 1250.88,-931.2 1375.34,-1840.41 1231.64,-2081.1 1314.88,-2995 1330.82,-3169.91 1203.2,-3384.42 1360.04,-3397.66"></path>
+<polygon fill="black" stroke="black" points="1359.41,-3402.88 1374.61,-3398.24 1359.83,-3392.39 1359.41,-3402.88"></polygon>
+<text text-anchor="middle" x="1249.13" y="-935.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-563.1C1181.44,-563.1 1248.03,-910.34 1250.88,-931.2 1375.34,-1840.41 1231.64,-2081.1 1314.88,-2995 1330.82,-3169.91 1203.2,-3384.42 1360.04,-3397.66" class="hover-path"></path></g>
+<!-- 3&#45;&gt;4 -->
+<g id="3:132_19-4:74_9" class="edge" data-from="3:132_19" data-to="4:74_9">
+
+<path fill="none" stroke="black" d="M1160.38,-492.7C1206.22,-492.7 1245.13,-849.72 1250.88,-895.2 1368.05,-1821.5 1230.43,-2065.15 1314.88,-2995 1330.77,-3169.91 1203.2,-3384.42 1360.04,-3397.66"></path>
+<polygon fill="black" stroke="black" points="1359.41,-3402.88 1374.61,-3398.24 1359.83,-3392.39 1359.41,-3402.88"></polygon>
+<text text-anchor="middle" x="1249.13" y="-899.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-492.7C1206.22,-492.7 1245.13,-849.72 1250.88,-895.2 1368.05,-1821.5 1230.43,-2065.15 1314.88,-2995 1330.77,-3169.91 1203.2,-3384.42 1360.04,-3397.66" class="hover-path"></path></g>
+<!-- 3&#45;&gt;4 -->
+<g id="3:312_19-4:74_9" class="edge" data-from="3:312_19" data-to="4:74_9">
+
+<path fill="none" stroke="black" d="M1160.38,-316.7C1250.11,-316.7 1239.52,-621.2 1250.88,-710.2 1379.58,-1717.88 1224.24,-1983.19 1314.88,-2995 1330.56,-3169.93 1203.19,-3384.42 1360.04,-3397.66"></path>
+<polygon fill="black" stroke="black" points="1359.41,-3402.88 1374.61,-3398.24 1359.83,-3392.39 1359.41,-3402.88"></polygon>
+<text text-anchor="middle" x="1249.13" y="-714.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-316.7C1250.11,-316.7 1239.52,-621.2 1250.88,-710.2 1379.58,-1717.88 1224.24,-1983.19 1314.88,-2995 1330.56,-3169.93 1203.19,-3384.42 1360.04,-3397.66" class="hover-path"></path></g>
+<!-- 3&#45;&gt;4 -->
+<g id="3:302_19-4:74_9" class="edge" data-from="3:302_19" data-to="4:74_9">
+
+<path fill="none" stroke="black" d="M1160.38,-351.9C1183.4,-351.9 1248.03,-733.36 1250.88,-756.2 1374.39,-1743.94 1225.78,-2003.57 1314.88,-2995 1330.61,-3169.93 1203.19,-3384.42 1360.04,-3397.66"></path>
+<polygon fill="black" stroke="black" points="1359.41,-3402.88 1374.61,-3398.24 1359.83,-3392.39 1359.41,-3402.88"></polygon>
+<text text-anchor="middle" x="1249.13" y="-760.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-351.9C1183.4,-351.9 1248.03,-733.36 1250.88,-756.2 1374.39,-1743.94 1225.78,-2003.57 1314.88,-2995 1330.61,-3169.93 1203.19,-3384.42 1360.04,-3397.66" class="hover-path"></path></g>
+<!-- 12 -->
+<g id="12" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/ParticleTrajectory.cc">
+
+<rect x="1330.8800048828125" y="-650.9000244140625" width="968.4801025390625" height="345.8000183105469"></rect>
+<g id="12_2" class="title">
+<text text-anchor="start" x="1689.32" y="-618.5" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ParticleTrajectory.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="12:18_20" data-kind="12" class="cell function">
+<rect x="1346.8800048828125" y="-599.7000122070312" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1692.42" y="-581.3" font-family="Arial" font-size="16.00">ParticleTrajectory(MagneticField *)</text>
+
+</g>
+<g id="12:27_20" data-kind="12" class="cell function">
+<rect x="1346.8800048828125" y="-564.5" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1742.88" y="-546.1" font-family="Arial" font-size="16.00">~ParticleTrajectory()</text>
+
+</g>
+<g id="12:33_20" data-kind="12" class="cell function">
+<rect x="1346.8800048828125" y="-529.2999877929688" width="936.4801025390625" height="27.199981689453125"></rect>
+<text text-anchor="start" x="1513.2" y="-510.9" font-family="Arial" font-size="16.00">CalculateTrajectory(const TVector3 &amp;, const TLorentzVector &amp;, double, double) const</text>
+
+</g>
+<g id="12:106_25" data-kind="12" class="cell function">
+<rect x="1346.8800048828125" y="-494.1000061035156" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1665.28" y="-475.7" font-family="Arial" font-size="16.00">IsValidStep(const TrajectoryPoint &amp;) const</text>
+
+</g>
+<g id="12:120_29" data-kind="12" class="cell function">
+<rect x="1346.8800048828125" y="-458.8999938964844" width="936.4801025390625" height="27.199981689453125"></rect>
+<text text-anchor="start" x="1579.02" y="-440.5" font-family="Arial" font-size="16.00">CalculateForce(const TVector3 &amp;, const TVector3 &amp;, double) const</text>
+
+</g>
+<g id="12:153_20" data-kind="12" class="cell function">
+<rect x="1346.8800048828125" y="-423.70001220703125" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1561.63" y="-405.3" font-family="Arial" font-size="16.00">RungeKuttaStep(const TrajectoryPoint &amp;, double, double, double) const</text>
+
+</g>
+<g id="12:199_25" data-kind="12" class="cell function">
+<rect x="1346.8800048828125" y="-388.5" width="936.4801025390625" height="27.20001220703125"></rect>
+<text text-anchor="start" x="1350.88" y="-370.1" font-family="Arial" font-size="16.00">GetTrajectoryPoints(const std::vector&lt;TrajectoryPoint&gt;&amp;, std::vector&lt;double&gt;&amp;, std::vector&lt;double&gt;&amp;, std::vector&lt;double&gt;&amp;) const</text>
+
+</g>
+<g id="12:218_25" data-kind="12" class="cell function">
+<rect x="1346.8800048828125" y="-353.29998779296875" width="936.4801025390625" height="27.199981689453125"></rect>
+<text text-anchor="start" x="1596.37" y="-334.9" font-family="Arial" font-size="16.00">PrintTrajectoryInfo(const std::vector&lt;TrajectoryPoint&gt;&amp;) const</text>
+
+</g>
+</g>
+<!-- 3&#45;&gt;12 -->
+<g id="3:152_19-12:218_25" class="edge" data-from="3:152_19" data-to="12:218_25">
+
+<path fill="none" stroke="black" d="M1160.38,-457.5C1206.68,-457.5 1208.32,-425.05 1247.38,-400.2 1285.65,-375.85 1293.08,-347.34 1329.64,-340.99"></path>
+<polygon fill="black" stroke="black" points="1329.84,-346.25 1344.38,-339.82 1329.01,-335.78 1329.84,-346.25"></polygon>
+<text text-anchor="middle" x="1249.13" y="-404.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-457.5C1206.68,-457.5 1208.32,-425.05 1247.38,-400.2 1285.65,-375.85 1293.08,-347.34 1329.64,-340.99" class="hover-path"></path></g>
+<!-- 3&#45;&gt;12 -->
+<g id="3:152_19-12:33_20" class="edge" data-from="3:152_19" data-to="12:33_20">
+
+<path fill="none" stroke="black" d="M1160.38,-457.5C1241.05,-457.5 1257.47,-508.23 1329.6,-514.96"></path>
+<polygon fill="black" stroke="black" points="1329.15,-520.2 1344.37,-515.63 1329.63,-509.71 1329.15,-520.2"></polygon>
+<text text-anchor="middle" x="1249.13" y="-489.05" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-457.5C1241.05,-457.5 1257.47,-508.23 1329.6,-514.96" class="hover-path"></path></g>
+<!-- 3&#45;&gt;12 -->
+<g id="3:152_19-12:199_25" class="edge" data-from="3:152_19" data-to="12:199_25">
+
+<path fill="none" stroke="black" d="M1160.38,-457.5C1244.82,-457.5 1254.64,-385.2 1329.45,-375.89"></path>
+<polygon fill="black" stroke="black" points="1329.72,-381.13 1344.37,-374.99 1329.09,-370.65 1329.72,-381.13"></polygon>
+<text text-anchor="middle" x="1249.13" y="-425.35" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-457.5C1244.82,-457.5 1254.64,-385.2 1329.45,-375.89" class="hover-path"></path></g>
+<!-- 15 -->
+<g id="15" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/include/ParticleTrajectory.hh">
+
+<rect x="1322.8800048828125" y="-2986.10009765625" width="984.4801025390625" height="800.2001953125"></rect>
+<g id="15_3" class="title">
+<text text-anchor="start" x="1688.42" y="-2953.7" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;ParticleTrajectory.hh &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="15:15_6" data-kind="5" class="cell class">
+<rect x="1338.8800048828125" y="-2934.89990234375" width="952.4801025390625" height="728"></rect>
+<text text-anchor="start" x="1742.66" y="-2909.5" font-family="Arial" font-weight="bold" font-size="16.00">C</text>
+<text text-anchor="start" x="1754.22" y="-2909.5" font-family="Arial" font-size="16.00"> &#160;ParticleTrajectory</text>
+<g id="15:17_11" data-kind="23" class="cell struct">
+<rect x="1346.8800048828125" y="-2891.699951171875" width="936.4801025390625" height="113.599853515625"></rect>
+<text text-anchor="start" x="1751.54" y="-2866.3" font-family="Arial" font-weight="bold" font-size="16.00">S</text>
+<text text-anchor="start" x="1762.22" y="-2866.3" font-family="Arial" font-size="16.00"> &#160;TrajectoryPoint</text>
+<g id="15:23_8" data-kind="6" class="cell method">
+<rect x="1354.8800048828125" y="-2848.5" width="920.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1756" y="-2830.1" font-family="Arial" font-size="16.00">TrajectoryPoint()</text>
+
+</g>
+<g id="15:24_8" data-kind="6" class="cell method">
+<rect x="1354.8800048828125" y="-2813.300048828125" width="920.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1534.56" y="-2794.9" font-family="Arial" font-size="16.00">TrajectoryPoint(const TVector3 &amp;, const TVector3 &amp;, double, const TVector3 &amp;)</text>
+
+</g>
+
+</g>
+<g id="15:40_4" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2770.10009765625" width="936.4801025390625" height="27.2001953125"></rect>
+<text text-anchor="start" x="1692.42" y="-2751.7" font-family="Arial" font-size="16.00">ParticleTrajectory(MagneticField *)</text>
+
+</g>
+<g id="15:41_4" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2734.89990234375" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1742.88" y="-2716.5" font-family="Arial" font-size="16.00">~ParticleTrajectory()</text>
+
+</g>
+<g id="15:44_9" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2699.699951171875" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1741.74" y="-2681.3" font-family="Arial" font-size="16.00">SetStepSize(double)</text>
+
+</g>
+<g id="15:45_9" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2664.5" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1740.87" y="-2646.1" font-family="Arial" font-size="16.00">SetMaxTime(double)</text>
+
+</g>
+<g id="15:46_9" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2629.300048828125" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1727.53" y="-2610.9" font-family="Arial" font-size="16.00">SetMaxDistance(double)</text>
+
+</g>
+<g id="15:47_9" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2594.10009765625" width="936.4801025390625" height="27.2001953125"></rect>
+<text text-anchor="start" x="1720.86" y="-2575.7" font-family="Arial" font-size="16.00">SetMinMomentum(double)</text>
+
+</g>
+<g id="15:49_11" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2558.89990234375" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1743.54" y="-2540.5" font-family="Arial" font-size="16.00">GetStepSize() const</text>
+
+</g>
+<g id="15:50_11" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2523.699951171875" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1742.67" y="-2505.3" font-family="Arial" font-size="16.00">GetMaxTime() const</text>
+
+</g>
+<g id="15:51_11" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2488.5" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1729.32" y="-2470.1" font-family="Arial" font-size="16.00">GetMaxDistance() const</text>
+
+</g>
+<g id="15:52_11" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2453.300048828125" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1722.65" y="-2434.9" font-family="Arial" font-size="16.00">GetMinMomentum() const</text>
+
+</g>
+<g id="15:55_33" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2418.10009765625" width="936.4801025390625" height="27.2001953125"></rect>
+<text text-anchor="start" x="1513.2" y="-2399.7" font-family="Arial" font-size="16.00">CalculateTrajectory(const TVector3 &amp;, const TLorentzVector &amp;, double, double) const</text>
+
+</g>
+<g id="15:63_9" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2382.89990234375" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1665.28" y="-2364.5" font-family="Arial" font-size="16.00">IsValidStep(const TrajectoryPoint &amp;) const</text>
+
+</g>
+<g id="15:64_13" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2347.699951171875" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1579.02" y="-2329.3" font-family="Arial" font-size="16.00">CalculateForce(const TVector3 &amp;, const TVector3 &amp;, double) const</text>
+
+</g>
+<g id="15:68_20" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2312.5" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1561.63" y="-2294.1" font-family="Arial" font-size="16.00">RungeKuttaStep(const TrajectoryPoint &amp;, double, double, double) const</text>
+
+</g>
+<g id="15:72_9" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2277.300048828125" width="936.4801025390625" height="27.199951171875"></rect>
+<text text-anchor="start" x="1350.88" y="-2258.9" font-family="Arial" font-size="16.00">GetTrajectoryPoints(const std::vector&lt;TrajectoryPoint&gt;&amp;, std::vector&lt;double&gt;&amp;, std::vector&lt;double&gt;&amp;, std::vector&lt;double&gt;&amp;) const</text>
+
+</g>
+<g id="15:77_9" data-kind="6" class="cell method">
+<rect x="1346.8800048828125" y="-2242.10009765625" width="936.4801025390625" height="27.2001953125"></rect>
+<text text-anchor="start" x="1596.37" y="-2223.7" font-family="Arial" font-size="16.00">PrintTrajectoryInfo(const std::vector&lt;TrajectoryPoint&gt;&amp;) const</text>
+
+</g>
+
+</g>
+</g>
+<!-- 3&#45;&gt;15 -->
+<g id="3:152_19-15:44_9" class="edge" data-from="3:152_19" data-to="15:44_9">
+
+<path fill="none" stroke="black" d="M1160.38,-457.5C1205.05,-457.5 1244.75,-804.95 1250.88,-849.2 1331.78,-1433.11 1282.85,-1585.38 1314.88,-2174 1320.76,-2281.95 1240.85,-2645.64 1329.77,-2682.99"></path>
+<polygon fill="black" stroke="black" points="1328.68,-2688.13 1344.4,-2685.81 1330.66,-2677.82 1328.68,-2688.13"></polygon>
+<text text-anchor="middle" x="1249.13" y="-853.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-457.5C1205.05,-457.5 1244.75,-804.95 1250.88,-849.2 1331.78,-1433.11 1282.85,-1585.38 1314.88,-2174 1320.76,-2281.95 1240.85,-2645.64 1329.77,-2682.99" class="hover-path"></path></g>
+<!-- 3&#45;&gt;15 -->
+<g id="3:152_19-15:47_9" class="edge" data-from="3:152_19" data-to="15:47_9">
+
+<path fill="none" stroke="black" d="M1160.38,-457.5C1222.91,-457.5 1228.32,-506.89 1250.88,-565.2 1315.46,-732.04 1304.53,-1995.4 1314.88,-2174 1325.04,-2349.06 1174.87,-2566.01 1329.42,-2579.81"></path>
+<polygon fill="black" stroke="black" points="1329.16,-2585.05 1344.37,-2580.44 1329.61,-2574.56 1329.16,-2585.05"></polygon>
+<text text-anchor="middle" x="1249.13" y="-569.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-457.5C1222.91,-457.5 1228.32,-506.89 1250.88,-565.2 1315.46,-732.04 1304.53,-1995.4 1314.88,-2174 1325.04,-2349.06 1174.87,-2566.01 1329.42,-2579.81" class="hover-path"></path></g>
+<!-- 3&#45;&gt;15 -->
+<g id="3:152_19-15:46_9" class="edge" data-from="3:152_19" data-to="15:46_9">
+
+<path fill="none" stroke="black" d="M1160.38,-457.5C1254.2,-457.5 1228.36,-557.13 1250.88,-648.2 1332.38,-977.63 1295.89,-1835.17 1314.88,-2174 1325.58,-2364.73 1159.29,-2601.37 1329.54,-2615.08"></path>
+<polygon fill="black" stroke="black" points="1329.18,-2620.32 1344.37,-2615.64 1329.58,-2609.82 1329.18,-2620.32"></polygon>
+<text text-anchor="middle" x="1249.13" y="-652.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-457.5C1254.2,-457.5 1228.36,-557.13 1250.88,-648.2 1332.38,-977.63 1295.89,-1835.17 1314.88,-2174 1325.58,-2364.73 1159.29,-2601.37 1329.54,-2615.08" class="hover-path"></path></g>
+<!-- 3&#45;&gt;15 -->
+<g id="3:152_19-15:45_9" class="edge" data-from="3:152_19" data-to="15:45_9">
+
+<path fill="none" stroke="black" d="M1160.38,-457.5C1240.44,-457.5 1238.89,-727.05 1250.88,-806.2 1342.04,-1407.91 1280.92,-1566.37 1314.88,-2174 1320.48,-2274.13 1248.45,-2610.43 1329.84,-2647.56"></path>
+<polygon fill="black" stroke="black" points="1328.65,-2652.68 1344.4,-2650.59 1330.79,-2642.4 1328.65,-2652.68"></polygon>
+<text text-anchor="middle" x="1249.13" y="-810.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-457.5C1240.44,-457.5 1238.89,-727.05 1250.88,-806.2 1342.04,-1407.91 1280.92,-1566.37 1314.88,-2174 1320.48,-2274.13 1248.45,-2610.43 1329.84,-2647.56" class="hover-path"></path></g>
+<!-- 1 -->
+<g id="1" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/include/EventDataReader.hh">
+
+<rect x="1665.06005859375" y="-5311.5" width="300.1199951171875" height="573"></rect>
+<g id="1_4" class="title">
+<text text-anchor="start" x="1687.06" y="-5279.1" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;EventDataReader.hh &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="1:13_6" data-kind="5" class="cell class">
+<rect x="1681.06005859375" y="-5260.2998046875" width="268.1199951171875" height="500.7998046875"></rect>
+<text text-anchor="start" x="1741.31" y="-5234.9" font-family="Arial" font-weight="bold" font-size="16.00">C</text>
+<text text-anchor="start" x="1752.86" y="-5234.9" font-family="Arial" font-size="16.00"> &#160;EventDataReader</text>
+<g id="1:15_4" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-5217.10009765625" width="252.1199951171875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1703.96" y="-5198.7" font-family="Arial" font-size="16.00">EventDataReader(const char *)</text>
+
+</g>
+<g id="1:16_4" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-5181.89990234375" width="252.1199951171875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1741.53" y="-5163.5" font-family="Arial" font-size="16.00">~EventDataReader()</text>
+
+</g>
+<g id="1:18_9" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-5146.7001953125" width="252.1199951171875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1762.66" y="-5128.3" font-family="Arial" font-size="16.00">IsOpen() const</text>
+
+</g>
+<g id="1:20_9" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-5111.5" width="252.1199951171875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1772.89" y="-5093.1" font-family="Arial" font-size="16.00">NextEvent()</text>
+
+</g>
+<g id="1:21_9" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-5076.2998046875" width="252.1199951171875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1772.89" y="-5057.9" font-family="Arial" font-size="16.00">PrevEvent()</text>
+
+</g>
+<g id="1:22_9" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-5041.10009765625" width="252.1199951171875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1735.96" y="-5022.7" font-family="Arial" font-size="16.00">GoToEvent(Long64_t)</text>
+
+</g>
+<g id="1:24_18" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-5005.89990234375" width="252.1199951171875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1761.78" y="-4987.5" font-family="Arial" font-size="16.00">GetHits() const</text>
+
+</g>
+<g id="1:31_13" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-4970.7001953125" width="252.1199951171875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1699.97" y="-4952.3" font-family="Arial" font-size="16.00">GetCurrentEventNumber() const</text>
+
+</g>
+<g id="1:32_13" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-4935.5" width="252.1199951171875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1733.31" y="-4917.1" font-family="Arial" font-size="16.00">GetTotalEvents() const</text>
+
+</g>
+<g id="1:33_16" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-4900.2998046875" width="252.1199951171875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1746.21" y="-4881.9" font-family="Arial" font-size="16.00">GetFilePath() const</text>
+
+</g>
+<g id="1:27_37" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-4865.10009765625" width="252.1199951171875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1737.76" y="-4846.7" font-family="Arial" font-size="16.00">GetBeamData() const</text>
+
+</g>
+<g id="1:28_8" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-4829.89990234375" width="252.1199951171875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1706.63" y="-4811.5" font-family="Arial" font-size="16.00">GetBeamParticleCount() const</text>
+
+</g>
+<g id="1:29_24" data-kind="6" class="cell method">
+<rect x="1689.06005859375" y="-4794.7001953125" width="252.1199951171875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1719.53" y="-4776.3" font-family="Arial" font-size="16.00">GetBeamParticle(int) const</text>
+
+</g>
+
+</g>
+</g>
+<!-- 3&#45;&gt;1 -->
+<g id="3:132_19-1:27_37" class="edge" data-from="3:132_19" data-to="1:27_37">
+
+<path fill="none" stroke="black" d="M1160.38,-492.7C1278.59,-492.7 1234.42,-1435.51 1247.38,-1553 1248.63,-1564.24 1249.99,-1566.93 1250.88,-1578.2 1257.81,-1665.47 1262.82,-4658.63 1314.88,-4729 1415.46,-4864.95 1507.57,-4852.46 1671.93,-4851.55"></path>
+<polygon fill="black" stroke="black" points="1671.57,-4856.8 1686.55,-4851.5 1671.54,-4846.3 1671.57,-4856.8"></polygon>
+<text text-anchor="middle" x="1249.13" y="-1582.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1160.38,-492.7C1278.59,-492.7 1234.42,-1435.51 1247.38,-1553 1248.63,-1564.24 1249.99,-1566.93 1250.88,-1578.2 1257.81,-1665.47 1262.82,-4658.63 1314.88,-4729 1415.46,-4864.95 1507.57,-4852.46 1671.93,-4851.55" class="hover-path"></path></g>
+<!-- 12&#45;&gt;12 -->
+<g id="12:33_20-12:106_25" class="edge" data-from="12:33_20" data-to="12:106_25">
+
+<path fill="none" stroke="black" d="M1346.89,-520.4C1181.83,-518.36 1047.89,-511.71 1047.89,-498.1 1047.89,-484.94 1173.08,-478.29 1330.56,-476.02"></path>
+<polygon fill="black" stroke="black" points="1330.45,-481.27 1345.38,-475.82 1330.31,-470.77 1330.45,-481.27"></polygon>
+<text text-anchor="middle" x="1046.14" y="-473.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1346.89,-520.4C1181.83,-518.36 1047.89,-511.71 1047.89,-498.1 1047.89,-484.94 1173.08,-478.29 1330.56,-476.02" class="hover-path"></path></g>
+<!-- 12&#45;&gt;12 -->
+<g id="12:153_20-12:120_29" class="edge" data-from="12:153_20" data-to="12:120_29">
+
+<path fill="none" stroke="black" d="M1346.89,-405.4C1181.83,-407.44 1047.89,-414.09 1047.89,-427.7 1047.89,-440.86 1173.08,-447.51 1330.56,-449.78"></path>
+<polygon fill="black" stroke="black" points="1330.31,-455.03 1345.38,-449.98 1330.45,-444.53 1330.31,-455.03"></polygon>
+<text text-anchor="middle" x="1046.14" y="-473.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1346.89,-405.4C1181.83,-407.44 1047.89,-414.09 1047.89,-427.7 1047.89,-440.86 1173.08,-447.51 1330.56,-449.78" class="hover-path"></path></g>
+<!-- 12&#45;&gt;12 -->
+<g id="12:33_20-12:153_20" class="edge" data-from="12:33_20" data-to="12:153_20">
+
+<path fill="none" stroke="black" d="M1346.89,-516.3C1181.83,-509.97 1047.89,-494.52 1047.89,-462.9 1047.89,-432.33 1173.08,-416.88 1330.56,-410.16"></path>
+<polygon fill="black" stroke="black" points="1330.61,-415.41 1345.38,-409.56 1330.18,-404.92 1330.61,-415.41"></polygon>
+<text text-anchor="middle" x="1046.14" y="-473.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1346.89,-516.3C1181.83,-509.97 1047.89,-494.52 1047.89,-462.9 1047.89,-432.33 1173.08,-416.88 1330.56,-410.16" class="hover-path"></path></g>
+<!-- 11 -->
+<g id="11" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/MagneticField.cc">
+
+<rect x="2454.860107421875" y="-862.2999877929688" width="591.449951171875" height="838.5999870300293"></rect>
+<g id="11_5" class="title">
+<text text-anchor="start" x="2637.22" y="-829.9" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;MagneticField.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="11:12_15" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-811.0999755859375" width="559.449951171875" height="27.199951171875"></rect>
+<text text-anchor="start" x="2695.46" y="-792.7" font-family="Arial" font-size="16.00">MagneticField()</text>
+
+</g>
+<g id="11:21_15" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-775.9000244140625" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2631.88" y="-757.5" font-family="Arial" font-size="16.00">MagneticField(const std::string &amp;)</text>
+
+</g>
+<g id="11:31_15" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-740.7000122070312" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2690.79" y="-722.3" font-family="Arial" font-size="16.00">~MagneticField()</text>
+
+</g>
+<g id="11:38_20" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-705.5" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2630.98" y="-687.1" font-family="Arial" font-size="16.00">LoadFieldMap(const std::string &amp;)</text>
+
+</g>
+<g id="11:125_20" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-670.2999877929688" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2658.97" y="-651.9" font-family="Arial" font-size="16.00">SetRotationAngle(double)</text>
+
+</g>
+<g id="11:135_24" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-635.0999755859375" width="559.449951171875" height="27.199951171875"></rect>
+<text text-anchor="start" x="2579.85" y="-616.7" font-family="Arial" font-size="16.00">RotateToMagnetFrame(const TVector3 &amp;) const</text>
+
+</g>
+<g id="11:146_24" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-599.9000244140625" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2593.19" y="-581.5" font-family="Arial" font-size="16.00">RotateToLabFrame(const TVector3 &amp;) const</text>
+
+</g>
+<g id="11:157_24" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-564.7000122070312" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2612.72" y="-546.3" font-family="Arial" font-size="16.00">GetField(double, double, double) const</text>
+
+</g>
+<g id="11:170_24" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-529.5" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2632.32" y="-511.1" font-family="Arial" font-size="16.00">GetField(const TVector3 &amp;) const</text>
+
+</g>
+<g id="11:175_24" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-494.29998779296875" width="559.449951171875" height="27.199981689453125"></rect>
+<text text-anchor="start" x="2596.72" y="-475.9" font-family="Arial" font-size="16.00">GetFieldRaw(double, double, double) const</text>
+
+</g>
+<g id="11:181_24" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-459.1000061035156" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2616.32" y="-440.7" font-family="Arial" font-size="16.00">GetFieldRaw(const TVector3 &amp;) const</text>
+
+</g>
+<g id="11:186_24" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-423.8999938964844" width="559.449951171875" height="27.199981689453125"></rect>
+<text text-anchor="start" x="2560.72" y="-405.5" font-family="Arial" font-size="16.00">GetFieldWithSymmetry(double, double, double) const</text>
+
+</g>
+<g id="11:226_22" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-388.70001220703125" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2474.86" y="-370.3" font-family="Arial" font-size="16.00">InterpolateTrilinear(const std::vector&lt;double&gt;&amp;, double, double, double) const</text>
+
+</g>
+<g id="11:275_19" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-353.5" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2657.21" y="-335.1" font-family="Arial" font-size="16.00">GetIndex(int, int, int) const</text>
+
+</g>
+<g id="11:283_20" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-318.29998779296875" width="559.449951171875" height="27.199981689453125"></rect>
+<text text-anchor="start" x="2646.1" y="-299.9" font-family="Arial" font-size="16.00">IsValidIndex(int, int, int) const</text>
+
+</g>
+<g id="11:290_20" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-283.1000061035156" width="559.449951171875" height="27.20001220703125"></rect>
+<text text-anchor="start" x="2600.75" y="-264.7" font-family="Arial" font-size="16.00">GetGridIndices(int, int &amp;, int &amp;, int &amp;) const</text>
+
+</g>
+<g id="11:298_20" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-247.89999389648438" width="559.449951171875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="2606.49" y="-229.5" font-family="Arial" font-size="16.00">IsInRange(double, double, double) const</text>
+
+</g>
+<g id="11:305_20" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-212.6999969482422" width="559.449951171875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="2626.09" y="-194.3" font-family="Arial" font-size="16.00">IsInRange(const TVector3 &amp;) const</text>
+
+</g>
+<g id="11:310_24" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-177.5" width="559.449951171875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="2633.21" y="-159.1" font-family="Arial" font-size="16.00">GetGridPosition(int, int, int) const</text>
+
+</g>
+<g id="11:318_20" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-142.3000030517578" width="559.449951171875" height="27.20000457763672"></rect>
+<text text-anchor="start" x="2528.74" y="-123.9" font-family="Arial" font-size="16.00">SaveAsROOTFile(const std::string &amp;, const std::string &amp;) const</text>
+
+</g>
+<g id="11:357_20" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-107.0999984741211" width="559.449951171875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="2541.19" y="-88.7" font-family="Arial" font-size="16.00">LoadFromROOTFile(const std::string &amp;, const std::string &amp;)</text>
+
+</g>
+<g id="11:406_20" data-kind="12" class="cell function">
+<rect x="2470.860107421875" y="-71.9000015258789" width="559.449951171875" height="27.200000762939453"></rect>
+<text text-anchor="start" x="2694.12" y="-53.5" font-family="Arial" font-size="16.00">PrintInfo() const</text>
+
+</g>
+</g>
+<!-- 12&#45;&gt;11 -->
+<g id="12:33_20-11:170_24" class="edge" data-from="12:33_20" data-to="11:170_24">
+
+<path fill="none" stroke="black" d="M2284.36,-515.7C2361.17,-515.7 2384.31,-515.87 2453.78,-515.9"></path>
+<polygon fill="black" stroke="black" points="2453.35,-521.15 2468.35,-515.9 2453.35,-510.65 2453.35,-521.15"></polygon>
+<text text-anchor="middle" x="2381.11" y="-520.01" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2284.36,-515.7C2361.17,-515.7 2384.31,-515.87 2453.78,-515.9" class="hover-path"></path></g>
+<!-- 12&#45;&gt;11 -->
+<g id="12:120_29-11:170_24" class="edge" data-from="12:120_29" data-to="11:170_24">
+
+<path fill="none" stroke="black" d="M2284.36,-445.3C2366.89,-445.3 2380.15,-507.09 2453.75,-515.06"></path>
+<polygon fill="black" stroke="black" points="2453.1,-520.28 2468.35,-515.82 2453.64,-509.8 2453.1,-520.28"></polygon>
+<text text-anchor="middle" x="2381.11" y="-486.92" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2284.36,-445.3C2366.89,-445.3 2380.15,-507.09 2453.75,-515.06" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:21_15-11:125_20" class="edge" data-from="11:21_15" data-to="11:125_20">
+
+<path fill="none" stroke="black" d="M2471.09,-763.68C2361.52,-757.89 2270.12,-742.51 2270.12,-709.5 2270.12,-678.13 2352.65,-662.69 2454.86,-656.26"></path>
+<polygon fill="black" stroke="black" points="2454.9,-661.51 2469.58,-655.41 2454.3,-651.03 2454.9,-661.51"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-763.68C2361.52,-757.89 2270.12,-742.51 2270.12,-709.5 2270.12,-678.13 2352.65,-662.69 2454.86,-656.26" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:38_20-11:406_20" class="edge" data-from="11:38_20" data-to="11:406_20">
+
+<path fill="none" stroke="black" d="M2513.27,-678.33C2386.04,-649.18 2270.12,-571.09 2270.12,-375.1 2270.12,-187.34 2376.51,-107.79 2497.31,-75.8"></path>
+<polygon fill="black" stroke="black" points="2498.49,-80.92 2511.8,-72.23 2495.98,-70.72 2498.49,-80.92"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2513.27,-678.33C2386.04,-649.18 2270.12,-571.09 2270.12,-375.1 2270.12,-187.34 2376.51,-107.79 2497.31,-75.8" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:175_24-11:186_24" class="edge" data-from="11:175_24" data-to="11:186_24">
+
+<path fill="none" stroke="black" d="M2471.09,-483.86C2361.52,-480.11 2270.12,-469.11 2270.12,-445.5 2270.12,-423.07 2352.65,-412.02 2454.86,-407.75"></path>
+<polygon fill="black" stroke="black" points="2454.78,-413.01 2469.57,-407.2 2454.39,-402.52 2454.78,-413.01"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-483.86C2361.52,-480.11 2270.12,-469.11 2270.12,-445.5 2270.12,-423.07 2352.65,-412.02 2454.86,-407.75" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:275_19-11:283_20" class="edge" data-from="11:275_19" data-to="11:283_20">
+
+<path fill="none" stroke="black" d="M2471.09,-344.84C2361.52,-343.13 2270.12,-336.51 2270.12,-322.3 2270.12,-308.8 2352.65,-302.15 2454.86,-300.05"></path>
+<polygon fill="black" stroke="black" points="2454.67,-305.31 2469.57,-299.79 2454.48,-294.81 2454.67,-305.31"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-344.84C2361.52,-343.13 2270.12,-336.51 2270.12,-322.3 2270.12,-308.8 2352.65,-302.15 2454.86,-300.05" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:157_24-11:146_24" class="edge" data-from="11:157_24" data-to="11:146_24">
+
+<path fill="none" stroke="black" d="M2471.09,-546.16C2361.52,-547.87 2270.12,-554.49 2270.12,-568.7 2270.12,-582.2 2352.65,-588.85 2454.86,-590.95"></path>
+<polygon fill="black" stroke="black" points="2454.48,-596.19 2469.57,-591.21 2454.67,-585.69 2454.48,-596.19"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-546.16C2361.52,-547.87 2270.12,-554.49 2270.12,-568.7 2270.12,-582.2 2352.65,-588.85 2454.86,-590.95" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:21_15-11:38_20" class="edge" data-from="11:21_15" data-to="11:38_20">
+
+<path fill="none" stroke="black" d="M2471.09,-765.46C2361.52,-761.71 2270.12,-750.71 2270.12,-727.1 2270.12,-704.67 2352.65,-693.62 2454.86,-689.35"></path>
+<polygon fill="black" stroke="black" points="2454.78,-694.61 2469.57,-688.8 2454.39,-684.12 2454.78,-694.61"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-765.46C2361.52,-761.71 2270.12,-750.71 2270.12,-727.1 2270.12,-704.67 2352.65,-693.62 2454.86,-689.35" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:157_24-11:135_24" class="edge" data-from="11:157_24" data-to="11:135_24">
+
+<path fill="none" stroke="black" d="M2471.09,-547.94C2361.52,-551.69 2270.12,-562.69 2270.12,-586.3 2270.12,-608.73 2352.65,-619.78 2454.86,-624.05"></path>
+<polygon fill="black" stroke="black" points="2454.39,-629.28 2469.57,-624.6 2454.78,-618.79 2454.39,-629.28"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-547.94C2361.52,-551.69 2270.12,-562.69 2270.12,-586.3 2270.12,-608.73 2352.65,-619.78 2454.86,-624.05" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:186_24-11:226_22" class="edge" data-from="11:186_24" data-to="11:226_22">
+
+<path fill="none" stroke="black" d="M2471.09,-415.24C2361.52,-413.53 2270.12,-406.91 2270.12,-392.7 2270.12,-379.2 2352.65,-372.55 2454.86,-370.45"></path>
+<polygon fill="black" stroke="black" points="2454.67,-375.71 2469.57,-370.19 2454.48,-365.21 2454.67,-375.71"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-415.24C2361.52,-413.53 2270.12,-406.91 2270.12,-392.7 2270.12,-379.2 2352.65,-372.55 2454.86,-370.45" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:357_20-11:406_20" class="edge" data-from="11:357_20" data-to="11:406_20">
+
+<path fill="none" stroke="black" d="M2471.09,-98.44C2361.52,-96.73 2270.12,-90.11 2270.12,-75.9 2270.12,-62.4 2352.65,-55.75 2454.86,-53.65"></path>
+<polygon fill="black" stroke="black" points="2454.67,-58.91 2469.57,-53.39 2454.48,-48.41 2454.67,-58.91"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-98.44C2361.52,-96.73 2270.12,-90.11 2270.12,-75.9 2270.12,-62.4 2352.65,-55.75 2454.86,-53.65" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:157_24-11:175_24" class="edge" data-from="11:157_24" data-to="11:175_24">
+
+<path fill="none" stroke="black" d="M2471.09,-554.26C2361.52,-550.51 2270.12,-539.51 2270.12,-515.9 2270.12,-493.47 2352.65,-482.42 2454.86,-478.15"></path>
+<polygon fill="black" stroke="black" points="2454.78,-483.41 2469.57,-477.6 2454.39,-472.92 2454.78,-483.41"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-554.26C2361.52,-550.51 2270.12,-539.51 2270.12,-515.9 2270.12,-493.47 2352.65,-482.42 2454.86,-478.15" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:181_24-11:175_24" class="edge" data-from="11:181_24" data-to="11:175_24">
+
+<path fill="none" stroke="black" d="M2471.09,-440.56C2361.52,-442.27 2270.12,-448.89 2270.12,-463.1 2270.12,-476.6 2352.65,-483.25 2454.86,-485.35"></path>
+<polygon fill="black" stroke="black" points="2454.48,-490.59 2469.57,-485.61 2454.67,-480.09 2454.48,-490.59"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-440.56C2361.52,-442.27 2270.12,-448.89 2270.12,-463.1 2270.12,-476.6 2352.65,-483.25 2454.86,-485.35" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:305_20-11:298_20" class="edge" data-from="11:305_20" data-to="11:298_20">
+
+<path fill="none" stroke="black" d="M2471.09,-194.16C2361.52,-195.87 2270.12,-202.49 2270.12,-216.7 2270.12,-230.2 2352.65,-236.85 2454.86,-238.95"></path>
+<polygon fill="black" stroke="black" points="2454.48,-244.19 2469.57,-239.21 2454.67,-233.69 2454.48,-244.19"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-194.16C2361.52,-195.87 2270.12,-202.49 2270.12,-216.7 2270.12,-230.2 2352.65,-236.85 2454.86,-238.95" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:170_24-11:157_24" class="edge" data-from="11:170_24" data-to="11:157_24">
+
+<path fill="none" stroke="black" d="M2471.09,-510.96C2361.52,-512.67 2270.12,-519.29 2270.12,-533.5 2270.12,-547 2352.65,-553.65 2454.86,-555.75"></path>
+<polygon fill="black" stroke="black" points="2454.48,-560.99 2469.57,-556.01 2454.67,-550.49 2454.48,-560.99"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-510.96C2361.52,-512.67 2270.12,-519.29 2270.12,-533.5 2270.12,-547 2352.65,-553.65 2454.86,-555.75" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:226_22-11:275_19" class="edge" data-from="11:226_22" data-to="11:275_19">
+
+<path fill="none" stroke="black" d="M2471.09,-380.04C2361.52,-378.33 2270.12,-371.71 2270.12,-357.5 2270.12,-344 2352.65,-337.35 2454.86,-335.25"></path>
+<polygon fill="black" stroke="black" points="2454.67,-340.51 2469.57,-334.99 2454.48,-330.01 2454.67,-340.51"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-380.04C2361.52,-378.33 2270.12,-371.71 2270.12,-357.5 2270.12,-344 2352.65,-337.35 2454.86,-335.25" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:12_15-11:125_20" class="edge" data-from="11:12_15" data-to="11:125_20">
+
+<path fill="none" stroke="black" d="M2471.09,-797.1C2361.52,-789.27 2270.12,-769.51 2270.12,-727.1 2270.12,-686.8 2352.65,-666.95 2454.86,-658.36"></path>
+<polygon fill="black" stroke="black" points="2455.03,-663.61 2469.58,-657.21 2454.22,-653.14 2455.03,-663.61"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-797.1C2361.52,-789.27 2270.12,-769.51 2270.12,-727.1 2270.12,-686.8 2352.65,-666.95 2454.86,-658.36" class="hover-path"></path></g>
+<!-- 11&#45;&gt;11 -->
+<g id="11:186_24-11:298_20" class="edge" data-from="11:186_24" data-to="11:298_20">
+
+<path fill="none" stroke="black" d="M2471.09,-408.12C2361.52,-398.25 2270.12,-374.12 2270.12,-322.3 2270.12,-273.07 2352.65,-248.82 2454.86,-238.06"></path>
+<polygon fill="black" stroke="black" points="2455.16,-243.3 2469.58,-236.62 2454.14,-232.85 2455.16,-243.3"></polygon>
+<text text-anchor="middle" x="2268.37" y="-438.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M2471.09,-408.12C2361.52,-398.25 2270.12,-374.12 2270.12,-322.3 2270.12,-273.07 2352.65,-248.82 2454.86,-238.06" class="hover-path"></path></g>
+<!-- 9 -->
+<g id="9" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/PDCSimAna.cc">
+
+<rect x="379.4800109863281" y="-1273.0999755859375" width="683.8000183105469" height="416.199951171875"></rect>
+<g id="9_6" class="title">
+<text text-anchor="start" x="612.91" y="-1240.7" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;PDCSimAna.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="9:8_0" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1221.9000244140625" width="651.8000183105469" height="27.2000732421875"></rect>
+<text text-anchor="start" x="637.81" y="-1203.5" font-family="Arial" font-size="16.00">ClassImp(PDCSimAna)</text>
+
+</g>
+<g id="9:10_11" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1186.699951171875" width="651.8000183105469" height="27.199951171875"></rect>
+<text text-anchor="start" x="575.55" y="-1168.3" font-family="Arial" font-size="16.00">PDCSimAna(const GeometryManager &amp;)</text>
+
+</g>
+<g id="9:15_11" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1151.5" width="651.8000183105469" height="27.199951171875"></rect>
+<text text-anchor="start" x="666.48" y="-1133.1" font-family="Arial" font-size="16.00">~PDCSimAna()</text>
+
+</g>
+<g id="9:17_16" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1116.300048828125" width="651.8000183105469" height="27.2000732421875"></rect>
+<text text-anchor="start" x="617.31" y="-1097.9" font-family="Arial" font-size="16.00">SetSmearing(double, double)</text>
+
+</g>
+<g id="9:22_16" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1081.0999755859375" width="651.8000183105469" height="27.199951171875"></rect>
+<text text-anchor="start" x="688.04" y="-1062.7" font-family="Arial" font-size="16.00">ClearAll()</text>
+
+</g>
+<g id="9:36_21" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1045.9000244140625" width="651.8000183105469" height="27.20001220703125"></rect>
+<text text-anchor="start" x="612.46" y="-1027.5" font-family="Arial" font-size="16.00">ProcessEvent(TClonesArray *)</text>
+
+</g>
+<g id="9:43_16" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-1010.7000122070312" width="651.8000183105469" height="27.20001220703125"></rect>
+<text text-anchor="start" x="561.32" y="-992.3" font-family="Arial" font-size="16.00">ProcessEvent(TClonesArray *, RecoEvent &amp;)</text>
+
+</g>
+<g id="9:142_33" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-975.5" width="651.8000183105469" height="27.20001220703125"></rect>
+<text text-anchor="start" x="593.77" y="-957.1" font-family="Arial" font-size="16.00">GetSmearedGlobalPositions() const</text>
+
+</g>
+<g id="9:183_20" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-940.2999877929688" width="651.8000183105469" height="27.20001220703125"></rect>
+<text text-anchor="start" x="399.48" y="-921.9" font-family="Arial" font-size="16.00">ReconstructPDC(const std::vector&lt;Hit&gt;&amp;, const std::vector&lt;Hit&gt;&amp;, const TVector3 &amp;) const</text>
+
+</g>
+<g id="9:227_18" data-kind="12" class="cell function">
+<rect x="395.4800109863281" y="-905.0999755859375" width="651.8000183105469" height="27.199951171875"></rect>
+<text text-anchor="start" x="561.76" y="-886.7" font-family="Arial" font-size="16.00">CalculateCoM(const std::vector&lt;Hit&gt;&amp;) const</text>
+
+</g>
+</g>
+<!-- 9&#45;&gt;9 -->
+<g id="9:183_20-9:227_18" class="edge" data-from="9:183_20" data-to="9:227_18">
+
+<path fill="none" stroke="black" d="M395.75,-931.91C246.06,-930.74 115.6,-924.22 115.6,-909.1 115.6,-894.53 236.8,-887.94 379.61,-886.44"></path>
+<polygon fill="black" stroke="black" points="379.29,-891.69 394.24,-886.31 379.19,-881.19 379.29,-891.69"></polygon>
+<text text-anchor="middle" x="113.85" y="-1060.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-931.91C246.06,-930.74 115.6,-924.22 115.6,-909.1 115.6,-894.53 236.8,-887.94 379.61,-886.44" class="hover-path"></path></g>
+<!-- 9&#45;&gt;9 -->
+<g id="9:43_16-9:22_16" class="edge" data-from="9:43_16" data-to="9:22_16">
+
+<path fill="none" stroke="black" d="M395.75,-993.31C246.06,-996.34 115.6,-1007.18 115.6,-1032.3 115.6,-1056.51 236.8,-1067.46 379.61,-1070.93"></path>
+<polygon fill="black" stroke="black" points="379.13,-1076.17 394.24,-1071.26 379.36,-1065.68 379.13,-1076.17"></polygon>
+<text text-anchor="middle" x="113.85" y="-1060.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-993.31C246.06,-996.34 115.6,-1007.18 115.6,-1032.3 115.6,-1056.51 236.8,-1067.46 379.61,-1070.93" class="hover-path"></path></g>
+<!-- 9&#45;&gt;9 -->
+<g id="9:43_16-9:183_20" class="edge" data-from="9:43_16" data-to="9:183_20">
+
+<path fill="none" stroke="black" d="M395.75,-1000.89C246.06,-997.86 115.6,-987.02 115.6,-961.9 115.6,-937.69 236.8,-926.74 379.61,-923.27"></path>
+<polygon fill="black" stroke="black" points="379.36,-928.52 394.24,-922.94 379.13,-918.03 379.36,-928.52"></polygon>
+<text text-anchor="middle" x="113.85" y="-1060.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-1000.89C246.06,-997.86 115.6,-987.02 115.6,-961.9 115.6,-937.69 236.8,-926.74 379.61,-923.27" class="hover-path"></path></g>
+<!-- 9&#45;&gt;9 -->
+<g id="9:36_21-9:43_16" class="edge" data-from="9:36_21" data-to="9:43_16">
+
+<path fill="none" stroke="black" d="M395.75,-1037.51C246.06,-1036.34 115.6,-1029.82 115.6,-1014.7 115.6,-1000.13 236.8,-993.54 379.61,-992.04"></path>
+<polygon fill="black" stroke="black" points="379.29,-997.29 394.24,-991.91 379.19,-986.79 379.29,-997.29"></polygon>
+<text text-anchor="middle" x="113.85" y="-1060.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-1037.51C246.06,-1036.34 115.6,-1029.82 115.6,-1014.7 115.6,-1000.13 236.8,-993.54 379.61,-992.04" class="hover-path"></path></g>
+<!-- 9&#45;&gt;9 -->
+<g id="9:43_16-9:142_33" class="edge" data-from="9:43_16" data-to="9:142_33">
+
+<path fill="none" stroke="black" d="M395.75,-1002.31C246.06,-1001.14 115.6,-994.62 115.6,-979.5 115.6,-964.93 236.8,-958.34 379.61,-956.84"></path>
+<polygon fill="black" stroke="black" points="379.29,-962.09 394.24,-956.71 379.19,-951.59 379.29,-962.09"></polygon>
+<text text-anchor="middle" x="113.85" y="-1060.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-1002.31C246.06,-1001.14 115.6,-994.62 115.6,-979.5 115.6,-964.93 236.8,-958.34 379.61,-956.84" class="hover-path"></path></g>
+<!-- 9&#45;&gt;9 -->
+<g id="9:10_11-9:22_16" class="edge" data-from="9:10_11" data-to="9:22_16">
+
+<path fill="none" stroke="black" d="M395.75,-1175.48C246.06,-1170.59 115.6,-1155.42 115.6,-1120.3 115.6,-1086.44 236.8,-1071.14 379.61,-1065.69"></path>
+<polygon fill="black" stroke="black" points="379.44,-1070.95 394.24,-1065.18 379.07,-1060.46 379.44,-1070.95"></polygon>
+<text text-anchor="middle" x="113.85" y="-1060.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M395.75,-1175.48C246.06,-1170.59 115.6,-1155.42 115.6,-1120.3 115.6,-1086.44 236.8,-1071.14 379.61,-1065.69" class="hover-path"></path></g>
+<!-- 7 -->
+<g id="7" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/include/GeometryManager.hh">
+
+<rect x="1661.9599609375" y="-4237.89990234375" width="306.320068359375" height="361.7998046875"></rect>
+<g id="7_7" class="title">
+<text text-anchor="start" x="1683.96" y="-4205.5" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GeometryManager.hh &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="7:7_6" data-kind="5" class="cell class">
+<rect x="1677.9599609375" y="-4186.7001953125" width="274.320068359375" height="289.60009765625"></rect>
+<text text-anchor="start" x="1738.21" y="-4161.3" font-family="Arial" font-weight="bold" font-size="16.00">C</text>
+<text text-anchor="start" x="1749.76" y="-4161.3" font-family="Arial" font-size="16.00"> &#160;GeometryManager</text>
+<g id="7:9_4" data-kind="6" class="cell method">
+<rect x="1685.9599609375" y="-4143.5" width="258.320068359375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1743.1" y="-4125.1" font-family="Arial" font-size="16.00">GeometryManager()</text>
+
+</g>
+<g id="7:10_12" data-kind="6" class="cell method">
+<rect x="1685.9599609375" y="-4108.2998046875" width="258.320068359375" height="27.19970703125"></rect>
+<text text-anchor="start" x="1738.43" y="-4089.9" font-family="Arial" font-size="16.00">~GeometryManager()</text>
+
+</g>
+<g id="7:13_9" data-kind="6" class="cell method">
+<rect x="1685.9599609375" y="-4073.10009765625" width="258.320068359375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1693.29" y="-4054.7" font-family="Arial" font-size="16.00">LoadGeometry(const std::string &amp;)</text>
+
+</g>
+<g id="7:16_11" data-kind="6" class="cell method">
+<rect x="1685.9599609375" y="-4037.89990234375" width="258.320068359375" height="27.199951171875"></rect>
+<text text-anchor="start" x="1740.42" y="-4019.5" font-family="Arial" font-size="16.00">GetAngleRad() const</text>
+
+</g>
+<g id="7:17_13" data-kind="6" class="cell method">
+<rect x="1685.9599609375" y="-4002.699951171875" width="258.320068359375" height="27.199951171875"></rect>
+<text text-anchor="start" x="1725.76" y="-3984.3" font-family="Arial" font-size="16.00">GetPDC1Position() const</text>
+
+</g>
+<g id="7:18_13" data-kind="6" class="cell method">
+<rect x="1685.9599609375" y="-3967.5" width="258.320068359375" height="27.199951171875"></rect>
+<text text-anchor="start" x="1725.76" y="-3949.1" font-family="Arial" font-size="16.00">GetPDC2Position() const</text>
+
+</g>
+<g id="7:30_9" data-kind="6" class="cell method">
+<rect x="1685.9599609375" y="-3932.300048828125" width="258.320068359375" height="27.199951171875"></rect>
+<text text-anchor="start" x="1710.19" y="-3913.9" font-family="Arial" font-size="16.00">ParseLine(const std::string &amp;)</text>
+
+</g>
+
+</g>
+</g>
+<!-- 9&#45;&gt;7 -->
+<g id="9:43_16-7:18_13" class="edge" data-from="9:43_16" data-to="7:18_13">
+
+<path fill="none" stroke="black" d="M1048.28,-997.1C1223.85,-997.1 1202.04,-1167.57 1250.88,-1336.2 1290.01,-1471.29 1226.15,-3757.88 1314.88,-3867 1418.04,-3993.86 1509.9,-3956.57 1668.86,-3954.03"></path>
+<polygon fill="black" stroke="black" points="1668.49,-3959.28 1683.45,-3953.91 1668.41,-3948.78 1668.49,-3959.28"></polygon>
+<text text-anchor="middle" x="1249.13" y="-1340.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1048.28,-997.1C1223.85,-997.1 1202.04,-1167.57 1250.88,-1336.2 1290.01,-1471.29 1226.15,-3757.88 1314.88,-3867 1418.04,-3993.86 1509.9,-3956.57 1668.86,-3954.03" class="hover-path"></path></g>
+<!-- 9&#45;&gt;7 -->
+<g id="9:142_33-7:16_11" class="edge" data-from="9:142_33" data-to="7:16_11">
+
+<path fill="none" stroke="black" d="M1048.28,-961.9C1297.68,-961.9 1203.27,-1240.39 1250.88,-1485.2 1276.16,-1615.13 1240.38,-3757.59 1314.88,-3867 1412.34,-4010.1 1500.56,-4023.57 1668.46,-4024.27"></path>
+<polygon fill="black" stroke="black" points="1668.44,-4029.52 1683.45,-4024.3 1668.46,-4019.02 1668.44,-4029.52"></polygon>
+<text text-anchor="middle" x="1249.13" y="-1489.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1048.28,-961.9C1297.68,-961.9 1203.27,-1240.39 1250.88,-1485.2 1276.16,-1615.13 1240.38,-3757.59 1314.88,-3867 1412.34,-4010.1 1500.56,-4023.57 1668.46,-4024.27" class="hover-path"></path></g>
+<!-- 9&#45;&gt;7 -->
+<g id="9:183_20-7:16_11" class="edge" data-from="9:183_20" data-to="7:16_11">
+
+<path fill="none" stroke="black" d="M1048.28,-926.7C1297.35,-926.7 1201.85,-1205.01 1250.88,-1449.2 1277.34,-1580.94 1239.27,-3755.92 1314.88,-3867 1412.31,-4010.12 1500.56,-4023.57 1668.46,-4024.27"></path>
+<polygon fill="black" stroke="black" points="1668.44,-4029.52 1683.45,-4024.3 1668.46,-4019.02 1668.44,-4029.52"></polygon>
+<text text-anchor="middle" x="1249.13" y="-1453.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1048.28,-926.7C1297.35,-926.7 1201.85,-1205.01 1250.88,-1449.2 1277.34,-1580.94 1239.27,-3755.92 1314.88,-3867 1412.31,-4010.12 1500.56,-4023.57 1668.46,-4024.27" class="hover-path"></path></g>
+<!-- 9&#45;&gt;7 -->
+<g id="9:142_33-7:18_13" class="edge" data-from="9:142_33" data-to="7:18_13">
+
+<path fill="none" stroke="black" d="M1048.28,-961.9C1138.69,-961.9 1189.16,-914.14 1250.88,-980.2 1360.4,-1097.42 1213.87,-3742.38 1314.88,-3867 1417.85,-3994.02 1509.89,-3956.58 1668.86,-3954.03"></path>
+<polygon fill="black" stroke="black" points="1668.49,-3959.28 1683.45,-3953.91 1668.41,-3948.78 1668.49,-3959.28"></polygon>
+<text text-anchor="middle" x="1249.13" y="-984.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1048.28,-961.9C1138.69,-961.9 1189.16,-914.14 1250.88,-980.2 1360.4,-1097.42 1213.87,-3742.38 1314.88,-3867 1417.85,-3994.02 1509.89,-3956.58 1668.86,-3954.03" class="hover-path"></path></g>
+<!-- 9&#45;&gt;7 -->
+<g id="9:43_16-7:16_11" class="edge" data-from="9:43_16" data-to="7:16_11">
+
+<path fill="none" stroke="black" d="M1048.28,-997.1C1187.34,-997.1 1131.94,-1150.9 1175.38,-1283 1224.04,-1430.95 1231.8,-1470.63 1250.88,-1625.2 1266.15,-1748.86 1244.67,-3764.08 1314.88,-3867 1412.46,-4010.02 1500.57,-4023.56 1668.46,-4024.27"></path>
+<polygon fill="black" stroke="black" points="1668.44,-4029.52 1683.45,-4024.3 1668.46,-4019.02 1668.44,-4029.52"></polygon>
+<text text-anchor="middle" x="1249.13" y="-1629.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1048.28,-997.1C1187.34,-997.1 1131.94,-1150.9 1175.38,-1283 1224.04,-1430.95 1231.8,-1470.63 1250.88,-1625.2 1266.15,-1748.86 1244.67,-3764.08 1314.88,-3867 1412.46,-4010.02 1500.57,-4023.56 1668.46,-4024.27" class="hover-path"></path></g>
+<!-- 9&#45;&gt;7 -->
+<g id="9:142_33-7:17_13" class="edge" data-from="9:142_33" data-to="7:17_13">
+
+<path fill="none" stroke="black" d="M1048.28,-961.9C1225.45,-961.9 1202.08,-1134.89 1250.88,-1305.2 1290.1,-1442.06 1230.03,-3752.68 1314.88,-3867 1414.79,-4001.59 1505.72,-3990.03 1668.46,-3989.15"></path>
+<polygon fill="black" stroke="black" points="1668.46,-3994.4 1683.45,-3989.1 1668.43,-3983.9 1668.46,-3994.4"></polygon>
+<text text-anchor="middle" x="1249.13" y="-1309.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1048.28,-961.9C1225.45,-961.9 1202.08,-1134.89 1250.88,-1305.2 1290.1,-1442.06 1230.03,-3752.68 1314.88,-3867 1414.79,-4001.59 1505.72,-3990.03 1668.46,-3989.15" class="hover-path"></path></g>
+<!-- 9&#45;&gt;7 -->
+<g id="9:43_16-7:17_13" class="edge" data-from="9:43_16" data-to="7:17_13">
+
+<path fill="none" stroke="black" d="M1048.28,-997.1C1304.24,-997.1 1210.45,-1283.45 1250.88,-1536.2 1271.35,-1664.11 1237.55,-3763.08 1314.88,-3867 1414.96,-4001.47 1505.73,-3990.02 1668.46,-3989.15"></path>
+<polygon fill="black" stroke="black" points="1668.46,-3994.4 1683.45,-3989.1 1668.43,-3983.9 1668.46,-3994.4"></polygon>
+<text text-anchor="middle" x="1249.13" y="-1540.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1048.28,-997.1C1304.24,-997.1 1210.45,-1283.45 1250.88,-1536.2 1271.35,-1664.11 1237.55,-3763.08 1314.88,-3867 1414.96,-4001.47 1505.73,-3990.02 1668.46,-3989.15" class="hover-path"></path></g>
+<!-- 16 -->
+<g id="16" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/include/RecoEvent.hh">
+
+<rect x="1615.9599609375" y="-4720.10009765625" width="398.330078125" height="464.2001953125"></rect>
+<g id="16_8" class="title">
+<text text-anchor="start" x="1711.53" y="-4687.7" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;RecoEvent.hh &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="16:8_7" data-kind="23" class="cell struct">
+<rect x="1631.9599609375" y="-4668.89990234375" width="366.330078125" height="113.60009765625"></rect>
+<text text-anchor="start" x="1776.89" y="-4643.5" font-family="Arial" font-weight="bold" font-size="16.00">S</text>
+<text text-anchor="start" x="1787.56" y="-4643.5" font-family="Arial" font-size="16.00"> &#160;RecoHit</text>
+<g id="16:12_4" data-kind="6" class="cell method">
+<rect x="1639.9599609375" y="-4625.7001953125" width="350.330078125" height="27.2001953125"></rect>
+<text text-anchor="start" x="1781.34" y="-4607.3" font-family="Arial" font-size="16.00">RecoHit()</text>
+
+</g>
+<g id="16:13_4" data-kind="6" class="cell method">
+<rect x="1639.9599609375" y="-4590.5" width="350.330078125" height="27.2001953125"></rect>
+<text text-anchor="start" x="1691.51" y="-4572.1" font-family="Arial" font-size="16.00">RecoHit(const TVector3 &amp;, double)</text>
+
+</g>
+
+</g>
+<g id="16:19_7" data-kind="23" class="cell struct">
+<rect x="1631.9599609375" y="-4547.2998046875" width="366.330078125" height="113.599609375"></rect>
+<text text-anchor="start" x="1766.67" y="-4521.9" font-family="Arial" font-weight="bold" font-size="16.00">S</text>
+<text text-anchor="start" x="1777.34" y="-4521.9" font-family="Arial" font-size="16.00"> &#160;RecoTrack</text>
+<g id="16:25_4" data-kind="6" class="cell method">
+<rect x="1639.9599609375" y="-4504.10009765625" width="350.330078125" height="27.2001953125"></rect>
+<text text-anchor="start" x="1771.12" y="-4485.7" font-family="Arial" font-size="16.00">RecoTrack()</text>
+
+</g>
+<g id="16:26_4" data-kind="6" class="cell method">
+<rect x="1639.9599609375" y="-4468.89990234375" width="350.330078125" height="27.19970703125"></rect>
+<text text-anchor="start" x="1643.96" y="-4450.5" font-family="Arial" font-size="16.00">RecoTrack(const TVector3 &amp;, const TVector3 &amp;)</text>
+
+</g>
+
+</g>
+<g id="16:32_6" data-kind="5" class="cell class">
+<rect x="1631.9599609375" y="-4425.7001953125" width="366.330078125" height="148.80029296875"></rect>
+<text text-anchor="start" x="1765.77" y="-4400.3" font-family="Arial" font-weight="bold" font-size="16.00">C</text>
+<text text-anchor="start" x="1777.32" y="-4400.3" font-family="Arial" font-size="16.00"> &#160;RecoEvent</text>
+<g id="16:34_4" data-kind="6" class="cell method">
+<rect x="1639.9599609375" y="-4382.5" width="350.330078125" height="27.2001953125"></rect>
+<text text-anchor="start" x="1770.66" y="-4364.1" font-family="Arial" font-size="16.00">RecoEvent()</text>
+
+</g>
+<g id="16:35_12" data-kind="6" class="cell method">
+<rect x="1639.9599609375" y="-4347.2998046875" width="350.330078125" height="27.19970703125"></rect>
+<text text-anchor="start" x="1765.99" y="-4328.9" font-family="Arial" font-size="16.00">~RecoEvent()</text>
+
+</g>
+<g id="16:37_9" data-kind="6" class="cell method">
+<rect x="1639.9599609375" y="-4312.10009765625" width="350.330078125" height="27.2001953125"></rect>
+<text text-anchor="start" x="1790.68" y="-4293.7" font-family="Arial" font-size="16.00">Clear()</text>
+
+</g>
+
+</g>
+</g>
+<!-- 9&#45;&gt;16 -->
+<g id="9:43_16-16:37_9" class="edge" data-from="9:43_16" data-to="16:37_9">
+
+<path fill="none" stroke="black" d="M1048.28,-997.1C1326.7,-997.1 1203.28,-1356.05 1250.88,-2188.2 1257.42,-2302.45 1239.25,-4161.13 1314.88,-4247 1407.61,-4352.27 1486.86,-4302.67 1622.57,-4298.74"></path>
+<polygon fill="black" stroke="black" points="1622.52,-4303.99 1637.44,-4298.52 1622.37,-4293.49 1622.52,-4303.99"></polygon>
+<text text-anchor="middle" x="1249.13" y="-2192.4" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1048.28,-997.1C1326.7,-997.1 1203.28,-1356.05 1250.88,-2188.2 1257.42,-2302.45 1239.25,-4161.13 1314.88,-4247 1407.61,-4352.27 1486.86,-4302.67 1622.57,-4298.74" class="hover-path"></path></g>
+<!-- 2 -->
+<g id="2" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/EventDataReader.cc">
+
+<rect x="572.219970703125" y="-1825.300048828125" width="298.32000732421875" height="310.60009765625"></rect>
+<g id="2_9" class="title">
+<text text-anchor="start" x="594.22" y="-1792.9" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;EventDataReader.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="2:5_17" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1774.0999755859375" width="266.32000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="610.22" y="-1755.7" font-family="Arial" font-size="16.00">EventDataReader(const char *)</text>
+
+</g>
+<g id="2:40_17" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1738.9000244140625" width="266.32000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="647.79" y="-1720.5" font-family="Arial" font-size="16.00">~EventDataReader()</text>
+
+</g>
+<g id="2:47_22" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1703.699951171875" width="266.32000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="642.22" y="-1685.3" font-family="Arial" font-size="16.00">GoToEvent(Long64_t)</text>
+
+</g>
+<g id="2:58_22" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1668.5" width="266.32000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="679.15" y="-1650.1" font-family="Arial" font-size="16.00">NextEvent()</text>
+
+</g>
+<g id="2:63_22" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1633.300048828125" width="266.32000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="679.15" y="-1614.9" font-family="Arial" font-size="16.00">PrevEvent()</text>
+
+</g>
+<g id="2:68_21" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1598.0999755859375" width="266.32000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="612.89" y="-1579.7" font-family="Arial" font-size="16.00">GetBeamParticleCount() const</text>
+
+</g>
+<g id="2:73_37" data-kind="12" class="cell function">
+<rect x="588.219970703125" y="-1562.9000244140625" width="266.32000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="625.79" y="-1544.5" font-family="Arial" font-size="16.00">GetBeamParticle(int) const</text>
+
+</g>
+</g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:58_22-2:47_22" class="edge" data-from="2:58_22" data-to="2:47_22">
+
+<path fill="none" stroke="black" d="M588.4,-1649.93C455.47,-1647.83 308.34,-1653.06 308.34,-1672.5 308.34,-1691.15 443.65,-1696.72 571.98,-1695.29"></path>
+<polygon fill="black" stroke="black" points="571.96,-1700.54 586.89,-1695.09 571.82,-1690.04 571.96,-1700.54"></polygon>
+<text text-anchor="middle" x="306.59" y="-1665.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M588.4,-1649.93C455.47,-1647.83 308.34,-1653.06 308.34,-1672.5 308.34,-1691.15 443.65,-1696.72 571.98,-1695.29" class="hover-path"></path></g>
+<!-- 2&#45;&gt;2 -->
+<g id="2:63_22-2:47_22" class="edge" data-from="2:63_22" data-to="2:47_22">
+
+<path fill="none" stroke="black" d="M588.4,-1615.08C455.47,-1613.9 308.34,-1622.59 308.34,-1654.9 308.34,-1685.88 443.65,-1695.15 571.98,-1694.82"></path>
+<polygon fill="black" stroke="black" points="571.92,-1700.07 586.89,-1694.73 571.86,-1689.57 571.92,-1700.07"></polygon>
+<text text-anchor="middle" x="306.59" y="-1665.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M588.4,-1615.08C455.47,-1613.9 308.34,-1622.59 308.34,-1654.9 308.34,-1685.88 443.65,-1695.15 571.98,-1694.82" class="hover-path"></path></g>
+<!-- 2&#45;&gt;1 -->
+<g id="2:47_22-1:18_9" class="edge" data-from="2:47_22" data-to="1:18_9">
+
+<path fill="none" stroke="black" d="M855.54,-1690.1C1011.42,-1690.1 1087.62,-1705.18 1175.38,-1834 1356.71,-2100.14 1190.4,-4431.99 1314.88,-4729 1407.22,-4949.29 1441.99,-5124.88 1671.56,-5132.82"></path>
+<polygon fill="black" stroke="black" points="1671.46,-5138.07 1686.55,-5133.07 1671.64,-5127.57 1671.46,-5138.07"></polygon>
+<text text-anchor="middle" x="1249.13" y="-2212.96" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M855.54,-1690.1C1011.42,-1690.1 1087.62,-1705.18 1175.38,-1834 1356.71,-2100.14 1190.4,-4431.99 1314.88,-4729 1407.22,-4949.29 1441.99,-5124.88 1671.56,-5132.82" class="hover-path"></path></g>
+<!-- 2&#45;&gt;1 -->
+<g id="2:5_17-1:18_9" class="edge" data-from="2:5_17" data-to="1:18_9">
+
+<path fill="none" stroke="black" d="M855.54,-1760.5C1001.4,-1760.5 1081.81,-1722.12 1175.38,-1834 1278.69,-1957.51 1252.64,-4580.5 1314.88,-4729 1407.22,-4949.29 1441.99,-5124.88 1671.56,-5132.82"></path>
+<polygon fill="black" stroke="black" points="1671.46,-5138.07 1686.55,-5133.07 1671.64,-5127.57 1671.46,-5138.07"></polygon>
+<text text-anchor="middle" x="1249.13" y="-2788.85" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M855.54,-1760.5C1001.4,-1760.5 1081.81,-1722.12 1175.38,-1834 1278.69,-1957.51 1252.64,-4580.5 1314.88,-4729 1407.22,-4949.29 1441.99,-5124.88 1671.56,-5132.82" class="hover-path"></path></g>
+<!-- 8 -->
+<g id="8" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/GeometryManager.cc">
+
+<rect x="569.1199951171875" y="-1496.5" width="304.52001953125" height="205"></rect>
+<g id="8_10" class="title">
+<text text-anchor="start" x="591.12" y="-1464.1" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GeometryManager.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="8:6_17" data-kind="12" class="cell function">
+<rect x="585.1199951171875" y="-1445.300048828125" width="272.52001953125" height="27.2000732421875"></rect>
+<text text-anchor="start" x="649.36" y="-1426.9" font-family="Arial" font-size="16.00">GeometryManager()</text>
+
+</g>
+<g id="8:9_17" data-kind="12" class="cell function">
+<rect x="585.1199951171875" y="-1410.0999755859375" width="272.52001953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="644.69" y="-1391.7" font-family="Arial" font-size="16.00">~GeometryManager()</text>
+
+</g>
+<g id="8:11_22" data-kind="12" class="cell function">
+<rect x="585.1199951171875" y="-1374.9000244140625" width="272.52001953125" height="27.2000732421875"></rect>
+<text text-anchor="start" x="599.55" y="-1356.5" font-family="Arial" font-size="16.00">LoadGeometry(const std::string &amp;)</text>
+
+</g>
+<g id="8:54_22" data-kind="12" class="cell function">
+<rect x="585.1199951171875" y="-1339.699951171875" width="272.52001953125" height="27.199951171875"></rect>
+<text text-anchor="start" x="616.45" y="-1321.3" font-family="Arial" font-size="16.00">ParseLine(const std::string &amp;)</text>
+
+</g>
+</g>
+<!-- 8&#45;&gt;8 -->
+<g id="8:11_22-8:54_22" class="edge" data-from="8:11_22" data-to="8:54_22">
+
+<path fill="none" stroke="black" d="M585.26,-1366.3C451.89,-1368.32 305.24,-1363.04 305.24,-1343.7 305.24,-1325.15 440.11,-1319.54 568.79,-1320.89"></path>
+<polygon fill="black" stroke="black" points="568.68,-1326.14 583.74,-1321.08 568.81,-1315.64 568.68,-1326.14"></polygon>
+<text text-anchor="middle" x="303.49" y="-1389.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M585.26,-1366.3C451.89,-1368.32 305.24,-1363.04 305.24,-1343.7 305.24,-1325.15 440.11,-1319.54 568.79,-1320.89" class="hover-path"></path></g>
+<!-- 13 -->
+<g id="13" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/TargetReconstructor.cc">
+
+<rect x="309.6400146484375" y="-228.5" width="823.47998046875" height="205"></rect>
+<g id="13_11" class="title">
+<text text-anchor="start" x="584.9" y="-196.1" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;TargetReconstructor.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="13:6_21" data-kind="12" class="cell function">
+<rect x="325.6400146484375" y="-177.3000030517578" width="791.47998046875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="588" y="-158.9" font-family="Arial" font-size="16.00">TargetReconstructor(MagneticField *)</text>
+
+</g>
+<g id="13:10_21" data-kind="12" class="cell function">
+<rect x="325.6400146484375" y="-142.10000610351562" width="791.47998046875" height="27.20000457763672"></rect>
+<text text-anchor="start" x="638.46" y="-123.7" font-family="Arial" font-size="16.00">~TargetReconstructor()</text>
+
+</g>
+<g id="13:12_36" data-kind="12" class="cell function">
+<rect x="325.6400146484375" y="-106.9000015258789" width="791.47998046875" height="27.20000457763672"></rect>
+<text text-anchor="start" x="389.66" y="-88.5" font-family="Arial" font-size="16.00">ReconstructAtTarget(const RecoTrack &amp;, const TVector3 &amp;, double, double, double, int) const</text>
+
+</g>
+<g id="13:23_48" data-kind="12" class="cell function">
+<rect x="325.6400146484375" y="-71.69999694824219" width="791.47998046875" height="27.199996948242188"></rect>
+<text text-anchor="start" x="329.64" y="-53.3" font-family="Arial" font-size="16.00">ReconstructAtTargetWithDetails(const RecoTrack &amp;, const TVector3 &amp;, bool, double, double, double, int) const</text>
+
+</g>
+</g>
+<!-- 13&#45;&gt;12 -->
+<g id="13:23_48-12:33_20" class="edge" data-from="13:23_48" data-to="12:33_20">
+
+<path fill="none" stroke="black" d="M1118.12,-58.1C1226.05,-58.1 1231.96,-471.25 1329.73,-512.41"></path>
+<polygon fill="black" stroke="black" points="1328.66,-517.55 1344.4,-515.4 1330.75,-507.26 1328.66,-517.55"></polygon>
+<text text-anchor="middle" x="1249.13" y="-358.82" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M1118.12,-58.1C1226.05,-58.1 1231.96,-471.25 1329.73,-512.41" class="hover-path"></path></g>
+<!-- 13&#45;&gt;13 -->
+<g id="13:12_36-13:23_48" class="edge" data-from="13:12_36" data-to="13:23_48">
+
+<path fill="none" stroke="black" d="M325.82,-98.21C172.88,-96.46 45.76,-89.83 45.76,-75.7 45.76,-62.08 163.86,-55.43 309.35,-53.4"></path>
+<polygon fill="black" stroke="black" points="309.37,-58.65 324.31,-53.21 309.24,-48.15 309.37,-58.65"></polygon>
+<text text-anchor="middle" x="44.01" y="-121.8" font-family="Times,serif" font-size="14.00"> </text>
+<path fill="none" stroke="black" d="M325.82,-98.21C172.88,-96.46 45.76,-89.83 45.76,-75.7 45.76,-62.08 163.86,-55.43 309.35,-53.4" class="hover-path"></path></g>
+<!-- 5 -->
+<g id="5" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/include/EventProcessor.hh">
+
+<rect x="1667.5400390625" y="-5620.7001953125" width="295.169921875" height="291.400390625"></rect>
+<g id="5_12" class="title">
+<text text-anchor="start" x="1694.19" y="-5588.3" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;EventProcessor.hh &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="5:7_6" data-kind="5" class="cell class">
+<rect x="1683.5400390625" y="-5569.5" width="263.169921875" height="219.2001953125"></rect>
+<text text-anchor="start" x="1748.43" y="-5544.1" font-family="Arial" font-weight="bold" font-size="16.00">C</text>
+<text text-anchor="start" x="1759.99" y="-5544.1" font-family="Arial" font-size="16.00"> &#160;EventProcessor</text>
+<g id="5:9_4" data-kind="6" class="cell method">
+<rect x="1691.5400390625" y="-5526.2998046875" width="247.169921875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1695.54" y="-5507.9" font-family="Arial" font-size="16.00">EventProcessor(TTree *, TTree *)</text>
+
+</g>
+<g id="5:10_12" data-kind="6" class="cell method">
+<rect x="1691.5400390625" y="-5491.10009765625" width="247.169921875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1748.65" y="-5472.7" font-family="Arial" font-size="16.00">~EventProcessor()</text>
+
+</g>
+<g id="5:13_9" data-kind="6" class="cell method">
+<rect x="1691.5400390625" y="-5455.89990234375" width="247.169921875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1789.33" y="-5437.5" font-family="Arial" font-size="16.00">Begin()</text>
+
+</g>
+<g id="5:14_9" data-kind="6" class="cell method">
+<rect x="1691.5400390625" y="-5420.7001953125" width="247.169921875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1760.44" y="-5402.3" font-family="Arial" font-size="16.00">ProcessEvent()</text>
+
+</g>
+<g id="5:15_9" data-kind="6" class="cell method">
+<rect x="1691.5400390625" y="-5385.5" width="247.169921875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1795.56" y="-5367.1" font-family="Arial" font-size="16.00">End()</text>
+
+</g>
+
+</g>
+</g>
+<!-- 10 -->
+<g id="10" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/include/MagneticField.hh">
+
+<rect x="1511.4000244140625" y="-7127.10009765625" width="607.4500732421875" height="1488.2001953125"></rect>
+<g id="10_13" class="title">
+<text text-anchor="start" x="1700.86" y="-7094.7" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;MagneticField.hh &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="10:18_6" data-kind="5" class="cell class">
+<rect x="1527.4000244140625" y="-7075.89990234375" width="575.4500732421875" height="1416"></rect>
+<text text-anchor="start" x="1755.1" y="-7050.5" font-family="Arial" font-weight="bold" font-size="16.00">C</text>
+<text text-anchor="start" x="1766.65" y="-7050.5" font-family="Arial" font-size="16.00"> &#160;MagneticField</text>
+<g id="10:42_8" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-7032.7001953125" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1721.75" y="-7014.3" font-family="Arial" font-size="16.00">GetIndex(int, int, int) const</text>
+
+</g>
+<g id="10:43_9" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6997.5" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1710.63" y="-6979.1" font-family="Arial" font-size="16.00">IsValidIndex(int, int, int) const</text>
+
+</g>
+<g id="10:44_9" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6962.2998046875" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1665.29" y="-6943.9" font-family="Arial" font-size="16.00">GetGridIndices(int, int &amp;, int &amp;, int &amp;) const</text>
+
+</g>
+<g id="10:47_13" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6927.10009765625" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1644.39" y="-6908.7" font-family="Arial" font-size="16.00">RotateToMagnetFrame(const TVector3 &amp;) const</text>
+
+</g>
+<g id="10:48_13" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6891.89990234375" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1657.72" y="-6873.5" font-family="Arial" font-size="16.00">RotateToLabFrame(const TVector3 &amp;) const</text>
+
+</g>
+<g id="10:51_13" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6856.7001953125" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1625.26" y="-6838.3" font-family="Arial" font-size="16.00">GetFieldWithSymmetry(double, double, double) const</text>
+
+</g>
+<g id="10:55_4" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6821.5" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1759.99" y="-6803.1" font-family="Arial" font-size="16.00">MagneticField()</text>
+
+</g>
+<g id="10:56_4" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6786.2998046875" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1696.41" y="-6767.9" font-family="Arial" font-size="16.00">MagneticField(const std::string &amp;)</text>
+
+</g>
+<g id="10:57_12" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6751.10009765625" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1755.32" y="-6732.7" font-family="Arial" font-size="16.00">~MagneticField()</text>
+
+</g>
+<g id="10:60_9" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6715.89990234375" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1695.51" y="-6697.5" font-family="Arial" font-size="16.00">LoadFieldMap(const std::string &amp;)</text>
+
+</g>
+<g id="10:63_9" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6680.7001953125" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1723.51" y="-6662.3" font-family="Arial" font-size="16.00">SetRotationAngle(double)</text>
+
+</g>
+<g id="10:64_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6645.5" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1725.3" y="-6627.1" font-family="Arial" font-size="16.00">GetRotationAngle() const</text>
+
+</g>
+<g id="10:67_13" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6610.2998046875" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1677.26" y="-6591.9" font-family="Arial" font-size="16.00">GetField(double, double, double) const</text>
+
+</g>
+<g id="10:68_13" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6575.10009765625" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1696.86" y="-6556.7" font-family="Arial" font-size="16.00">GetField(const TVector3 &amp;) const</text>
+
+</g>
+<g id="10:71_13" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6539.89990234375" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1661.25" y="-6521.5" font-family="Arial" font-size="16.00">GetFieldRaw(double, double, double) const</text>
+
+</g>
+<g id="10:72_13" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6504.7001953125" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1680.85" y="-6486.3" font-family="Arial" font-size="16.00">GetFieldRaw(const TVector3 &amp;) const</text>
+
+</g>
+<g id="10:75_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6469.5" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1539.4" y="-6451.1" font-family="Arial" font-size="16.00">InterpolateTrilinear(const std::vector&lt;double&gt;&amp;, double, double, double) const</text>
+
+</g>
+<g id="10:79_8" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6434.2998046875" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1765.78" y="-6415.9" font-family="Arial" font-size="16.00">GetNx() const</text>
+
+</g>
+<g id="10:80_8" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6399.10009765625" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1765.78" y="-6380.7" font-family="Arial" font-size="16.00">GetNy() const</text>
+
+</g>
+<g id="10:81_8" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6363.89990234375" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1765.78" y="-6345.5" font-family="Arial" font-size="16.00">GetNz() const</text>
+
+</g>
+<g id="10:82_8" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6328.7001953125" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1735.54" y="-6310.3" font-family="Arial" font-size="16.00">GetTotalPoints() const</text>
+
+</g>
+<g id="10:85_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6293.5" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1757.33" y="-6275.1" font-family="Arial" font-size="16.00">GetXmin() const</text>
+
+</g>
+<g id="10:86_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6258.2998046875" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1755.11" y="-6239.9" font-family="Arial" font-size="16.00">GetXmax() const</text>
+
+</g>
+<g id="10:87_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6223.10009765625" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1757.33" y="-6204.7" font-family="Arial" font-size="16.00">GetYmin() const</text>
+
+</g>
+<g id="10:88_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6187.89990234375" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1755.11" y="-6169.5" font-family="Arial" font-size="16.00">GetYmax() const</text>
+
+</g>
+<g id="10:89_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6152.7001953125" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1757.78" y="-6134.3" font-family="Arial" font-size="16.00">GetZmin() const</text>
+
+</g>
+<g id="10:90_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6117.5" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1755.56" y="-6099.1" font-family="Arial" font-size="16.00">GetZmax() const</text>
+
+</g>
+<g id="10:93_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6082.2998046875" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1755.1" y="-6063.9" font-family="Arial" font-size="16.00">GetXstep() const</text>
+
+</g>
+<g id="10:94_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6047.10009765625" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1755.1" y="-6028.7" font-family="Arial" font-size="16.00">GetYstep() const</text>
+
+</g>
+<g id="10:95_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-6011.89990234375" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1755.55" y="-5993.5" font-family="Arial" font-size="16.00">GetZstep() const</text>
+
+</g>
+<g id="10:98_9" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-5976.7001953125" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1671.02" y="-5958.3" font-family="Arial" font-size="16.00">IsInRange(double, double, double) const</text>
+
+</g>
+<g id="10:99_9" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-5941.5" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1690.62" y="-5923.1" font-family="Arial" font-size="16.00">IsInRange(const TVector3 &amp;) const</text>
+
+</g>
+<g id="10:102_13" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-5906.2998046875" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1697.74" y="-5887.9" font-family="Arial" font-size="16.00">GetGridPosition(int, int, int) const</text>
+
+</g>
+<g id="10:105_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-5871.10009765625" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1757.77" y="-5852.7" font-family="Arial" font-size="16.00">GetBx(int) const</text>
+
+</g>
+<g id="10:106_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-5835.89990234375" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1757.77" y="-5817.5" font-family="Arial" font-size="16.00">GetBy(int) const</text>
+
+</g>
+<g id="10:107_11" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-5800.7001953125" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1757.77" y="-5782.3" font-family="Arial" font-size="16.00">GetBz(int) const</text>
+
+</g>
+<g id="10:110_9" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-5765.5" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1593.27" y="-5747.1" font-family="Arial" font-size="16.00">SaveAsROOTFile(const std::string &amp;, const std::string &amp;) const</text>
+
+</g>
+<g id="10:111_9" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-5730.2998046875" width="559.4500732421875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1605.72" y="-5711.9" font-family="Arial" font-size="16.00">LoadFromROOTFile(const std::string &amp;, const std::string &amp;)</text>
+
+</g>
+<g id="10:114_9" data-kind="6" class="cell method">
+<rect x="1535.4000244140625" y="-5695.10009765625" width="559.4500732421875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1758.66" y="-5676.7" font-family="Arial" font-size="16.00">PrintInfo() const</text>
+
+</g>
+
+</g>
+</g>
+<!-- 14 -->
+<g id="14" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/include/PDCSimAna.hh">
+
+<rect x="1465.219970703125" y="-7769.10009765625" width="699.81005859375" height="624.2001953125"></rect>
+<g id="14_14" class="title">
+<text text-anchor="start" x="1705.76" y="-7736.7" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;PDCSimAna.hh &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="14:12_7" data-kind="23" class="cell struct">
+<rect x="1481.219970703125" y="-7717.89990234375" width="667.81005859375" height="113.60009765625"></rect>
+<text text-anchor="start" x="1795.56" y="-7692.5" font-family="Arial" font-weight="bold" font-size="16.00">S</text>
+<text text-anchor="start" x="1806.24" y="-7692.5" font-family="Arial" font-size="16.00"> &#160;Hit</text>
+<g id="14:17_4" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7674.7001953125" width="651.81005859375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1800.02" y="-7656.3" font-family="Arial" font-size="16.00">Hit()</text>
+
+</g>
+<g id="14:18_4" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7639.5" width="651.81005859375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1719.06" y="-7621.1" font-family="Arial" font-size="16.00">Hit(double, double, double)</text>
+
+</g>
+
+</g>
+<g id="14:21_6" data-kind="5" class="cell class">
+<rect x="1481.219970703125" y="-7596.2998046875" width="667.81005859375" height="430.39990234375"></rect>
+<text text-anchor="start" x="1760" y="-7570.9" font-family="Arial" font-weight="bold" font-size="16.00">C</text>
+<text text-anchor="start" x="1771.55" y="-7570.9" font-family="Arial" font-size="16.00"> &#160;PDCSimAna</text>
+<g id="14:24_4" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7553.10009765625" width="651.81005859375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1669.29" y="-7534.7" font-family="Arial" font-size="16.00">PDCSimAna(const GeometryManager &amp;)</text>
+
+</g>
+<g id="14:25_12" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7517.89990234375" width="651.81005859375" height="27.19970703125"></rect>
+<text text-anchor="start" x="1760.22" y="-7499.5" font-family="Arial" font-size="16.00">~PDCSimAna()</text>
+
+</g>
+<g id="14:28_9" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7482.7001953125" width="651.81005859375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1711.06" y="-7464.3" font-family="Arial" font-size="16.00">SetSmearing(double, double)</text>
+
+</g>
+<g id="14:32_14" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7447.5" width="651.81005859375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1706.2" y="-7429.1" font-family="Arial" font-size="16.00">ProcessEvent(TClonesArray *)</text>
+
+</g>
+<g id="14:34_9" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7412.2998046875" width="651.81005859375" height="27.19970703125"></rect>
+<text text-anchor="start" x="1655.06" y="-7393.9" font-family="Arial" font-size="16.00">ProcessEvent(TClonesArray *, RecoEvent &amp;)</text>
+
+</g>
+<g id="14:37_13" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7377.10009765625" width="651.81005859375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1734.2" y="-7358.7" font-family="Arial" font-size="16.00">GetRecoPoint1() const</text>
+
+</g>
+<g id="14:38_13" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7341.89990234375" width="651.81005859375" height="27.19970703125"></rect>
+<text text-anchor="start" x="1734.2" y="-7323.5" font-family="Arial" font-size="16.00">GetRecoPoint2() const</text>
+
+</g>
+<g id="14:39_26" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7306.7001953125" width="651.81005859375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1687.51" y="-7288.3" font-family="Arial" font-size="16.00">GetSmearedGlobalPositions() const</text>
+
+</g>
+<g id="14:43_9" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7271.5" width="651.81005859375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1781.79" y="-7253.1" font-family="Arial" font-size="16.00">ClearAll()</text>
+
+</g>
+<g id="14:44_13" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7236.2998046875" width="651.81005859375" height="27.19970703125"></rect>
+<text text-anchor="start" x="1493.22" y="-7217.9" font-family="Arial" font-size="16.00">ReconstructPDC(const std::vector&lt;Hit&gt;&amp;, const std::vector&lt;Hit&gt;&amp;, const TVector3 &amp;) const</text>
+
+</g>
+<g id="14:45_11" data-kind="6" class="cell method">
+<rect x="1489.219970703125" y="-7201.10009765625" width="651.81005859375" height="27.2001953125"></rect>
+<text text-anchor="start" x="1655.51" y="-7182.7" font-family="Arial" font-size="16.00">CalculateCoM(const std::vector&lt;Hit&gt;&amp;) const</text>
+
+</g>
+
+</g>
+</g>
+<!-- 17 -->
+<g id="17" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/include/TargetReconstructor.hh">
+
+<rect x="1395.3800048828125" y="-8113.2998046875" width="839.4901123046875" height="326.599609375"></rect>
+<g id="17_15" class="title">
+<text text-anchor="start" x="1677.74" y="-8080.9" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;TargetReconstructor.hh &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="17:12_7" data-kind="23" class="cell struct">
+<rect x="1411.3800048828125" y="-8062.10009765625" width="807.4901123046875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1751.54" y="-8044.7" font-family="Arial" font-weight="bold" font-size="16.00">S</text>
+<text text-anchor="start" x="1762.22" y="-8044.7" font-family="Arial" font-size="16.00"> &#160;TrajectoryPoint</text>
+
+</g>
+<g id="17:18_7" data-kind="23" class="cell struct">
+<rect x="1411.3800048828125" y="-8026.89990234375" width="807.4901123046875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1706.19" y="-8009.5" font-family="Arial" font-weight="bold" font-size="16.00">S</text>
+<text text-anchor="start" x="1716.86" y="-8009.5" font-family="Arial" font-size="16.00"> &#160;TargetReconstructionResult</text>
+
+</g>
+<g id="17:32_6" data-kind="5" class="cell class">
+<rect x="1411.3800048828125" y="-7991.7001953125" width="807.4901123046875" height="184"></rect>
+<text text-anchor="start" x="1731.98" y="-7966.3" font-family="Arial" font-weight="bold" font-size="16.00">C</text>
+<text text-anchor="start" x="1743.54" y="-7966.3" font-family="Arial" font-size="16.00"> &#160;TargetReconstructor</text>
+<g id="17:34_4" data-kind="6" class="cell method">
+<rect x="1419.3800048828125" y="-7948.5" width="791.4901123046875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1681.74" y="-7930.1" font-family="Arial" font-size="16.00">TargetReconstructor(MagneticField *)</text>
+
+</g>
+<g id="17:35_4" data-kind="6" class="cell method">
+<rect x="1419.3800048828125" y="-7913.2998046875" width="791.4901123046875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1732.21" y="-7894.9" font-family="Arial" font-size="16.00">~TargetReconstructor()</text>
+
+</g>
+<g id="17:41_19" data-kind="6" class="cell method">
+<rect x="1419.3800048828125" y="-7878.10009765625" width="791.4901123046875" height="27.2001953125"></rect>
+<text text-anchor="start" x="1483.4" y="-7859.7" font-family="Arial" font-size="16.00">ReconstructAtTarget(const RecoTrack &amp;, const TVector3 &amp;, double, double, double, int) const</text>
+
+</g>
+<g id="17:50_31" data-kind="6" class="cell method">
+<rect x="1419.3800048828125" y="-7842.89990234375" width="791.4901123046875" height="27.19970703125"></rect>
+<text text-anchor="start" x="1423.38" y="-7824.5" font-family="Arial" font-size="16.00">ReconstructAtTargetWithDetails(const RecoTrack &amp;, const TVector3 &amp;, bool, double, double, double, int) const</text>
+
+</g>
+
+</g>
+</g>
+<!-- 6 -->
+<g id="6" class="node" data-path="/home/tian/workspace/dpol/smsimulator5.5/d_work/sources/src/EventProcessor.cc">
+
+<rect x="579.3499755859375" y="-2118.699951171875" width="284.07000732421875" height="275.39990234375"></rect>
+<g id="6_16" class="title">
+<text text-anchor="start" x="601.35" y="-2086.3" font-family="Arial" font-size="16.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;EventProcessor.cc &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+
+</g>
+<g id="6:5_0" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-2067.5" width="252.07000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="626.24" y="-2049.1" font-family="Arial" font-size="16.00">ClassImp(EventProcessor)</text>
+
+</g>
+<g id="6:7_16" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-2032.300048828125" width="252.07000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="601.79" y="-2013.9" font-family="Arial" font-size="16.00">EventProcessor(TTree *, TTree *)</text>
+
+</g>
+<g id="6:21_16" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-1997.0999755859375" width="252.07000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="654.91" y="-1978.7" font-family="Arial" font-size="16.00">~EventProcessor()</text>
+
+</g>
+<g id="6:25_21" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-1961.9000244140625" width="252.07000732421875" height="27.2000732421875"></rect>
+<text text-anchor="start" x="695.59" y="-1943.5" font-family="Arial" font-size="16.00">Begin()</text>
+
+</g>
+<g id="6:30_21" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-1926.699951171875" width="252.07000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="666.7" y="-1908.3" font-family="Arial" font-size="16.00">ProcessEvent()</text>
+
+</g>
+<g id="6:39_21" data-kind="12" class="cell function">
+<rect x="595.3499755859375" y="-1891.5" width="252.07000732421875" height="27.199951171875"></rect>
+<text text-anchor="start" x="701.82" y="-1873.1" font-family="Arial" font-size="16.00">End()</text>
+
+</g>
+</g>
+<g id="faded-group"></g></g>
+<defs><filter id="shadow"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-opacity="0.5"></feDropShadow></filter>
+    <linearGradient id="highlightGradient">
+      <stop offset="0%" stop-color="var(--edge-incoming-color)"></stop>
+      <stop offset="100%" stop-color="var(--edge-outgoing-color)"></stop>
+    </linearGradient></defs>
+  </svg>
+
+  <script type="module">
+    var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: !0 });
+function getDefaultExportFromCjs(x) {
+  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x.default : x;
+}
+__name(getDefaultExportFromCjs, "getDefaultExportFromCjs");
+var wheel = { exports: {} }, hasRequiredWheel;
+function requireWheel() {
+  if (hasRequiredWheel) return wheel.exports;
+  hasRequiredWheel = 1, wheel.exports = addWheelListener, wheel.exports.addWheelListener = addWheelListener, wheel.exports.removeWheelListener = removeWheelListener;
+  function addWheelListener(element, listener, useCapture) {
+    element.addEventListener("wheel", listener, useCapture);
+  }
+  __name(addWheelListener, "addWheelListener");
+  function removeWheelListener(element, listener, useCapture) {
+    element.removeEventListener("wheel", listener, useCapture);
+  }
+  return __name(removeWheelListener, "removeWheelListener"), wheel.exports;
+}
+__name(requireWheel, "requireWheel");
+var amator = { exports: {} }, src, hasRequiredSrc;
+function requireSrc() {
+  if (hasRequiredSrc) return src;
+  hasRequiredSrc = 1;
+  var NEWTON_ITERATIONS = 4, NEWTON_MIN_SLOPE = 1e-3, SUBDIVISION_PRECISION = 1e-7, SUBDIVISION_MAX_ITERATIONS = 10, kSplineTableSize = 11, kSampleStepSize = 1 / (kSplineTableSize - 1), float32ArraySupported = typeof Float32Array == "function";
+  function A(aA1, aA2) {
+    return 1 - 3 * aA2 + 3 * aA1;
+  }
+  __name(A, "A");
+  function B(aA1, aA2) {
+    return 3 * aA2 - 6 * aA1;
+  }
+  __name(B, "B");
+  function C(aA1) {
+    return 3 * aA1;
+  }
+  __name(C, "C");
+  function calcBezier(aT, aA1, aA2) {
+    return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT;
+  }
+  __name(calcBezier, "calcBezier");
+  function getSlope(aT, aA1, aA2) {
+    return 3 * A(aA1, aA2) * aT * aT + 2 * B(aA1, aA2) * aT + C(aA1);
+  }
+  __name(getSlope, "getSlope");
+  function binarySubdivide(aX, aA, aB, mX1, mX2) {
+    var currentX, currentT, i = 0;
+    do
+      currentT = aA + (aB - aA) / 2, currentX = calcBezier(currentT, mX1, mX2) - aX, currentX > 0 ? aB = currentT : aA = currentT;
+    while (Math.abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
+    return currentT;
+  }
+  __name(binarySubdivide, "binarySubdivide");
+  function newtonRaphsonIterate(aX, aGuessT, mX1, mX2) {
+    for (var i = 0; i < NEWTON_ITERATIONS; ++i) {
+      var currentSlope = getSlope(aGuessT, mX1, mX2);
+      if (currentSlope === 0)
+        return aGuessT;
+      var currentX = calcBezier(aGuessT, mX1, mX2) - aX;
+      aGuessT -= currentX / currentSlope;
+    }
+    return aGuessT;
+  }
+  __name(newtonRaphsonIterate, "newtonRaphsonIterate");
+  function LinearEasing(x) {
+    return x;
+  }
+  return __name(LinearEasing, "LinearEasing"), src = /* @__PURE__ */ __name(function(mX1, mY1, mX2, mY2) {
+    if (!(0 <= mX1 && mX1 <= 1 && 0 <= mX2 && mX2 <= 1))
+      throw new Error("bezier x values must be in [0, 1] range");
+    if (mX1 === mY1 && mX2 === mY2)
+      return LinearEasing;
+    for (var sampleValues = float32ArraySupported ? new Float32Array(kSplineTableSize) : new Array(kSplineTableSize), i = 0; i < kSplineTableSize; ++i)
+      sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2);
+    function getTForX(aX) {
+      for (var intervalStart = 0, currentSample = 1, lastSample = kSplineTableSize - 1; currentSample !== lastSample && sampleValues[currentSample] <= aX; ++currentSample)
+        intervalStart += kSampleStepSize;
+      --currentSample;
+      var dist = (aX - sampleValues[currentSample]) / (sampleValues[currentSample + 1] - sampleValues[currentSample]), guessForT = intervalStart + dist * kSampleStepSize, initialSlope = getSlope(guessForT, mX1, mX2);
+      return initialSlope >= NEWTON_MIN_SLOPE ? newtonRaphsonIterate(aX, guessForT, mX1, mX2) : initialSlope === 0 ? guessForT : binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, mX1, mX2);
+    }
+    return __name(getTForX, "getTForX"), /* @__PURE__ */ __name(function(x) {
+      return x === 0 ? 0 : x === 1 ? 1 : calcBezier(getTForX(x), mY1, mY2);
+    }, "BezierEasing");
+  }, "bezier"), src;
+}
+__name(requireSrc, "requireSrc");
+var hasRequiredAmator;
+function requireAmator() {
+  if (hasRequiredAmator) return amator.exports;
+  hasRequiredAmator = 1;
+  var BezierEasing = requireSrc(), animations = {
+    ease: BezierEasing(0.25, 0.1, 0.25, 1),
+    easeIn: BezierEasing(0.42, 0, 1, 1),
+    easeOut: BezierEasing(0, 0, 0.58, 1),
+    easeInOut: BezierEasing(0.42, 0, 0.58, 1),
+    linear: BezierEasing(0, 0, 1, 1)
+  };
+  amator.exports = animate, amator.exports.makeAggregateRaf = makeAggregateRaf, amator.exports.sharedScheduler = makeAggregateRaf();
+  function animate(source, target, options) {
+    var start = /* @__PURE__ */ Object.create(null), diff = /* @__PURE__ */ Object.create(null);
+    options = options || {};
+    var easing = typeof options.easing == "function" ? options.easing : animations[options.easing];
+    easing || (options.easing && console.warn("Unknown easing function in amator: " + options.easing), easing = animations.ease);
+    var step = typeof options.step == "function" ? options.step : noop, done = typeof options.done == "function" ? options.done : noop, scheduler = getScheduler(options.scheduler), keys = Object.keys(target);
+    keys.forEach(function(key) {
+      start[key] = source[key], diff[key] = target[key] - source[key];
+    });
+    var durationInMs = typeof options.duration == "number" ? options.duration : 400, durationInFrames = Math.max(1, durationInMs * 0.06), previousAnimationId, frame = 0;
+    return previousAnimationId = scheduler.next(loop), {
+      cancel
+    };
+    function cancel() {
+      scheduler.cancel(previousAnimationId), previousAnimationId = 0;
+    }
+    __name(cancel, "cancel");
+    function loop() {
+      var t = easing(frame / durationInFrames);
+      frame += 1, setValues(t), frame <= durationInFrames ? (previousAnimationId = scheduler.next(loop), step(source)) : (previousAnimationId = 0, setTimeout(function() {
+        done(source);
+      }, 0));
+    }
+    __name(loop, "loop");
+    function setValues(t) {
+      keys.forEach(function(key) {
+        source[key] = diff[key] * t + start[key];
+      });
+    }
+    __name(setValues, "setValues");
+  }
+  __name(animate, "animate");
+  function noop() {
+  }
+  __name(noop, "noop");
+  function getScheduler(scheduler) {
+    if (!scheduler) {
+      var canRaf = typeof window < "u" && window.requestAnimationFrame;
+      return canRaf ? rafScheduler() : timeoutScheduler();
+    }
+    if (typeof scheduler.next != "function") throw new Error("Scheduler is supposed to have next(cb) function");
+    if (typeof scheduler.cancel != "function") throw new Error("Scheduler is supposed to have cancel(handle) function");
+    return scheduler;
+  }
+  __name(getScheduler, "getScheduler");
+  function rafScheduler() {
+    return {
+      next: window.requestAnimationFrame.bind(window),
+      cancel: window.cancelAnimationFrame.bind(window)
+    };
+  }
+  __name(rafScheduler, "rafScheduler");
+  function timeoutScheduler() {
+    return {
+      next: /* @__PURE__ */ __name(function(cb) {
+        return setTimeout(cb, 1e3 / 60);
+      }, "next"),
+      cancel: /* @__PURE__ */ __name(function(id) {
+        return clearTimeout(id);
+      }, "cancel")
+    };
+  }
+  __name(timeoutScheduler, "timeoutScheduler");
+  function makeAggregateRaf() {
+    var frontBuffer = /* @__PURE__ */ new Set(), backBuffer = /* @__PURE__ */ new Set(), frameToken = 0;
+    return {
+      next,
+      cancel: next,
+      clearAll
+    };
+    function clearAll() {
+      frontBuffer.clear(), backBuffer.clear(), cancelAnimationFrame(frameToken), frameToken = 0;
+    }
+    function next(callback) {
+      backBuffer.add(callback), renderNextFrame();
+    }
+    function renderNextFrame() {
+      frameToken || (frameToken = requestAnimationFrame(renderFrame));
+    }
+    function renderFrame() {
+      frameToken = 0;
+      var t = backBuffer;
+      backBuffer = frontBuffer, frontBuffer = t, frontBuffer.forEach(function(callback) {
+        callback();
+      }), frontBuffer.clear();
+    }
+  }
+  return __name(makeAggregateRaf, "makeAggregateRaf"), amator.exports;
+}
+__name(requireAmator, "requireAmator");
+var ngraph_events, hasRequiredNgraph_events;
+function requireNgraph_events() {
+  if (hasRequiredNgraph_events) return ngraph_events;
+  hasRequiredNgraph_events = 1, ngraph_events = /* @__PURE__ */ __name(function(subject) {
+    validateSubject(subject);
+    var eventsStorage = createEventsStorage(subject);
+    return subject.on = eventsStorage.on, subject.off = eventsStorage.off, subject.fire = eventsStorage.fire, subject;
+  }, "eventify");
+  function createEventsStorage(subject) {
+    var registeredEvents = /* @__PURE__ */ Object.create(null);
+    return {
+      on: /* @__PURE__ */ __name(function(eventName, callback, ctx) {
+        if (typeof callback != "function")
+          throw new Error("callback is expected to be a function");
+        var handlers = registeredEvents[eventName];
+        return handlers || (handlers = registeredEvents[eventName] = []), handlers.push({ callback, ctx }), subject;
+      }, "on"),
+      off: /* @__PURE__ */ __name(function(eventName, callback) {
+        var wantToRemoveAll = typeof eventName > "u";
+        if (wantToRemoveAll)
+          return registeredEvents = /* @__PURE__ */ Object.create(null), subject;
+        if (registeredEvents[eventName]) {
+          var deleteAllCallbacksForEvent = typeof callback != "function";
+          if (deleteAllCallbacksForEvent)
+            delete registeredEvents[eventName];
+          else
+            for (var callbacks = registeredEvents[eventName], i = 0; i < callbacks.length; ++i)
+              callbacks[i].callback === callback && callbacks.splice(i, 1);
+        }
+        return subject;
+      }, "off"),
+      fire: /* @__PURE__ */ __name(function(eventName) {
+        var callbacks = registeredEvents[eventName];
+        if (!callbacks)
+          return subject;
+        var fireArguments;
+        arguments.length > 1 && (fireArguments = Array.prototype.splice.call(arguments, 1));
+        for (var i = 0; i < callbacks.length; ++i) {
+          var callbackInfo = callbacks[i];
+          callbackInfo.callback.apply(callbackInfo.ctx, fireArguments);
+        }
+        return subject;
+      }, "fire")
+    };
+  }
+  __name(createEventsStorage, "createEventsStorage");
+  function validateSubject(subject) {
+    if (!subject)
+      throw new Error("Eventify cannot use falsy object as events subject");
+    for (var reservedWords = ["on", "fire", "off"], i = 0; i < reservedWords.length; ++i)
+      if (subject.hasOwnProperty(reservedWords[i]))
+        throw new Error("Subject cannot be eventified, since it already has property '" + reservedWords[i] + "'");
+  }
+  return __name(validateSubject, "validateSubject"), ngraph_events;
+}
+__name(requireNgraph_events, "requireNgraph_events");
+var kinetic_1, hasRequiredKinetic;
+function requireKinetic() {
+  if (hasRequiredKinetic) return kinetic_1;
+  hasRequiredKinetic = 1, kinetic_1 = kinetic;
+  function kinetic(getPoint, scroll, settings) {
+    typeof settings != "object" && (settings = {});
+    var minVelocity = typeof settings.minVelocity == "number" ? settings.minVelocity : 5, amplitude = typeof settings.amplitude == "number" ? settings.amplitude : 0.25, cancelAnimationFrame2 = typeof settings.cancelAnimationFrame == "function" ? settings.cancelAnimationFrame : getCancelAnimationFrame(), requestAnimationFrame2 = typeof settings.requestAnimationFrame == "function" ? settings.requestAnimationFrame : getRequestAnimationFrame(), lastPoint, timestamp, timeConstant = 342, ticker, vx, targetX, ax, vy, targetY, ay, raf;
+    return {
+      start,
+      stop,
+      cancel: dispose
+    };
+    function dispose() {
+      cancelAnimationFrame2(ticker), cancelAnimationFrame2(raf);
+    }
+    function start() {
+      lastPoint = getPoint(), ax = ay = vx = vy = 0, timestamp = /* @__PURE__ */ new Date(), cancelAnimationFrame2(ticker), cancelAnimationFrame2(raf), ticker = requestAnimationFrame2(track);
+    }
+    function track() {
+      var now = Date.now(), elapsed = now - timestamp;
+      timestamp = now;
+      var currentPoint = getPoint(), dx = currentPoint.x - lastPoint.x, dy = currentPoint.y - lastPoint.y;
+      lastPoint = currentPoint;
+      var dt = 1e3 / (1 + elapsed);
+      vx = 0.8 * dx * dt + 0.2 * vx, vy = 0.8 * dy * dt + 0.2 * vy, ticker = requestAnimationFrame2(track);
+    }
+    function stop() {
+      cancelAnimationFrame2(ticker), cancelAnimationFrame2(raf);
+      var currentPoint = getPoint();
+      targetX = currentPoint.x, targetY = currentPoint.y, timestamp = Date.now(), (vx < -minVelocity || vx > minVelocity) && (ax = amplitude * vx, targetX += ax), (vy < -minVelocity || vy > minVelocity) && (ay = amplitude * vy, targetY += ay), raf = requestAnimationFrame2(autoScroll);
+    }
+    function autoScroll() {
+      var elapsed = Date.now() - timestamp, moving = !1, dx = 0, dy = 0;
+      ax && (dx = -ax * Math.exp(-elapsed / timeConstant), dx > 0.5 || dx < -0.5 ? moving = !0 : dx = ax = 0), ay && (dy = -ay * Math.exp(-elapsed / timeConstant), dy > 0.5 || dy < -0.5 ? moving = !0 : dy = ay = 0), moving && (scroll(targetX + dx, targetY + dy), raf = requestAnimationFrame2(autoScroll));
+    }
+  }
+  __name(kinetic, "kinetic");
+  function getCancelAnimationFrame() {
+    return typeof cancelAnimationFrame == "function" ? cancelAnimationFrame : clearTimeout;
+  }
+  __name(getCancelAnimationFrame, "getCancelAnimationFrame");
+  function getRequestAnimationFrame() {
+    return typeof requestAnimationFrame == "function" ? requestAnimationFrame : function(handler) {
+      return setTimeout(handler, 16);
+    };
+  }
+  return __name(getRequestAnimationFrame, "getRequestAnimationFrame"), kinetic_1;
+}
+__name(requireKinetic, "requireKinetic");
+var createTextSelectionInterceptor_1, hasRequiredCreateTextSelectionInterceptor;
+function requireCreateTextSelectionInterceptor() {
+  if (hasRequiredCreateTextSelectionInterceptor) return createTextSelectionInterceptor_1;
+  hasRequiredCreateTextSelectionInterceptor = 1, createTextSelectionInterceptor_1 = createTextSelectionInterceptor;
+  function createTextSelectionInterceptor(useFake) {
+    if (useFake)
+      return {
+        capture: noop,
+        release: noop
+      };
+    var dragObject, prevSelectStart, prevDragStart, wasCaptured = !1;
+    return {
+      capture,
+      release
+    };
+    function capture(domObject) {
+      wasCaptured = !0, prevSelectStart = window.document.onselectstart, prevDragStart = window.document.ondragstart, window.document.onselectstart = disabled, dragObject = domObject, dragObject.ondragstart = disabled;
+    }
+    function release() {
+      wasCaptured && (wasCaptured = !1, window.document.onselectstart = prevSelectStart, dragObject && (dragObject.ondragstart = prevDragStart));
+    }
+  }
+  __name(createTextSelectionInterceptor, "createTextSelectionInterceptor");
+  function disabled(e) {
+    return e.stopPropagation(), !1;
+  }
+  __name(disabled, "disabled");
+  function noop() {
+  }
+  return __name(noop, "noop"), createTextSelectionInterceptor_1;
+}
+__name(requireCreateTextSelectionInterceptor, "requireCreateTextSelectionInterceptor");
+var transform, hasRequiredTransform;
+function requireTransform() {
+  if (hasRequiredTransform) return transform;
+  hasRequiredTransform = 1, transform = Transform;
+  function Transform() {
+    this.x = 0, this.y = 0, this.scale = 1;
+  }
+  return __name(Transform, "Transform"), transform;
+}
+__name(requireTransform, "requireTransform");
+var svgController = { exports: {} }, hasRequiredSvgController;
+function requireSvgController() {
+  if (hasRequiredSvgController) return svgController.exports;
+  hasRequiredSvgController = 1, svgController.exports = makeSvgController, svgController.exports.canAttach = isSVGElement;
+  function makeSvgController(svgElement, options) {
+    if (!isSVGElement(svgElement))
+      throw new Error("svg element is required for svg.panzoom to work");
+    var owner = svgElement.ownerSVGElement;
+    if (!owner)
+      throw new Error(
+        "Do not apply panzoom to the root <svg> element. Use its child instead (e.g. <g></g>). As of March 2016 only FireFox supported transform on the root element"
+      );
+    options.disableKeyboardInteraction || owner.setAttribute("tabindex", 0);
+    var api = {
+      getBBox,
+      getScreenCTM,
+      getOwner,
+      applyTransform,
+      initTransform
+    };
+    return api;
+    function getOwner() {
+      return owner;
+    }
+    function getBBox() {
+      var bbox = svgElement.getBBox();
+      return {
+        left: bbox.x,
+        top: bbox.y,
+        width: bbox.width,
+        height: bbox.height
+      };
+    }
+    function getScreenCTM() {
+      var ctm = owner.getCTM();
+      return ctm || owner.getScreenCTM();
+    }
+    function initTransform(transform2) {
+      var screenCTM = svgElement.getCTM();
+      screenCTM === null && (screenCTM = document.createElementNS("http://www.w3.org/2000/svg", "svg").createSVGMatrix()), transform2.x = screenCTM.e, transform2.y = screenCTM.f, transform2.scale = screenCTM.a, owner.removeAttributeNS(null, "viewBox");
+    }
+    function applyTransform(transform2) {
+      svgElement.setAttribute("transform", "matrix(" + transform2.scale + " 0 0 " + transform2.scale + " " + transform2.x + " " + transform2.y + ")");
+    }
+  }
+  __name(makeSvgController, "makeSvgController");
+  function isSVGElement(element) {
+    return element && element.ownerSVGElement && element.getCTM;
+  }
+  return __name(isSVGElement, "isSVGElement"), svgController.exports;
+}
+__name(requireSvgController, "requireSvgController");
+var domController = { exports: {} }, hasRequiredDomController;
+function requireDomController() {
+  if (hasRequiredDomController) return domController.exports;
+  hasRequiredDomController = 1, domController.exports = makeDomController, domController.exports.canAttach = isDomElement;
+  function makeDomController(domElement, options) {
+    var elementValid = isDomElement(domElement);
+    if (!elementValid)
+      throw new Error("panzoom requires DOM element to be attached to the DOM tree");
+    var owner = domElement.parentElement;
+    domElement.scrollTop = 0, options.disableKeyboardInteraction || owner.setAttribute("tabindex", 0);
+    var api = {
+      getBBox,
+      getOwner,
+      applyTransform
+    };
+    return api;
+    function getOwner() {
+      return owner;
+    }
+    function getBBox() {
+      return {
+        left: 0,
+        top: 0,
+        width: domElement.clientWidth,
+        height: domElement.clientHeight
+      };
+    }
+    function applyTransform(transform2) {
+      domElement.style.transformOrigin = "0 0 0", domElement.style.transform = "matrix(" + transform2.scale + ", 0, 0, " + transform2.scale + ", " + transform2.x + ", " + transform2.y + ")";
+    }
+  }
+  __name(makeDomController, "makeDomController");
+  function isDomElement(element) {
+    return element && element.parentElement && element.style;
+  }
+  return __name(isDomElement, "isDomElement"), domController.exports;
+}
+__name(requireDomController, "requireDomController");
+var panzoom, hasRequiredPanzoom;
+function requirePanzoom() {
+  if (hasRequiredPanzoom) return panzoom;
+  hasRequiredPanzoom = 1;
+  var wheel2 = requireWheel(), animate = requireAmator(), eventify = requireNgraph_events(), kinetic = requireKinetic(), createTextSelectionInterceptor = requireCreateTextSelectionInterceptor(), domTextSelectionInterceptor = createTextSelectionInterceptor(), fakeTextSelectorInterceptor = createTextSelectionInterceptor(!0), Transform = requireTransform(), makeSvgController = requireSvgController(), makeDomController = requireDomController(), defaultZoomSpeed = 1, defaultDoubleTapZoomSpeed = 1.75, doubleTapSpeedInMS = 300, clickEventTimeInMS = 200;
+  panzoom = createPanZoom2;
+  function createPanZoom2(domElement, options) {
+    options = options || {};
+    var panController = options.controller;
+    if (panController || (makeSvgController.canAttach(domElement) ? panController = makeSvgController(domElement, options) : makeDomController.canAttach(domElement) && (panController = makeDomController(domElement, options))), !panController)
+      throw new Error(
+        "Cannot create panzoom for the current type of dom element"
+      );
+    var owner = panController.getOwner(), storedCTMResult = { x: 0, y: 0 }, isDirty = !1, transform2 = new Transform();
+    panController.initTransform && panController.initTransform(transform2);
+    var filterKey = typeof options.filterKey == "function" ? options.filterKey : noop, pinchSpeed = typeof options.pinchSpeed == "number" ? options.pinchSpeed : 1, bounds = options.bounds, maxZoom = typeof options.maxZoom == "number" ? options.maxZoom : Number.POSITIVE_INFINITY, minZoom = typeof options.minZoom == "number" ? options.minZoom : 0, boundsPadding = typeof options.boundsPadding == "number" ? options.boundsPadding : 0.05, zoomDoubleClickSpeed = typeof options.zoomDoubleClickSpeed == "number" ? options.zoomDoubleClickSpeed : defaultDoubleTapZoomSpeed, beforeWheel = options.beforeWheel || noop, beforeMouseDown = options.beforeMouseDown || noop, speed = typeof options.zoomSpeed == "number" ? options.zoomSpeed : defaultZoomSpeed, transformOrigin = parseTransformOrigin(options.transformOrigin), textSelection = options.enableTextSelection ? fakeTextSelectorInterceptor : domTextSelectionInterceptor;
+    validateBounds(bounds), options.autocenter && autocenter();
+    var frameAnimation, lastTouchEndTime = 0, lastTouchStartTime = 0, pendingClickEventTimeout = 0, lastMouseDownedEvent = null, lastMouseDownTime = /* @__PURE__ */ new Date(), lastSingleFingerOffset, touchInProgress = !1, panstartFired = !1, mouseX, mouseY, clickX, clickY, pinchZoomLength, smoothScroll;
+    "smoothScroll" in options && !options.smoothScroll ? smoothScroll = rigidScroll() : smoothScroll = kinetic(getPoint, scroll, options.smoothScroll);
+    var moveByAnimation, zoomToAnimation, multiTouch, paused = !1;
+    listenForEvents();
+    var api = {
+      dispose,
+      moveBy: internalMoveBy,
+      moveTo,
+      smoothMoveTo,
+      centerOn,
+      zoomTo: publicZoomTo,
+      zoomAbs,
+      smoothZoom,
+      smoothZoomAbs,
+      showRectangle,
+      pause,
+      resume,
+      isPaused,
+      getTransform: getTransformModel,
+      getMinZoom,
+      setMinZoom,
+      getMaxZoom,
+      setMaxZoom,
+      getTransformOrigin,
+      setTransformOrigin,
+      getZoomSpeed,
+      setZoomSpeed
+    };
+    eventify(api);
+    var initialX = typeof options.initialX == "number" ? options.initialX : transform2.x, initialY = typeof options.initialY == "number" ? options.initialY : transform2.y, initialZoom = typeof options.initialZoom == "number" ? options.initialZoom : transform2.scale;
+    return (initialX != transform2.x || initialY != transform2.y || initialZoom != transform2.scale) && zoomAbs(initialX, initialY, initialZoom), api;
+    function pause() {
+      releaseEvents(), paused = !0;
+    }
+    __name(pause, "pause");
+    function resume() {
+      paused && (listenForEvents(), paused = !1);
+    }
+    __name(resume, "resume");
+    function isPaused() {
+      return paused;
+    }
+    __name(isPaused, "isPaused");
+    function showRectangle(rect) {
+      var clientRect = owner.getBoundingClientRect(), size = transformToScreen(clientRect.width, clientRect.height), rectWidth = rect.right - rect.left, rectHeight = rect.bottom - rect.top;
+      if (!Number.isFinite(rectWidth) || !Number.isFinite(rectHeight))
+        throw new Error("Invalid rectangle");
+      var dw = size.x / rectWidth, dh = size.y / rectHeight, scale = Math.min(dw, dh);
+      transform2.x = -(rect.left + rectWidth / 2) * scale + size.x / 2, transform2.y = -(rect.top + rectHeight / 2) * scale + size.y / 2, transform2.scale = scale;
+    }
+    __name(showRectangle, "showRectangle");
+    function transformToScreen(x, y) {
+      if (panController.getScreenCTM) {
+        var parentCTM = panController.getScreenCTM(), parentScaleX = parentCTM.a, parentScaleY = parentCTM.d, parentOffsetX = parentCTM.e, parentOffsetY = parentCTM.f;
+        storedCTMResult.x = x * parentScaleX - parentOffsetX, storedCTMResult.y = y * parentScaleY - parentOffsetY;
+      } else
+        storedCTMResult.x = x, storedCTMResult.y = y;
+      return storedCTMResult;
+    }
+    __name(transformToScreen, "transformToScreen");
+    function autocenter() {
+      var w, h, left = 0, top = 0, sceneBoundingBox = getBoundingBox();
+      if (sceneBoundingBox)
+        left = sceneBoundingBox.left, top = sceneBoundingBox.top, w = sceneBoundingBox.right - sceneBoundingBox.left, h = sceneBoundingBox.bottom - sceneBoundingBox.top;
+      else {
+        var ownerRect = owner.getBoundingClientRect();
+        w = ownerRect.width, h = ownerRect.height;
+      }
+      var bbox = panController.getBBox();
+      if (!(bbox.width === 0 || bbox.height === 0)) {
+        var dh = h / bbox.height, dw = w / bbox.width, scale = Math.min(dw, dh);
+        transform2.x = -(bbox.left + bbox.width / 2) * scale + w / 2 + left, transform2.y = -(bbox.top + bbox.height / 2) * scale + h / 2 + top, transform2.scale = scale;
+      }
+    }
+    __name(autocenter, "autocenter");
+    function getTransformModel() {
+      return transform2;
+    }
+    __name(getTransformModel, "getTransformModel");
+    function getMinZoom() {
+      return minZoom;
+    }
+    __name(getMinZoom, "getMinZoom");
+    function setMinZoom(newMinZoom) {
+      minZoom = newMinZoom;
+    }
+    __name(setMinZoom, "setMinZoom");
+    function getMaxZoom() {
+      return maxZoom;
+    }
+    __name(getMaxZoom, "getMaxZoom");
+    function setMaxZoom(newMaxZoom) {
+      maxZoom = newMaxZoom;
+    }
+    __name(setMaxZoom, "setMaxZoom");
+    function getTransformOrigin() {
+      return transformOrigin;
+    }
+    __name(getTransformOrigin, "getTransformOrigin");
+    function setTransformOrigin(newTransformOrigin) {
+      transformOrigin = parseTransformOrigin(newTransformOrigin);
+    }
+    __name(setTransformOrigin, "setTransformOrigin");
+    function getZoomSpeed() {
+      return speed;
+    }
+    __name(getZoomSpeed, "getZoomSpeed");
+    function setZoomSpeed(newSpeed) {
+      if (!Number.isFinite(newSpeed))
+        throw new Error("Zoom speed should be a number");
+      speed = newSpeed;
+    }
+    __name(setZoomSpeed, "setZoomSpeed");
+    function getPoint() {
+      return {
+        x: transform2.x,
+        y: transform2.y
+      };
+    }
+    __name(getPoint, "getPoint");
+    function moveTo(x, y) {
+      transform2.x = x, transform2.y = y, keepTransformInsideBounds(), triggerEvent("pan"), makeDirty();
+    }
+    __name(moveTo, "moveTo");
+    function moveBy(dx, dy) {
+      moveTo(transform2.x + dx, transform2.y + dy);
+    }
+    __name(moveBy, "moveBy");
+    function keepTransformInsideBounds() {
+      var boundingBox = getBoundingBox();
+      if (boundingBox) {
+        var adjusted = !1, clientRect = getClientRect(), diff = boundingBox.left - clientRect.right;
+        return diff > 0 && (transform2.x += diff, adjusted = !0), diff = boundingBox.right - clientRect.left, diff < 0 && (transform2.x += diff, adjusted = !0), diff = boundingBox.top - clientRect.bottom, diff > 0 && (transform2.y += diff, adjusted = !0), diff = boundingBox.bottom - clientRect.top, diff < 0 && (transform2.y += diff, adjusted = !0), adjusted;
+      }
+    }
+    __name(keepTransformInsideBounds, "keepTransformInsideBounds");
+    function getBoundingBox() {
+      if (bounds) {
+        if (typeof bounds == "boolean") {
+          var ownerRect = owner.getBoundingClientRect(), sceneWidth = ownerRect.width, sceneHeight = ownerRect.height;
+          return {
+            left: sceneWidth * boundsPadding,
+            top: sceneHeight * boundsPadding,
+            right: sceneWidth * (1 - boundsPadding),
+            bottom: sceneHeight * (1 - boundsPadding)
+          };
+        }
+        return bounds;
+      }
+    }
+    __name(getBoundingBox, "getBoundingBox");
+    function getClientRect() {
+      var bbox = panController.getBBox(), leftTop = client(bbox.left, bbox.top);
+      return {
+        left: leftTop.x,
+        top: leftTop.y,
+        right: bbox.width * transform2.scale + leftTop.x,
+        bottom: bbox.height * transform2.scale + leftTop.y
+      };
+    }
+    __name(getClientRect, "getClientRect");
+    function client(x, y) {
+      return {
+        x: x * transform2.scale + transform2.x,
+        y: y * transform2.scale + transform2.y
+      };
+    }
+    __name(client, "client");
+    function makeDirty() {
+      isDirty = !0, frameAnimation = window.requestAnimationFrame(frame);
+    }
+    __name(makeDirty, "makeDirty");
+    function zoomByRatio(clientX, clientY, ratio) {
+      if (isNaN(clientX) || isNaN(clientY) || isNaN(ratio))
+        throw new Error("zoom requires valid numbers");
+      var newScale = transform2.scale * ratio;
+      if (newScale < minZoom) {
+        if (transform2.scale === minZoom) return;
+        ratio = minZoom / transform2.scale;
+      }
+      if (newScale > maxZoom) {
+        if (transform2.scale === maxZoom) return;
+        ratio = maxZoom / transform2.scale;
+      }
+      var size = transformToScreen(clientX, clientY);
+      if (transform2.x = size.x - ratio * (size.x - transform2.x), transform2.y = size.y - ratio * (size.y - transform2.y), bounds && boundsPadding === 1 && minZoom === 1)
+        transform2.scale *= ratio, keepTransformInsideBounds();
+      else {
+        var transformAdjusted = keepTransformInsideBounds();
+        transformAdjusted || (transform2.scale *= ratio);
+      }
+      triggerEvent("zoom"), makeDirty();
+    }
+    __name(zoomByRatio, "zoomByRatio");
+    function zoomAbs(clientX, clientY, zoomLevel) {
+      var ratio = zoomLevel / transform2.scale;
+      zoomByRatio(clientX, clientY, ratio);
+    }
+    __name(zoomAbs, "zoomAbs");
+    function centerOn(ui) {
+      var parent = ui.ownerSVGElement;
+      if (!parent)
+        throw new Error("ui element is required to be within the scene");
+      var clientRect = ui.getBoundingClientRect(), cx = clientRect.left + clientRect.width / 2, cy = clientRect.top + clientRect.height / 2, container = parent.getBoundingClientRect(), dx = container.width / 2 - cx, dy = container.height / 2 - cy;
+      internalMoveBy(dx, dy, !0);
+    }
+    __name(centerOn, "centerOn");
+    function smoothMoveTo(x, y) {
+      internalMoveBy(x - transform2.x, y - transform2.y, !0);
+    }
+    __name(smoothMoveTo, "smoothMoveTo");
+    function internalMoveBy(dx, dy, smooth) {
+      if (!smooth)
+        return moveBy(dx, dy);
+      moveByAnimation && moveByAnimation.cancel();
+      var from = { x: 0, y: 0 }, to = { x: dx, y: dy }, lastX = 0, lastY = 0;
+      moveByAnimation = animate(from, to, {
+        step: /* @__PURE__ */ __name(function(v) {
+          moveBy(v.x - lastX, v.y - lastY), lastX = v.x, lastY = v.y;
+        }, "step")
+      });
+    }
+    __name(internalMoveBy, "internalMoveBy");
+    function scroll(x, y) {
+      cancelZoomAnimation(), moveTo(x, y);
+    }
+    __name(scroll, "scroll");
+    function dispose() {
+      releaseEvents();
+    }
+    __name(dispose, "dispose");
+    function listenForEvents() {
+      owner.addEventListener("mousedown", onMouseDown, { passive: !1 }), owner.addEventListener("dblclick", onDoubleClick, { passive: !1 }), owner.addEventListener("touchstart", onTouch, { passive: !1 }), owner.addEventListener("keydown", onKeyDown, { passive: !1 }), wheel2.addWheelListener(owner, onMouseWheel, { passive: !1 }), makeDirty();
+    }
+    __name(listenForEvents, "listenForEvents");
+    function releaseEvents() {
+      wheel2.removeWheelListener(owner, onMouseWheel), owner.removeEventListener("mousedown", onMouseDown), owner.removeEventListener("keydown", onKeyDown), owner.removeEventListener("dblclick", onDoubleClick), owner.removeEventListener("touchstart", onTouch), frameAnimation && (window.cancelAnimationFrame(frameAnimation), frameAnimation = 0), smoothScroll.cancel(), releaseDocumentMouse(), releaseTouches(), textSelection.release(), triggerPanEnd();
+    }
+    __name(releaseEvents, "releaseEvents");
+    function frame() {
+      isDirty && applyTransform();
+    }
+    __name(frame, "frame");
+    function applyTransform() {
+      isDirty = !1, panController.applyTransform(transform2), triggerEvent("transform"), frameAnimation = 0;
+    }
+    __name(applyTransform, "applyTransform");
+    function onKeyDown(e) {
+      var x = 0, y = 0, z = 0;
+      if (e.keyCode === 38 ? y = 1 : e.keyCode === 40 ? y = -1 : e.keyCode === 37 ? x = 1 : e.keyCode === 39 ? x = -1 : e.keyCode === 189 || e.keyCode === 109 ? z = 1 : (e.keyCode === 187 || e.keyCode === 107) && (z = -1), !filterKey(e, x, y, z)) {
+        if (x || y) {
+          e.preventDefault(), e.stopPropagation();
+          var clientRect = owner.getBoundingClientRect(), offset = Math.min(clientRect.width, clientRect.height), moveSpeedRatio = 0.05, dx = offset * moveSpeedRatio * x, dy = offset * moveSpeedRatio * y;
+          internalMoveBy(dx, dy);
+        }
+        if (z) {
+          var scaleMultiplier = getScaleMultiplier(z * 100), offset = transformOrigin ? getTransformOriginOffset() : midPoint();
+          publicZoomTo(offset.x, offset.y, scaleMultiplier);
+        }
+      }
+    }
+    __name(onKeyDown, "onKeyDown");
+    function midPoint() {
+      var ownerRect = owner.getBoundingClientRect();
+      return {
+        x: ownerRect.width / 2,
+        y: ownerRect.height / 2
+      };
+    }
+    __name(midPoint, "midPoint");
+    function onTouch(e) {
+      if (beforeTouch(e), clearPendingClickEventTimeout(), e.touches.length === 1)
+        return handleSingleFingerTouch(e, e.touches[0]);
+      e.touches.length === 2 && (pinchZoomLength = getPinchZoomLength(e.touches[0], e.touches[1]), multiTouch = !0, startTouchListenerIfNeeded());
+    }
+    __name(onTouch, "onTouch");
+    function beforeTouch(e) {
+      options.onTouch && !options.onTouch(e) || (e.stopPropagation(), e.preventDefault());
+    }
+    __name(beforeTouch, "beforeTouch");
+    function beforeDoubleClick(e) {
+      clearPendingClickEventTimeout(), !(options.onDoubleClick && !options.onDoubleClick(e)) && (e.preventDefault(), e.stopPropagation());
+    }
+    __name(beforeDoubleClick, "beforeDoubleClick");
+    function handleSingleFingerTouch(e) {
+      lastTouchStartTime = /* @__PURE__ */ new Date();
+      var touch = e.touches[0], offset = getOffsetXY(touch);
+      lastSingleFingerOffset = offset;
+      var point = transformToScreen(offset.x, offset.y);
+      mouseX = point.x, mouseY = point.y, clickX = mouseX, clickY = mouseY, smoothScroll.cancel(), startTouchListenerIfNeeded();
+    }
+    __name(handleSingleFingerTouch, "handleSingleFingerTouch");
+    function startTouchListenerIfNeeded() {
+      touchInProgress || (touchInProgress = !0, document.addEventListener("touchmove", handleTouchMove), document.addEventListener("touchend", handleTouchEnd), document.addEventListener("touchcancel", handleTouchEnd));
+    }
+    __name(startTouchListenerIfNeeded, "startTouchListenerIfNeeded");
+    function handleTouchMove(e) {
+      if (e.touches.length === 1) {
+        e.stopPropagation();
+        var touch = e.touches[0], offset = getOffsetXY(touch), point = transformToScreen(offset.x, offset.y), dx = point.x - mouseX, dy = point.y - mouseY;
+        dx !== 0 && dy !== 0 && triggerPanStart(), mouseX = point.x, mouseY = point.y, internalMoveBy(dx, dy);
+      } else if (e.touches.length === 2) {
+        multiTouch = !0;
+        var t1 = e.touches[0], t2 = e.touches[1], currentPinchLength = getPinchZoomLength(t1, t2), scaleMultiplier = 1 + (currentPinchLength / pinchZoomLength - 1) * pinchSpeed, firstTouchPoint = getOffsetXY(t1), secondTouchPoint = getOffsetXY(t2);
+        if (mouseX = (firstTouchPoint.x + secondTouchPoint.x) / 2, mouseY = (firstTouchPoint.y + secondTouchPoint.y) / 2, transformOrigin) {
+          var offset = getTransformOriginOffset();
+          mouseX = offset.x, mouseY = offset.y;
+        }
+        publicZoomTo(mouseX, mouseY, scaleMultiplier), pinchZoomLength = currentPinchLength, e.stopPropagation(), e.preventDefault();
+      }
+    }
+    __name(handleTouchMove, "handleTouchMove");
+    function clearPendingClickEventTimeout() {
+      pendingClickEventTimeout && (clearTimeout(pendingClickEventTimeout), pendingClickEventTimeout = 0);
+    }
+    __name(clearPendingClickEventTimeout, "clearPendingClickEventTimeout");
+    function handlePotentialClickEvent(e) {
+      if (options.onClick) {
+        clearPendingClickEventTimeout();
+        var dx = mouseX - clickX, dy = mouseY - clickY, l = Math.sqrt(dx * dx + dy * dy);
+        l > 5 || (pendingClickEventTimeout = setTimeout(function() {
+          pendingClickEventTimeout = 0, options.onClick(e);
+        }, doubleTapSpeedInMS));
+      }
+    }
+    __name(handlePotentialClickEvent, "handlePotentialClickEvent");
+    function handleTouchEnd(e) {
+      if (clearPendingClickEventTimeout(), e.touches.length > 0) {
+        var offset = getOffsetXY(e.touches[0]), point = transformToScreen(offset.x, offset.y);
+        mouseX = point.x, mouseY = point.y;
+      } else {
+        var now = /* @__PURE__ */ new Date();
+        if (now - lastTouchEndTime < doubleTapSpeedInMS)
+          if (transformOrigin) {
+            var offset = getTransformOriginOffset();
+            smoothZoom(offset.x, offset.y, zoomDoubleClickSpeed);
+          } else
+            smoothZoom(lastSingleFingerOffset.x, lastSingleFingerOffset.y, zoomDoubleClickSpeed);
+        else now - lastTouchStartTime < clickEventTimeInMS && handlePotentialClickEvent(e);
+        lastTouchEndTime = now, triggerPanEnd(), releaseTouches();
+      }
+    }
+    __name(handleTouchEnd, "handleTouchEnd");
+    function getPinchZoomLength(finger1, finger2) {
+      var dx = finger1.clientX - finger2.clientX, dy = finger1.clientY - finger2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    __name(getPinchZoomLength, "getPinchZoomLength");
+    function onDoubleClick(e) {
+      beforeDoubleClick(e);
+      var offset = getOffsetXY(e);
+      transformOrigin && (offset = getTransformOriginOffset()), smoothZoom(offset.x, offset.y, zoomDoubleClickSpeed);
+    }
+    __name(onDoubleClick, "onDoubleClick");
+    function onMouseDown(e) {
+      if (clearPendingClickEventTimeout(), !beforeMouseDown(e)) {
+        if (lastMouseDownedEvent = e, lastMouseDownTime = /* @__PURE__ */ new Date(), touchInProgress)
+          return e.stopPropagation(), !1;
+        var isLeftButton = e.button === 1 && window.event !== null || e.button === 0;
+        if (isLeftButton) {
+          smoothScroll.cancel();
+          var offset = getOffsetXY(e), point = transformToScreen(offset.x, offset.y);
+          return clickX = mouseX = point.x, clickY = mouseY = point.y, document.addEventListener("mousemove", onMouseMove), document.addEventListener("mouseup", onMouseUp), textSelection.capture(e.target || e.srcElement), !1;
+        }
+      }
+    }
+    __name(onMouseDown, "onMouseDown");
+    function onMouseMove(e) {
+      if (!touchInProgress) {
+        triggerPanStart();
+        var offset = getOffsetXY(e), point = transformToScreen(offset.x, offset.y), dx = point.x - mouseX, dy = point.y - mouseY;
+        mouseX = point.x, mouseY = point.y, internalMoveBy(dx, dy);
+      }
+    }
+    __name(onMouseMove, "onMouseMove");
+    function onMouseUp() {
+      var now = /* @__PURE__ */ new Date();
+      now - lastMouseDownTime < clickEventTimeInMS && handlePotentialClickEvent(lastMouseDownedEvent), textSelection.release(), triggerPanEnd(), releaseDocumentMouse();
+    }
+    __name(onMouseUp, "onMouseUp");
+    function releaseDocumentMouse() {
+      document.removeEventListener("mousemove", onMouseMove), document.removeEventListener("mouseup", onMouseUp), panstartFired = !1;
+    }
+    __name(releaseDocumentMouse, "releaseDocumentMouse");
+    function releaseTouches() {
+      document.removeEventListener("touchmove", handleTouchMove), document.removeEventListener("touchend", handleTouchEnd), document.removeEventListener("touchcancel", handleTouchEnd), panstartFired = !1, multiTouch = !1, touchInProgress = !1;
+    }
+    __name(releaseTouches, "releaseTouches");
+    function onMouseWheel(e) {
+      if (!beforeWheel(e)) {
+        smoothScroll.cancel();
+        var delta = e.deltaY;
+        e.deltaMode > 0 && (delta *= 100);
+        var scaleMultiplier = getScaleMultiplier(delta);
+        if (scaleMultiplier !== 1) {
+          var offset = transformOrigin ? getTransformOriginOffset() : getOffsetXY(e);
+          publicZoomTo(offset.x, offset.y, scaleMultiplier), e.preventDefault();
+        }
+      }
+    }
+    __name(onMouseWheel, "onMouseWheel");
+    function getOffsetXY(e) {
+      var offsetX, offsetY, ownerRect = owner.getBoundingClientRect();
+      return offsetX = e.clientX - ownerRect.left, offsetY = e.clientY - ownerRect.top, { x: offsetX, y: offsetY };
+    }
+    __name(getOffsetXY, "getOffsetXY");
+    function smoothZoom(clientX, clientY, scaleMultiplier) {
+      var fromValue = transform2.scale, from = { scale: fromValue }, to = { scale: scaleMultiplier * fromValue };
+      smoothScroll.cancel(), cancelZoomAnimation(), zoomToAnimation = animate(from, to, {
+        step: /* @__PURE__ */ __name(function(v) {
+          zoomAbs(clientX, clientY, v.scale);
+        }, "step"),
+        done: triggerZoomEnd
+      });
+    }
+    __name(smoothZoom, "smoothZoom");
+    function smoothZoomAbs(clientX, clientY, toScaleValue) {
+      var fromValue = transform2.scale, from = { scale: fromValue }, to = { scale: toScaleValue };
+      smoothScroll.cancel(), cancelZoomAnimation(), zoomToAnimation = animate(from, to, {
+        step: /* @__PURE__ */ __name(function(v) {
+          zoomAbs(clientX, clientY, v.scale);
+        }, "step")
+      });
+    }
+    __name(smoothZoomAbs, "smoothZoomAbs");
+    function getTransformOriginOffset() {
+      var ownerRect = owner.getBoundingClientRect();
+      return {
+        x: ownerRect.width * transformOrigin.x,
+        y: ownerRect.height * transformOrigin.y
+      };
+    }
+    __name(getTransformOriginOffset, "getTransformOriginOffset");
+    function publicZoomTo(clientX, clientY, scaleMultiplier) {
+      return smoothScroll.cancel(), cancelZoomAnimation(), zoomByRatio(clientX, clientY, scaleMultiplier);
+    }
+    __name(publicZoomTo, "publicZoomTo");
+    function cancelZoomAnimation() {
+      zoomToAnimation && (zoomToAnimation.cancel(), zoomToAnimation = null);
+    }
+    __name(cancelZoomAnimation, "cancelZoomAnimation");
+    function getScaleMultiplier(delta) {
+      var sign = Math.sign(delta), deltaAdjustedSpeed = Math.min(0.25, Math.abs(speed * delta / 128));
+      return 1 - sign * deltaAdjustedSpeed;
+    }
+    __name(getScaleMultiplier, "getScaleMultiplier");
+    function triggerPanStart() {
+      panstartFired || (triggerEvent("panstart"), panstartFired = !0, smoothScroll.start());
+    }
+    __name(triggerPanStart, "triggerPanStart");
+    function triggerPanEnd() {
+      panstartFired && (multiTouch || smoothScroll.stop(), triggerEvent("panend"));
+    }
+    __name(triggerPanEnd, "triggerPanEnd");
+    function triggerZoomEnd() {
+      triggerEvent("zoomend");
+    }
+    __name(triggerZoomEnd, "triggerZoomEnd");
+    function triggerEvent(name) {
+      api.fire(name, api);
+    }
+    __name(triggerEvent, "triggerEvent");
+  }
+  __name(createPanZoom2, "createPanZoom");
+  function parseTransformOrigin(options) {
+    if (options) {
+      if (typeof options == "object")
+        return (!isNumber(options.x) || !isNumber(options.y)) && failTransformOrigin(options), options;
+      failTransformOrigin();
+    }
+  }
+  __name(parseTransformOrigin, "parseTransformOrigin");
+  function failTransformOrigin(options) {
+    throw console.error(options), new Error(
+      [
+        "Cannot parse transform origin.",
+        "Some good examples:",
+        '  "center center" can be achieved with {x: 0.5, y: 0.5}',
+        '  "top center" can be achieved with {x: 0.5, y: 0}',
+        '  "bottom right" can be achieved with {x: 1, y: 1}'
+      ].join(`
+`)
+    );
+  }
+  __name(failTransformOrigin, "failTransformOrigin");
+  function noop() {
+  }
+  __name(noop, "noop");
+  function validateBounds(bounds) {
+    var boundsType = typeof bounds;
+    if (!(boundsType === "undefined" || boundsType === "boolean")) {
+      var validBounds = isNumber(bounds.left) && isNumber(bounds.top) && isNumber(bounds.bottom) && isNumber(bounds.right);
+      if (!validBounds)
+        throw new Error(
+          "Bounds object is not valid. It can be: undefined, boolean (true|false) or an object {left, top, right, bottom}"
+        );
+    }
+  }
+  __name(validateBounds, "validateBounds");
+  function isNumber(x) {
+    return Number.isFinite(x);
+  }
+  __name(isNumber, "isNumber");
+  function isNaN(value) {
+    return Number.isNaN ? Number.isNaN(value) : value !== value;
+  }
+  __name(isNaN, "isNaN");
+  function rigidScroll() {
+    return {
+      start: noop,
+      stop: noop,
+      cancel: noop
+    };
+  }
+  __name(rigidScroll, "rigidScroll");
+  function autoRun() {
+    if (typeof document > "u") return;
+    var scripts = document.getElementsByTagName("script");
+    if (!scripts) return;
+    for (var panzoomScript, i = 0; i < scripts.length; ++i) {
+      var x = scripts[i];
+      if (x.src && x.src.match(/\bpanzoom(\.min)?\.js/)) {
+        panzoomScript = x;
+        break;
+      }
+    }
+    if (!panzoomScript) return;
+    var query = panzoomScript.getAttribute("query");
+    if (!query) return;
+    var globalName = panzoomScript.getAttribute("name") || "pz", started = Date.now();
+    tryAttach();
+    function tryAttach() {
+      var el = document.querySelector(query);
+      if (!el) {
+        var now = Date.now(), elapsed = now - started;
+        if (elapsed < 2e3) {
+          setTimeout(tryAttach, 100);
+          return;
+        }
+        console.error("Cannot find the panzoom element", globalName);
+        return;
+      }
+      var options = collectOptions(panzoomScript);
+      console.log(options), window[globalName] = createPanZoom2(el, options);
+    }
+    __name(tryAttach, "tryAttach");
+    function collectOptions(script) {
+      for (var attrs = script.attributes, options = {}, j = 0; j < attrs.length; ++j) {
+        var attr = attrs[j], nameValue = getPanzoomAttributeNameValue(attr);
+        nameValue && (options[nameValue.name] = nameValue.value);
+      }
+      return options;
+    }
+    __name(collectOptions, "collectOptions");
+    function getPanzoomAttributeNameValue(attr) {
+      if (attr.name) {
+        var isPanZoomAttribute = attr.name[0] === "p" && attr.name[1] === "z" && attr.name[2] === "-";
+        if (isPanZoomAttribute) {
+          var name = attr.name.substr(3), value = JSON.parse(attr.value);
+          return { name, value };
+        }
+      }
+    }
+    __name(getPanzoomAttributeNameValue, "getPanzoomAttributeNameValue");
+  }
+  return __name(autoRun, "autoRun"), autoRun(), panzoom;
+}
+__name(requirePanzoom, "requirePanzoom");
+var panzoomExports = requirePanzoom();
+const createPanZoom = /* @__PURE__ */ getDefaultExportFromCjs(panzoomExports), _CallGraph = class _CallGraph {
+  svg;
+  nodes;
+  edges;
+  clusters;
+  width;
+  height;
+  selectedElem = null;
+  panZoomState;
+  focus;
+  incomings;
+  outgoings;
+  constructor(svg, focus, onSelectElem) {
+    if (this.svg = svg, this.nodes = svg.querySelectorAll("g.node"), this.edges = svg.querySelectorAll("g.edge"), this.clusters = svg.querySelectorAll("g.cluster"), this.width = this.svg.viewBox.baseVal.width, this.height = this.svg.viewBox.baseVal.height, this.setUpInteraction(onSelectElem ?? this.onSelectElem), this.focus = focus, focus) {
+      const incomings = /* @__PURE__ */ new Map(), outgoings = /* @__PURE__ */ new Map();
+      this.edges.forEach((edge) => {
+        const fromCell = edge.dataset.from, toCell = edge.dataset.to;
+        incomings.get(toCell)?.push(edge) ?? incomings.set(toCell, [edge]), outgoings.get(fromCell)?.push(edge) ?? outgoings.set(fromCell, [edge]);
+      }), this.incomings = incomings, this.outgoings = outgoings;
+    }
+  }
+  setUpInteraction(onSelectElem) {
+    const svg = this.svg;
+    let clickPoint = [0, 0];
+    svg.onmousedown = function(e) {
+      clickPoint = [e.pageX, e.pageY];
+    }, svg.onmouseup = function(e) {
+      const [x, y] = clickPoint, diffX = Math.abs(e.pageX - x), diffY = Math.abs(e.pageY - y);
+      if (!(diffX > 6 || diffY > 6)) {
+        for (let elem = e.target; elem && elem instanceof SVGElement && elem !== svg; elem = elem.parentNode) {
+          const classes = elem.classList;
+          if (classes.contains("node") || classes.contains("cell") || classes.contains("edge") || classes.contains("cluster-label")) {
+            onSelectElem(elem);
+            return;
+          }
+        }
+        onSelectElem(null);
+      }
+    };
+  }
+  setUpPanZoom() {
+    this.panZoomState = this.createPanZoomState();
+  }
+  createPanZoomState() {
+    const g0 = this.svg.querySelector("#graph0"), pz = createPanZoom(g0, {
+      smoothScroll: !1,
+      autocenter: !0
+    }), { x, y, scale } = structuredClone(pz.getTransform()), cRect = g0.getBoundingClientRect(), cx = cRect.x + cRect.width / 2, cy = cRect.y + cRect.height / 2, sRect = this.svg.getBoundingClientRect();
+    return {
+      pz,
+      scale,
+      x,
+      y,
+      cx,
+      cy,
+      sRect
+    };
+  }
+  resetStyles() {
+    const g0 = this.svg.getElementById("graph0"), fadedGroup = this.svg.getElementById("faded-group");
+    this.selectedElem?.closest(".selected")?.classList.remove("selected"), g0.querySelectorAll(":scope > .edge").forEach(
+      (edge) => edge.classList.remove("incoming", "outgoing")
+    );
+    const firstNode = g0.querySelector(".node");
+    for (const cluster of fadedGroup.querySelectorAll(".cluster"))
+      g0.insertBefore(cluster, firstNode);
+    for (const node of fadedGroup.querySelectorAll(".node"))
+      g0.insertBefore(node, firstNode);
+    g0.append(...fadedGroup.childNodes);
+  }
+  smoothZoom(scale) {
+    if (!this.panZoomState)
+      return;
+    const { pz, cx, cy } = this.panZoomState;
+    pz.smoothZoom(cx, cy, scale);
+  }
+  resetPanZoom() {
+    if (!this.panZoomState)
+      return;
+    const { pz, x, y, scale } = this.panZoomState;
+    pz.moveTo(x, y), pz.zoomAbs(x, y, scale);
+  }
+  onSelectElem = /* @__PURE__ */ __name((elem) => {
+    if (this.resetStyles(), this.selectedElem = elem, !elem)
+      return;
+    const { pz, scale, cx, cy, sRect } = this.panZoomState, eRect = elem.getBoundingClientRect();
+    eRect.width > sRect.width || eRect.height > sRect.height ? (pz.smoothZoomAbs(cx, cy, scale), setTimeout(() => pz.centerOn(elem), 1e3)) : (eRect.left < sRect.left || eRect.top < sRect.top || eRect.right > sRect.right || eRect.bottom > sRect.bottom) && pz.centerOn(elem);
+    const classes = elem.classList;
+    classes.contains("node") ? this.onSelectNode(elem) : classes.contains("cell") ? this.onSelectCell(elem) : classes.contains("edge") ? this.onSelectEdge(elem) : classes.contains("cluster-label") && this.onSelctCluster(elem);
+  }, "onSelectElem");
+  onSelectNode(node) {
+    const id = node.id;
+    this.highlightEdges((edge) => [
+      edge.dataset.to.startsWith(`${id}:`),
+      edge.dataset.from.startsWith(`${id}:`)
+    ]), node.classList.add("selected"), this.fadeOutNodes(/* @__PURE__ */ new Set([id]));
+  }
+  onSelectCell(cell) {
+    const id = cell.id;
+    if (this.focus)
+      this.onSelectCellInFocusMode(id);
+    else {
+      const cellIds = /* @__PURE__ */ new Set([cell.id]);
+      cell.querySelectorAll(".cell").forEach((c) => {
+        cellIds.add(c.id);
+      }), this.highlightEdges((edge) => [
+        cellIds.has(edge.dataset.to),
+        cellIds.has(edge.dataset.from)
+      ]);
+    }
+    cell.classList.add("selected"), this.fadeOutNodes(/* @__PURE__ */ new Set([this.getNodeId(cell.id)]));
+  }
+  onSelectCellInFocusMode(cellId) {
+    const highlights = [/* @__PURE__ */ new Set(), /* @__PURE__ */ new Set()], inout = [this.incomings, this.outgoings];
+    for (let i = 0; i < inout.length; ++i) {
+      const visited = /* @__PURE__ */ new Set([cellId, this.focus]), map = inout[i], highlightEdges = highlights[i];
+      for (let newEdges = map.get(cellId) ?? []; newEdges.length > 0; )
+        newEdges = newEdges.flatMap((edge) => {
+          highlightEdges.add(edge);
+          const id = i == 0 ? edge.dataset.from : edge.dataset.to;
+          return visited.has(id) ? [] : (visited.add(id), map.get(id) ?? []);
+        });
+    }
+    this.highlightEdges((edge) => [
+      highlights[0].has(edge),
+      highlights[1].has(edge)
+    ]), this.fadeOutNodes(/* @__PURE__ */ new Set([this.getNodeId(cellId)]));
+  }
+  onSelectEdge(edge) {
+    const g0 = this.svg.getElementById("graph0");
+    this.svg.getElementById("faded-group").append(...this.edges), g0.appendChild(edge), this.fadeOutNodes();
+  }
+  onSelctCluster(clusterLabel) {
+    const cluster = clusterLabel.parentNode, rect = cluster.getBoundingClientRect();
+    cluster.classList.add("selected");
+    const selected = /* @__PURE__ */ new Set();
+    this.nodes.forEach((node) => {
+      this.rectContains(rect, node.getBoundingClientRect()) && selected.add(node.id);
+    }), this.highlightEdges((edge) => [
+      selected.has(this.getNodeId(edge.dataset.to)),
+      selected.has(this.getNodeId(edge.dataset.from))
+    ]), this.fadeOutNodes(selected);
+  }
+  highlightEdges(judge) {
+    const fadedGroup = this.svg.getElementById("faded-group");
+    for (const edge of this.edges) {
+      const [incoming, outgoing] = judge(edge);
+      incoming && edge.classList.add("incoming"), outgoing && edge.classList.add("outgoing"), incoming || outgoing || fadedGroup.appendChild(edge);
+    }
+  }
+  fadeOutNodes(kept) {
+    kept || (kept = /* @__PURE__ */ new Set());
+    const fadedGroup = this.svg.getElementById("faded-group");
+    for (const edge of this.edges)
+      edge.parentElement !== fadedGroup && kept.add(this.getNodeId(edge.dataset.from)).add(this.getNodeId(edge.dataset.to));
+    const clusters = new Set(this.clusters);
+    for (const node of this.nodes) {
+      if (!kept.has(node.id)) {
+        fadedGroup.appendChild(node);
+        continue;
+      }
+      const rect = node.getBoundingClientRect();
+      for (const cluster of clusters)
+        this.rectContains(cluster.getBoundingClientRect(), rect) && clusters.delete(cluster);
+    }
+    fadedGroup.append(...clusters);
+  }
+  getNodeId(id) {
+    return id.substring(0, id.indexOf(":"));
+  }
+  rectContains(rect1, rect2) {
+    return rect1.left < rect2.left && rect1.right > rect2.right && rect1.bottom > rect2.bottom && rect1.top < rect2.top;
+  }
+};
+__name(_CallGraph, "CallGraph");
+let CallGraph = _CallGraph;
+export {
+  CallGraph
+};
+
+
+    const graph = new CallGraph(document.querySelector(".callgraph"), null);
+    graph.setUpPanZoom();
+  </script>
+</body>
+</html>

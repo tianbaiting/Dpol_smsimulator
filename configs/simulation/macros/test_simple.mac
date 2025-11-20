@@ -1,0 +1,24 @@
+# 简单测试配置 - 不需要输入文件
+# 用于验证程序是否正常运行
+
+# 加载几何配置
+/control/execute configs/simulation/geometry/5deg_1.2T.mac
+
+# 输出文件设置
+/action/file/OverWrite y
+/action/file/SaveDirectory data/simulation/output_tree
+/action/file/RunName test_run
+
+# 不保存轨迹，节省内存
+/tracking/storeTrajectory 0
+
+# 使用Pencil束流类型（简单的平行束）
+/action/gun/Type Pencil
+
+# 设置粒子类型和能量
+/action/gun/SetBeamParticleName deuteron
+/action/gun/energy 190 MeV
+/action/gun/position 0 0 -200 cm
+
+# 运行10个事件
+/run/beamOn 10
