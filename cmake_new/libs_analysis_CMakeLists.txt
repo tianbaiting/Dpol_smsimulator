@@ -1,0 +1,65 @@
+# libs/analysis/CMakeLists.txt
+# 数据分析和重建库
+
+project(analysis)
+
+##############################################################################
+# 收集源文件
+##############################################################################
+
+file(GLOB ANALYSIS_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc")
+file(GLOB ANALYSIS_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hh")
+
+##############################################################################
+# 创建共享库
+##############################################################################
+
+add_library(analysis SHARED ${ANALYSIS_SOURCES})
+
+# 别名
+add_library(SMSimulator::analysis ALIAS analysis)
+
+# 设置包含目录
+target_include_directories(analysis PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+# 链接依赖
+target_link_libraries(analysis PUBLIC
+    ${ROOT_LIBRARIES}
+)
+
+# 如果有 ANAROOT
+if(WITH_ANAROOT)
+    target_link_libraries(analysis PUBLIC ${ANAROOT_LIBRARIES})
+endif()
+
+# 设置属性
+set_target_properties(analysis PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 5
+    OUTPUT_NAME pdcanalysis
+)
+
+##############################################################################
+# 安装
+##############################################################################
+
+install(TARGETS analysis
+    EXPORT SMSimulatorTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(DIRECTORY include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/analysis)
+
+##############################################################################
+# 测试
+##############################################################################
+
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
