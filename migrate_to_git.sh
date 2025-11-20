@@ -4,8 +4,8 @@
 
 set -e  # 遇到错误立即退出
 
-OLD_DIR="/home/tian/workspace/dpol/smsimulator5.5"
-NEW_DIR="/home/tian/workspace/dpol/smsimulator5.5_new"
+OLD_DIR="$SMSIMDIR"
+NEW_DIR="$SMSIMDIR_new"
 BRANCH_NAME="restructure-cmake"
 
 echo "=========================================="

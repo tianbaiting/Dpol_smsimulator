@@ -17,10 +17,10 @@ void reconstruct_one_event()
         return;
     }
     // 2. 加载所需的共享库
-    gSystem->Load("/home/tian/workspace/dpol/smsimulator5.5/build/sources/smg4lib/data/libsmdata.so");
-    gSystem->Load("/home/tian/workspace/dpol/smsimulator5.5/build/sources/smg4lib/action/libsmaction.so");
-    gSystem->Load("/home/tian/workspace/dpol/smsimulator5.5/build/sources/smg4lib/construction/libsmconstruction.so");
-    gSystem->Load("/home/tian/workspace/dpol/smsimulator5.5/build/sources/smg4lib/physics/libsmphysics.so");
+    gSystem->Load(Form("%s/build/lib/libsmdata.so", smsDir));
+    gSystem->Load(Form("%s/build/lib/libsmaction.so", smsDir));
+    gSystem->Load(Form("%s/build/lib/libsmconstruction.so", smsDir));
+    gSystem->Load(Form("%s/build/lib/libsmphysics.so", smsDir));
 
     TFile* file = TFile::Open(Form("%s/d_work/output_tree/testry0000.root", smsDir));
 

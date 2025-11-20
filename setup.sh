@@ -6,7 +6,7 @@ source /home/tian/software/geant4/install/bin/geant4.sh
 export TARTSYS=/home/tian/software/anaroot/install
 
 
-export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5_new
+export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5
 export PATH=$PATH:$SMSIMDIR/bin
 export G4SMLIBDIR=$SMSIMDIR/libs/smg4lib
 
