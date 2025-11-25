@@ -13,6 +13,8 @@ __pycache__/
 data/simulation/*.root
 data/reconstruction/*.root
 *.dat
+*.root
+
 
 # Editor and IDE
 .vscode/
