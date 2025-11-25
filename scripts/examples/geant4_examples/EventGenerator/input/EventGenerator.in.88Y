@@ -1,0 +1,6 @@
+GAMMAINPUT ./EventGenerator/input/gammain/60Co.in
+NUMBEROFEVENTS 2550000
+OUTPUTFILE ./root/CoGenerator_run0050.root
+ZPOSSHIFT 339.
+END
+

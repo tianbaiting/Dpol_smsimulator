@@ -1,0 +1,77 @@
+#
+# example of input file for EventGenerator
+#
+################
+#Gamma-ray inputfile.
+
+GAMMAINPUT ./EventGenerator/input/gammain/single1000.in
+
+################
+#Input the number of event to be simulated
+     
+NUMBEROFEVENTS 100000
+
+################
+#Define the output file to store generated events.
+
+OUTPUTFILE ./root/DopplerGenerator.root
+
+################
+#Size of target. Gamma rays and beam(heavy ions) are generated within
+#the target XY. The Shape=1 is for square and 2 is for circle. 
+#If you choose Shape= 1, X and Y value are the sizes of target (center:x=y=0). 
+#If you choose Shape= 2, X and Y value is the center position of
+# circle and R is the radius
+#TARGET Shape X Y Z R (unit:mm)
+
+TARGET 2 0. 0. 150. 19.5
+
+################
+#If you want shift z-position of reaction position (or source 
+# position) from z=0, input this value.
+#ZPOSSHIFT Zoff (unit:mm)
+
+ZPOSSHIFT 0.0
+
+################
+#Input mean energy of charged particle and sigma.
+#BEAMENERGY E sigmaE (unit:MeV/u)
+
+BEAMENERGY 239 5
+
+################
+#Input the center of the beam position (X,Y), and the spread of the beam position(sigmaX,sigma_Y).
+#BEAMPOSITION X sigmaX Y sigmaY (unit:mm)
+
+BEAMPOSITION 0 10. 0 10.
+
+################
+#Input the mean and sigma of polar angle of the beam.
+#BEAMANGLE theta sigma_theta (unit:mmrad)
+
+BEAMANGLE 0. 5.
+
+################
+#Input mass number A, proton number Z, and charge C of the beam particle.
+#BEAMISOTOPE A Z C
+
+BEAMISOTOPE 30 10 10
+
+################
+#Input mass number A, proton number Z, and charge C of the charged particle after reaction.
+#FRAGMENTISOTOPE A Z C
+
+FRAGMENTISOTOPE 30 10 10
+
+################
+#Input polar angle range in the rest frame of the beam particle.
+#THETARANGE theta_min theta_max (unit:degree)
+
+THETARANGE 0 180
+
+################
+# do not forget END
+
+END
+
+################

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+
+  <define/>
+
+  <materials>
+    <isotope N="54" Z="26" name="Fe540x562974d5e0b0">
+      <atom unit="g/mole" value="53.9396"/>
+    </isotope>
+    <isotope N="56" Z="26" name="Fe560x562974d5fbe0">
+      <atom unit="g/mole" value="55.9349"/>
+    </isotope>
+    <isotope N="57" Z="26" name="Fe570x562974d5fc30">
+      <atom unit="g/mole" value="56.9354"/>
+    </isotope>
+    <isotope N="58" Z="26" name="Fe580x562974d5fcd0">
+      <atom unit="g/mole" value="57.9333"/>
+    </isotope>
+    <element name="Fe0x562974d5fd20">
+      <fraction n="0.05845" ref="Fe540x562974d5e0b0"/>
+      <fraction n="0.91754" ref="Fe560x562974d5fbe0"/>
+      <fraction n="0.02119" ref="Fe570x562974d5fc30"/>
+      <fraction n="0.00282" ref="Fe580x562974d5fcd0"/>
+    </element>
+    <material name="G4_Fe0x562974d5fa70" state="solid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="286"/>
+      <D unit="g/cm3" value="7.874"/>
+      <fraction n="1" ref="Fe0x562974d5fd20"/>
+    </material>
+    <isotope N="36" Z="18" name="Ar360x562974d61850">
+      <atom unit="g/mole" value="35.9675"/>
+    </isotope>
+    <isotope N="38" Z="18" name="Ar380x562974d618a0">
+      <atom unit="g/mole" value="37.9627"/>
+    </isotope>
+    <isotope N="40" Z="18" name="Ar400x562974d65940">
+      <atom unit="g/mole" value="39.9624"/>
+    </isotope>
+    <element name="Ar0x562974d65990">
+      <fraction n="0.003365" ref="Ar360x562974d61850"/>
+      <fraction n="0.000632" ref="Ar380x562974d618a0"/>
+      <fraction n="0.996003" ref="Ar400x562974d65940"/>
+    </element>
+    <isotope N="12" Z="6" name="C120x562974d65f20">
+      <atom unit="g/mole" value="12"/>
+    </isotope>
+    <isotope N="13" Z="6" name="C130x562974d65f70">
+      <atom unit="g/mole" value="13.0034"/>
+    </isotope>
+    <element name="C0x562974d65fc0">
+      <fraction n="0.9893" ref="C120x562974d65f20"/>
+      <fraction n="0.0107" ref="C130x562974d65f70"/>
+    </element>
+    <isotope N="1" Z="1" name="H10x562974d47140">
+      <atom unit="g/mole" value="1.00782503081372"/>
+    </isotope>
+    <isotope N="2" Z="1" name="H20x562974d582f0">
+      <atom unit="g/mole" value="2.01410199966617"/>
+    </isotope>
+    <element name="H0x562974d58340">
+      <fraction n="0.999885" ref="H10x562974d47140"/>
+      <fraction n="0.000115" ref="H20x562974d582f0"/>
+    </element>
+    <material name="mat_PDC0x562974d668e0" state="gas">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="115.300596017496"/>
+      <D unit="g/cm3" value="0.00184956800145449"/>
+      <fraction n="0.673406503531459" ref="Ar0x562974d65990"/>
+      <fraction n="0.269956612827264" ref="C0x562974d65fc0"/>
+      <fraction n="0.0566368836412769" ref="H0x562974d58340"/>
+    </material>
+    <isotope N="14" Z="7" name="N140x562974f1d3f0">
+      <atom unit="g/mole" value="14.0031"/>
+    </isotope>
+    <isotope N="15" Z="7" name="N150x562974f1d460">
+      <atom unit="g/mole" value="15.0001"/>
+    </isotope>
+    <element name="N0x562974f1d4d0">
+      <fraction n="0.99632" ref="N140x562974f1d3f0"/>
+      <fraction n="0.00368" ref="N150x562974f1d460"/>
+    </element>
+    <isotope N="16" Z="8" name="O160x562974f1d660">
+      <atom unit="g/mole" value="15.9949"/>
+    </isotope>
+    <isotope N="17" Z="8" name="O170x562974f1d6b0">
+      <atom unit="g/mole" value="16.9991"/>
+    </isotope>
+    <isotope N="18" Z="8" name="O180x562974f1d720">
+      <atom unit="g/mole" value="17.9992"/>
+    </isotope>
+    <element name="O0x562974f1d770">
+      <fraction n="0.99757" ref="O160x562974f1d660"/>
+      <fraction n="0.00038" ref="O170x562974f1d6b0"/>
+      <fraction n="0.00205" ref="O180x562974f1d720"/>
+    </element>
+    <material name="G4_AIR0x562974f1d290" state="gas">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="85.7"/>
+      <D unit="g/cm3" value="0.00120479"/>
+      <fraction n="0.000124000124000124" ref="C0x562974d65fc0"/>
+      <fraction n="0.755267755267755" ref="N0x562974f1d4d0"/>
+      <fraction n="0.231781231781232" ref="O0x562974f1d770"/>
+      <fraction n="0.0128270128270128" ref="Ar0x562974d65990"/>
+    </material>
+  </materials>
+
+  <solids>
+    <box lunit="mm" name="yoke_box0x562974f2b410" x="6700" y="4640" z="3500"/>
+    <box lunit="mm" name="vchamber_box0x562974f2b2f0" x="3240" y="800" z="3502"/>
+    <subtraction name="yoke_solid0x562974f2d8a0">
+      <first ref="yoke_box0x562974f2b410"/>
+      <second ref="vchamber_box0x562974f2b2f0"/>
+    </subtraction>
+    <trap alpha1="0" alpha2="0" aunit="deg" lunit="mm" name="vchamber_trap0x5629749ecde0" phi="0" theta="0" x1="3240" x2="5140" x3="3240" x4="5140" y1="1128.8463" y2="1128.8463" z="800"/>
+    <subtraction name="yoke_solid0x562974f2d110">
+      <first ref="yoke_solid0x562974f2d8a0"/>
+      <second ref="vchamber_trap0x5629749ecde0"/>
+      <position name="yoke_solid0x562974f2d110_pos" unit="mm" x="0" y="0" z="1185.57685"/>
+      <rotation name="yoke_solid0x562974f2d110_rot" unit="deg" x="90" y="0" z="0"/>
+    </subtraction>
+    <box lunit="mm" name="U_box0x562974f2d9d0" x="1680" y="780" z="8"/>
+    <box lunit="mm" name="X_box0x562974f2dcf0" x="1680" y="780" z="16"/>
+    <box lunit="mm" name="V_box0x562974f2df60" x="1680" y="780" z="16"/>
+    <box lunit="mm" name="PDCenc_box0x562974f2f130" x="1700" y="800" z="190"/>
+    <box lunit="mm" name="expHall_box0x562974f2d7a0" x="14000" y="5000" z="20000"/>
+  </solids>
+
+  <structure>
+    <volume name="yoke_log0x562974f2cfa0">
+      <materialref ref="G4_Fe0x562974d5fa70"/>
+      <solidref ref="yoke_solid0x562974f2d110"/>
+    </volume>
+    <volume name="U0x562974f2ddf0">
+      <materialref ref="mat_PDC0x562974d668e0"/>
+      <solidref ref="U_box0x562974f2d9d0"/>
+    </volume>
+    <volume name="X0x562974f2f230">
+      <materialref ref="mat_PDC0x562974d668e0"/>
+      <solidref ref="X_box0x562974f2dcf0"/>
+    </volume>
+    <volume name="V0x562974f2b6e0">
+      <materialref ref="mat_PDC0x562974d668e0"/>
+      <solidref ref="V_box0x562974f2df60"/>
+    </volume>
+    <volume name="PDC0x562976ea3550">
+      <materialref ref="mat_PDC0x562974d668e0"/>
+      <solidref ref="PDCenc_box0x562974f2f130"/>
+      <physvol name="PDCSD_U0x562974f2b810">
+        <volumeref ref="U0x562974f2ddf0"/>
+        <position name="PDCSD_U0x562974f2b810_pos" unit="mm" x="0" y="0" z="-12"/>
+      </physvol>
+      <physvol name="PDCSD_X0x562974f2e920">
+        <volumeref ref="X0x562974f2f230"/>
+      </physvol>
+      <physvol name="PDCSD_V0x562974f2f540">
+        <volumeref ref="V0x562974f2b6e0"/>
+        <position name="PDCSD_V0x562974f2f540_pos" unit="mm" x="0" y="0" z="12"/>
+      </physvol>
+    </volume>
+    <volume name="expHall_log0x562974f2dad0">
+      <materialref ref="G4_AIR0x562974f1d290"/>
+      <solidref ref="expHall_box0x562974f2d7a0"/>
+      <physvol name="yoke0x562974f2dd90">
+        <volumeref ref="yoke_log0x562974f2cfa0"/>
+        <rotation name="yoke0x562974f2dd90_rot" unit="deg" x="0" y="30" z="0"/>
+      </physvol>
+      <physvol name="PDC10x562974f2e510">
+        <volumeref ref="PDC0x562976ea3550"/>
+        <position name="PDC10x562974f2e510_pos" unit="mm" x="-2764.0479596571" y="0" z="1536.24180281471"/>
+        <rotation name="PDC10x562974f2e510_rot" unit="deg" x="0" y="42.5" z="0"/>
+      </physvol>
+      <physvol copynumber="1" name="PDC20x562974f2eed0">
+        <volumeref ref="PDC0x562976ea3550"/>
+        <position name="PDC20x562974f2eed0_pos" unit="mm" x="-3439.63816727276" y="0" z="2273.51913962484"/>
+        <rotation name="PDC20x562974f2eed0_rot" unit="deg" x="0" y="42.5" z="0"/>
+      </physvol>
+    </volume>
+  </structure>
+
+  <setup name="Default" version="1.0">
+    <world ref="expHall_log0x562974f2dad0"/>
+  </setup>
+
+</gdml>

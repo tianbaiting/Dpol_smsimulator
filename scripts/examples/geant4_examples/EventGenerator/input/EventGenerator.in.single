@@ -1,0 +1,8 @@
+GAMMAINPUT ./EventGenerator/input/single1000.in
+NUMBEROFEVENTS 100000
+OUTPUTFILE ./root/SingleGenerator.root
+BEAMPOSITION 0 10. 0 10.
+TARGET 1 40. 40. 10.
+BEAMANGLE 0. 10.
+END
+

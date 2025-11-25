@@ -1,64 +1,35 @@
-# 编译生成文件
-*.o
-*.so
-*.a
-*.out
-*.exe
-*.dll
-*.gdml
-*.d
-
-**/lib/
-**/temp/
-
-# CMake/Makefile 生成目录
+# Build directories
 build/
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-# Makefile
-smsimulator5.5/doc/doxyfile
+bin/
+lib/
 
-# 日志和临时文件
-*.log
-*.tmp
-*.bak
-*/tmp/
-*.last
-macros_temp
-temp_dat_files
-
-# VSCode 配置
-.vscode/
-.ipch/
-*.db
-
-# ROOT 文件和数据
-*.root
-*.dat
-d_work/geometry/*
-/bin
-QMDdata
-output/
-output_tree/
-rootfiles
-plots/
-
-# 可执行文件
-bin/sim_deuteron
-sim_deuteron/sim_deuteron
-try/
-
-# Python/Jupyter临时文件
-__pycache__/
+# Results and temporary files
+results/
 *.pyc
-*.ipynb_checkpoints
-doc
-# 其他
+__pycache__/
+.pytest_cache/
+
+# Data files (too large for git)
+data/simulation/*.root
+data/reconstruction/*.root
+*.dat
+
+# Editor and IDE
+.vscode/
+.idea/
 *.swp
 *.swo
+*~
 
-assets/
+# OS
+.DS_Store
+Thumbs.db
 
-# 不被排除的文件
-!d_work/geometry/*.mac
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+!cmake/*.cmake
