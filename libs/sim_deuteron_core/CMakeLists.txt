@@ -22,6 +22,7 @@ add_library(SMSimulator::sim_deuteron_core ALIAS sim_deuteron_core)
 # 设置包含目录
 target_include_directories(sim_deuteron_core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smlogger/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/src/action/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/src/construction/include>
@@ -32,6 +33,7 @@ target_include_directories(sim_deuteron_core PUBLIC
 
 # 链接依赖库
 target_link_libraries(sim_deuteron_core PUBLIC
+    smlogger
     smaction
     smconstruction
     smdata

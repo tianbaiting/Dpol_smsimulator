@@ -14,16 +14,7 @@
 
 // 主函数 - 安全版本，不会陷入循环
 void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool interactive = false) {
-    // 1. 加载我们编译好的库
-    static bool loaded = false;
-    if (!loaded) {
-        if (gSystem->Load("libPDCAnalysisTools.so") < 0) {
-            Error("run_display_safe", "无法加载 libPDCAnalysisTools.so 库");
-            return;
-        }
-        loaded = true;
-        Info("run_display_safe", "库已成功加载");
-    }
+    // 1. 检查环境变量和库（库已在 rootlogon.C 中加载）
     const char* smsDir = getenv("SMSIMDIR"); // 确保环境变量已加载
     if (!smsDir) {
         Error("run_display_safe", "环境变量 SMSIMDIR 未设置!");
@@ -34,10 +25,10 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
     geo.LoadGeometry(Form("%s/d_work/geometry/5deg_1.2T.mac", smsDir));
 
     PDCSimAna ana(geo);
-    ana.SetSmearing(0.5, 0.5); // 不
+    ana.SetSmearing(0, 0); // 设置PDC分辨率
 
     // 使用事件ID构建完整文件路径
-    TString filename = Form("/home/tian/workspace/dpol/smsimulator5.5/d_work/output_tree/ypol_slect_rotate_back/Pb208_g050/ypol_np_Pb208_g0500000.root");
+    TString filename = Form("/home/tian/workspace/dpol/smsimulator5.5/data/simulation/output_tree/ypol_5000events/Pb208_g050/ypol_np_Pb208_g0500000.root");
     // TString filename = Form("%s/d_work/output_tree/testry0000.root", smsDir);
     // TString filename = Form("%s/d_work/output_tree/test/Pb208_g050/ypol_np_Pb208_g0500000.root", smsDir);
 

@@ -25,6 +25,11 @@ struct TargetReconstructionResult {
     std::vector<double> distances;        // 对应的距离 (mm)
     double finalDistance;                 // 最终距离 (mm)
     bool success;                        // 重建是否成功
+    
+    // 优化步骤记录（用于可视化loss function）
+    std::vector<double> optimizationSteps_P;      // 每步的动量值
+    std::vector<double> optimizationSteps_Loss;   // 每步的loss（距离）
+    int totalIterations;                          // 总迭代次数
 };
 
 // Reconstruct momentum at a target position by back-propagating a reconstructed track.
@@ -67,12 +72,22 @@ public:
                                                                   int maxIterations = 100) const;
 
     // TMinuit 优化方法：使用 ROOT 内置的 MIGRAD 算法 (拟牛顿法)
+    // recordSteps: 是否记录优化步骤（仅用于调试，会影响性能）
     TargetReconstructionResult ReconstructAtTargetMinuit(const RecoTrack& track,
                                                          const TVector3& targetPos,
                                                          bool saveTrajectories = false,
                                                          double pInit = 1000.0,
                                                          double tol = 1.0,
-                                                         int maxIterations = 1000) const;
+                                                         int maxIterations = 1000,
+                                                         bool recordSteps = false) const;
+
+    // 辅助函数：计算给定动量下到目标点的最小距离（公开供测试使用）
+    double CalculateMinimumDistance(double momentum, 
+                                   const TVector3& startPos, 
+                                   const TVector3& direction,
+                                   const TVector3& targetPos,
+                                   double charge, 
+                                   double mass) const;
 
 private:
     MagneticField* fMagField;
@@ -85,14 +100,8 @@ private:
     static TVector3 fgTargetPos;
     static double fgCharge;
     static double fgMass;
-    
-    // 辅助函数：计算给定动量下到目标点的最小距离
-    double CalculateMinimumDistance(double momentum, 
-                                   const TVector3& startPos, 
-                                   const TVector3& direction,
-                                   const TVector3& targetPos,
-                                   double charge, 
-                                   double mass) const;
+    static TargetReconstructionResult* fgResultPtr; // 用于记录优化步骤
+    static bool fgRecordSteps; // 控制是否记录优化步骤（默认false，仅调试时启用）
 
     // TMinuit 回调函数 (必须是静态函数)
     static void MinuitFunction(Int_t& npar, Double_t* grad, Double_t& result, 

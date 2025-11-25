@@ -12,6 +12,8 @@ TVector3 TargetReconstructor::fgDirection(0, 0, 1);
 TVector3 TargetReconstructor::fgTargetPos(0, 0, 0);
 double TargetReconstructor::fgCharge = -1.0;
 double TargetReconstructor::fgMass = 938.272;
+TargetReconstructionResult* TargetReconstructor::fgResultPtr = nullptr;
+bool TargetReconstructor::fgRecordSteps = false;
 
 TargetReconstructor::TargetReconstructor(MagneticField* magField)
     : fMagField(magField), fProtonMass(938.272) {
@@ -396,6 +398,14 @@ void TargetReconstructor::MinuitFunction(Int_t& npar, Double_t* grad, Double_t& 
     if (fgCurrentInstance) {
         result = fgCurrentInstance->CalculateMinimumDistance(momentum, fgStartPos, fgDirection,
                                                            fgTargetPos, fgCharge, fgMass);
+        
+        // 记录优化步骤（仅当 fgRecordSteps 为 true 时）
+        // flag == 4 表示 TMinuit 正在进行正常的函数评估
+        if (fgRecordSteps && fgResultPtr && flag == 4) {
+            fgResultPtr->optimizationSteps_P.push_back(momentum);
+            fgResultPtr->optimizationSteps_Loss.push_back(result);
+            fgResultPtr->totalIterations++;
+        }
     } else {
         result = 1e6; // 如果实例无效，返回大值
     }
@@ -408,11 +418,23 @@ TargetReconstructionResult TargetReconstructor::ReconstructAtTargetMinuit(
     bool saveTrajectories,
     double pInit,
     double tol,
-    int maxIterations) const {
+    int maxIterations,
+    bool recordSteps) const {
     
     TargetReconstructionResult result;
     result.success = false;
     result.finalDistance = std::numeric_limits<double>::max();
+    result.totalIterations = 0;  // 初始化迭代计数
+    
+    // 设置是否记录优化步骤（仅调试时启用）
+    fgRecordSteps = recordSteps;
+    
+    // 设置静态指针以便在回调函数中记录步骤（仅当 recordSteps 为 true 时）
+    if (recordSteps) {
+        fgResultPtr = &result;
+    } else {
+        fgResultPtr = nullptr;
+    }
     
     // Calculate distances from both PDC points to target
     double distStart = (track.start - targetPos).Mag();
@@ -555,6 +577,8 @@ TargetReconstructionResult TargetReconstructor::ReconstructAtTargetMinuit(
     
     // 清理静态变量
     fgCurrentInstance = nullptr;
+    fgResultPtr = nullptr;
+    fgRecordSteps = false;
     
     return result;
 }

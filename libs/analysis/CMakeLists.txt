@@ -11,6 +11,29 @@ file(GLOB ANALYSIS_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc")
 file(GLOB ANALYSIS_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hh")
 
 ##############################################################################
+# 生成 ROOT 字典
+##############################################################################
+
+# 需要生成字典的头文件列表
+set(ANALYSIS_DICT_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/MagneticField.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/EventProcessor.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/RecoEvent.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/PDCSimAna.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/NEBULAReconstructor.hh
+)
+
+# 生成 ROOT 字典
+ROOT_GENERATE_DICTIONARY(G__Analysis
+    ${ANALYSIS_DICT_HEADERS}
+    MODULE analysis
+    LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/include/AnalysisLinkDef.h
+)
+
+# 将字典源文件添加到源列表
+list(APPEND ANALYSIS_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/G__Analysis.cxx)
+
+##############################################################################
 # 创建共享库
 ##############################################################################
 
@@ -22,14 +45,27 @@ add_library(SMSimulator::analysis ALIAS analysis)
 # 设置包含目录
 target_include_directories(analysis PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smlogger/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/include>
     $<INSTALL_INTERFACE:include>
 )
 
 # 链接依赖
 target_link_libraries(analysis PUBLIC
+    smlogger
     ${ROOT_LIBRARIES}
 )
+
+# 链接必要的 ROOT 组件
+if(TARGET ROOT::Geom)
+    target_link_libraries(analysis PUBLIC ROOT::Geom)
+endif()
+if(TARGET ROOT::Eve)
+    target_link_libraries(analysis PUBLIC ROOT::Eve)
+endif()
+if(TARGET ROOT::Minuit)
+    target_link_libraries(analysis PUBLIC ROOT::Minuit)
+endif()
 
 # 如果有 ANAROOT
 if(WITH_ANAROOT)

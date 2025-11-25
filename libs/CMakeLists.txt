@@ -1,7 +1,10 @@
 # libs/CMakeLists.txt
 # 构建所有库
 
-# 先构建 smg4lib（其他库可能依赖它）
+# 先构建 smlogger（其他库可能依赖它）
+add_subdirectory(smlogger)
+
+# 构建 smg4lib（其他库可能依赖它）
 add_subdirectory(smg4lib)
 
 # 构建 sim_deuteron_core
