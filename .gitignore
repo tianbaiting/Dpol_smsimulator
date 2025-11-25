@@ -10,8 +10,7 @@ __pycache__/
 .pytest_cache/
 
 # Data files (too large for git)
-data/simulation/*.root
-data/reconstruction/*.root
+data/
 *.dat
 *.root
 
