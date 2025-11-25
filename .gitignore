@@ -12,6 +12,7 @@ __pycache__/
 # Data files (too large for git)
 data/
 configs/simulation/geometry/filed_map/
+d_work/geometry/filed_map/
 *.dat
 *.root
 
