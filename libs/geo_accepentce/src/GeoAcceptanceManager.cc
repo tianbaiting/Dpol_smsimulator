@@ -514,34 +514,35 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
         // PDC尺寸: 约 1680 x 780 mm (宽 x 高)
         double pdcHalfWidth = result.pdcConfig.width / 2.0;
         double pdcHalfDepth = result.pdcConfig.depth / 2.0;
-        // PDC 的旋转角度使用正角度，与 MagneticField 的约定一致
-        double pdcAngleRad = result.pdcConfig.rotationAngle * TMath::Pi() / 180.0;
-        double cosPDC = TMath::Cos(pdcAngleRad);
-        double sinPDC = TMath::Sin(pdcAngleRad);
         
-        // PDC四个角点（在局部坐标系中）
-        double pdcLocalCorners[5][2] = {
-            {-pdcHalfDepth, -pdcHalfWidth},
-            { pdcHalfDepth, -pdcHalfWidth},
-            { pdcHalfDepth,  pdcHalfWidth},
-            {-pdcHalfDepth,  pdcHalfWidth},
-            {-pdcHalfDepth, -pdcHalfWidth}  // 闭合
-        };
+        // PDC中心位置
+        double pdcZ = result.pdcConfig.position.Z();
+        double pdcX = result.pdcConfig.position.X();
+        
+        // PDC方向 (使用法向量，与test_pdc_position.cc一致)
+        double nx = result.pdcConfig.normal.X();
+        double nz = result.pdcConfig.normal.Z();
+        
+        // 切向量 (垂直于法向量，在XZ平面内)
+        double tx = nz;   // 切向量
+        double tz = -nx;
+        
+        // 四个角点（在XZ平面的投影）
+        double corner1_z = pdcZ - pdcHalfWidth * tx + pdcHalfDepth * nz;
+        double corner1_x = pdcX - pdcHalfWidth * tz + pdcHalfDepth * nx;
+        double corner2_z = pdcZ + pdcHalfWidth * tx + pdcHalfDepth * nz;
+        double corner2_x = pdcX + pdcHalfWidth * tz + pdcHalfDepth * nx;
+        double corner3_z = pdcZ + pdcHalfWidth * tx - pdcHalfDepth * nz;
+        double corner3_x = pdcX + pdcHalfWidth * tz - pdcHalfDepth * nx;
+        double corner4_z = pdcZ - pdcHalfWidth * tx - pdcHalfDepth * nz;
+        double corner4_x = pdcX - pdcHalfWidth * tz - pdcHalfDepth * nx;
         
         TGraph* pdcGraph = new TGraph(5);
-        for (int i = 0; i < 5; i++) {
-            // 旋转并平移到全局坐标 (使用与 MagneticField::RotateToLabFrame 相同的变换)
-            double localZ = pdcLocalCorners[i][0];  // 磁铁坐标系 Z
-            double localX = pdcLocalCorners[i][1];  // 磁铁坐标系 X
-            // 从局部坐标到实验室坐标:
-            // labX = cos(theta)*X_m - sin(theta)*Z_m
-            // labZ = sin(theta)*X_m + cos(theta)*Z_m
-            double labX = cosPDC * localX - sinPDC * localZ;
-            double labZ = sinPDC * localX + cosPDC * localZ;
-            double globalZ = result.pdcConfig.position.Z() + labZ;
-            double globalX = result.pdcConfig.position.X() + labX;
-            pdcGraph->SetPoint(i, globalZ, globalX);
-        }
+        pdcGraph->SetPoint(0, corner1_z, corner1_x);
+        pdcGraph->SetPoint(1, corner2_z, corner2_x);
+        pdcGraph->SetPoint(2, corner3_z, corner3_x);
+        pdcGraph->SetPoint(3, corner4_z, corner4_x);
+        pdcGraph->SetPoint(4, corner1_z, corner1_x);  // 闭合
         pdcGraph->SetFillColorAlpha(color, 0.2);
         pdcGraph->SetLineColor(color);
         pdcGraph->SetLineWidth(2);

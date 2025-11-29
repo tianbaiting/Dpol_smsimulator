@@ -43,6 +43,7 @@
 #include "ParticleTrajectory.hh"
 #include "BeamDeflectionCalculator.hh"
 #include "DetectorAcceptanceCalculator.hh"
+#include "GeoAcceptanceManager.hh"
 
 // ============================================================================
 // 辅助函数
@@ -290,278 +291,42 @@ void TestOptimalPDCPosition(DetectorAcceptanceCalculator* detCalc,
 }
 
 /**
- * @brief 绘制测试结果图形
+ * @brief 使用库中的 GeoAcceptanceManager 来执行 target/PDC 计算并绘图
  */
-void DrawTestResults(MagneticField* magField,
-                     BeamDeflectionCalculator* beamCalc,
-                     DetectorAcceptanceCalculator* detCalc,
-                     const std::vector<BeamDeflectionCalculator::TargetPosition>& targetPositions,
-                     const std::string& outputFile) {
-    PrintSeparator("测试5: 绘制可视化结果");
-    
-    gStyle->SetOptStat(0);
-    gStyle->SetOptTitle(0);
-    
-    // 绘图范围 - 扩大以包含PDC
-    double zMin = -5000;
-    double zMax = 6000;
-    double xMin = -10000;
-    double xMax = 3000;
-    
-    // 计算范围使得横纵比例相同
-    double zRange = zMax - zMin;  // 11000 mm
-    double xRange = xMax - xMin;  // 13000 mm
-    
-    // 根据范围调整画布大小，使比例尺相同
-    int canvasWidth = 1400;
-    int canvasHeight = (int)(canvasWidth * xRange / zRange);
-    
-    TCanvas* canvas = new TCanvas("testCanvas", "PDC Position Test", canvasWidth, canvasHeight);
-    canvas->SetGrid();
-    canvas->SetMargin(0.10, 0.15, 0.08, 0.06);  // left, right, bottom, top
-    
-    TH2F* frame = new TH2F("frame", "", 100, zMin, zMax, 100, xMin, xMax);
-    frame->GetXaxis()->SetTitle("Z (mm) - Beam Direction");
-    frame->GetYaxis()->SetTitle("X (mm)");
-    frame->GetXaxis()->SetTitleSize(0.035);
-    frame->GetYaxis()->SetTitleSize(0.035);
-    frame->GetXaxis()->SetTitleOffset(1.0);
-    frame->GetYaxis()->SetTitleOffset(1.2);
-    frame->Draw();
-    
-    // 绘制磁铁轮廓
-    double magnetHalfZ = 1000;
-    double magnetHalfX = 1500;
-    double magnetAngleDeg = magField->GetRotationAngle();
-    // 与MagneticField::RotateToLabFrame一致，使用正角度
-    double magnetAngle = magnetAngleDeg * TMath::Pi() / 180.0;
-    double cosTheta = TMath::Cos(magnetAngle);
-    double sinTheta = TMath::Sin(magnetAngle);
-    
-    double corners[4][2] = {
-        {-magnetHalfZ, -magnetHalfX},
-        { magnetHalfZ, -magnetHalfX},
-        { magnetHalfZ,  magnetHalfX},
-        {-magnetHalfZ,  magnetHalfX}
-    };
-    
-    TGraph* magnetGraph = new TGraph(5);
-    for (int i = 0; i < 4; i++) {
-        double Zm = corners[i][0];
-        double Xm = corners[i][1];
-        double labX = cosTheta * Xm - sinTheta * Zm;
-        double labZ = sinTheta * Xm + cosTheta * Zm;
-        magnetGraph->SetPoint(i, labZ, labX);
+void TestUsingGeoAcceptanceManager(const std::string& fieldMapFile,
+                                  const std::vector<double>& deflectionAngles,
+                                  const std::string& outputFile) {
+    PrintSeparator("测试5 (库调用): 使用 GeoAcceptanceManager 进行分析与绘图");
+
+    GeoAcceptanceManager mgr;
+    // 简单配置
+    mgr.SetOutputPath("./results");
+    mgr.AddFieldMap(fieldMapFile, 1.0); // field strength 推断为1.0T（如果需要可调整）
+
+    for (double a : deflectionAngles) mgr.AddDeflectionAngle(a);
+
+    // 直接分析单个场配置（会计算Target与PDC配置）
+    if (!mgr.AnalyzeFieldConfiguration(fieldMapFile, 1.0)) {
+        std::cerr << "GeoAcceptanceManager 分析失败: " << fieldMapFile << "\n";
+        return;
     }
-    magnetGraph->SetPoint(4, magnetGraph->GetX()[0], magnetGraph->GetY()[0]);
-    magnetGraph->SetFillColorAlpha(kCyan, 0.3);
-    magnetGraph->SetLineColor(kBlue);
-    magnetGraph->SetLineWidth(2);
-    magnetGraph->Draw("F");
-    magnetGraph->Draw("L SAME");
-    
-    TLatex* magnetLabel = new TLatex(0, 200, Form("SAMURAI Magnet (%.0f#circ)", magnetAngleDeg));
-    magnetLabel->SetTextSize(0.025);
-    magnetLabel->SetTextAlign(22);
-    magnetLabel->SetTextColor(kBlue);
-    magnetLabel->Draw();
-    
-    // 绘制束流入射线
-    TArrow* beamLine = new TArrow(-4000, 0, -500, 0, 0.02, ">");
-    beamLine->SetLineColor(kGreen+2);
-    beamLine->SetLineWidth(3);
-    beamLine->Draw();
-    
-    TLatex* beamLabel = new TLatex(-4000, 100, "Beam");
-    beamLabel->SetTextSize(0.025);
-    beamLabel->SetTextColor(kGreen+2);
-    beamLabel->Draw();
-    
-    // 绘制完整束流轨迹
-    auto fullTrajectory = beamCalc->CalculateFullBeamTrajectory();
-    if (fullTrajectory.size() > 10) {
-        TGraph* trajGraph = new TGraph(fullTrajectory.size());
-        for (size_t i = 0; i < fullTrajectory.size(); i++) {
-            trajGraph->SetPoint(i, fullTrajectory[i].position.Z(), 
-                                  fullTrajectory[i].position.X());
-        }
-        trajGraph->SetLineColor(kGreen+2);
-        trajGraph->SetLineWidth(2);
-        trajGraph->SetLineStyle(1);
-        trajGraph->Draw("L SAME");
+
+    // 生成布局图（使用库中绘图实现）
+    mgr.GenerateGeometryPlot(outputFile);
+
+    // 打印结果
+    auto results = mgr.GetResults();
+    std::cout << "\nGeoAcceptanceManager 返回结果数量: " << results.size() << "\n";
+    for (const auto& r : results) {
+        std::cout << "\n--- Field: " << r.fieldMapFile << "  Angle: " << r.deflectionAngle << "° ---\n";
+        PrintVector3("Target位置", r.targetPos.position);
+        std::cout << "  Target旋转角: " << r.targetPos.rotationAngle << "°\n";
+        PrintVector3("PDC位置", r.pdcConfig.position);
+        PrintVector3("PDC法向量", r.pdcConfig.normal);
+        std::cout << "  PDC旋转角: " << r.pdcConfig.rotationAngle << "°\n";
+        std::cout << "  PDC 尺寸: " << r.pdcConfig.width << " x " << r.pdcConfig.height << " x " << r.pdcConfig.depth << " mm³\n";
+        std::cout << "  Acceptance (PDC): " << r.acceptance.pdcAcceptance << "%\n";
     }
-    
-    // 颜色方案
-    int colors[] = {kRed, kBlue, kMagenta, kOrange+1, kCyan+1};
-    int nColors = sizeof(colors) / sizeof(colors[0]);
-    
-    TLegend* legend = new TLegend(0.70, 0.55, 0.94, 0.92);
-    legend->SetBorderSize(1);
-    legend->SetFillColor(kWhite);
-    legend->SetTextSize(0.020);
-    legend->SetHeader("Configurations", "C");
-    
-    int colorIdx = 0;
-    for (const auto& targetPos : targetPositions) {
-        int color = colors[colorIdx % nColors];
-        
-        // 绘制Target位置
-        TEllipse* target = new TEllipse(targetPos.position.Z(), 
-                                        targetPos.position.X(), 
-                                        60, 60);
-        target->SetFillColor(color);
-        target->SetLineColor(color);
-        target->Draw();
-        
-        // 绘制束流方向
-        double arrowLen = 300;
-        TArrow* beamDir = new TArrow(
-            targetPos.position.Z(),
-            targetPos.position.X(),
-            targetPos.position.Z() + arrowLen * targetPos.beamDirection.Z(),
-            targetPos.position.X() + arrowLen * targetPos.beamDirection.X(),
-            0.015, ">"
-        );
-        beamDir->SetLineColor(color);
-        beamDir->SetLineWidth(2);
-        beamDir->Draw();
-        
-        // 计算并绘制PDC位置
-        auto pdcConfig = detCalc->CalculateOptimalPDCPosition(
-            targetPos.position, targetPos.rotationAngle);
-        
-        if (pdcConfig.isOptimal) {
-            // 获取质子轨迹（从target到PDC）
-            ParticleTrajectory* trajectory = new ParticleTrajectory(magField);
-            trajectory->SetStepSize(10.0);  // 10mm步长
-            
-            // 创建质子动量（在target局部坐标系中Px=0, Pz=600 MeV/c）
-            double theta_rad = targetPos.rotationAngle * TMath::DegToRad();
-            double cos_theta = TMath::Cos(theta_rad);
-            double sin_theta = TMath::Sin(theta_rad);
-            double pz_local = 600.0;  // MeV/c
-            
-            // 转换到实验室坐标系
-            double px_lab = pz_local * sin_theta;
-            double pz_lab = pz_local * cos_theta;
-            
-            TVector3 momentum(px_lab, 0, pz_lab);
-            double protonMass = 938.272;  // MeV/c²
-            double E = TMath::Sqrt(momentum.Mag2() + protonMass * protonMass);
-            TLorentzVector p4(momentum, E);
-            
-            auto protonTraj = trajectory->CalculateTrajectory(
-                targetPos.position, p4, 1, protonMass);
-            
-            if (protonTraj.size() > 10) {
-                TGraph* protonGraph = new TGraph();
-                int nPoints = 0;
-                for (size_t i = 0; i < protonTraj.size(); i += 5) {  // 每5个点取一个
-                    protonGraph->SetPoint(nPoints++, 
-                                         protonTraj[i].position.Z(),
-                                         protonTraj[i].position.X());
-                }
-                protonGraph->SetLineColor(color);
-                protonGraph->SetLineWidth(2);
-                protonGraph->SetLineStyle(1);
-                protonGraph->Draw("L SAME");
-            }
-            
-            delete trajectory;
-            
-            // PDC中心位置
-            double pdcZ = pdcConfig.position.Z();
-            double pdcX = pdcConfig.position.X();
-            
-            // PDC尺寸（在探测器局部坐标系中）
-            double pdcHalfWidth = pdcConfig.width / 2.0;   // 沿探测器平面的宽度
-            double pdcHalfDepth = pdcConfig.depth / 2.0;   // 垂直于探测器平面的深度
-            
-            // PDC方向 (法向量)
-            double nx = pdcConfig.normal.X();
-            double nz = pdcConfig.normal.Z();
-            
-            // 计算PDC矩形的四个角点
-            // 切向量 (垂直于法向量，在XZ平面内)
-            double tx = nz;   // 切向量
-            double tz = -nx;
-            
-            // 四个角点（在XZ平面的投影）
-            double corner1_z = pdcZ - pdcHalfWidth * tx + pdcHalfDepth * nz;
-            double corner1_x = pdcX - pdcHalfWidth * tz + pdcHalfDepth * nx;
-            double corner2_z = pdcZ + pdcHalfWidth * tx + pdcHalfDepth * nz;
-            double corner2_x = pdcX + pdcHalfWidth * tz + pdcHalfDepth * nx;
-            double corner3_z = pdcZ + pdcHalfWidth * tx - pdcHalfDepth * nz;
-            double corner3_x = pdcX + pdcHalfWidth * tz - pdcHalfDepth * nx;
-            double corner4_z = pdcZ - pdcHalfWidth * tx - pdcHalfDepth * nz;
-            double corner4_x = pdcX - pdcHalfWidth * tz - pdcHalfDepth * nx;
-            
-            TGraph* pdcGraph = new TGraph(5);
-            pdcGraph->SetPoint(0, corner1_z, corner1_x);
-            pdcGraph->SetPoint(1, corner2_z, corner2_x);
-            pdcGraph->SetPoint(2, corner3_z, corner3_x);
-            pdcGraph->SetPoint(3, corner4_z, corner4_x);
-            pdcGraph->SetPoint(4, corner1_z, corner1_x);  // 闭合
-            
-            pdcGraph->SetFillColorAlpha(color, 0.3);
-            pdcGraph->SetLineColor(color);
-            pdcGraph->SetLineWidth(2);
-            pdcGraph->Draw("F");
-            pdcGraph->Draw("L SAME");
-            
-            // 绘制PDC法向量
-            double normalLen = 400;
-            TArrow* pdcNormal = new TArrow(
-                pdcZ, pdcX,
-                pdcZ + normalLen * nz,
-                pdcX + normalLen * nx,
-                0.015, ">"
-            );
-            pdcNormal->SetLineColor(color);
-            pdcNormal->SetLineWidth(2);
-            pdcNormal->SetLineStyle(2);  // 虚线
-            pdcNormal->Draw();
-            
-            // 绘制PDC中心点
-            TEllipse* pdcCenter = new TEllipse(pdcZ, pdcX, 40, 40);
-            pdcCenter->SetFillColor(color);
-            pdcCenter->SetLineColor(color);
-            pdcCenter->Draw();
-            
-            // 添加PDC标签
-            TLatex* pdcLabel = new TLatex(pdcZ + 150, pdcX + 150, 
-                Form("PDC %.0f#circ", targetPos.deflectionAngle));
-            pdcLabel->SetTextSize(0.018);
-            pdcLabel->SetTextColor(color);
-            pdcLabel->Draw();
-        }
-        
-        // 图例
-        legend->AddEntry(target, Form("%.1f#circ: Target + PDC", targetPos.deflectionAngle), "f");
-        
-        colorIdx++;
-    }
-    
-    legend->Draw();
-    
-    // 标题
-    TLatex* title = new TLatex(0.5, 0.95, "PDC Position Test - Beam Trajectory & Target Positions");
-    title->SetNDC();
-    title->SetTextSize(0.035);
-    title->SetTextAlign(22);
-    title->Draw();
-    
-    // 保存
-    canvas->Update();
-    canvas->SaveAs(outputFile.c_str());
-    std::cout << "图形已保存到: " << outputFile << "\n";
-    
-    // 同时保存PDF
-    std::string pdfFile = outputFile.substr(0, outputFile.find_last_of('.')) + ".pdf";
-    canvas->SaveAs(pdfFile.c_str());
-    std::cout << "PDF版本已保存到: " << pdfFile << "\n";
-    
-    delete canvas;
 }
 
 /**
@@ -733,10 +498,8 @@ int main(int argc, char** argv) {
     }
     
     // 测试4: PDC最佳位置
-    TestOptimalPDCPosition(detCalc, targetPositions);
-    
-    // 测试5: 绘制结果（包含PDC位置）
-    DrawTestResults(magField, beamCalc, detCalc, targetPositions, "test_pdc_position.png");
+    // 使用 GeoAcceptanceManager（库实现）来完成PDC计算与绘图，避免在测试中重新实现绘图逻辑
+    TestUsingGeoAcceptanceManager(fieldMapFile, deflectionAngles, "test_pdc_position.png");
     
     // 测试6: 坐标变换一致性
     TestCoordinateTransformConsistency(rotationAngle);

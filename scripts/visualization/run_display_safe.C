@@ -22,13 +22,16 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
     }
     // 2. 创建并设置所有分析工具
     GeometryManager geo;
-    geo.LoadGeometry(Form("%s/d_work/geometry/5deg_1.2T.mac", smsDir));
+    // geo.LoadGeometry(Form("%s/d_work/geometry/5deg_1.2T.mac", smsDir));
+    geo.LoadGeometry(Form("%s/configs/simulation/geometry/5deg_1.2T.mac", smsDir)); // 加载NEBULA几何
 
     PDCSimAna ana(geo);
     ana.SetSmearing(0, 0); // 设置PDC分辨率
 
     // 使用事件ID构建完整文件路径
-    TString filename = Form("/home/tian/workspace/dpol/smsimulator5.5/data/simulation/output_tree/ypol_5000events/Pb208_g050/ypol_np_Pb208_g0500000.root");
+    // TString filename = Form("/home/tian/workspace/dpol/smsimulator5.5/data/simulation/output_tree/ypol_5000events/Pb208_g050/ypol_np_Pb208_g0500000.root");
+
+    TString filename = Form("%s/data/simulation/g4output/ypol_5000events/Pb208_g050/ypol_np_Pb208_g0500000.root", smsDir);
     // TString filename = Form("%s/d_work/output_tree/testry0000.root", smsDir);
     // TString filename = Form("%s/d_work/output_tree/test/Pb208_g050/ypol_np_Pb208_g0500000.root", smsDir);
 
