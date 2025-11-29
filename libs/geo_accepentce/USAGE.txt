@@ -1,0 +1,155 @@
+================================================================================
+              几何接受度分析库 - 快速使用指南
+           Geometry Acceptance Library - Quick Usage Guide
+================================================================================
+
+【编译】
+--------
+cd /home/tian/workspace/dpol/smsimulator5.5/build
+cmake .. -DBUILD_ANALYSIS=ON
+make GeoAcceptance -j4
+
+编译产物:
+  - lib/libGeoAcceptance.so        # 库文件
+  - bin/RunGeoAcceptanceAnalysis   # 主分析程序
+  - bin/test_geo_acceptance        # 测试程序
+
+
+【快速测试】
+-----------
+./build/bin/test_geo_acceptance
+
+输出: 验证物理计算和数据结构
+
+
+【单次分析】
+-----------
+./build/bin/RunGeoAcceptanceAnalysis \
+  --fieldmap configs/simulation/geometry/filed_map/180626-1,00T-6000/field.dat \
+  --field 1.0 \
+  --angle 0 --angle 5 --angle 10 \
+  --qmd data/qmdrawdata \
+  --output ./results_1.0T
+
+参数说明:
+  --fieldmap <file>   磁场数据文件路径 (可多次指定)
+  --field <value>     磁场强度(T)，与fieldmap对应
+  --angle <value>     束流偏转角度(度)，可多次指定
+  --qmd <path>        QMD反应数据目录
+  --output <dir>      结果输出目录
+
+输出文件:
+  results_1.0T/
+    ├── acceptance_report.txt      # 文本格式分析报告
+    └── acceptance_results.root    # ROOT格式数据（含TTree）
+
+
+【批量分析】（推荐）
+--------------------
+方法1 - Bash脚本:
+  bash scripts/analysis/run_geo_acceptance_batch.sh ./batch_results
+  
+方法2 - Python脚本:
+  python3 scripts/analysis/run_geo_acceptance_batch.py --output ./batch_results
+  
+方法3 - ROOT宏:
+  cd scripts/analysis
+  root -l run_geo_acceptance_batch.C
+
+批量分析配置:
+  • 磁场: 0.8T, 1.0T, 1.2T, 1.4T (4个)
+  • 偏转角度: 0°, 5°, 10° (3个)
+  • 总计: 12组配置
+
+批量分析输出:
+  batch_results/
+    ├── SUMMARY_REPORT.txt           # 汇总报告
+    ├── results/                     # 分配置结果
+    │   ├── 0.8T/
+    │   ├── 1.0T/
+    │   ├── 1.2T/
+    │   └── 1.4T/
+    ├── logs/                        # 运行日志
+    └── plots/                       # 绘图目录
+
+
+【结果可视化】
+--------------
+1. ROOT绘图:
+   cd batch_results
+   root -l analyze_results.C
+
+2. Python绘图:
+   cd batch_results
+   python3 plot_results.py
+
+
+【物理参数】
+-----------
+束流: 氘核(Deuteron) @ 190 MeV/u
+  • 质量: 1875.613 MeV/c²
+  • 动量: 1252.943 MeV/c
+  • β = 0.555, γ = 1.203
+
+PDC探测器 (来自PDCConstruction.cc):
+  • 外壳尺寸: 1700×800×190 mm
+  • 有效区域: 1680×780 mm
+  • 优化标准: 垂直于Pz=600 MeV/c质子轨迹
+  • 接受范围: Px = ±100 MeV/c
+
+NEBULA探测器 (来自TNEBULASimParameter.cc):
+  • 位置: (0, 0, 5000) mm
+  • 阵列尺寸: 3600×1800×600 mm
+  • 单Neut: 120×1800×120 mm
+
+
+【常见问题】
+-----------
+Q: 编译时找不到Analysis库？
+A: 确保先编译analysis库: make analysis -j4
+
+Q: 磁场文件不存在？
+A: cd configs/simulation/geometry/filed_map
+   python3 downloadFormSamurai.py -d -u
+
+Q: QMD数据目录为空？
+A: 程序会给出警告但继续运行（仅计算几何配置，不计算接受度）
+
+Q: 如何修改分析配置？
+A: 编辑批量脚本中的FIELD_CONFIGURATIONS和DEFLECTION_ANGLES数组
+
+
+【代码集成】
+-----------
+在你的CMake项目中使用:
+
+  find_library(GeoAcceptance_LIB GeoAcceptance PATHS ${PROJECT_ROOT}/lib)
+  target_link_libraries(your_target ${GeoAcceptance_LIB} analysis)
+
+在C++代码中:
+
+  #include "GeoAcceptanceManager.hh"
+  
+  GeoAcceptanceManager manager("data/qmdrawdata", "./output");
+  manager.AddFieldConfiguration("configs/.../field.dat", 1.0);
+  manager.AddDeflectionAngle(0.0);
+  manager.AddDeflectionAngle(5.0);
+  manager.RunFullAnalysis();
+
+
+【参考文档】
+-----------
+详细说明:     libs/geo_accepentce/readme.md
+快速入门:     libs/geo_accepentce/QUICKSTART.md
+实现总结:     libs/geo_accepentce/IMPLEMENTATION_SUMMARY.md
+代码头文件:   libs/geo_accepentce/include/*.hh (含详细注释)
+
+
+【联系方式】
+-----------
+问题反馈: 查看项目文档或运行测试程序获取更多信息
+代码位置: /home/tian/workspace/dpol/smsimulator5.5/libs/geo_accepentce
+
+================================================================================
+最后更新: 2025-11-30
+================================================================================
