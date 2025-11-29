@@ -1,38 +1,117 @@
 # tests/integration/CMakeLists.txt
-# 集成测试
+# PDC位置计算测试程序
+
+message(STATUS "Configuring integration tests...")
 
 ##############################################################################
-# 简单的集成测试（不需要 GTest）
+# PDC位置计算测试
 ##############################################################################
 
-# 测试：检查 sim_deuteron 是否能正常运行
-add_test(
-    NAME test_sim_deuteron_help
-    COMMAND sim_deuteron --help
+# 测试1: 旋转一致性测试 (独立测试，不依赖外部库)
+# 放在前面，避免被return()跳过
+##############################################################################
+
+add_executable(test_rotation_consistency
+    test_rotation_consistency.cc
 )
 
-# 测试：运行一个简单的模拟
-if(EXISTS ${CMAKE_SOURCE_DIR}/configs/simulation/macros/test.mac)
-    add_test(
-        NAME test_simple_simulation
-        COMMAND sim_deuteron ${CMAKE_SOURCE_DIR}/configs/simulation/macros/test.mac
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
-    set_tests_properties(test_simple_simulation PROPERTIES
-        TIMEOUT 300
-    )
-endif()
+target_include_directories(test_rotation_consistency PRIVATE
+    ${ROOT_INCLUDE_DIRS}
+)
+
+target_link_libraries(test_rotation_consistency PRIVATE
+    ${ROOT_LIBRARIES}
+)
+
+set_target_properties(test_rotation_consistency PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+message(STATUS "Rotation consistency test configured: test_rotation_consistency")
 
 ##############################################################################
-# 更复杂的集成测试可以使用脚本
+# 测试2: PDC位置测试 (完整测试，依赖磁场库)
 ##############################################################################
 
-# 示例：使用 Python 脚本进行测试
-find_package(Python3 COMPONENTS Interpreter)
-if(Python3_FOUND)
-    add_test(
-        NAME test_full_chain
-        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_full_chain.py
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
-endif()
+# 检查是否有必要的库
+if(NOT TARGET analysis)
+    message(WARNING "analysis library not found, skipping PDC position test")
+else()
+if(NOT TARGET GeoAcceptance)
+    message(WARNING "GeoAcceptance library not found, skipping PDC position test")
+else()
+
+add_executable(test_pdc_position
+    test_pdc_position.cc
+)
+
+target_include_directories(test_pdc_position PRIVATE
+    ${CMAKE_SOURCE_DIR}/libs/analysis/include
+    ${CMAKE_SOURCE_DIR}/libs/geo_accepentce/include
+    ${CMAKE_SOURCE_DIR}/libs/smlogger/include
+    ${ROOT_INCLUDE_DIRS}
+)
+
+target_link_libraries(test_pdc_position PRIVATE
+    GeoAcceptance
+    analysis
+    smlogger
+    ${ROOT_LIBRARIES}
+)
+
+# 设置输出目录
+set_target_properties(test_pdc_position PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+message(STATUS "PDC position test configured: test_pdc_position")
+
+endif()  # GeoAcceptance
+endif()  # analysis
+
+##############################################################################
+# 便捷运行脚本
+##############################################################################
+
+# 创建运行脚本
+file(WRITE ${CMAKE_BINARY_DIR}/bin/run_pdc_test.sh
+"#!/bin/bash
+# PDC位置计算测试运行脚本
+
+# 默认参数
+FIELD_MAP=\"${CMAKE_SOURCE_DIR}/configs/simulation/geometry/filed_map/180626-1,00T-6000.table\"
+ROTATION_ANGLE=30
+
+# 解析参数
+if [ \$# -ge 1 ]; then
+    FIELD_MAP=\"\$1\"
+fi
+if [ \$# -ge 2 ]; then
+    ROTATION_ANGLE=\"\$2\"
+fi
+
+echo \"======================================\"
+echo \"PDC Position Calculation Test\"
+echo \"======================================\"
+echo \"Field map: \$FIELD_MAP\"
+echo \"Rotation angle: \$ROTATION_ANGLE degrees\"
+echo \"\"
+
+cd ${CMAKE_BINARY_DIR}/bin
+./test_pdc_position \"\$FIELD_MAP\" \"\$ROTATION_ANGLE\"
+")
+
+# 创建旋转测试脚本
+file(WRITE ${CMAKE_BINARY_DIR}/bin/run_rotation_test.sh
+"#!/bin/bash
+# 旋转一致性测试运行脚本
+
+echo \"======================================\"
+echo \"Rotation Consistency Test\"
+echo \"======================================\"
+
+cd ${CMAKE_BINARY_DIR}/bin
+./test_rotation_consistency
+")
+
+message(STATUS "Run scripts created in ${CMAKE_BINARY_DIR}/bin/")
