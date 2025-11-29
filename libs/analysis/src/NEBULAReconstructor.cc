@@ -1,10 +1,10 @@
 #include "NEBULAReconstructor.hh"
+#include "SMLogger.hh"
 #include "TRandom3.h"
 #include "TClass.h"
 #include "TDataMember.h"
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <cstring>
 
 // 物理常数
@@ -22,11 +22,11 @@ NEBULAReconstructor::NEBULAReconstructor(const GeometryManager& geo_manager)
     fPositionSmearing = 5.0;    // 5 mm 位置分辨率
     fTimeSmearing = 0.5;        // 0.5 ns 时间分辨率
     
-    std::cout << "NEBULAReconstructor initialized with default parameters:" << std::endl;
-    std::cout << "  Time window: " << fTimeWindow << " ns" << std::endl;
-    std::cout << "  Energy threshold: " << fEnergyThreshold << " MeV" << std::endl;
-    std::cout << "  Position smearing: " << fPositionSmearing << " mm" << std::endl;
-    std::cout << "  Time smearing: " << fTimeSmearing << " ns" << std::endl;
+    SM_INFO("NEBULAReconstructor initialized with default parameters:");
+    SM_INFO("  Time window: {} ns", fTimeWindow);
+    SM_INFO("  Energy threshold: {} MeV", fEnergyThreshold);
+    SM_INFO("  Position smearing: {} mm", fPositionSmearing);
+    SM_INFO("  Time smearing: {} ns", fTimeSmearing);
 }
 
 NEBULAReconstructor::~NEBULAReconstructor() {
@@ -42,7 +42,7 @@ std::vector<NEBULAHit> NEBULAReconstructor::ExtractHits(TClonesArray* nebulaData
     if (!nebulaData) return hits;
     
     int nHits = nebulaData->GetEntriesFast();
-    std::cout << "ExtractHits: 处理 " << nHits << " 个NEBULA原始hits" << std::endl;
+    SM_DEBUG("ExtractHits: 处理 {} 个NEBULA原始hits", nHits);
     
     for (int i = 0; i < nHits; ++i) {
         TObject* obj = nebulaData->At(i);
@@ -51,9 +51,8 @@ std::vector<NEBULAHit> NEBULAReconstructor::ExtractHits(TClonesArray* nebulaData
         // 检查对象是否是TArtNEBULAPla类型
         TClass* objClass = obj->IsA();
         if (!objClass || strcmp(objClass->GetName(), "TArtNEBULAPla") != 0) {
-            std::cout << "  Warning: 对象 " << i << " 类型是 " 
-                      << (objClass ? objClass->GetName() : "unknown") 
-                      << "，不是TArtNEBULAPla，跳过..." << std::endl;
+            SM_WARN("对象 {} 类型是 {}，不是TArtNEBULAPla，跳过...", 
+                    i, (objClass ? objClass->GetName() : "unknown"));
             continue;
         }
         
@@ -76,7 +75,7 @@ std::vector<NEBULAHit> NEBULAReconstructor::ExtractHits(TClonesArray* nebulaData
         // 使用TMethodCall来安全调用方法
         TClass* plaClass = TClass::GetClass("TArtNEBULAPla");
         if (!plaClass) {
-            std::cout << "  Error: 无法获取TArtNEBULAPla类信息" << std::endl;
+            SM_ERROR("无法获取TArtNEBULAPla类信息");
             continue;
         }
         
@@ -93,8 +92,8 @@ std::vector<NEBULAHit> NEBULAReconstructor::ExtractHits(TClonesArray* nebulaData
         
         // 调用对象的Print方法来获取基本信息（用于调试）
         if (i < 3) { // 只对前3个对象详细输出
-            std::cout << "  Debug: 对象 " << i << " 的数据结构:" << std::endl;
-            obj->Dump();
+            SM_TRACE("对象 {} 的数据结构: (Dump output suppressed)", i);
+            // obj->Dump(); // 使用 TRACE 级别时可以取消注释
         }
         
         // 使用已知的内存布局来获取数据
@@ -143,9 +142,8 @@ std::vector<NEBULAHit> NEBULAReconstructor::ExtractHits(TClonesArray* nebulaData
         // 构建位置向量
         TVector3 pos(posX, posY, posZ);
         
-        std::cout << "  Hit " << i << ": ID=" << id 
-                  << ", Pos=(" << posX << "," << posY << "," << posZ << ")"
-                  << ", Time=" << time << "ns, Energy=" << energy << std::endl;
+        SM_DEBUG("Hit {}: ID={}, Pos=({},{},{}), Time={}ns, Energy={}", 
+                 i, id, posX, posY, posZ, time, energy);
         
         // 应用能量阈值
         if (energy < fEnergyThreshold) continue;
@@ -245,27 +243,27 @@ RecoNeutron NEBULAReconstructor::ReconstructFromCluster(const std::vector<NEBULA
     neutron.beta = CalculateBeta(neutron.flightLength, neutron.timeOfFlight);
     
     // 输出详细的重建信息
-    std::cout << "\n=== NEBULA中子重建结果 ===" << std::endl;
-    std::cout << "聚类包含hits数: " << cluster.size() << std::endl;
-    std::cout << "重建位置: (" << neutron.position.X() << ", " 
-              << neutron.position.Y() << ", " << neutron.position.Z() << ") mm" << std::endl;
-    std::cout << "飞行方向: (" << neutron.direction.X() << ", " 
-              << neutron.direction.Y() << ", " << neutron.direction.Z() << ")" << std::endl;
-    std::cout << "飞行距离: " << neutron.flightLength << " mm" << std::endl;
-    std::cout << "飞行时间: " << neutron.timeOfFlight << " ns" << std::endl;
-    std::cout << "Beta值: " << neutron.beta << std::endl;
-    std::cout << "总能量: " << neutron.energy << " MeV" << std::endl;
+    SM_INFO("=== NEBULA中子重建结果 ===");
+    SM_INFO("聚类包含hits数: {}", cluster.size());
+    SM_INFO("重建位置: ({:.2f}, {:.2f}, {:.2f}) mm", 
+            neutron.position.X(), neutron.position.Y(), neutron.position.Z());
+    SM_INFO("飞行方向: ({:.4f}, {:.4f}, {:.4f})", 
+            neutron.direction.X(), neutron.direction.Y(), neutron.direction.Z());
+    SM_INFO("飞行距离: {:.2f} mm", neutron.flightLength);
+    SM_INFO("飞行时间: {:.2f} ns", neutron.timeOfFlight);
+    SM_INFO("Beta值: {:.4f}", neutron.beta);
+    SM_INFO("总能量: {:.2f} MeV", neutron.energy);
     
     // 计算中子动能
     double neutronKE = CalculateNeutronEnergy(neutron.beta);
-    std::cout << "中子动能: " << neutronKE << " MeV" << std::endl;
+    SM_INFO("中子动能: {:.2f} MeV", neutronKE);
     
     // 计算极角和方位角
     double theta = neutron.direction.Theta() * 180.0 / TMath::Pi();
     double phi = neutron.direction.Phi() * 180.0 / TMath::Pi();
-    std::cout << "极角θ: " << theta << "°" << std::endl;
-    std::cout << "方位角φ: " << phi << "°" << std::endl;
-    std::cout << "=========================" << std::endl;
+    SM_INFO("极角θ: {:.2f}°", theta);
+    SM_INFO("方位角φ: {:.2f}°", phi);
+    SM_INFO("=========================");
     
     return neutron;
 }
@@ -337,11 +335,11 @@ std::vector<RecoNeutron> NEBULAReconstructor::ReconstructNeutrons(TClonesArray* 
 }
 
 void NEBULAReconstructor::ProcessEvent(TClonesArray* nebulaData, RecoEvent& event) {
-    std::cout << "\n*** NEBULAReconstructor::ProcessEvent 开始 ***" << std::endl;
+    SM_DEBUG("NEBULAReconstructor::ProcessEvent 开始");
     
     std::vector<RecoNeutron> neutrons = ReconstructNeutrons(nebulaData);
     
-    std::cout << "*** 重建总结: 发现 " << neutrons.size() << " 个中子 ***" << std::endl;
+    SM_INFO("重建总结: 发现 {} 个中子", neutrons.size());
     
     // 将中子信息添加到RecoEvent.neutrons中
     event.neutrons = neutrons;

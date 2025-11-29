@@ -1,7 +1,7 @@
 #include "EventDataReader.hh"
+#include "SMLogger.hh"
 #include "TSystem.h"
 #include "TBeamSimData.hh"
-#include <iostream>
 
 EventDataReader::EventDataReader(const char* filePath) 
     : m_file(nullptr), m_tree(nullptr), m_fragSimDataArray(nullptr), m_nebulaDataArray(nullptr),
@@ -13,12 +13,12 @@ EventDataReader::EventDataReader(const char* filePath)
 
     m_file = TFile::Open(m_filePath.Data());
     if (!IsOpen()) {
-        std::cerr << "Error: EventDataReader cannot open ROOT file: " << m_filePath << std::endl;
+        SM_ERROR("EventDataReader cannot open ROOT file: {}", m_filePath.Data());
         return;
     }
     m_tree = (TTree*)m_file->Get("tree");
     if (!m_tree) {
-        std::cerr << "Error: EventDataReader cannot find tree in ROOT file!" << std::endl;
+        SM_ERROR("EventDataReader cannot find tree in ROOT file!");
         m_file->Close();
         m_file = nullptr;
         return;
@@ -28,23 +28,23 @@ EventDataReader::EventDataReader(const char* filePath)
     // Try to set NEBULA branch
     if (m_tree->GetBranch("NEBULAPla")) {
         m_tree->SetBranchAddress("NEBULAPla", &m_nebulaDataArray);
-        std::cout << "EventDataReader: Found NEBULAPla branch" << std::endl;
+        SM_INFO("EventDataReader: Found NEBULAPla branch");
     } else {
-        std::cout << "EventDataReader: No NEBULAPla branch found in file" << std::endl;
+        SM_DEBUG("EventDataReader: No NEBULAPla branch found in file");
         m_nebulaDataArray = nullptr;
     }
     
     // Try to set beam branch using vector<TBeamSimData> format
     if (m_tree->GetBranch("beam")) {
         m_tree->SetBranchAddress("beam", &m_beamDataVector);
-        std::cout << "EventDataReader: Found beam branch (vector<TBeamSimData> format)" << std::endl;
+        SM_INFO("EventDataReader: Found beam branch (vector<TBeamSimData> format)");
     } else {
-        std::cout << "EventDataReader: No beam branch found in file" << std::endl;
+        SM_DEBUG("EventDataReader: No beam branch found in file");
         m_beamDataVector = nullptr;
     }
     
     m_totalEvents = m_tree->GetEntries();
-    std::cout << "EventDataReader: Opened " << m_filePath << " with " << m_totalEvents << " events." << std::endl;
+    SM_INFO("EventDataReader: Opened {} with {} events.", m_filePath.Data(), m_totalEvents);
 }
 
 EventDataReader::~EventDataReader() {
@@ -57,7 +57,7 @@ EventDataReader::~EventDataReader() {
 bool EventDataReader::GoToEvent(Long64_t eventNumber) {
     if (!IsOpen() || !m_tree) return false;
     if (eventNumber < 0 || eventNumber >= m_totalEvents) {
-        std::cerr << "Error: Event number " << eventNumber << " is out of range." << std::endl;
+        SM_ERROR("Event number {} is out of range.", eventNumber);
         return false;
     }
     m_tree->GetEntry(eventNumber);

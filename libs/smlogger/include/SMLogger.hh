@@ -3,14 +3,8 @@
 
 #include <memory>
 #include <string>
-
-// Forward declarations
-namespace spdlog {
-    class logger;
-    namespace sinks {
-        class sink;
-    }
-}
+#include <spdlog/spdlog.h>
+#include <spdlog/async.h>
 
 namespace SMLogger {
 

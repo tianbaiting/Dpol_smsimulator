@@ -1,5 +1,5 @@
 #include "EventProcessor.hh"
-#include <iostream>
+#include "SMLogger.hh"
 
 #include "TTree.h"
 
@@ -25,7 +25,7 @@ EventProcessor::~EventProcessor() {
 
 void EventProcessor::Begin() {
     // Called once at the beginning of the analysis
-    std::cout << "EventProcessor: Starting analysis..." << std::endl;
+    SM_INFO("EventProcessor: Starting analysis...");
 }
 
 void EventProcessor::ProcessEvent() {
@@ -39,5 +39,5 @@ void EventProcessor::ProcessEvent() {
 
 void EventProcessor::End() {
     // Called once at the end of the analysis
-    std::cout << "EventProcessor: Finished analysis." << std::endl;
+    SM_INFO("EventProcessor: Finished analysis.");
 }

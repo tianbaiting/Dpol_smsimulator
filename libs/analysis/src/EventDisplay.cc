@@ -1,4 +1,5 @@
 #include "EventDisplay.hh"
+#include "SMLogger.hh"
 #include "TSimData.hh"
 #include "TBeamSimData.hh"
 #include "TROOT.h"
@@ -31,7 +32,7 @@ void EventDisplay::InitEve() {
     TEveManager::Create();
     gEnv->SetValue("OpenGL.Highlight.Select", 0);
     gEnv->SetValue("OpenGL.EventHandler.EnableMouseOver", 0);
-    std::cout << "EventDisplay: EVE manager initialized with stability settings." << std::endl;
+    SM_INFO("EventDisplay: EVE manager initialized with stability settings.");
 }
 
 void EventDisplay::LoadGeometry(const char* geom_file) {
@@ -42,7 +43,7 @@ void EventDisplay::LoadGeometry(const char* geom_file) {
         TGeoManager::SetDefaultUnits(TGeoManager::EDefaultUnits::kG4Units);
 
         TGeoManager::Import(geom_file);
-        std::cout << "EventDisplay: Geometry loaded from " << geom_file << std::endl;
+        SM_INFO("EventDisplay: Geometry loaded from {}", geom_file);
         
         // 增强几何体的透明度以便更好地观察内部结构
         if (gGeoManager) {
@@ -65,8 +66,7 @@ void EventDisplay::LoadGeometry(const char* geom_file) {
                         }
                     }
                 }
-                std::cout << "EventDisplay: Applied transparency settings to " 
-                         << volumes->GetEntries() << " volumes" << std::endl;
+                SM_INFO("EventDisplay: Applied transparency settings to {} volumes", volumes->GetEntries());
             }
         }
     }
@@ -114,8 +114,8 @@ void EventDisplay::DisplayEvent(const RecoEvent& event) {
         hitMarker->SetNextPoint(hit.position.X(), hit.position.Y(), hit.position.Z());
         m_currentEventElements->AddElement(hitMarker);
         // 同时在控制台打印能量（便于调试）
-        std::cout << "RawHit " << i << ": pos=(" << hit.position.X() << ", " << hit.position.Y()
-                  << ", " << hit.position.Z() << ") mm, E=" << eng << "" << std::endl;
+        SM_DEBUG("RawHit {}: pos=({:.2f}, {:.2f}, {:.2f}) mm, E={:.2f}", 
+                 i, hit.position.X(), hit.position.Y(), hit.position.Z(), eng);
     }
 
     // 2. Smeared Hits - 显示重建后的点，使用统一样式但更醒目
@@ -154,7 +154,7 @@ void EventDisplay::DisplayEvent(const RecoEvent& event) {
     }
 
     Redraw();
-    std::cout << "Displayed Event: " << event.eventID << std::endl;
+    SM_INFO("Displayed Event: {}", event.eventID);
 }
 
 // Backward-compatible helper: accept reader and event (reader unused here)
@@ -174,10 +174,10 @@ void EventDisplay::DisplayEventWithTrajectories(EventDataReader& reader, const R
         if (beamData && !beamData->empty()) {
             DrawParticleTrajectories(beamData, magField);
         } else {
-            std::cout << "EventDisplay: No beam data available for trajectory calculation" << std::endl;
+            SM_DEBUG("EventDisplay: No beam data available for trajectory calculation");
         }
     } else {
-        std::cout << "EventDisplay: No magnetic field provided for trajectory calculation" << std::endl;
+        SM_DEBUG("EventDisplay: No magnetic field provided for trajectory calculation");
     }
     
     Redraw();
@@ -186,16 +186,14 @@ void EventDisplay::DisplayEventWithTrajectories(EventDataReader& reader, const R
 void EventDisplay::DrawParticleTrajectories(const std::vector<TBeamSimData>* beamData, MagneticField* magField) {
     if (!beamData || !magField) return;
     
-    std::cout << "Drawing trajectories for " << beamData->size() << " particles" << std::endl;
+    SM_DEBUG("Drawing trajectories for {} particles", beamData->size());
     
     // 获取 Target 角度用于旋转入射粒子动量
     double targetAngleRad = m_geo.GetTargetAngleRad();
     TVector3 targetPos = m_geo.GetTargetPosition();
     
-    std::cout << "Applying rotation of " << (targetAngleRad * TMath::RadToDeg()) 
-              << " deg to incident particles" << std::endl;
-    std::cout << "Using target position: (" << targetPos.X() << ", " 
-              << targetPos.Y() << ", " << targetPos.Z() << ") mm" << std::endl;
+    SM_DEBUG("Applying rotation of {:.2f} deg to incident particles", (targetAngleRad * TMath::RadToDeg()));
+    SM_DEBUG("Using target position: ({:.2f}, {:.2f}, {:.2f}) mm", targetPos.X(), targetPos.Y(), targetPos.Z());
     
     // 创建轨迹计算对象
     ParticleTrajectory trajectory(magField);
@@ -240,7 +238,7 @@ void EventDisplay::DrawParticleTrajectories(const std::vector<TBeamSimData>* bea
             trajectory.CalculateTrajectory(position, momentum, charge, mass);
         
         if (traj.size() < 2) {
-            std::cout << "Trajectory too short for particle " << particleName << std::endl;
+            SM_WARN("Trajectory too short for particle {}", particleName);
             continue;
         }
         
@@ -248,12 +246,14 @@ void EventDisplay::DrawParticleTrajectories(const std::vector<TBeamSimData>* bea
         std::vector<double> x, y, z;
         trajectory.GetTrajectoryPoints(traj, x, y, z);
         
-        // 绘制轨迹
+        // 绘制轨迹 - 根据粒子类型设置颜色
         int color;
         if (TMath::Abs(charge) < 1e-6) {
             color = kGray+1; // 中性粒子用灰色
+        } else if (pdgCode == 2212) {
+            color = kMagenta+2; // 入射质子用洋红色（醒目且与重建质子区分）
         } else {
-            color = (charge > 0) ? kRed : kBlue;
+            color = (charge > 0) ? kRed : kBlue; // 其他正电荷粒子用红色，负电荷用蓝色
         }
         DrawTrajectoryLine(x, y, z, particleName, color);
         
@@ -295,8 +295,7 @@ void EventDisplay::DrawTrajectoryLine(const std::vector<double>& x,
         m_currentEventElements->AddElement(startPoint);
     }
     
-    std::cout << "Drew trajectory for " << particleName << " with " 
-              << x.size() << " points" << std::endl;
+    SM_DEBUG("Drew trajectory for {} with {} points", particleName, x.size());
 }
 
 void EventDisplay::GetParticleInfo(int pdgCode, double& charge, double& mass, const char*& name) {
@@ -356,7 +355,7 @@ void EventDisplay::GetParticleInfo(int pdgCode, double& charge, double& mass, co
             charge = 0.0;
             mass = 1.0;
             name = "unknown";
-            std::cout << "Unknown PDG code: " << pdgCode << std::endl;
+            SM_WARN("Unknown PDG code: {}", pdgCode);
             break;
     }
 }
@@ -374,10 +373,10 @@ void EventDisplay::ResetView() {
 
 void EventDisplay::DrawReconstructionResults(const TargetReconstructionResult& result, bool showTrials) {
     if (!m_currentEventElements) {
-        std::cerr << "EventDisplay::DrawReconstructionResults: No current event elements!" << std::endl;
+        SM_ERROR("EventDisplay::DrawReconstructionResults: No current event elements!");
         return;
     }
-    std::cout << "Drawing Target Reconstruction Results..." << std::endl;
+    SM_INFO("Drawing Target Reconstruction Results...");
     
     // Draw trial trajectories if requested
     if (showTrials) {
@@ -386,8 +385,8 @@ void EventDisplay::DrawReconstructionResults(const TargetReconstructionResult& r
             int color = kBlue + i % 4; // Different shades of blue
             DrawTrajectory(result.trialTrajectories[i], trialName.Data(), color, 2); // dashed line
             
-            std::cout << "Drew trial trajectory " << i << ": p=" << result.trialMomenta[i] 
-                      << " MeV/c, dist=" << result.distances[i] << " mm" << std::endl;
+            SM_DEBUG("Drew trial trajectory {}: p={:.2f} MeV/c, dist={:.2f} mm", 
+                     i, result.trialMomenta[i], result.distances[i]);
         }
     }
     
@@ -395,8 +394,8 @@ void EventDisplay::DrawReconstructionResults(const TargetReconstructionResult& r
     if (!result.bestTrajectory.empty()) {
         DrawTrajectory(result.bestTrajectory, "BestBackpropTraj", kRed, 1); // solid red line
         
-        std::cout << "Drew best backpropagation trajectory with " << result.bestTrajectory.size() 
-                  << " points, p=" << result.bestMomentum.P() << " MeV/c" << std::endl;
+        SM_INFO("Drew best backpropagation trajectory with {} points, p={:.2f} MeV/c", 
+                result.bestTrajectory.size(), result.bestMomentum.P());
     }
     
     // Redraw the display
@@ -522,7 +521,7 @@ void EventDisplay::DrawCoordinateSystem() {
     gEve->AddGlobalElement(coordSys);
     gEve->AddGlobalElement(ruler);
     
-    std::cout << "EventDisplay: Added coordinate system with 1000mm axes and ruler marks" << std::endl;
+    SM_INFO("EventDisplay: Added coordinate system with 1000mm axes and ruler marks");
 }
 
 void EventDisplay::DrawNeutrons(const std::vector<RecoNeutron>& neutrons, const TVector3& targetPos) {
@@ -567,9 +566,9 @@ void EventDisplay::DrawNeutrons(const std::vector<RecoNeutron>& neutrons, const 
         infoLabel->SetPoint(1, labelPos.X(), labelPos.Y(), labelPos.Z());
         neutronGroup->AddElement(infoLabel);
         
-        std::cout << "EventDisplay: Added neutron " << i << " -> "
-                  << "pos=(" << neutron.position.X() << "," << neutron.position.Y() << "," << neutron.position.Z() << ") mm, "
-                  << "E=" << neutron.energy << " MeV, β=" << neutron.beta << std::endl;
+        SM_DEBUG("EventDisplay: Added neutron {} -> pos=({:.2f},{:.2f},{:.2f}) mm, E={:.2f} MeV, β={:.4f}", 
+                 i, neutron.position.X(), neutron.position.Y(), neutron.position.Z(),
+                 neutron.energy, neutron.beta);
     }
     
     // 添加到当前事件
@@ -579,7 +578,7 @@ void EventDisplay::DrawNeutrons(const std::vector<RecoNeutron>& neutrons, const 
         gEve->AddElement(neutronGroup);
     }
     
-    std::cout << "EventDisplay: Added " << neutrons.size() << " neutrons to display" << std::endl;
+    SM_INFO("EventDisplay: Added {} neutrons to display", neutrons.size());
 }
 
 // ... Implementations for SetComponentVisibility and PrintComponentPositions if needed ...

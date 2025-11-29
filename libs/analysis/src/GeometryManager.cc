@@ -1,5 +1,5 @@
 #include "GeometryManager.hh"
-#include <iostream>
+#include "SMLogger.hh"
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
@@ -13,7 +13,7 @@ GeometryManager::~GeometryManager() {}
 bool GeometryManager::LoadGeometry(const std::string& filename) {
     std::ifstream file(filename.c_str());
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open geometry file: " << filename << std::endl;
+        SM_ERROR("Could not open geometry file: {}", filename);
         return false;
     }
 
@@ -68,12 +68,12 @@ bool GeometryManager::LoadGeometry(const std::string& filename) {
         }
     }
 
-    std::cout << "Geometry loaded from " << filename << std::endl;
-    std::cout << "  PDC Angle: " << fAngleRad * TMath::RadToDeg() << " deg" << std::endl;
-    std::cout << "  PDC1 Pos: (" << fPDC1_Position.X() << ", " << fPDC1_Position.Y() << ", " << fPDC1_Position.Z() << ") mm" << std::endl;
-    std::cout << "  PDC2 Pos: (" << fPDC2_Position.X() << ", " << fPDC2_Position.Y() << ", " << fPDC2_Position.Z() << ") mm" << std::endl;
-    std::cout << "  Target Pos: (" << fTarget_Position.X() << ", " << fTarget_Position.Y() << ", " << fTarget_Position.Z() << ") mm" << std::endl;
-    std::cout << "  Target Angle: " << fTargetAngleRad * TMath::RadToDeg() << " deg" << std::endl;
+    SM_INFO("Geometry loaded from {}", filename);
+    SM_INFO("  PDC Angle: {:.2f} deg", fAngleRad * TMath::RadToDeg());
+    SM_INFO("  PDC1 Pos: ({:.2f}, {:.2f}, {:.2f}) mm", fPDC1_Position.X(), fPDC1_Position.Y(), fPDC1_Position.Z());
+    SM_INFO("  PDC2 Pos: ({:.2f}, {:.2f}, {:.2f}) mm", fPDC2_Position.X(), fPDC2_Position.Y(), fPDC2_Position.Z());
+    SM_INFO("  Target Pos: ({:.2f}, {:.2f}, {:.2f}) mm", fTarget_Position.X(), fTarget_Position.Y(), fTarget_Position.Z());
+    SM_INFO("  Target Angle: {:.2f} deg", fTargetAngleRad * TMath::RadToDeg());
 
     return true;
 }

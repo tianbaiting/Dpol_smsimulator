@@ -8,8 +8,8 @@
 
 
 #include "ParticleTrajectory.hh"
+#include "SMLogger.hh"
 #include "TMath.h"
-#include <iostream>
 #include <iomanip>
 
 // Physics constants
@@ -20,7 +20,7 @@ ParticleTrajectory::ParticleTrajectory(MagneticField* magField)
       fMaxDistance(5000.0), fMinMomentum(1.0)
 {
     if (!fMagField) {
-        std::cerr << "ERROR: ParticleTrajectory - MagneticField pointer is null!" << std::endl;
+        SM_ERROR("ParticleTrajectory - MagneticField pointer is null!");
     }
 }
 
@@ -37,12 +37,12 @@ ParticleTrajectory::CalculateTrajectory(const TVector3& initialPosition,
     std::vector<TrajectoryPoint> trajectory;
     
     if (!fMagField) {
-        std::cerr << "ERROR: No magnetic field object available!" << std::endl;
+        SM_ERROR("No magnetic field object available!");
         return trajectory;
     }
     
     if (TMath::Abs(charge) < 1e-6) {
-        std::cout << "INFO: Neutral particle - no magnetic deflection" << std::endl;
+        SM_DEBUG("Neutral particle - no magnetic deflection");
         // For neutral particles, just straight line
         TrajectoryPoint start(initialPosition, initialMomentum.Vect(), 0.0, TVector3(0,0,0));
         trajectory.push_back(start);
@@ -227,7 +227,7 @@ void ParticleTrajectory::GetTrajectoryPoints(const std::vector<TrajectoryPoint>&
 void ParticleTrajectory::PrintTrajectoryInfo(const std::vector<TrajectoryPoint>& trajectory) const
 {
     if (trajectory.empty()) {
-        std::cout << "Empty trajectory!" << std::endl;
+        SM_WARN("Empty trajectory!");
         return;
     }
     

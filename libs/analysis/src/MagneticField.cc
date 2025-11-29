@@ -1,10 +1,10 @@
 #include "MagneticField.hh"
+#include "SMLogger.hh"
 #include "TFile.h"
 #include "TArrayI.h"
 #include "TArrayD.h"
 #include "TMath.h"
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <cmath>
 
@@ -40,22 +40,21 @@ bool MagneticField::LoadFieldMap(const std::string& filename)
 {
     std::ifstream file(filename.c_str());
     if (!file.is_open()) {
-        std::cerr << "MagneticField::LoadFieldMap: 无法打开文件 " << filename << std::endl;
+        SM_ERROR("MagneticField::LoadFieldMap: 无法打开文件 {}", filename);
         return false;
     }
     
-    std::cout << "MagneticField::LoadFieldMap: 正在加载磁场文件 " << filename << std::endl;
+    SM_INFO("MagneticField::LoadFieldMap: 正在加载磁场文件 {}", filename);
     
     // 读取第一行: Nx Ny Nz NFields
     int nfields;
     if (!(file >> fNx >> fNy >> fNz >> nfields)) {
-        std::cerr << "MagneticField::LoadFieldMap: 无法读取网格尺寸" << std::endl;
+        SM_ERROR("MagneticField::LoadFieldMap: 无法读取网格尺寸");
         return false;
     }
     
     fTotalPoints = fNx * fNy * fNz;
-    std::cout << "网格尺寸: " << fNx << " x " << fNy << " x " << fNz 
-              << " = " << fTotalPoints << " 点" << std::endl;
+    SM_INFO("网格尺寸: {} x {} x {} = {} 点", fNx, fNy, fNz, fTotalPoints);
     
     // 跳过列标题行 (6行) 和分隔符行 (1行)
     std::string line;
@@ -101,14 +100,14 @@ bool MagneticField::LoadFieldMap(const std::string& filename)
         pointCount++;
         
         if (pointCount % 100000 == 0) {
-            std::cout << "已读取 " << pointCount << " / " << fTotalPoints << " 点..." << std::endl;
+            SM_DEBUG("已读取 {} / {} 点...", pointCount, fTotalPoints);
         }
     }
     
     file.close();
     
     if (pointCount != fTotalPoints) {
-        std::cerr << "警告: 读取的点数 (" << pointCount << ") 与预期不符 (" << fTotalPoints << ")" << std::endl;
+        SM_WARN("读取的点数 ({}) 与预期不符 ({})", pointCount, fTotalPoints);
         fTotalPoints = pointCount;
     }
     
@@ -118,7 +117,7 @@ bool MagneticField::LoadFieldMap(const std::string& filename)
     fZstep = (fNz > 1) ? (fZmax - fZmin) / (fNz - 1) : 0;
     
     PrintInfo();
-    std::cout << "MagneticField::LoadFieldMap: 磁场加载完成!" << std::endl;
+    SM_INFO("MagneticField::LoadFieldMap: 磁场加载完成!");
     
     return true;
 }
@@ -126,17 +125,21 @@ bool MagneticField::LoadFieldMap(const std::string& filename)
 void MagneticField::SetRotationAngle(double angle) 
 {
     fRotationAngle = angle;
-    double angleRad = -angle * TMath::Pi() / 180.0;  // 绕Y轴负方向旋转
+    // 磁铁绕Y轴旋转angle度（从上往下看顺时针为正）
+    // 这意味着磁铁+Z方向在实验室中偏向-X方向
+    double angleRad = angle * TMath::Pi() / 180.0;  // 使用正角度
     fCosTheta = TMath::Cos(angleRad);
     fSinTheta = TMath::Sin(angleRad);
     
-    std::cout << "MagneticField: 设置旋转角度为 " << angle << " 度 (绕Y轴负方向)" << std::endl;
+    SM_INFO("MagneticField: 设置旋转角度为 {} 度 (磁铁+Z偏向实验室-X)", angle);
 }
 
 TVector3 MagneticField::RotateToMagnetFrame(const TVector3& labPos) const 
 {
     // 将实验室坐标系的位置转换到磁铁坐标系
-    // 绕Y轴负方向旋转 => 逆变换是绕Y轴正方向旋转
+    // 逆旋转：R_y(-θ)
+    // x_m =  x_lab * cos(θ) + z_lab * sin(θ)
+    // z_m = -x_lab * sin(θ) + z_lab * cos(θ)
     double x = labPos.X() * fCosTheta + labPos.Z() * fSinTheta;
     double y = labPos.Y();
     double z = -labPos.X() * fSinTheta + labPos.Z() * fCosTheta;
@@ -146,8 +149,13 @@ TVector3 MagneticField::RotateToMagnetFrame(const TVector3& labPos) const
 
 TVector3 MagneticField::RotateToLabFrame(const TVector3& magnetField) const 
 {
-    // 将磁铁坐标系的磁场转换到实验室坐标系
-    // 绕Y轴负方向旋转
+    // 将磁铁坐标系的矢量转换到实验室坐标系
+    // 正旋转：R_y(θ)
+    // x_lab = x_m * cos(θ) - z_m * sin(θ)
+    // z_lab = x_m * sin(θ) + z_m * cos(θ)
+    // 
+    // 验证：磁铁(0,0,1000)应该变为实验室(-sin(θ)*1000, 0, cos(θ)*1000)
+    //       即对于θ=30°: (-500, 0, 866) - 磁铁+Z偏向实验室-X ✓
     double bx = magnetField.X() * fCosTheta - magnetField.Z() * fSinTheta;
     double by = magnetField.Y();
     double bz = magnetField.X() * fSinTheta + magnetField.Z() * fCosTheta;
@@ -327,7 +335,7 @@ void MagneticField::SaveAsROOTFile(const std::string& filename, const std::strin
 {
     TFile file(filename.c_str(), "RECREATE");
     if (!file.IsOpen()) {
-        std::cerr << "MagneticField::SaveAsROOTFile: 无法创建文件 " << filename << std::endl;
+        SM_ERROR("MagneticField::SaveAsROOTFile: 无法创建文件 {}", filename);
         return;
     }
     
@@ -359,14 +367,14 @@ void MagneticField::SaveAsROOTFile(const std::string& filename, const std::strin
     file.WriteObject(&bzData, "Bz");
     
     file.Close();
-    std::cout << "MagneticField::SaveAsROOTFile: 已保存到 " << filename << std::endl;
+    SM_INFO("MagneticField::SaveAsROOTFile: 已保存到 {}", filename);
 }
 
 bool MagneticField::LoadFromROOTFile(const std::string& filename, const std::string& objectName) 
 {
     TFile file(filename.c_str(), "READ");
     if (!file.IsOpen()) {
-        std::cerr << "MagneticField::LoadFromROOTFile: 无法打开文件 " << filename << std::endl;
+        SM_ERROR("MagneticField::LoadFromROOTFile: 无法打开文件 {}", filename);
         return false;
     }
     
@@ -378,7 +386,7 @@ bool MagneticField::LoadFromROOTFile(const std::string& filename, const std::str
     TArrayD* bzData = (TArrayD*)file.GetObjectChecked("Bz", "TArrayD");
     
     if (!gridInfo || !rangeInfo || !bxData || !byData || !bzData) {
-        std::cerr << "MagneticField::LoadFromROOTFile: 数据不完整" << std::endl;
+        SM_ERROR("MagneticField::LoadFromROOTFile: 数据不完整");
         file.Close();
         return false;
     }
@@ -406,19 +414,18 @@ bool MagneticField::LoadFromROOTFile(const std::string& filename, const std::str
     file.Close();
     
     PrintInfo();
-    std::cout << "MagneticField::LoadFromROOTFile: 从 " << filename << " 加载完成!" << std::endl;
+    SM_INFO("MagneticField::LoadFromROOTFile: 从 {} 加载完成!", filename);
     
     return true;
 }
 
 void MagneticField::PrintInfo() const 
 {
-    std::cout << "\n=== 磁场信息 ===" << std::endl;
-    std::cout << "网格尺寸: " << fNx << " x " << fNy << " x " << fNz 
-              << " (总点数: " << fTotalPoints << ")" << std::endl;
-    std::cout << "X 范围: [" << fXmin << ", " << fXmax << "] mm, 步长: " << fXstep << " mm" << std::endl;
-    std::cout << "Y 范围: [" << fYmin << ", " << fYmax << "] mm, 步长: " << fYstep << " mm" << std::endl;
-    std::cout << "Z 范围: [" << fZmin << ", " << fZmax << "] mm, 步长: " << fZstep << " mm" << std::endl;
+    SM_INFO("=== 磁场信息 ===");
+    SM_INFO("网格尺寸: {} x {} x {} (总点数: {})", fNx, fNy, fNz, fTotalPoints);
+    SM_INFO("X 范围: [{}, {}] mm, 步长: {} mm", fXmin, fXmax, fXstep);
+    SM_INFO("Y 范围: [{}, {}] mm, 步长: {} mm", fYmin, fYmax, fYstep);
+    SM_INFO("Z 范围: [{}, {}] mm, 步长: {} mm", fZmin, fZmax, fZstep);
     
     // 计算磁场统计信息
     if (!fBx.empty()) {
@@ -429,9 +436,9 @@ void MagneticField::PrintInfo() const
         double byMin = *std::min_element(fBy.begin(), fBy.end());
         double bzMin = *std::min_element(fBz.begin(), fBz.end());
         
-        std::cout << "Bx 范围: [" << bxMin << ", " << bxMax << "] T" << std::endl;
-        std::cout << "By 范围: [" << byMin << ", " << byMax << "] T" << std::endl;
-        std::cout << "Bz 范围: [" << bzMin << ", " << bzMax << "] T" << std::endl;
+        SM_INFO("Bx 范围: [{}, {}] T", bxMin, bxMax);
+        SM_INFO("By 范围: [{}, {}] T", byMin, byMax);
+        SM_INFO("Bz 范围: [{}, {}] T", bzMin, bzMax);
     }
-    std::cout << "================" << std::endl;
+    SM_INFO("================");
 }

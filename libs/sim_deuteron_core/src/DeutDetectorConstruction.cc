@@ -1,5 +1,6 @@
 #include "DeutDetectorConstruction.hh"
 #include "DeutDetectorConstructionMessenger.hh"
+#include "SMLogger.hh"
 
 #include "G4Material.hh"
 #include "G4Box.hh"
@@ -51,7 +52,7 @@ DeutDetectorConstruction::DeutDetectorConstruction()
   fTargetPos{0,0,0}, fTargetSize{50,50,5}, fTargetAngle{0}
   // Otherwise they'd be initialized randomly
 {
-  G4cout << "Constructor of DeutDetectorConstruction"  << G4endl;
+  SM_INFO("Constructor of DeutDetectorConstruction");
   fDetectorConstructionMessenger = new DeutDetectorConstructionMessenger(this);
 
   fDipoleConstruction = new DipoleConstruction();
@@ -283,72 +284,54 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
 void DeutDetectorConstruction::SetTargetPos(G4ThreeVector pos)
 {
   fTargetPos = pos;
-  std::cout<<"DeutDetectorConstruction : Set target position at  "
-	   <<fTargetPos.x()/cm<<" cm  "
-	   <<fTargetPos.y()/cm<<" cm  "
-	   <<fTargetPos.z()/cm<<" cm  "
-	   <<std::endl;
+  SM_INFO("DeutDetectorConstruction: Set target position at {:.2f} cm, {:.2f} cm, {:.2f} cm",
+          fTargetPos.x()/cm, fTargetPos.y()/cm, fTargetPos.z()/cm);
 }
 //______________________________________________________________________________
 void DeutDetectorConstruction::SetTargetAngle(G4double angle)
 {
   fTargetAngle = angle;
-  std::cout<<"DeutDetectorConstruction : Set target angle at  "
-	   <<fTargetAngle/deg<<" deg  "
-	   <<std::endl;
+  SM_INFO("DeutDetectorConstruction: Set target angle at {:.2f} deg", fTargetAngle/deg);
 }
 
 //______________________________________________________________________________
 void DeutDetectorConstruction::SetPDCAngle(G4double angle)
 {
   fPDCAngle = angle;
-  std::cout<<"DeutDetectorConstruction : Set PDC angle at  "
-	   <<fPDCAngle/deg<<" deg  "
-	   <<std::endl;
+  SM_INFO("DeutDetectorConstruction: Set PDC angle at {:.2f} deg", fPDCAngle/deg);
 }
 //______________________________________________________________________________
 void DeutDetectorConstruction::SetPDC1Pos(G4ThreeVector pos)
 {
   fPDC1Pos = pos;
-  std::cout<<"DeutDetectorConstruction : Set PDC1 position at  "
-	   <<fPDC1Pos.x()/cm<<" cm  "
-	   <<fPDC1Pos.y()/cm<<" cm  "
-	   <<fPDC1Pos.z()/cm<<" cm  "
-	   <<std::endl;
+  SM_INFO("DeutDetectorConstruction: Set PDC1 position at {:.2f} cm, {:.2f} cm, {:.2f} cm",
+          fPDC1Pos.x()/cm, fPDC1Pos.y()/cm, fPDC1Pos.z()/cm);
 }
 //______________________________________________________________________________
 void DeutDetectorConstruction::SetPDC2Pos(G4ThreeVector pos)
 {
   fPDC2Pos = pos;
-  std::cout<<"DeutDetectorConstruction : Set PDC2 position at  "
-	   <<fPDC2Pos.x()/cm<<" cm  "
-	   <<fPDC2Pos.y()/cm<<" cm  "
-	   <<fPDC2Pos.z()/cm<<" cm  "
-	   <<std::endl;
+  SM_INFO("DeutDetectorConstruction: Set PDC2 position at {:.2f} cm, {:.2f} cm, {:.2f} cm",
+          fPDC2Pos.x()/cm, fPDC2Pos.y()/cm, fPDC2Pos.z()/cm);
 }
 //______________________________________________________________________________
 void DeutDetectorConstruction::SetDumpAngle(G4double angle)
 {
   fDumpAngle = angle;
-  std::cout<<"DeutDetectorConstruction : Set beam dump angle at  "
-	   <<fDumpAngle/deg<<" deg  "
-	   <<std::endl;
+  SM_INFO("DeutDetectorConstruction: Set beam dump angle at {:.2f} deg", fDumpAngle/deg);
 }
 //______________________________________________________________________________
 void DeutDetectorConstruction::SetDumpPos(G4ThreeVector pos)
 {
   fDumpPos = pos;
-  std::cout<<"DeutDetectorConstruction : Set beam dump position at  "
-	   <<fDumpPos.x()/cm<<" cm  "
-	   <<fDumpPos.y()/cm<<" cm  "
-	   <<fDumpPos.z()/cm<<" cm  "
-	   <<std::endl;
+  SM_INFO("DeutDetectorConstruction: Set beam dump position at {:.2f} cm, {:.2f} cm, {:.2f} cm",
+          fDumpPos.x()/cm, fDumpPos.y()/cm, fDumpPos.z()/cm);
 }
 //______________________________________________________________________________
 void DeutDetectorConstruction::UpdateGeometry()
 {
   G4RunManager::GetRunManager()->DefineWorldVolume(Construct());
-  std::cout<<"DeutDetectorConstruction : SAMURAI Geometry is updated"<<std::endl;
+  SM_INFO("DeutDetectorConstruction: SAMURAI Geometry is updated");
 }
 //______________________________________________________________________________
 void DeutDetectorConstruction::AutoConfigGeometry(G4String outputMacroFile)

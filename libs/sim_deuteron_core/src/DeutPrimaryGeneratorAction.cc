@@ -2,6 +2,7 @@
 #include "TBeamSimData.hh"
 #include "TFragSimParameter.hh"
 #include "SimDataManager.hh"
+#include "SMLogger.hh"
 
 #include "G4ParticleTable.hh"
 #include "G4IonTable.hh"
@@ -35,8 +36,7 @@ void DeutPrimaryGeneratorAction::SetPrimaryVertex(G4Event* anEvent)
     if (particle==0) 
       particle = fParticleTable->GetIonTable()->GetIon(beam.fZ, beam.fA, 0.0);
     if (particle==0){
-      G4cout<<beam<<G4endl;
-      std::cout<<"cannot find particle:"<<std::endl;
+      SM_ERROR("Cannot find particle: {}", beam.fParticleName.Data());
     }
     fParticleGun->SetParticleDefinition(particle);
     fParticleGun->SetParticleEnergy((beam.fMomentum.E()-beam.fMomentum.M())*MeV);
