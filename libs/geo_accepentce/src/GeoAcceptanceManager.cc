@@ -1,5 +1,6 @@
 #include "GeoAcceptanceManager.hh"
 #include "SMLogger.hh"
+#include "ParticleTrajectory.hh"
 #include "TFile.h"
 #include "TTree.h"
 #include "TCanvas.h"
@@ -19,6 +20,51 @@
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
+#include <cstdlib>
+#include <regex>
+
+// 从磁场文件名解析磁场强度
+// 文件名格式示例: "141114-0,8T-6000.table" -> 0.8 T
+//                 "180626-1,00T-6000.table" -> 1.0 T
+//                 "180703-1,40T-6000.table" -> 1.4 T
+static double ParseFieldStrengthFromFilename(const std::string& filename) {
+    // 从路径中提取文件名
+    std::string basename = filename;
+    size_t lastSlash = filename.find_last_of("/\\");
+    if (lastSlash != std::string::npos) {
+        basename = filename.substr(lastSlash + 1);
+    }
+    
+    // 使用正则表达式匹配格式 "数字,数字T" 或 "数字.数字T"
+    // 例如: "0,8T", "1,00T", "1,40T"
+    std::regex pattern(R"((\d+)[,.](\d+)T)");
+    std::smatch match;
+    
+    if (std::regex_search(basename, match, pattern)) {
+        std::string intPart = match[1].str();
+        std::string decPart = match[2].str();
+        // 将逗号格式转换为小数: "0,8" -> "0.8", "1,00" -> "1.00"
+        double value = std::stod(intPart + "." + decPart);
+        return value;
+    }
+    
+    // 如果无法解析，返回默认值 1.0
+    SM_WARN("Could not parse field strength from filename: {}, using default 1.0T", filename);
+    return 1.0;
+}
+
+// AnalysisConfig 构造函数 - 使用环境变量设置默认路径
+GeoAcceptanceManager::AnalysisConfig::AnalysisConfig() {
+    // 获取 SMSIMDIR 环境变量
+    const char* smsimdir = std::getenv("SMSIMDIR");
+    std::string baseDir = smsimdir ? std::string(smsimdir) : "/home/tian/workspace/dpol/smsimulator5.5";
+    
+    qmdDataPath = baseDir + "/data/qmdrawdata";
+    outputPath = baseDir + "/results";
+    
+    // 默认配置: 0°, 5°, 10°
+    deflectionAngles = {0.0, 5.0, 10.0};
+}
 
 GeoAcceptanceManager::GeoAcceptanceManager()
     : fCurrentMagField(nullptr),
@@ -122,6 +168,16 @@ bool GeoAcceptanceManager::RunFullAnalysis()
 bool GeoAcceptanceManager::AnalyzeFieldConfiguration(const std::string& fieldMapFile,
                                                       double fieldStrength)
 {
+    // 清空之前的结果，避免重复
+    fResults.clear();
+    
+    // 如果 fieldStrength 为默认值 1.0，尝试从文件名解析实际磁场强度
+    double actualFieldStrength = fieldStrength;
+    if (std::abs(fieldStrength - 1.0) < 0.001) {
+        actualFieldStrength = ParseFieldStrengthFromFilename(fieldMapFile);
+        SM_INFO("Parsed field strength from filename: {} T", actualFieldStrength);
+    }
+    
     // 加载磁场
     SM_INFO("Loading magnetic field map...");
     
@@ -150,7 +206,7 @@ bool GeoAcceptanceManager::AnalyzeFieldConfiguration(const std::string& fieldMap
         SM_INFO("------------------------------------------------------------");
         
         ConfigurationResult result;
-        result.fieldStrength = fieldStrength;
+        result.fieldStrength = actualFieldStrength;  // 使用解析后的磁场强度
         result.fieldMapFile = fieldMapFile;
         result.deflectionAngle = angle;
         
@@ -351,10 +407,8 @@ void GeoAcceptanceManager::PrintResults() const
 
 GeoAcceptanceManager::AnalysisConfig GeoAcceptanceManager::CreateDefaultConfig()
 {
+    // 使用 AnalysisConfig 构造函数中的默认值（已使用环境变量）
     AnalysisConfig config;
-    config.deflectionAngles = {0.0, 5.0, 10.0};
-    config.qmdDataPath = "/home/tian/workspace/dpol/smsimulator5.5/data/qmdrawdata";
-    config.outputPath = "./results";
     return config;
 }
 
@@ -362,11 +416,10 @@ GeoAcceptanceManager::AnalysisConfig GeoAcceptanceManager::CreateConfig(
     const std::vector<std::string>& fieldMaps,
     const std::vector<double>& angles)
 {
+    // 使用 AnalysisConfig 构造函数中的默认值（已使用环境变量）
     AnalysisConfig config;
     config.fieldMapFiles = fieldMaps;
     config.deflectionAngles = angles;
-    config.qmdDataPath = "/home/tian/workspace/dpol/smsimulator5.5/data/qmdrawdata";
-    config.outputPath = "./results";
     
     // 从文件名推断磁场强度（这是一个简化，实际应该明确指定）
     for (size_t i = 0; i < fieldMaps.size(); i++) {
@@ -388,15 +441,15 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
     gStyle->SetOptTitle(0);
     
     // 创建画布 - X-Z平面俯视图
-    TCanvas* canvas = new TCanvas("geoCanvas", "Detector Geometry Layout", 1600, 1000);
+    TCanvas* canvas = new TCanvas("geoCanvas", "Detector Geometry Layout", 1800, 1200);
     canvas->SetGrid();
-    canvas->SetMargin(0.08, 0.02, 0.10, 0.08);
+    canvas->SetMargin(0.10, 0.02, 0.10, 0.08);
     
-    // 确定绘图范围
-    double zMin = -4500;
-    double zMax = 6000;
-    double xMin = -4000;
-    double xMax = 1500;
+    // 确定绘图范围 (扩大范围以显示完整轨迹)
+    double zMin = -5000;
+    double zMax = 7000;
+    double xMin = -5000;
+    double xMax = 2000;
     
     // 创建坐标框架
     TH2F* frame = new TH2F("frame", "", 100, zMin, zMax, 100, xMin, xMax);
@@ -491,11 +544,23 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
     int nColors = sizeof(colors) / sizeof(colors[0]);
     
     // 为每个配置绘制探测器位置
-    TLegend* legend = new TLegend(0.65, 0.75, 0.98, 0.92);
+    TLegend* legend = new TLegend(0.65, 0.70, 0.98, 0.92);
     legend->SetBorderSize(1);
     legend->SetFillColor(kWhite);
-    legend->SetTextSize(0.025);
+    legend->SetTextSize(0.022);
     legend->SetHeader("Configurations", "C");
+    
+    // 创建粒子轨迹计算器用于绘制质子轨迹
+    ParticleTrajectory* trajCalc = nullptr;
+    if (fCurrentMagField) {
+        trajCalc = new ParticleTrajectory(fCurrentMagField);
+        trajCalc->SetStepSize(5.0);
+        trajCalc->SetMaxDistance(10000.0);
+        trajCalc->SetMaxTime(500.0);
+    }
+    
+    // 质子质量常数
+    const double kProtonMass = 938.272;  // MeV/c²
     
     int colorIdx = 0;
     for (const auto& result : fResults) {
@@ -509,6 +574,67 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
         target->SetLineColor(color);
         target->SetLineWidth(2);
         target->Draw();
+        
+        // 1.5 绘制中心质子轨迹 (Px=0, Py=0, Pz=627 MeV/c 在target局部坐标系)
+        if (trajCalc) {
+            // 计算target局部坐标系到实验室坐标系的变换
+            double targetRotRad = result.targetPos.rotationAngle * TMath::DegToRad();
+            double cos_rot = TMath::Cos(targetRotRad);
+            double sin_rot = TMath::Sin(targetRotRad);
+            
+            // 局部坐标系: Px_local=0, Py_local=0, Pz_local=627 MeV/c
+            double pz_local = 627.0;  // MeV/c
+            
+            // 转换到实验室坐标系
+            // px_lab = px_local*cos(θ) + pz_local*sin(θ)
+            // pz_lab = -px_local*sin(θ) + pz_local*cos(θ)
+            double px_lab = pz_local * sin_rot;  // px_local=0
+            double py_lab = 0.0;
+            double pz_lab = pz_local * cos_rot;
+            
+            TVector3 protonMom(px_lab, py_lab, pz_lab);
+            double E_proton = TMath::Sqrt(protonMom.Mag2() + kProtonMass * kProtonMass);
+            TLorentzVector protonP4(protonMom, E_proton);
+            
+            // 计算质子轨迹
+            auto protonTraj = trajCalc->CalculateTrajectory(
+                result.targetPos.position, protonP4, 1.0, kProtonMass);
+            
+            // 绘制质子轨迹
+            if (protonTraj.size() > 10) {
+                std::vector<double> trajZ, trajX;
+                
+                // 每隔几个点取一个，避免太密集
+                size_t step = std::max(size_t(1), protonTraj.size() / 200);
+                for (size_t i = 0; i < protonTraj.size(); i += step) {
+                    trajZ.push_back(protonTraj[i].position.Z());
+                    trajX.push_back(protonTraj[i].position.X());
+                }
+                
+                TGraph* protonGraph = new TGraph(trajZ.size(), trajZ.data(), trajX.data());
+                protonGraph->SetLineColor(color);
+                protonGraph->SetLineWidth(2);
+                protonGraph->SetLineStyle(1);  // 实线
+                protonGraph->Draw("L SAME");
+                
+                // 在轨迹末端添加箭头指示方向
+                if (protonTraj.size() > 2) {
+                    size_t endIdx = protonTraj.size() - 1;
+                    size_t midIdx = protonTraj.size() / 2;
+                    
+                    // 在轨迹中间位置画一个小箭头指示方向
+                    double arrowZ1 = protonTraj[midIdx - 10].position.Z();
+                    double arrowX1 = protonTraj[midIdx - 10].position.X();
+                    double arrowZ2 = protonTraj[midIdx + 10].position.Z();
+                    double arrowX2 = protonTraj[midIdx + 10].position.X();
+                    
+                    TArrow* trajArrow = new TArrow(arrowZ1, arrowX1, arrowZ2, arrowX2, 0.015, ">");
+                    trajArrow->SetLineColor(color);
+                    trajArrow->SetLineWidth(2);
+                    trajArrow->Draw();
+                }
+            }
+        }
         
         // 2. 绘制PDC (矩形)
         // PDC尺寸: 约 1680 x 780 mm (宽 x 高)
@@ -599,6 +725,12 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
         colorIdx++;
     }
     
+    // 清理轨迹计算器
+    if (trajCalc) {
+        delete trajCalc;
+        trajCalc = nullptr;
+    }
+    
     // NEBULA标签 (只绘制一次)
     TLatex* nebulaLabel = new TLatex(5200, 0, "NEBULA");
     nebulaLabel->SetTextSize(0.025);
@@ -627,9 +759,9 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
     scaleLabel->Draw();
     
     // 添加图例说明
-    TLatex* note1 = new TLatex(0.10, 0.03, "T = Target, PDC = Proton Drift Chamber, NEBULA = Neutron Detector");
+    TLatex* note1 = new TLatex(0.10, 0.03, "T = Target, PDC = Proton Drift Chamber, NEBULA = Neutron Detector, Curves = Proton (P_{z}=627 MeV/c) trajectory");
     note1->SetNDC();
-    note1->SetTextSize(0.025);
+    note1->SetTextSize(0.022);
     note1->Draw();
     
     // 保存图像
@@ -642,6 +774,324 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
     
     SM_INFO("Geometry plot saved to: {}", filename);
     SM_INFO("Geometry plot (PDF) saved to: {}", pdfFile);
+    
+    delete canvas;
+}
+
+void GeoAcceptanceManager::GenerateSingleConfigPlot(const ConfigurationResult& result,
+                                                     const std::string& filename) const
+{
+    // 设置样式
+    gStyle->SetOptStat(0);
+    gStyle->SetOptTitle(0);
+    
+    // 创建画布 - X-Z平面俯视图
+    TCanvas* canvas = new TCanvas("singleConfigCanvas", "Single Configuration Layout", 1800, 1200);
+    canvas->SetGrid();
+    canvas->SetMargin(0.10, 0.02, 0.10, 0.08);
+    
+    // 确定绘图范围
+    double zMin = -5000;
+    double zMax = 7000;
+    double xMin = -5000;
+    double xMax = 2000;
+    
+    // 创建坐标框架
+    TH2F* frame = new TH2F("frameSingle", "", 100, zMin, zMax, 100, xMin, xMax);
+    frame->GetXaxis()->SetTitle("Z (mm) - Beam Direction");
+    frame->GetYaxis()->SetTitle("X (mm)");
+    frame->GetXaxis()->SetTitleSize(0.04);
+    frame->GetYaxis()->SetTitleSize(0.04);
+    frame->GetXaxis()->SetLabelSize(0.035);
+    frame->GetYaxis()->SetLabelSize(0.035);
+    frame->GetXaxis()->CenterTitle();
+    frame->GetYaxis()->CenterTitle();
+    frame->Draw();
+    
+    // 绘制坐标轴
+    TArrow* zAxis = new TArrow(zMin + 200, 0, zMax - 200, 0, 0.02, "|>");
+    zAxis->SetLineWidth(2);
+    zAxis->SetLineColor(kBlack);
+    zAxis->Draw();
+    
+    TArrow* xAxis = new TArrow(0, xMin + 200, 0, xMax - 200, 0.02, "|>");
+    xAxis->SetLineWidth(2);
+    xAxis->SetLineColor(kBlack);
+    xAxis->Draw();
+    
+    // 绘制SAMURAI磁铁区域
+    double magnetHalfZ = 1000;
+    double magnetHalfX = 1500;
+    double magnetAngleDeg = 30.0;
+    if (fCurrentMagField) magnetAngleDeg = fCurrentMagField->GetRotationAngle();
+    double magnetAngle = magnetAngleDeg * TMath::Pi() / 180.0;
+    double cosTheta = TMath::Cos(magnetAngle);
+    double sinTheta = TMath::Sin(magnetAngle);
+
+    double magnetCorners[5][2];
+    double corners[4][2] = {
+        {-magnetHalfZ, -magnetHalfX},
+        { magnetHalfZ, -magnetHalfX},
+        { magnetHalfZ,  magnetHalfX},
+        {-magnetHalfZ,  magnetHalfX}
+    };
+
+    for (int i = 0; i < 4; i++) {
+        double Zm = corners[i][0];
+        double Xm = corners[i][1];
+        double labX = cosTheta * Xm - sinTheta * Zm;
+        double labZ = sinTheta * Xm + cosTheta * Zm;
+        magnetCorners[i][0] = labZ;
+        magnetCorners[i][1] = labX;
+    }
+    magnetCorners[4][0] = magnetCorners[0][0];
+    magnetCorners[4][1] = magnetCorners[0][1];
+
+    TGraph* magnetGraph = new TGraph(5);
+    for (int i = 0; i < 5; i++) {
+        magnetGraph->SetPoint(i, magnetCorners[i][0], magnetCorners[i][1]);
+    }
+    magnetGraph->SetFillColorAlpha(kCyan, 0.3);
+    magnetGraph->SetLineColor(kBlue);
+    magnetGraph->SetLineWidth(2);
+    magnetGraph->Draw("F");
+    magnetGraph->Draw("L SAME");
+    
+    TLatex* magnetLabel = new TLatex(0, 200, "SAMURAI Magnet");
+    magnetLabel->SetTextSize(0.03);
+    magnetLabel->SetTextAlign(22);
+    magnetLabel->SetTextColor(kBlue);
+    magnetLabel->Draw();
+    
+    // 绘制束流入射线
+    TLine* beamLine = new TLine(-4500, 0, 0, 0);
+    beamLine->SetLineColor(kGreen+2);
+    beamLine->SetLineWidth(3);
+    beamLine->SetLineStyle(2);
+    beamLine->Draw();
+    
+    TLatex* beamLabel = new TLatex(-4500, 150, "Beam (190 MeV/u ^{2}H)");
+    beamLabel->SetTextSize(0.025);
+    beamLabel->SetTextColor(kGreen+2);
+    beamLabel->Draw();
+    
+    // 创建粒子轨迹计算器
+    ParticleTrajectory* trajCalc = nullptr;
+    if (fCurrentMagField) {
+        trajCalc = new ParticleTrajectory(fCurrentMagField);
+        trajCalc->SetStepSize(5.0);
+        trajCalc->SetMaxDistance(10000.0);
+        trajCalc->SetMaxTime(500.0);
+    }
+    
+    const double kProtonMass = 938.272;
+    
+    // 图例
+    TLegend* legend = new TLegend(0.65, 0.75, 0.98, 0.92);
+    legend->SetBorderSize(1);
+    legend->SetFillColor(kWhite);
+    legend->SetTextSize(0.025);
+    
+    // 绘制Target位置
+    TEllipse* target = new TEllipse(result.targetPos.position.Z(), 
+                                    result.targetPos.position.X(), 
+                                    100, 100);
+    target->SetFillColor(kRed);
+    target->SetLineColor(kRed);
+    target->SetLineWidth(2);
+    target->Draw();
+    
+    // 计算并绘制三条质子轨迹 (Px = -100, 0, +100 MeV/c)
+    if (trajCalc) {
+        double targetRotRad = result.targetPos.rotationAngle * TMath::DegToRad();
+        double cos_rot = TMath::Cos(targetRotRad);
+        double sin_rot = TMath::Sin(targetRotRad);
+        double pz_local = 627.0;
+        
+        // 三种 Px 值: -100, 0, +100 MeV/c
+        std::vector<double> pxValues = {-100.0, 0.0, 100.0};
+        int trajColors[] = {kBlue, kRed, kGreen+2};
+        int trajStyles[] = {2, 1, 2};  // 虚线, 实线, 虚线
+        const char* trajLabels[] = {"P_{x}=-100 MeV/c", "P_{x}=0 (center)", "P_{x}=+100 MeV/c"};
+        
+        for (size_t iPx = 0; iPx < pxValues.size(); iPx++) {
+            double px_local = pxValues[iPx];
+            
+            // 转换到实验室坐标系
+            double px_lab = px_local * cos_rot + pz_local * sin_rot;
+            double py_lab = 0.0;
+            double pz_lab = -px_local * sin_rot + pz_local * cos_rot;
+            
+            TVector3 protonMom(px_lab, py_lab, pz_lab);
+            double E_proton = TMath::Sqrt(protonMom.Mag2() + kProtonMass * kProtonMass);
+            TLorentzVector protonP4(protonMom, E_proton);
+            
+            auto protonTraj = trajCalc->CalculateTrajectory(
+                result.targetPos.position, protonP4, 1.0, kProtonMass);
+            
+            if (protonTraj.size() > 10) {
+                std::vector<double> trajZ, trajX;
+                size_t step = std::max(size_t(1), protonTraj.size() / 300);
+                for (size_t i = 0; i < protonTraj.size(); i += step) {
+                    trajZ.push_back(protonTraj[i].position.Z());
+                    trajX.push_back(protonTraj[i].position.X());
+                }
+                
+                TGraph* protonGraph = new TGraph(trajZ.size(), trajZ.data(), trajX.data());
+                protonGraph->SetLineColor(trajColors[iPx]);
+                protonGraph->SetLineWidth(2);
+                protonGraph->SetLineStyle(trajStyles[iPx]);
+                protonGraph->Draw("L SAME");
+                
+                legend->AddEntry(protonGraph, trajLabels[iPx], "l");
+                
+                // 在轨迹中间添加方向箭头
+                if (protonTraj.size() > 40) {
+                    size_t midIdx = protonTraj.size() / 2;
+                    double arrowZ1 = protonTraj[midIdx - 15].position.Z();
+                    double arrowX1 = protonTraj[midIdx - 15].position.X();
+                    double arrowZ2 = protonTraj[midIdx + 15].position.Z();
+                    double arrowX2 = protonTraj[midIdx + 15].position.X();
+                    
+                    TArrow* trajArrow = new TArrow(arrowZ1, arrowX1, arrowZ2, arrowX2, 0.012, ">");
+                    trajArrow->SetLineColor(trajColors[iPx]);
+                    trajArrow->SetLineWidth(2);
+                    trajArrow->Draw();
+                }
+            }
+        }
+    }
+    
+    // 绘制PDC
+    double pdcHalfWidth = result.pdcConfig.width / 2.0;
+    double pdcHalfDepth = result.pdcConfig.depth / 2.0;
+    double pdcZ = result.pdcConfig.position.Z();
+    double pdcX = result.pdcConfig.position.X();
+    double nx = result.pdcConfig.normal.X();
+    double nz = result.pdcConfig.normal.Z();
+    double tx = nz;
+    double tz = -nx;
+    
+    double corner1_z = pdcZ - pdcHalfWidth * tx + pdcHalfDepth * nz;
+    double corner1_x = pdcX - pdcHalfWidth * tz + pdcHalfDepth * nx;
+    double corner2_z = pdcZ + pdcHalfWidth * tx + pdcHalfDepth * nz;
+    double corner2_x = pdcX + pdcHalfWidth * tz + pdcHalfDepth * nx;
+    double corner3_z = pdcZ + pdcHalfWidth * tx - pdcHalfDepth * nz;
+    double corner3_x = pdcX + pdcHalfWidth * tz - pdcHalfDepth * nx;
+    double corner4_z = pdcZ - pdcHalfWidth * tx - pdcHalfDepth * nz;
+    double corner4_x = pdcX - pdcHalfWidth * tz - pdcHalfDepth * nx;
+    
+    TGraph* pdcGraph = new TGraph(5);
+    pdcGraph->SetPoint(0, corner1_z, corner1_x);
+    pdcGraph->SetPoint(1, corner2_z, corner2_x);
+    pdcGraph->SetPoint(2, corner3_z, corner3_x);
+    pdcGraph->SetPoint(3, corner4_z, corner4_x);
+    pdcGraph->SetPoint(4, corner1_z, corner1_x);
+    pdcGraph->SetFillColorAlpha(kOrange, 0.3);
+    pdcGraph->SetLineColor(kOrange+1);
+    pdcGraph->SetLineWidth(2);
+    pdcGraph->Draw("F");
+    pdcGraph->Draw("L SAME");
+    
+    // 绘制NEBULA
+    double nebulaZ = 5000;
+    double nebulaHalfWidth = 1800;
+    double nebulaHalfDepth = 100;
+    
+    TBox* nebula = new TBox(nebulaZ - nebulaHalfDepth, -nebulaHalfWidth,
+                            nebulaZ + nebulaHalfDepth, nebulaHalfWidth);
+    nebula->SetFillColorAlpha(kGray, 0.3);
+    nebula->SetLineColor(kGray+2);
+    nebula->SetLineWidth(2);
+    nebula->Draw("L");
+    
+    // 标签
+    TLatex* targetLabel = new TLatex(result.targetPos.position.Z() - 200, 
+                                     result.targetPos.position.X() - 200,
+                                     "Target");
+    targetLabel->SetTextSize(0.025);
+    targetLabel->SetTextColor(kRed);
+    targetLabel->Draw();
+    
+    TLatex* pdcLabel = new TLatex(result.pdcConfig.position.Z() + 150,
+                                  result.pdcConfig.position.X() + 300,
+                                  "PDC");
+    pdcLabel->SetTextSize(0.025);
+    pdcLabel->SetTextColor(kOrange+1);
+    pdcLabel->Draw();
+    
+    TLatex* nebulaLabel = new TLatex(5200, 0, "NEBULA");
+    nebulaLabel->SetTextSize(0.025);
+    nebulaLabel->SetTextColor(kGray+2);
+    nebulaLabel->SetTextAngle(90);
+    nebulaLabel->Draw();
+    
+    legend->Draw();
+    
+    // 添加标题
+    std::ostringstream titleText;
+    titleText << std::fixed << std::setprecision(1);
+    titleText << "Detector Layout: " << result.fieldStrength << " T, Deflection " 
+              << result.deflectionAngle << "#circ";
+    TLatex* title = new TLatex(0.5, 0.95, titleText.str().c_str());
+    title->SetNDC();
+    title->SetTextSize(0.04);
+    title->SetTextAlign(22);
+    title->Draw();
+    
+    // 添加配置信息
+    std::ostringstream infoText;
+    infoText << std::fixed << std::setprecision(1);
+    infoText << "Target: (" << result.targetPos.position.X() << ", " 
+             << result.targetPos.position.Y() << ", " 
+             << result.targetPos.position.Z() << ") mm, Rot: " 
+             << result.targetPos.rotationAngle << "#circ";
+    TLatex* info1 = new TLatex(0.12, 0.88, infoText.str().c_str());
+    info1->SetNDC();
+    info1->SetTextSize(0.022);
+    info1->Draw();
+    
+    std::ostringstream infoText2;
+    infoText2 << std::fixed << std::setprecision(1);
+    infoText2 << "PDC: (" << result.pdcConfig.position.X() << ", " 
+              << result.pdcConfig.position.Y() << ", " 
+              << result.pdcConfig.position.Z() << ") mm, Rot: " 
+              << result.pdcConfig.rotationAngle << "#circ";
+    TLatex* info2 = new TLatex(0.12, 0.85, infoText2.str().c_str());
+    info2->SetNDC();
+    info2->SetTextSize(0.022);
+    info2->Draw();
+    
+    // 添加比例尺
+    TLine* scaleLine = new TLine(-4500, -4500, -3500, -4500);
+    scaleLine->SetLineWidth(3);
+    scaleLine->SetLineColor(kBlack);
+    scaleLine->Draw();
+    
+    TLatex* scaleLabel = new TLatex(-4000, -4700, "1000 mm");
+    scaleLabel->SetTextSize(0.025);
+    scaleLabel->SetTextAlign(22);
+    scaleLabel->Draw();
+    
+    // 添加图例说明
+    TLatex* note1 = new TLatex(0.10, 0.03, "Solid = center proton (P_{x}=0), Dashed = edge protons (P_{x}=#pm100 MeV/c), P_{z}=600 MeV/c");
+    note1->SetNDC();
+    note1->SetTextSize(0.020);
+    note1->Draw();
+    
+    // 清理轨迹计算器
+    if (trajCalc) {
+        delete trajCalc;
+    }
+    
+    // 保存图像
+    canvas->Update();
+    canvas->SaveAs(filename.c_str());
+    
+    std::string pdfFile = filename.substr(0, filename.find_last_of('.')) + ".pdf";
+    canvas->SaveAs(pdfFile.c_str());
+    
+    SM_INFO("Single config plot saved to: {}", filename);
     
     delete canvas;
 }

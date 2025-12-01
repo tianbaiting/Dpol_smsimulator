@@ -39,11 +39,7 @@ public:
         // 输出路径
         std::string outputPath;
         
-        AnalysisConfig() : qmdDataPath("/home/tian/workspace/dpol/smsimulator5.5/data/qmdrawdata"),
-                          outputPath("./results") {
-            // 默认配置: 0°, 5°, 10°
-            deflectionAngles = {0.0, 5.0, 10.0};
-        }
+        AnalysisConfig();  // 构造函数在 .cc 文件中实现，以使用环境变量
     };
     
     // 单个配置的完整结果
@@ -58,7 +54,7 @@ public:
 
 private:
     AnalysisConfig fConfig;
-    
+
     MagneticField* fCurrentMagField;
     BeamDeflectionCalculator* fBeamCalc;
     DetectorAcceptanceCalculator* fDetectorCalc;
@@ -99,6 +95,10 @@ public:
     
     // 生成可视化图
     void GenerateGeometryPlot(const std::string& filename) const;
+    
+    // 为单个配置生成详细图（包含边缘质子轨迹）
+    void GenerateSingleConfigPlot(const ConfigurationResult& result, 
+                                  const std::string& filename) const;
     
     // 打印结果
     void PrintResults() const;
