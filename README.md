@@ -1,6 +1,8 @@
 
 SMSimulator
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ggml-org/llama.cpp)
+
 🚀 快速命令
 
   编译项目:      ./build.sh
