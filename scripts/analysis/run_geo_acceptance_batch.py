@@ -316,10 +316,18 @@ def main():
         """
     )
     
+    # 输出目录默认位置：优先使用环境变量 SMSIMDIR（如果设置），否则回退到当前目录下的 ./geo_acceptance_batch_results
+    smsimdir = os.environ.get('SMSIMDIR')
+    if smsimdir:
+        # 用户要求的路径格式： $SMSIMDIR/results/geo_acceptence_results
+        default_output = str(Path(smsimdir) / "results" / "geo_acceptence_results")
+    else:
+        default_output = './geo_acceptance_batch_results'
+
     parser.add_argument(
         '--output', '-o',
-        default='./geo_acceptance_batch_results',
-        help='输出目录 (默认: ./geo_acceptance_batch_results)'
+        default=default_output,
+        help=f"输出目录 (默认: {default_output})"
     )
     
     parser.add_argument(
