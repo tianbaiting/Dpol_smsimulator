@@ -19,6 +19,8 @@
 #include <vector>
 #include <cmath>
 #include <fstream>
+#include <cstdlib>
+#include <filesystem>
 
 // ROOT
 #include "TVector3.h"
@@ -48,6 +50,70 @@
 // ============================================================================
 // 辅助函数
 // ============================================================================
+
+/**
+ * @brief 获取输出目录路径 ($SMSIMDIR/results)
+ */
+std::string GetOutputDir() {
+    const char* smsimdir = std::getenv("SMSIMDIR");
+    std::string baseDir = smsimdir ? std::string(smsimdir) : "/home/tian/workspace/dpol/smsimulator5.5";
+    return baseDir + "/results/test_pdc_position";
+}
+
+/**
+ * @brief 日志文件管理类
+ */
+class LogManager {
+private:
+    std::ofstream logFile;
+    std::streambuf* originalCoutBuf;
+    std::streambuf* originalCerrBuf;
+    std::string logPath;
+    
+public:
+    LogManager() : originalCoutBuf(nullptr), originalCerrBuf(nullptr) {}
+    
+    ~LogManager() {
+        Close();
+    }
+    
+    bool Open(const std::string& path) {
+        logPath = path;
+        logFile.open(path);
+        
+        if (!logFile.is_open()) {
+            return false;
+        }
+        
+        // 保存原始缓冲区
+        originalCoutBuf = std::cout.rdbuf();
+        originalCerrBuf = std::cerr.rdbuf();
+        
+        // 重定向到文件
+        std::cout.rdbuf(logFile.rdbuf());
+        std::cerr.rdbuf(logFile.rdbuf());
+        
+        return true;
+    }
+    
+    void Close() {
+        if (originalCoutBuf) {
+            std::cout.rdbuf(originalCoutBuf);
+            originalCoutBuf = nullptr;
+        }
+        
+        if (originalCerrBuf) {
+            std::cerr.rdbuf(originalCerrBuf);
+            originalCerrBuf = nullptr;
+        }
+        
+        if (logFile.is_open()) {
+            logFile.close();
+        }
+    }
+    
+    std::string GetLogPath() const { return logPath; }
+};
 
 void PrintSeparator(const std::string& title = "") {
     std::cout << "\n";
@@ -295,27 +361,47 @@ void TestOptimalPDCPosition(DetectorAcceptanceCalculator* detCalc,
  */
 void TestUsingGeoAcceptanceManager(const std::string& fieldMapFile,
                                   const std::vector<double>& deflectionAngles,
-                                  const std::string& outputFile) {
+                                  const std::string& outputFile,
+                                  const std::string& outputDir = "",
+                                  LogManager* logMgr = nullptr) {
     PrintSeparator("测试5 (库调用): 使用 GeoAcceptanceManager 进行分析与绘图");
 
     GeoAcceptanceManager mgr;
-    // 简单配置
-    mgr.SetOutputPath("./results");
-    mgr.AddFieldMap(fieldMapFile, 1.0); // field strength 推断为1.0T（如果需要可调整）
+    std::string actualOutputDir = outputDir.empty() ? GetOutputDir() : outputDir;
+    mgr.SetOutputPath(actualOutputDir);
+    std::cout << "输出目录: " << actualOutputDir << "\n";
 
+    // 添加偏转角度配置
     for (double a : deflectionAngles) mgr.AddDeflectionAngle(a);
 
-    // 直接分析单个场配置（会计算Target与PDC配置）
+    // 分析场配置
     if (!mgr.AnalyzeFieldConfiguration(fieldMapFile, 1.0)) {
         std::cerr << "GeoAcceptanceManager 分析失败: " << fieldMapFile << "\n";
         return;
     }
 
-    // 生成布局图（使用库中绘图实现）
-    mgr.GenerateGeometryPlot(outputFile);
+    // 生成图表
+    std::filesystem::create_directories(actualOutputDir);
+    std::string fullOutputPath = actualOutputDir + "/" + outputFile;
+    mgr.GenerateGeometryPlot(fullOutputPath);
+    std::cout << "总体布局图已保存: " << fullOutputPath << "\n";
+
+    // 为每个配置单独生成详细图
+    auto results = mgr.GetResults();
+    std::cout << "\n为每个配置生成单独的详细图（包含边缘质子轨迹 Px=±100 MeV/c）...\n";
+    
+    for (const auto& r : results) {
+        std::ostringstream singleFilename;
+        singleFilename << actualOutputDir << "/config_" 
+                       << std::fixed << std::setprecision(2) << r.fieldStrength << "T_"
+                       << std::fixed << std::setprecision(0) << r.deflectionAngle << "deg.png";
+        
+        mgr.GenerateSingleConfigPlot(r, singleFilename.str());
+        std::cout << "  配置 " << r.fieldStrength << " T, " << r.deflectionAngle 
+                  << "° -> " << singleFilename.str() << "\n";
+    }
 
     // 打印结果
-    auto results = mgr.GetResults();
     std::cout << "\nGeoAcceptanceManager 返回结果数量: " << results.size() << "\n";
     for (const auto& r : results) {
         std::cout << "\n--- Field: " << r.fieldMapFile << "  Angle: " << r.deflectionAngle << "° ---\n";
@@ -327,6 +413,63 @@ void TestUsingGeoAcceptanceManager(const std::string& fieldMapFile,
         std::cout << "  PDC 尺寸: " << r.pdcConfig.width << " x " << r.pdcConfig.height << " x " << r.pdcConfig.depth << " mm³\n";
         std::cout << "  Acceptance (PDC): " << r.acceptance.pdcAcceptance << "%\n";
     }
+}
+
+// 运行完整测试流程（便于对多个场文件重复执行）
+// Forward declaration: TestCoordinateTransformConsistency is defined further below
+void TestCoordinateTransformConsistency(double magnetRotationAngle);
+
+void RunAllTestsForField(const std::string& fieldMapFile,
+                         double rotationAngle,
+                         const std::vector<double>& deflectionAngles,
+                         const std::string& outputBaseDir,
+                         LogManager& logMgr) {
+    PrintSeparator(std::string("Running tests for field: ") + fieldMapFile);
+
+    // 初始化并加载磁场
+    MagneticField* magField = new MagneticField();
+    if (!magField->LoadFieldMap(fieldMapFile)) {
+        std::cerr << "ERROR: 无法加载磁场文件: " << fieldMapFile << "\n";
+        delete magField;
+        return;
+    }
+    magField->SetRotationAngle(rotationAngle);
+    magField->PrintInfo();
+
+    BeamDeflectionCalculator* beamCalc = new BeamDeflectionCalculator();
+    beamCalc->SetMagneticField(magField);
+
+    DetectorAcceptanceCalculator* detCalc = new DetectorAcceptanceCalculator();
+    detCalc->SetMagneticField(magField);
+
+    // 测试1-4
+    TestMagneticFieldRotation(magField);
+    TestBeamDeflection(beamCalc);
+    TestTargetPositionCalculation(beamCalc, deflectionAngles);
+
+    // 重新计算Target位置用于后续测试
+    std::vector<BeamDeflectionCalculator::TargetPosition> targetPositions;
+    for (double angle : deflectionAngles) {
+        targetPositions.push_back(beamCalc->CalculateTargetPosition(angle));
+    }
+    TestOptimalPDCPosition(detCalc, targetPositions);
+
+    // 为每个场文件创建独立输出目录
+    std::string fieldBase = std::filesystem::path(fieldMapFile).stem().string();
+    std::string outDir = outputBaseDir;
+    if (outDir.back() != '/') outDir += '/';
+    outDir += fieldBase;
+
+    // 调用 GeoAcceptanceManager 的封装测试（会生成图表到 outDir）
+    TestUsingGeoAcceptanceManager(fieldMapFile, deflectionAngles, "test_pdc_position.png", outDir, &logMgr);
+
+    // TestCoordinateTransformConsistency is declared below; forward-declare if needed
+    TestCoordinateTransformConsistency(rotationAngle);
+
+    // 清理
+    delete beamCalc;
+    delete detCalc;
+    delete magField;
 }
 
 /**
@@ -413,25 +556,30 @@ void TestCoordinateTransformConsistency(double magnetRotationAngle) {
 // ============================================================================
 
 int main(int argc, char** argv) {
-    std::cout << "\n";
-    std::cout << "╔═══════════════════════════════════════════════════════════════╗\n";
-    std::cout << "║         PDC Position Calculation Test Program                ║\n";
-    std::cout << "╚═══════════════════════════════════════════════════════════════╝\n";
-    
-    // 解析命令行参数
+    // 解析命令行参数（先不输出日志）
     std::string fieldMapFile = "";
+    std::string fieldsDir = "";
+    std::string outputBaseDir = "";
     double rotationAngle = 30.0;  // 默认30度
+
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--fields-dir" && i + 1 < argc) {
+            fieldsDir = argv[++i];
+        } else if (arg == "--outdir" && i + 1 < argc) {
+            outputBaseDir = argv[++i];
+        } else if (fieldMapFile.empty()) {
+            fieldMapFile = arg;
+        } else {
+            rotationAngle = std::atof(arg.c_str());
+        }
+    }
     
-    if (argc >= 2) {
-        fieldMapFile = argv[1];
-    }
-    if (argc >= 3) {
-        rotationAngle = std::atof(argv[2]);
-    }
+    // 确定输出目录
+    std::string actualOutputDir = outputBaseDir.empty() ? GetOutputDir() : outputBaseDir;
     
     // 查找磁场文件
-    if (fieldMapFile.empty()) {
-        // 尝试默认路径
+    if (fieldsDir.empty() && fieldMapFile.empty()) {
         std::vector<std::string> defaultPaths = {
             "/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/filed_map/180626-1,00T-6000.table",
             "./configs/simulation/geometry/filed_map/180626-1,00T-6000.table",
@@ -447,9 +595,67 @@ int main(int argc, char** argv) {
         }
     }
     
+    // 创建输出目录
+    std::filesystem::create_directories(actualOutputDir);
+    
+    // 创建日志文件
+    LogManager logMgr;
+    std::string logFilePath = actualOutputDir + "/test_pdc_position.log";
+    
+    if (!logMgr.Open(logFilePath)) {
+        std::cerr << "ERROR: 无法创建日志文件: " << logFilePath << "\n";
+        return 1;
+    }
+    
+    // === 现在所有输出都重定向到日志文件，只在控制台输出关键信息 ===
+    
+    std::cout << "\n";
+    std::cout << "╔═══════════════════════════════════════════════════════════════╗\n";
+    std::cout << "║         PDC Position Calculation Test Program                ║\n";
+    std::cout << "╚═══════════════════════════════════════════════════════════════╝\n";
+    
+    // 批量测试所有场文件
+    std::vector<double> deflectionAngles = {0.0, 5.0, 10.0, 15.0};
+
+    if (!fieldsDir.empty()) {
+        std::vector<std::string> files;
+        for (const auto& entry : std::filesystem::directory_iterator(fieldsDir)) {
+            if (!entry.is_regular_file()) continue;
+            auto p = entry.path();
+            if (p.extension() == ".table") files.push_back(p.string());
+        }
+        if (files.empty()) {
+            std::cerr << "ERROR: 在目录中未找到任何 .table 磁场文件: " << fieldsDir << "\n";
+            logMgr.Close();
+            return 1;
+        }
+        std::sort(files.begin(), files.end());
+
+        for (const auto& f : files) {
+            RunAllTestsForField(f, rotationAngle, deflectionAngles, actualOutputDir, logMgr);
+        }
+
+        // 关闭日志并输出位置
+        logMgr.Close();
+        
+        // 恢复控制台输出，只显示结果位置
+        std::cout << "\n╔═══════════════════════════════════════════════════════════════╗\n";
+        std::cout << "║                   测试完成                                    ║\n";
+        std::cout << "╚═══════════════════════════════════════════════════════════════╝\n\n";
+        std::cout << "输出目录: " << actualOutputDir << "\n";
+        std::cout << "日志文件: " << logFilePath << "\n\n";
+        std::cout << "生成的文件:\n";
+        std::cout << "  - 日志: test_pdc_position.log\n";
+        std::cout << "  - 各配置图: config_<磁场>_<角度>.png/pdf\n";
+        std::cout << "  - 总体布局图: test_pdc_position.png/pdf\n\n";
+
+        return 0;
+    }
+
     if (fieldMapFile.empty()) {
         std::cerr << "ERROR: 未找到磁场文件！\n";
-        std::cerr << "用法: " << argv[0] << " [field_map_file] [rotation_angle]\n";
+        std::cerr << "用法: " << argv[0] << " [field_map_file] [rotation_angle] or --fields-dir <dir>\n";
+        logMgr.Close();
         return 1;
     }
     
@@ -488,7 +694,6 @@ int main(int argc, char** argv) {
     TestBeamDeflection(beamCalc);
     
     // 测试3: Target位置计算
-    std::vector<double> deflectionAngles = {0.0, 5.0, 10.0, 15.0};
     TestTargetPositionCalculation(beamCalc, deflectionAngles);
     
     // 重新计算Target位置用于后续测试
@@ -499,7 +704,7 @@ int main(int argc, char** argv) {
     
     // 测试4: PDC最佳位置
     // 使用 GeoAcceptanceManager（库实现）来完成PDC计算与绘图，避免在测试中重新实现绘图逻辑
-    TestUsingGeoAcceptanceManager(fieldMapFile, deflectionAngles, "test_pdc_position.png");
+    TestUsingGeoAcceptanceManager(fieldMapFile, deflectionAngles, "test_pdc_position.png", actualOutputDir, &logMgr);
     
     // 测试6: 坐标变换一致性
     TestCoordinateTransformConsistency(rotationAngle);
@@ -512,6 +717,19 @@ int main(int argc, char** argv) {
     delete beamCalc;
     delete detCalc;
     delete magField;
+    
+    // 关闭日志
+    logMgr.Close();
+    
+    // 恢复控制台输出，只显示结果位置
+    std::cout << "\n╔═══════════════════════════════════════════════════════════════╗\n";
+    std::cout << "║                   测试完成                                    ║\n";
+    std::cout << "╚═══════════════════════════════════════════════════════════════╝\n\n";
+    std::cout << "输出目录: " << actualOutputDir << "\n";
+    std::cout << "日志文件: " << logFilePath << "\n\n";
+    std::cout << "生成的文件:\n";
+    std::cout << "  - 日志: test_pdc_position.log\n";
+    std::cout << "  - 总体布局图: test_pdc_position.png/pdf\n\n";
     
     return 0;
 }

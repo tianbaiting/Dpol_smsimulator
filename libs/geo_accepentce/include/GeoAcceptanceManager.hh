@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <fstream>
 
 /**
  * @class GeoAcceptanceManager
@@ -61,6 +62,10 @@ private:
     
     // 存储所有配置的结果
     std::vector<ConfigurationResult> fResults;
+    
+    // 日志文件输出流
+    std::ofstream fLogFile;
+    std::string fLogFilePath;
 
 public:
     GeoAcceptanceManager();
@@ -109,6 +114,11 @@ public:
     
     // 清空结果
     void ClearResults() { fResults.clear(); }
+    
+    // 日志管理
+    void OpenLogFile(const std::string& logPath);
+    void CloseLogFile();
+    std::string GetLogFilePath() const { return fLogFilePath; }
     
     // 快速配置接口
     static AnalysisConfig CreateDefaultConfig();

@@ -91,6 +91,32 @@ GeoAcceptanceManager::~GeoAcceptanceManager()
         delete fCurrentMagField;
         fCurrentMagField = nullptr;
     }
+    
+    CloseLogFile();
+}
+
+void GeoAcceptanceManager::OpenLogFile(const std::string& logPath)
+{
+    CloseLogFile();  // 关闭已打开的日志文件
+    
+    fLogFilePath = logPath;
+    fLogFile.open(logPath);
+    
+    if (fLogFile.is_open()) {
+        // 重定向 std::cout 到文件
+        std::cout.rdbuf(fLogFile.rdbuf());
+    }
+}
+
+void GeoAcceptanceManager::CloseLogFile()
+{
+    if (fLogFile.is_open()) {
+        // 恢复 std::cout 到标准输出
+        static std::streambuf* coutBuf = std::cout.rdbuf();
+        std::cout.rdbuf(coutBuf);
+        
+        fLogFile.close();
+    }
 }
 
 void GeoAcceptanceManager::AddFieldMap(const std::string& filename, double fieldStrength)
@@ -447,8 +473,8 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
     
     // 确定绘图范围 (扩大范围以显示完整轨迹)
     double zMin = -5000;
-    double zMax = 7000;
-    double xMin = -5000;
+    double zMax = 8000;
+    double xMin = -6000;    
     double xMax = 2000;
     
     // 创建坐标框架
@@ -792,8 +818,8 @@ void GeoAcceptanceManager::GenerateSingleConfigPlot(const ConfigurationResult& r
     
     // 确定绘图范围
     double zMin = -5000;
-    double zMax = 7000;
-    double xMin = -5000;
+    double zMax = 8000;
+    double xMin = -7000;
     double xMax = 2000;
     
     // 创建坐标框架

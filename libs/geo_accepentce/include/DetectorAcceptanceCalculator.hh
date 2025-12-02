@@ -116,7 +116,9 @@ public:
     NEBULAConfiguration GetNEBULAConfiguration() const { return fNEBULAConfig; }
     
     // 从QMD数据加载粒子信息
-    bool LoadQMDData(const std::string& dataFile);
+    // polType: optional, "y" for Y-polarization files, "z" for Z-polarization files.
+    // If empty, the implementation will try to auto-detect from the file path.
+    bool LoadQMDData(const std::string& dataFile, const std::string& polType = "");
     bool LoadQMDDataFromDirectory(const std::string& directory);
     
     // 计算最佳PDC位置和旋转角度

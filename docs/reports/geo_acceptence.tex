@@ -1,0 +1,267 @@
+% Beamer Presentation for dpol_breakup Experiment Optimization
+% Date: November 26, 2025
+% Author: Tian
+
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% Packages
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning}
+
+% Code listing settings
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+}
+
+% Title page information
+\title[dpol\_breakup Optimization]{Progress Report: Optimization of dpol\_breakup Experiment Configuration}
+\subtitle{Simulation Framework and Configuration Study}
+\author[Tian]{Tian}
+\institute[]{SAMURAI Collaboration}
+
+
+% Footer customization
+\setbeamertemplate{footline}[frame number]
+
+\begin{document}
+
+% Title slide
+\begin{frame}
+\titlepage
+\end{frame}
+
+% Table of contents
+\begin{frame}{Outline}
+\tableofcontents
+\end{frame}
+
+\section{Input Momentum Analysis}
+\begin{frame}{Input Momentum Analysis (QMD Model)}
+    \begin{itemize}
+        \item \textbf{Objective}: Analyze the momentum distribution of breakup products to guide detector configuration.
+        \item \textbf{Data Source}: QMD simulation data for $^{208}$Pb target.
+        \item \textbf{Methodology}:
+        \begin{itemize}
+            \item Analyzed Proton and Neutron momentum in Y-polarization and Z-polarization modes.
+            \item Used Python/ROOT notebook (\texttt{zpol\_ypol\_show\_approx\_P.ipynb}) for visualization.
+            \item Focused on $P_z$ vs $P_\perp$ distributions.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Momentum Statistics & Reference Selection}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \textbf{Observed Statistics (from Log)}
+        \begin{itemize}
+            \item \textbf{Proton $P_z$}: Mean $\approx 600$ MeV/c (Y-pol), $\approx 635$ MeV/c (Z-pol).
+            \item \textbf{Neutron $P_z$}: Mean $\approx 612$ MeV/c.
+            \item \textbf{$P_\perp$}: Typically $50 - 90$ MeV/c.
+        \end{itemize}
+        
+        \column{0.5\textwidth}
+        \begin{alertblock}{Reference Kinematics}
+            To optimize the detector coverage, we select the following reference momentum for protons:
+            \begin{itemize}
+                \item \textbf{$P_z = 600$ MeV/c}
+                \item \textbf{$P_x = \pm 100$ MeV/c}
+            \end{itemize}
+        \end{alertblock}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Proton Momentum Distributions}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \centering
+        \textbf{Y-Polarization}\\
+        \includegraphics[width=0.9\textwidth]{../note_log/assets/log202511/image.png}
+        \column{0.5\textwidth}
+        \centering
+        \textbf{Z-Polarization}\\
+        \includegraphics[width=0.9\textwidth]{../note_log/assets/log202511/image-2.png}
+    \end{columns}
+    \vspace{0.2cm}
+    \centering
+    \small{Proton $P_z$ vs $P_\perp$ distributions showing the region of interest around $P_z \approx 600$ MeV/c.}
+\end{frame}
+
+\begin{frame}{Neutron Momentum Distributions}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \centering
+        \textbf{Y-Polarization}\\
+        \includegraphics[width=0.9\textwidth]{../note_log/assets/log202511/image-1.png}
+        \column{0.5\textwidth}
+        \centering
+        \textbf{Z-Polarization}\\
+        \includegraphics[width=0.9\textwidth]{../note_log/assets/log202511/image-3.png}
+    \end{columns}
+    \vspace{0.2cm}
+    \centering
+    \small{Neutron distributions show similar $P_z$ trends.}
+\end{frame}
+
+\section{Simulation Framework}
+\begin{frame}{Simulation Framework: \texttt{geo\_acceptance} Library}
+    A C++ library was developed to simulate particle trajectories and evaluate acceptance.
+    
+    \begin{block}{Library Structure}
+    \begin{itemize}
+        \item \textbf{\texttt{BeamDeflectionCalculator}}: 
+        \begin{itemize}
+            \item Computes particle trajectories in the magnetic field using Runge-Kutta integration.
+            \item Supports SAMURAI field maps (0.8T, 1.0T, 1.2T, 1.4T).
+        \end{itemize}
+        \item \textbf{\texttt{DetectorAcceptanceCalculator}}:
+        \begin{itemize}
+            \item Manages detector geometries (e.g., PDC).
+            \item Determines if trajectories intersect with active areas.
+        \end{itemize}
+        \item \textbf{\texttt{GeoAcceptanceManager}}:
+        \begin{itemize}
+            \item Orchestrates the data flow from input generation to acceptance analysis.
+        \end{itemize}
+    \end{itemize}
+    \end{block}
+\end{frame}
+
+\section{Optimization Strategy}
+\begin{frame}{Optimization Strategy}
+    \begin{enumerate}
+        \item \textbf{Trajectory Calculation}:
+        \begin{itemize}
+            \item Trace protons with reference momentum ($P_z=600, P_x=\pm 100$ MeV/c) through the magnetic field.
+            \item Identify the central, left, and right boundary trajectories.
+        \end{itemize}
+        \item \textbf{PDC Positioning}:
+        \begin{itemize}
+            \item Determine the optimal center position for the Plastic Detector Counter (PDC) to cover the reference trajectories.
+        \end{itemize}
+        \item \textbf{Acceptance Verification}:
+        \begin{itemize}
+            \item Run \texttt{qmdrawdata} with Z-axis randomization.
+            \item Inject data into the simulation to calculate the geometric acceptance ratio.
+        \end{itemize}
+    \end{enumerate}
+\end{frame}
+
+\section{Detector Configuration Study}
+
+\begin{frame}{Configuration Study: 0.80 T}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \centering
+        \includegraphics[height=0.35\textheight]{../../results/config_0.80T_0deg.png}\\ \small{0$^\circ$}
+        \vspace{0.1cm}
+        \includegraphics[height=0.35\textheight]{../../results/config_0.80T_10deg.png}\\ \small{10$^\circ$}
+        \column{0.5\textwidth}
+        \centering
+        \includegraphics[height=0.35\textheight]{../../results/config_0.80T_5deg.png}\\ \small{5$^\circ$}
+        \vspace{0.1cm}
+        \includegraphics[height=0.35\textheight]{../../results/config_0.80T_15deg.png}\\ \small{15$^\circ$}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Configuration Study: 1.00 T}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \centering
+        \includegraphics[height=0.35\textheight]{../../results/config_1.00T_0deg.png}\\ \small{0$^\circ$}
+        \vspace{0.1cm}
+        \includegraphics[height=0.35\textheight]{../../results/config_1.00T_10deg.png}\\ \small{10$^\circ$}
+        \column{0.5\textwidth}
+        \centering
+        \includegraphics[height=0.35\textheight]{../../results/config_1.00T_5deg.png}\\ \small{5$^\circ$}
+        \vspace{0.1cm}
+        \includegraphics[height=0.35\textheight]{../../results/config_1.00T_15deg.png}\\ \small{15$^\circ$}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Configuration Study: 1.20 T}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \centering
+        \includegraphics[height=0.35\textheight]{../../results/config_1.20T_0deg.png}\\ \small{0$^\circ$}
+        \vspace{0.1cm}
+        \includegraphics[height=0.35\textheight]{../../results/config_1.20T_10deg.png}\\ \small{10$^\circ$}
+        \column{0.5\textwidth}
+        \centering
+        \includegraphics[height=0.35\textheight]{../../results/config_1.20T_5deg.png}\\ \small{5$^\circ$}
+        \vspace{0.1cm}
+        \includegraphics[height=0.35\textheight]{../../results/config_1.20T_15deg.png}\\ \small{15$^\circ$}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Configuration Study: 1.40 T}
+    \begin{columns}
+        \column{0.5\textwidth}
+        \centering
+        \includegraphics[height=0.35\textheight]{../../results/config_1.40T_0deg.png}\\ \small{0$^\circ$}
+        \vspace{0.1cm}
+        \includegraphics[height=0.35\textheight]{../../results/config_1.40T_10deg.png}\\ \small{10$^\circ$}
+        \column{0.5\textwidth}
+        \centering
+        \includegraphics[height=0.35\textheight]{../../results/config_1.40T_5deg.png}\\ \small{5$^\circ$}
+        \vspace{0.1cm}
+        \includegraphics[height=0.35\textheight]{../../results/config_1.40T_15deg.png}\\ \small{15$^\circ$}
+    \end{columns}
+\end{frame}
+
+
+
+\section{Acceptance Results}
+\begin{frame}{Geometric Acceptance Summary}
+    \begin{table}
+        \centering
+        \scriptsize
+        \begin{tabular}{c c c c c}
+            \toprule
+            \textbf{Field (T)} & \textbf{Angle ($^\circ$)} & \textbf{PDC Acc. (\%)} & \textbf{NEBULA Acc. (\%)} & \textbf{Coincidence (\%)} \\
+            \midrule
+            0.8 & 0 & 36.13 & 68.96 & 35.26 \\
+            0.8 & 5 & 34.06 & 86.41 & 34.03 \\
+            0.8 & 10 & 35.12 & 72.29 & 32.69 \\
+            \midrule
+            1.0 & 0 & 18.00 & 68.86 & 17.95 \\
+            1.0 & 5 & 32.62 & 85.87 & 32.57 \\
+            1.0 & 10 & 34.43 & 70.09 & 31.68 \\
+            \midrule
+            1.2 & 0 & 34.49 & 68.92 & 33.45 \\
+            1.2 & 5 & 30.08 & 85.44 & 29.99 \\
+            1.2 & 10 & 33.53 & 68.74 & 30.42 \\
+            \midrule
+            1.4 & 0 & 18.67 & 68.98 & 18.59 \\
+            1.4 & 5 & 25.32 & 85.14 & 25.24 \\
+            1.4 & 10 & 31.91 & 67.39 & 28.55 \\
+            \bottomrule
+        \end{tabular}
+        \caption{Summary of geometric acceptance for different magnetic field configurations and deflection angles.}
+    \end{table}
+\end{frame}
+
+\section{Summary}
+\begin{frame}{Summary and Future Work}
+    \begin{itemize}
+        \item \textbf{Analysis}: Confirmed $P_z \approx 600$ MeV/c as the key kinematic region for protons.
+        \item \textbf{Framework}: Implemented \texttt{geo\_acceptance} library for reliable trajectory simulation.
+        \item \textbf{Progress}: Optimization of PDC position based on magnetic deflection is underway.
+    \end{itemize}
+    
+
+\end{frame}
+
+\end{document}

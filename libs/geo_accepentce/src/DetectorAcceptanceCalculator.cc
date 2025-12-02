@@ -54,7 +54,8 @@ void DetectorAcceptanceCalculator::SetMagneticField(MagneticField* magField)
     fTrajectory->SetMaxTime(500.0);       // 500ns
 }
 
-bool DetectorAcceptanceCalculator::LoadQMDData(const std::string& dataFile)
+bool DetectorAcceptanceCalculator::LoadQMDData(const std::string& dataFile,
+                                               const std::string& polType)
 {
     // QMD数据文件格式 (dbreak.dat 或 dbreakbXX.dat):
     // 第1行: 信息行
@@ -100,38 +101,70 @@ bool DetectorAcceptanceCalculator::LoadQMDData(const std::string& dataFile)
         }
         
         loadedEvents++;
-        
+
         // 计算总动量的方位角
         double sumPx = pxp_orig + pxn_orig;
         double sumPy = pyp_orig + pyn_orig;
         double sumPz = pzp_orig + pzn_orig;
         double phi_for_rotation = TMath::ATan2(sumPy, sumPx);
-        
-        // 筛选条件1 (Y极化风格):
-        // |pyp - pyn| < 150  且  sumPx^2 + sumPy^2 > 2500
-        bool cond1_part1 = TMath::Abs(pyp_orig - pyn_orig) < 150;
-        bool cond1_part2 = (sumPx*sumPx + sumPy*sumPy) > 2500;
-        
-        if (!cond1_part1 || !cond1_part2) continue;
-        
-        // 绕Z轴旋转 -phi
+
+        // 决定使用哪组筛选条件: "y" 或 "z"。
+        std::string pol = polType;
+        if (pol.empty()) {
+            // 如果未传入 polType，尝试通过文件路径自动检测
+            if (dataFile.find("y_pol") != std::string::npos) pol = "y";
+            else if (dataFile.find("z_pol") != std::string::npos) pol = "z";
+            else pol = "y"; // 默认为 Y 极化的旧行为
+        }
+
+        // 默认旋转矩阵（针对两种情况都需要）
         double cos_phi = TMath::Cos(-phi_for_rotation);
         double sin_phi = TMath::Sin(-phi_for_rotation);
-        
+
+        // 旋转到反应平面（Z 轴不变）
         double pxp = cos_phi * pxp_orig - sin_phi * pyp_orig;
         double pyp = sin_phi * pxp_orig + cos_phi * pyp_orig;
         double pzp = pzp_orig;
-        
+
         double pxn = cos_phi * pxn_orig - sin_phi * pyn_orig;
         double pyn = sin_phi * pxn_orig + cos_phi * pyn_orig;
         double pzn = pzn_orig;
-        
-        // 筛选条件2:
-        // (pxp + pxn) < 200  且  |pi - |phi|| < 0.2
-        bool cond2_part1 = (pxp + pxn) < 200;
-        bool cond2_part2 = (TMath::Pi() - TMath::Abs(phi_for_rotation)) < 0.2;
-        
-        if (!cond2_part1 || !cond2_part2) continue;
+
+        // 根据不同的极化类型应用不同的筛选条件（按 notebook 中的实现）
+        if (pol == "y") {
+            // Y 极化筛选：在旋转前对 y 分量和横向总动量做初步筛选
+            bool cond_y1 = TMath::Abs(pyp_orig - pyn_orig) < 150;
+            bool cond_y2 = (sumPx*sumPx + sumPy*sumPy) > 2500;
+            if (!cond_y1 || !cond_y2) continue;
+
+            // 旋转后再应用额外条件
+            bool cond_y3 = (pxp + pxn) < 200;
+            bool cond_y4 = (TMath::Pi() - TMath::Abs(phi_for_rotation)) < 0.2;
+            if (!cond_y3 || !cond_y4) continue;
+        } else if (pol == "z") {
+            // Z 极化筛选（按 notebook 中的综合条件）
+            // 使用旋转后的分量检查
+            double sum_pz = pzp + pzn;
+            double diff_pz = TMath::Abs(pzp - pzn);
+            double transverse_sum = TMath::Sqrt((pxn + pxp)*(pxn + pxp) + (pyn + pyp)*(pyn + pyp));
+
+            if (!(sum_pz > 1150.0
+                  && (TMath::Pi() - TMath::Abs(phi_for_rotation)) < 0.5
+                  && diff_pz < 150.0
+                  && (pxp + pxn) < 200.0
+                  && transverse_sum > 50.0)) {
+                continue;
+            }
+        } else {
+            // 未知类型：保持老的 Y 风格行为以兼容
+            bool cond1_part1 = TMath::Abs(pyp_orig - pyn_orig) < 150;
+            bool cond1_part2 = (sumPx*sumPx + sumPy*sumPy) > 2500;
+            if (!cond1_part1 || !cond1_part2) continue;
+
+            bool cond2_part1 = (pxp + pxn) < 200;
+            bool cond2_part2 = (TMath::Pi() - TMath::Abs(phi_for_rotation)) < 0.2;
+            if (!cond2_part1 || !cond2_part2) continue;
+        }
         
         // 添加绕Z轴的随机旋转 (模拟真实入射的随机方位角)
         double random_phi = rnd.Uniform(0, 2.0 * TMath::Pi());
@@ -226,7 +259,7 @@ bool DetectorAcceptanceCalculator::LoadQMDDataFromDirectory(const std::string& d
                 
                 totalFiles++;
                 if (fs::exists(filepath)) {
-                    if (LoadQMDData(filepath.string())) {
+                    if (LoadQMDData(filepath.string(), "y")) {
                         loadedFiles++;
                     }
                 } else {
@@ -250,7 +283,7 @@ bool DetectorAcceptanceCalculator::LoadQMDDataFromDirectory(const std::string& d
                     
                     totalFiles++;
                     if (fs::exists(filepath)) {
-                        if (LoadQMDData(filepath.string())) {
+                        if (LoadQMDData(filepath.string(), "z")) {
                             loadedFiles++;
                         }
                     }
@@ -300,9 +333,9 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
     // pz_lab = -px_local*sin(θ) + pz_local*cos(θ)
     
     // ============================================================
-    // 2. 创建参考质子 (Px=0, Pz=600 MeV/c 在局部坐标系)
+    // 2. 创建参考质子 (Px=0, Pz=627 MeV/c 在局部坐标系)
     // ============================================================
-    double pz_local = 600.0;  // MeV/c
+    double pz_local = 627.0;  // MeV/c
     double py_local = 0.0;
     
     double px_ref_lab = pz_local * sin_theta;  // px_local=0
@@ -449,6 +482,27 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
     SM_INFO("  Size: {:.0f} × {:.0f} × {:.0f} mm³",
             optimalConfig.width, optimalConfig.height, optimalConfig.depth);
     SM_INFO("  Px range: [{:.0f}, {:.0f}] MeV/c", optimalConfig.pxMin, optimalConfig.pxMax);
+
+    // 记录 PDC 法向量和四个顶点的位置（便于在日志中追踪 PDC 几何）
+    TVector3 localX(-pdcNormal.Z(), 0, pdcNormal.X());
+    if (localX.Mag() < 1e-6) localX.SetXYZ(1,0,0);
+    localX = localX.Unit();
+    TVector3 localY = pdcNormal.Cross(localX).Unit();
+
+    double halfW = optimalConfig.width / 2.0;
+    double halfH = optimalConfig.height / 2.0;
+
+    TVector3 corner1 = optimalConfig.position + localX * halfW + localY * halfH; // +X +Y
+    TVector3 corner2 = optimalConfig.position - localX * halfW + localY * halfH; // -X +Y
+    TVector3 corner3 = optimalConfig.position - localX * halfW - localY * halfH; // -X -Y
+    TVector3 corner4 = optimalConfig.position + localX * halfW - localY * halfH; // +X -Y
+
+    SM_INFO("  PDC normal: ({:.4f}, {:.4f}, {:.4f})", pdcNormal.X(), pdcNormal.Y(), pdcNormal.Z());
+    SM_INFO("  PDC corners (mm):");
+    SM_INFO("    corner1 (+X,+Y): ({:.1f}, {:.1f}, {:.1f})", corner1.X(), corner1.Y(), corner1.Z());
+    SM_INFO("    corner2 (-X,+Y): ({:.1f}, {:.1f}, {:.1f})", corner2.X(), corner2.Y(), corner2.Z());
+    SM_INFO("    corner3 (-X,-Y): ({:.1f}, {:.1f}, {:.1f})", corner3.X(), corner3.Y(), corner3.Z());
+    SM_INFO("    corner4 (+X,-Y): ({:.1f}, {:.1f}, {:.1f})", corner4.X(), corner4.Y(), corner4.Z());
     
     return optimalConfig;
 }
