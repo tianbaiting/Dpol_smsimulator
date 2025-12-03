@@ -19,6 +19,7 @@
 #include "TROOT.h"
 #include <cstdlib>
 #include <iomanip>
+#include <numeric>
 
 /**
  * @brief TargetReconstructor 真实数据测试

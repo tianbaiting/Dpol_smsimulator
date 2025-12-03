@@ -10,9 +10,6 @@
 #include "GeometryManager.hh"
 #include "RecoEvent.hh"
 
-// 前向声明，RecoNeutron已在RecoEvent.hh中定义
-struct RecoNeutron;
-
 // NEBULA击中信息结构
 struct NEBULAHit {
     int moduleID;        // 模块ID

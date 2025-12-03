@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(SMSimulator VERSION 5.5 LANGUAGES CXX)
 
 # 设置 C++ 标准
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -53,11 +53,13 @@ list(FILTER ROOT_LIBRARIES EXCLUDE REGEX ".*libImt.*")
 message(STATUS "ROOT found: ${ROOT_VERSION}")
 message(STATUS "ROOT libraries: ${ROOT_LIBRARIES}")
 
-# Find Geant4
+# Find Geant4 (include GDML component so G4GDMLParser.hh is available)
 if(WITH_GEANT4_UIVIS)
-    find_package(Geant4 REQUIRED ui_all vis_all)
+    # ui_all and vis_all bring UI and visualization drivers; add gdml for GDML parser
+    find_package(Geant4 REQUIRED ui_all vis_all gdml)
 else()
-    find_package(Geant4 REQUIRED)
+    # Add gdml component to expose G4GDMLParser and related headers/libraries
+    find_package(Geant4 REQUIRED gdml)
 endif()
 include(${Geant4_USE_FILE})
 message(STATUS "Geant4 found: ${Geant4_VERSION}")

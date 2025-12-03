@@ -56,7 +56,9 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
+#if HAS_G4GDML
 #include "G4GDMLParser.hh"
+#endif
 #include "G4PhysicalVolumeStore.hh"
 #include <cstdio>
 
@@ -133,13 +135,18 @@ int main(int argc,char** argv)
     // First remove existing file to avoid error
     std::remove("detector_geometry.gdml");
     
-    G4GDMLParser parser;
-    G4cout << "\n=== GEOMETRY EXPORT INFO ===" << G4endl;
-    G4cout << "Exporting geometry after macro execution..." << G4endl;
-    parser.SetOverlapCheck(false);  // 禁用重叠检查加速导出
-    parser.Clear();  // 清理之前的数据
-    parser.Write("detector_geometry.gdml", detector->GetPhysicalWorld());
-    G4cout << "✓ Geometry exported to detector_geometry.gdml" << G4endl;
+#if HAS_G4GDML
+  G4GDMLParser parser;
+  G4cout << "\n=== GEOMETRY EXPORT INFO ===" << G4endl;
+  G4cout << "Exporting geometry after macro execution..." << G4endl;
+  parser.SetOverlapCheck(false);  // 禁用重叠检查加速导出
+  parser.Clear();  // 清理之前的数据
+  parser.Write("detector_geometry.gdml", detector->GetPhysicalWorld());
+  G4cout << "✓ Geometry exported to detector_geometry.gdml" << G4endl;
+#else
+  G4cout << "\n=== GEOMETRY EXPORT INFO ===" << G4endl;
+  G4cout << "G4GDMLParser not available in this Geant4 build; skipping GDML export." << G4endl;
+#endif
     
     // List all physical volumes for verification
     G4PhysicalVolumeStore* pvStore = G4PhysicalVolumeStore::GetInstance();
@@ -157,13 +164,18 @@ int main(int argc,char** argv)
     // First remove existing file to avoid error
     std::remove("detector_geometry.gdml");
     
-    G4GDMLParser parser;
-    G4cout << "\n=== GEOMETRY EXPORT INFO ===" << G4endl;
-    G4cout << "Exporting geometry after vis.mac execution..." << G4endl;
-    parser.SetOverlapCheck(false);  // 禁用重叠检查加速导出
-    parser.Clear();  // 清理之前的数据
-    parser.Write("detector_geometry.gdml", detector->GetPhysicalWorld());
-    G4cout << "✓ Geometry exported to detector_geometry.gdml" << G4endl;
+#if HAS_G4GDML
+  G4GDMLParser parser;
+  G4cout << "\n=== GEOMETRY EXPORT INFO ===" << G4endl;
+  G4cout << "Exporting geometry after vis.mac execution..." << G4endl;
+  parser.SetOverlapCheck(false);  // 禁用重叠检查加速导出
+  parser.Clear();  // 清理之前的数据
+  parser.Write("detector_geometry.gdml", detector->GetPhysicalWorld());
+  G4cout << "✓ Geometry exported to detector_geometry.gdml" << G4endl;
+#else
+  G4cout << "\n=== GEOMETRY EXPORT INFO ===" << G4endl;
+  G4cout << "G4GDMLParser not available in this Geant4 build; skipping GDML export." << G4endl;
+#endif
      
     ui->SessionStart();
     delete ui;

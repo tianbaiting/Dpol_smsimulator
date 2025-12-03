@@ -33,29 +33,6 @@ struct RecoTrack : public TObject {
 // 前向声明
 struct RecoNeutron;
 
-// 整个重建事件的数据结构
-class RecoEvent : public TObject {
-public:
-    RecoEvent() : eventID(-1) {}
-    virtual ~RecoEvent() {}
-
-    void Clear() {
-        rawHits.clear();
-        smearedHits.clear();
-        tracks.clear();
-        neutrons.clear();
-        eventID = -1;
-    }
-
-    Long64_t eventID;                    // 事件编号
-    std::vector<RecoHit> rawHits;        // 原始击中点
-    std::vector<RecoHit> smearedHits;    // 添加位置分辨率后的点
-    std::vector<RecoTrack> tracks;       // 重建的轨迹（带电粒子）
-    std::vector<RecoNeutron> neutrons;   // 重建的中子
-
-    ClassDef(RecoEvent, 2);
-};
-
 // 重建的中子信息
 struct RecoNeutron : public TObject {
     TVector3 position;      // 击中位置
@@ -85,6 +62,29 @@ struct RecoNeutron : public TObject {
     }
     
     ClassDef(RecoNeutron, 1);
+};
+
+// 整个重建事件的数据结构
+class RecoEvent : public TObject {
+public:
+    RecoEvent() : eventID(-1) {}
+    virtual ~RecoEvent() {}
+
+    void Clear() {
+        rawHits.clear();
+        smearedHits.clear();
+        tracks.clear();
+        neutrons.clear();
+        eventID = -1;
+    }
+
+    Long64_t eventID;                    // 事件编号
+    std::vector<RecoHit> rawHits;        // 原始击中点
+    std::vector<RecoHit> smearedHits;    // 添加位置分辨率后的点
+    std::vector<RecoTrack> tracks;       // 重建的轨迹（带电粒子）
+    std::vector<RecoNeutron> neutrons;   // 重建的中子
+
+    ClassDef(RecoEvent, 2);
 };
 
 #endif // RECO_EVENT_H
