@@ -2,24 +2,24 @@
 
 
 # geant4 for debian
-# #------> added for setting up the GEANT4
-# source /home/tian/software/geant4/install/bin/geant4.sh
-# #<------
-# export TARTSYS=/home/tian/software/anaroot/install
+#------> added for setting up the GEANT4
+source /home/tian/software/geant4/install/bin/geant4.sh
+#<------
+export TARTSYS=/home/tian/software/anaroot/install
 
 
-# export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5
+export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5
 
 
-# spana
-source  /home/tbt/software/root/bin/thisroot.sh
-# source /home/common/singularity/centos7/geant4/geant4.10.04.p03-install/share/Geant4-10.4.3/geant4make/geant4make.sh
-source /home/tbt/software/geant4-install/bin/geant4.sh
-#source /home/rocky8/geant4/geant4.10.04.p03-build/geant4make.sh
-# export TARTSYS=/home/kokubun/smsim_for_spana/anaroot/install
-export TARTSYS=/home/tbt/software/anaroot/install
+# # spana
+# source  /home/tbt/software/root/bin/thisroot.sh
+# # source /home/common/singularity/centos7/geant4/geant4.10.04.p03-install/share/Geant4-10.4.3/geant4make/geant4make.sh
+# source /home/tbt/software/geant4-install/bin/geant4.sh
+# #source /home/rocky8/geant4/geant4.10.04.p03-build/geant4make.sh
+# # export TARTSYS=/home/kokubun/smsim_for_spana/anaroot/install
+# export TARTSYS=/home/tbt/software/anaroot/install
 
-export SMSIMDIR=/home/tbt/workspace/Dpol_smsimulator
+# export SMSIMDIR=/home/tbt/workspace/Dpol_smsimulator
 
 
 
