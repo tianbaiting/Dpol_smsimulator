@@ -6,10 +6,7 @@
 
 # [重要] 检查是否在 Conda 环境中
 if [[ -z "$CONDA_PREFIX" ]]; then
-    echo "警告: 你似乎没有激活 Conda 环境 (anaroot-env)。"
-    echo "请先运行: micromamba activate anaroot-env"
-    # 如果你希望强制退出，取消下面这行的注释
-    # return 1 2>/dev/null || exit 1
+    eval "micromamba activate anaroot-env"
 fi
 
 # [修改] 移除旧的 ROOT 和 Geant4 source

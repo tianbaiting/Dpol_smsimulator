@@ -13,7 +13,7 @@ import argparse
 # 定义下载链接列表
 urls = [
     "http://ribf.riken.jp/~hsato/fieldmaps/180703-1,40T-6000.zip",
-    # "http://ribf.riken.jp/~hsato/fieldmaps/180626-1,20T-6000.zip",
+    "http://ribf.riken.jp/~hsato/fieldmaps/180626-1,20T-6000.zip",
     "http://ribf.riken.jp/~hsato/fieldmaps/180626-1,00T-6000.zip",
     "http://ribf.riken.jp/~hsato/fieldmaps/141114-0,8T-6000.zip"
 ]

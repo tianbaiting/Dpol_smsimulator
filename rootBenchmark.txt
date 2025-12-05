@@ -1,0 +1,154 @@
+   ------------------------------------------------------------------
+  | Welcome to ROOT 6.36.06                        https://root.cern |
+  | (c) 1995-2025, The ROOT Team; conception: R. Brun, F. Rademakers |
+  | Built for linuxx8664gcc on Dec 01 2025, 16:53:55                 |
+  | From tags/6-36-06@6-36-06                                        |
+  | With                                                             |
+  | Try '.help'/'.?', '.demo', '.license', '.credits', '.quit'/'.q'  |
+   ------------------------------------------------------------------
+
+
+=== Loading SMSIM libraries (Conda Env) ===
+Library path added: /home/tbt/workspace/Dpol_smsimulator/build/lib
+  [OK] libsmdata.so
+  [OK] libsmlogger.so
+  [OK] libsmaction.so
+  [OK] libsmconstruction.so
+  [OK] libsmphysics.so
+  [OK] libsim_deuteron_core.so
+--- Loading Analysis Tools ---
+  [OK] libpdcanalysis.so
+===========================================
+
+
+Processing /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials/legacy/benchmarks.C...
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//visualisation/graphics/framework.C
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//hsimple.C
+hsimple   : Real Time =   0.59 seconds Cpu Time =   0.07 seconds
+(TFile *) 0x55a7cc7bdaf0
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//hist/hist007_TH1_liveupdate.C
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//visualisation/graphics/formula1.C
+
+Object statistics
+class                         cnt    on heap     size    total size    heap size
+================================================================================
+TList                         132        132      104         13728        13728
+TObjectTable                    1          1       32            32           32
+TROOT                           1          0      728           728            0
+TPluginManager                  1          1       40            40           40
+THashTable                      2          2       72           144          144
+TClassTable                     1          1       16            16           16
+THashList                       1          1      112           112          112
+TEnv                            1          1       56            56           56
+TEnvRec                       146        146       96         14016        14016
+TUnixSystem                     1          1      672           672          672
+TOrdCollection                  4          4       72           288          288
+--------------------------------------------------------------------------------
+Total:                        291        290     2000         29832        29104
+================================================================================
+
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//hist/hist001_TH1_fillrandom.C
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//math/fit/fit1.C
+Formula based function:     sqroot 
+               sqroot : x*gaus(0) + [3]*form1 Ndim= 1, Npar= 4, Number= 0 
+ Formula expression: 
+	x*[p0]*exp(-0.5*((x-[p1])/[p2])*((x-[p1])/[p2]))+[p3]*(abs(sin(x)/x)) 
+****************************************
+Minimizer is Minuit2 / Migrad
+Chi2                      =      202.552
+NDf                       =          188
+Edm                       =  2.91887e-08
+NCalls                    =          149
+p0                        =      32.6905   +/-   0.533225    
+p1                        =      3.97178   +/-   0.0177951   
+p2                        =       1.0081   +/-   0.0133754   
+p3                        =      63.3732   +/-   1.33997     
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//hist/hist015_TH1_read_and_draw.C
+TFile**		/home/tbt/.local/share/mamba/envs/anaroot-env/tutorials/hsimple.root	Demo ROOT file with histograms
+ TFile*		/home/tbt/.local/share/mamba/envs/anaroot-env/tutorials/hsimple.root	Demo ROOT file with histograms
+  KEY: TH1F	hpx;1	This is the px distribution
+  KEY: TH2F	hpxpy;1	py vs px
+  KEY: TProfile	hprof;1	Profile of pz versus px
+  KEY: TNtuple	ntuple;1	Demo ntuple
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//visualisation/graphs/gr001_simple.C
+ i 0 0.000000 1.986693 
+ i 1 0.100000 2.955202 
+ i 2 0.200000 3.894183 
+ i 3 0.300000 4.794255 
+ i 4 0.400000 5.646425 
+ i 5 0.500000 6.442177 
+ i 6 0.600000 7.173561 
+ i 7 0.700000 7.833269 
+ i 8 0.800000 8.414710 
+ i 9 0.900000 8.912074 
+ i 10 1.000000 9.320391 
+ i 11 1.100000 9.635582 
+ i 12 1.200000 9.854497 
+ i 13 1.300000 9.974950 
+ i 14 1.400000 9.995736 
+ i 15 1.500000 9.916648 
+ i 16 1.600000 9.738476 
+ i 17 1.700000 9.463001 
+ i 18 1.800000 9.092974 
+ i 19 1.900000 8.632094 
+ i 0 -3.000000 -0.989992 
+ i 1 -2.684211 -0.897212 
+ i 2 -2.368421 -0.715699 
+ i 3 -2.052632 -0.463406 
+ i 4 -1.736842 -0.165284 
+ i 5 -1.421053 0.149185 
+ i 6 -1.105263 0.448899 
+ i 7 -0.789474 0.704219 
+ i 8 -0.473684 0.889894 
+ i 9 -0.157895 0.987561 
+ i 10 0.157895 0.987561 
+ i 11 0.473684 0.889894 
+ i 12 0.789474 0.704219 
+ i 13 1.105263 0.448899 
+ i 14 1.421053 0.149185 
+ i 15 1.736842 -0.165284 
+ i 16 2.052632 -0.463406 
+ i 17 2.368421 -0.715699 
+ i 18 2.684211 -0.897212 
+ i 19 3.000000 -0.989992 
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//visualisation/graphs/gr002_errors.C
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//visualisation/graphics/tornado.C
+tornado   : Real Time =   0.00 seconds Cpu Time =   0.00 seconds
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//visualisation/graphics/surfaces.C
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//visualisation/graphs/gr303_zdemo.C
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//legacy/g3d/geometry.C
+na49      : Real Time =   0.01 seconds Cpu Time =   0.01 seconds
+geometry  : Real Time =   0.03 seconds Cpu Time =   0.01 seconds
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//legacy/g3d/na49view.C
+na49view  : Real Time =   0.00 seconds Cpu Time =   0.00 seconds
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//io/tree/tree120_ntuple.C
+****************************************
+Minimizer is Linear / Migrad
+Chi2                      =      16.5378
+NDf                       =           68
+p0                        =      1.04821   +/-   0.226552    
+p1                        =    0.0133784   +/-   0.0420448   
+p2                        =     0.956034   +/-   0.0245116   
+ntuple1   : Real Time =   0.11 seconds Cpu Time =   0.06 seconds
+Processing benchmark: /home/tbt/.local/share/mamba/envs/anaroot-env/tutorials//legacy/rootmarks.C
+---------------ROOT 6.36.06 benchmarks summary--------------------
+hsimple   : Real Time =   0.59 seconds Cpu Time =   0.07 seconds
+tornado   : Real Time =   0.00 seconds Cpu Time =   0.00 seconds
+na49      : Real Time =   0.01 seconds Cpu Time =   0.01 seconds
+geometry  : Real Time =   0.03 seconds Cpu Time =   0.01 seconds
+na49view  : Real Time =   0.00 seconds Cpu Time =   0.00 seconds
+ntuple1   : Real Time =   0.11 seconds Cpu Time =   0.06 seconds
+TOTAL     : Real Time =   0.74 seconds Cpu Time =   0.15 seconds
+
+---------------ROOT 6.36.06 benchmarks summary (in ROOTMARKS)-----
+   For comparison, a Pentium IV 2.4Ghz is benchmarked at 600 ROOTMARKS
+hsimple     =  294.09 RealMARKS,  = 2400.00 CpuMARKS
+tornado     = 45739.41 RealMARKS,  =     inf CpuMARKS
+na49        = 117862.78 RealMARKS,  = 83400.00 CpuMARKS
+geometry    = 3301.46 RealMARKS,  = 10800.00 CpuMARKS
+na49view    = 4411.70 RealMARKS,  =     inf CpuMARKS
+ntuple1     = 1648.76 RealMARKS,  = 2700.00 CpuMARKS
+
+****************************************************
+* Your machine is estimated at 4492.26 ROOTMARKS   *
+****************************************************
