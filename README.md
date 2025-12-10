@@ -1,7 +1,7 @@
 
 SMSimulator
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ggml-org/llama.cpp)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/tianbaiting/Dpol_smsimulator)
 
 🚀 快速命令
 
