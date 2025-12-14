@@ -9,7 +9,7 @@
 
 /action/file/OverWrite y
 /action/file/RunName ypol_np_Pb208_g050
-/action/file/SaveDirectory output_tree
+/action/file/SaveDirectory {SMSIMDIR}/data/simulation/g4output
 
 # Load geometry
 # /control/execute {SMSIMDIR}/configs/simulation/geometry/5deg_1.2T.mac
