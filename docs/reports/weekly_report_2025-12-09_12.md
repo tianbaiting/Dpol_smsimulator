@@ -117,3 +117,6 @@ $SMSIMDIR/sources/build/projects/simtrace/simtrace
 without exit window:
 
 ![simtrace run no window](../note_log/assets/log202512/image-3.png)
+
+
+i don't know why chaerged particle exit window is fixed or changbel. 
