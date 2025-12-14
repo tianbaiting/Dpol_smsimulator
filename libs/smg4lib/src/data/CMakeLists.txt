@@ -43,6 +43,12 @@ target_link_libraries(smdata PUBLIC
     ${Geant4_LIBRARIES}
 )
 
+# 如果有 ANAROOT，添加依赖（NEBULASimDataConverter_TArtNEBULAPla 需要）
+if(WITH_ANAROOT)
+    target_include_directories(smdata PUBLIC ${ANAROOT_INCLUDE_DIR})
+    target_link_libraries(smdata PUBLIC ${ANAROOT_LIBRARIES})
+endif()
+
 # 设置属性
 set_target_properties(smdata PROPERTIES
     SOVERSION 5

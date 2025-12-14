@@ -19,6 +19,7 @@
 #include "DipoleConstruction.hh"
 #include "PDCConstruction.hh"
 #include "NEBULAConstruction.hh"
+#include "ExitWindowNConstruction.hh"
 
 #include "MagField.hh"
 #include "globals.hh"
@@ -58,6 +59,8 @@ DeutDetectorConstruction::DeutDetectorConstruction()
   fDipoleConstruction = new DipoleConstruction();
   fPDCConstruction    = new PDCConstruction();
   fNEBULAConstruction = new NEBULAConstruction();
+  fExitWindowNConstruction = new ExitWindowNConstruction();
+  fNeutronWinSD = 0;
 }
 //______________________________________________________________________________
 DeutDetectorConstruction::~DeutDetectorConstruction()
@@ -66,6 +69,7 @@ DeutDetectorConstruction::~DeutDetectorConstruction()
   delete fDipoleConstruction;
   delete fPDCConstruction;
   delete fNEBULAConstruction;
+  delete fExitWindowNConstruction;
 }
 //______________________________________________________________________________
 G4VPhysicalVolume* DeutDetectorConstruction::Construct()
@@ -139,6 +143,17 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
     frag_prm = new TFragSimParameter("FragParameter");
     simDataManager->AddParameter(frag_prm);
   }
+
+  //------------------------------ exit window for neutrons
+  G4double magAngle = fDipoleConstruction->GetAngle();
+  fExitWindowNConstruction->ConstructSub();
+  fExitWindowNConstruction->SetAngle(magAngle);
+  fExitWindowNConstruction->PutExitWindow(expHall_log);
+  if (fNeutronWinSD==0){
+    fNeutronWinSD = new FragmentSD("/NeutronWindow");
+    SDMan->AddNewDetector(fNeutronWinSD);
+  }
+  fExitWindowNConstruction->GetWindowVolume()->SetSensitiveDetector(fNeutronWinSD);
 
   //------------------------------- Beam Line ----------------------------------
   //------------------------------ Target

@@ -28,6 +28,7 @@ target_include_directories(sim_deuteron_core PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/src/construction/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/src/data/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/src/physics/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/src/devices>
     $<INSTALL_INTERFACE:include>
 )
 
@@ -38,6 +39,7 @@ target_link_libraries(sim_deuteron_core PUBLIC
     smconstruction
     smdata
     smphysics
+    smdevice
     ${ROOT_LIBRARIES}
     ${Geant4_LIBRARIES}
     ${CMAKE_DL_LIBS}

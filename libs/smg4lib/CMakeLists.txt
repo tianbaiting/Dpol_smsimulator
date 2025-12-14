@@ -14,6 +14,7 @@ add_subdirectory(src/data)
 add_subdirectory(src/action)
 add_subdirectory(src/construction)
 add_subdirectory(src/physics)
+add_subdirectory(src/devices)
 
 ##############################################################################
 # 创建接口库（用于统一链接）
@@ -25,6 +26,7 @@ target_link_libraries(smg4lib INTERFACE
     smaction
     smconstruction
     smphysics
+    smdevice
 )
 
 # 导出头文件路径

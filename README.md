@@ -13,7 +13,7 @@ SMSimulator
 
 
 📂 重要目录
-
+```
   libs/                     C++ 库源码
     ├─ smg4lib/            Geant4 核心库
     ├─ sim_deuteron_core/  氘核模拟核心
@@ -36,7 +36,7 @@ SMSimulator
     ├─ analysis/           分析脚本
     ├─ batch/              批处理脚本
     └─ visualization/      可视化脚本
-
+```
 
 🔧 编译选项
 
@@ -145,8 +145,6 @@ SMSimulator
   • Debug 模式有更多调试信息但运行较慢
   • 定期运行 ./test.sh 确保代码正确性
   • 查看 CMake 配置摘要确认依赖是否正确找到
-
-
 
 
 

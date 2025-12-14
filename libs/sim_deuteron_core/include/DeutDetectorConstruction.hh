@@ -7,6 +7,7 @@ class DeutDetectorConstructionMessenger;
 class DipoleConstruction;
 class PDCConstruction;
 class NEBULAConstruction;
+class ExitWindowNConstruction;
 
 class G4VSensitiveDetector;
 class G4VModularPhysicsList;
@@ -76,6 +77,9 @@ private:
   G4VSensitiveDetector* fPDCSD_X = 0;
   G4VSensitiveDetector* fPDCSD_V = 0;
   G4VSensitiveDetector* fNEBULASD = 0;
+
+  ExitWindowNConstruction *fExitWindowNConstruction;  
+  G4VSensitiveDetector* fNeutronWinSD;
 
   G4String fInputMacroFile;
   G4VModularPhysicsList* fModularPhysicsList;

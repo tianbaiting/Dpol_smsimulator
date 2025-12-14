@@ -1,14 +1,49 @@
 #!/bin/bash
 
 
-# geant4 for debian
-#------> added for setting up the GEANT4
-source /home/tian/software/geant4/install/bin/geant4.sh
-#<------
-export TARTSYS=/home/tian/software/anaroot/install
+# 使用命令获取主机名
+# tr -d '\n' 用于删除可能存在的换行符
+CURRENT_HOST=$(hostname | tr -d '\n')
+
+echo "正在加载环境配置，检测到主机: ${CURRENT_HOST}"
+
+case "$CURRENT_HOST" in
+    "TBTdebian")
+        # geant4 for debian
+        #------> added for setting up the GEANT4
+        source /home/tian/software/geant4/install/bin/geant4.sh
+        #<------
+        export TARTSYS=/home/tian/software/anaroot/install
 
 
-export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5
+        export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5
+        ;;
+
+    "spana03")
+        # --- spana03 服务器配置 ---
+
+        # 定义当前项目的根目录
+        # 如果你在这个脚本所在的目录下 source 它，建议使用 pwd 动态获取，方便移植
+        # export SMSIMDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+        # 或者保持你原本的硬编码路径：
+        export SMSIMDIR=/home/tbt/workspace/Dpol_smsimulator
+
+        # [TODO] 确认 TARTSYS (ANAROOT 安装路径)
+        # 如果你是用 install_anaroot.sh 安装到了 conda 环境里，这里应该是 $CONDA_PREFIX
+        # 如果你是安装在本地某个文件夹，请指向那个文件夹
+        # export TARTSYS=/home/kokubun/smsim_for_spana/anaroot/install
+        export TARTSYS=/home/tbt/software/anaroot/install
+        # 如果 ANAROOT 安装在 Conda 环境系统目录下，解开下面这行：
+        # export TARTSYS=$CONDA_PREFIX
+        ;;
+    
+    *)
+        # --- 其他未匹配的设备 ---
+        echo "  -> 未知设备，仅加载通用配置。"
+        ;;
+esac
+
+
 
 
 # # spana

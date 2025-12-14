@@ -13,7 +13,7 @@
 
 ### 快速运行所有测试
 ```bash
-cd /home/tian/workspace/dpol/smsimulator5.5/build
+cd $SMSIMDIR/build
 ./bin/test_TargetReconstructor
 ```
 
@@ -28,7 +28,7 @@ cd /home/tian/workspace/dpol/smsimulator5.5/build
 如果你想看到 TMinuit 优化过程的图像，需要设置环境变量：
 
 ```bash
-cd /home/tian/workspace/dpol/smsimulator5.5/build
+cd $SMSIMDIR/build
 
 # 设置可视化环境变量
 export SM_TEST_VISUALIZATION=ON
@@ -39,7 +39,7 @@ export SM_TEST_VISUALIZATION=ON
 
 ### 一行命令运行
 ```bash
-cd /home/tian/workspace/dpol/smsimulator5.5/build && SM_TEST_VISUALIZATION=ON ./bin/test_TargetReconstructor
+cd $SMSIMDIR/build && SM_TEST_VISUALIZATION=ON ./bin/test_TargetReconstructor
 ```
 
 ---
@@ -50,7 +50,7 @@ cd /home/tian/workspace/dpol/smsimulator5.5/build && SM_TEST_VISUALIZATION=ON ./
 
 可视化图像保存在：
 ```
-/home/tian/workspace/dpol/smsimulator5.5/build/test_output/reconstruction_minuit/
+$SMSIMDIR/build/test_output/reconstruction_minuit/
 ```
 
 ### 生成的文件
@@ -87,7 +87,7 @@ eog test_output/reconstruction_minuit/c_opt_path.png
 
 ### 打开 ROOT 文件
 ```bash
-cd /home/tian/workspace/dpol/smsimulator5.5/build
+cd $SMSIMDIR/build
 root test_output/reconstruction_minuit/c_opt_path.root
 ```
 
@@ -127,7 +127,7 @@ gPad->GetView()->RotateView(30, 45)
 ### 只运行特定测试
 
 ```bash
-cd /home/tian/workspace/dpol/smsimulator5.5/build
+cd $SMSIMDIR/build
 
 # 运行 TMinuit 优化路径测试（带可视化）
 SM_TEST_VISUALIZATION=ON ./bin/test_TargetReconstructor --gtest_filter="*TMinuitOptimizationWithPath*"
@@ -151,7 +151,7 @@ SM_TEST_VISUALIZATION=ON ./bin/test_TargetReconstructor --gtest_verbose
 
 ### 使用 CTest 运行
 ```bash
-cd /home/tian/workspace/dpol/smsimulator5.5/build
+cd $SMSIMDIR/build
 
 # 运行所有单元测试
 ctest -L unit -V
