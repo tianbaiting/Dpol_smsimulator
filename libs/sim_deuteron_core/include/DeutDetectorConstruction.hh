@@ -8,9 +8,11 @@ class DipoleConstruction;
 class PDCConstruction;
 class NEBULAConstruction;
 class ExitWindowNConstruction;
+class ExitWindowC2Construction;
 
 class G4VSensitiveDetector;
 class G4VModularPhysicsList;
+
 
 #include "G4VUserDetectorConstruction.hh"
 #include "G4ThreeVector.hh"
@@ -81,6 +83,12 @@ private:
   ExitWindowNConstruction *fExitWindowNConstruction;  
   G4VSensitiveDetector* fNeutronWinSD;
 
+  ExitWindowC2Construction *fExitWindowC2Construction;  
+  G4VSensitiveDetector* fWindowHoleSD;
+
+  // VacuumUpstreamConstruction *fVacuumUpstreamConstruction;
+  // VacuumDownstreamConstruction *fVacuumDownstreamConstruction;
+  
   G4String fInputMacroFile;
   G4VModularPhysicsList* fModularPhysicsList;
 };

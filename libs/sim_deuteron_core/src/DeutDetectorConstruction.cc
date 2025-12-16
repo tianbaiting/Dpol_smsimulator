@@ -20,6 +20,8 @@
 #include "PDCConstruction.hh"
 #include "NEBULAConstruction.hh"
 #include "ExitWindowNConstruction.hh"
+#include "ExitWindowC2Construction.hh"  
+
 
 #include "MagField.hh"
 #include "globals.hh"
@@ -46,6 +48,8 @@
 #include "DeutTrackingAction.hh"
 #include "DeutPrimaryGeneratorAction.hh"
 
+
+
 //______________________________________________________________________________
 DeutDetectorConstruction::DeutDetectorConstruction() 
   :
@@ -61,6 +65,8 @@ DeutDetectorConstruction::DeutDetectorConstruction()
   fNEBULAConstruction = new NEBULAConstruction();
   fExitWindowNConstruction = new ExitWindowNConstruction();
   fNeutronWinSD = 0;
+  fExitWindowC2Construction = new ExitWindowC2Construction();
+  fWindowHoleSD = 0;
 }
 //______________________________________________________________________________
 DeutDetectorConstruction::~DeutDetectorConstruction()
@@ -70,6 +76,8 @@ DeutDetectorConstruction::~DeutDetectorConstruction()
   delete fPDCConstruction;
   delete fNEBULAConstruction;
   delete fExitWindowNConstruction;
+  delete fExitWindowC2Construction;
+  
 }
 //______________________________________________________________________________
 G4VPhysicalVolume* DeutDetectorConstruction::Construct()
@@ -154,6 +162,21 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
     SDMan->AddNewDetector(fNeutronWinSD);
   }
   fExitWindowNConstruction->GetWindowVolume()->SetSensitiveDetector(fNeutronWinSD);
+
+
+  //-----exit window for charged particles
+
+  //------------------------------ exit window for charged particles  
+  fExitWindowC2Construction->ConstructSub();  
+  //sim_samurai21: magAngle + 29.91*deg
+  fExitWindowC2Construction->SetAngle(-magAngle - 29.91*deg);  
+  fExitWindowC2Construction->PutExitWindow(expHall_log);  
+    
+  if (fWindowHoleSD==0){  
+    fWindowHoleSD = new FragmentSD("/WindowHole");  
+    SDMan->AddNewDetector(fWindowHoleSD);  
+  }  
+  fExitWindowC2Construction->GetWindowHoleVolume()->SetSensitiveDetector(fWindowHoleSD);
 
   //------------------------------- Beam Line ----------------------------------
   //------------------------------ Target
