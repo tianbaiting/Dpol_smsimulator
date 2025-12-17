@@ -9,6 +9,7 @@ class PDCConstruction;
 class NEBULAConstruction;
 class ExitWindowNConstruction;
 class ExitWindowC2Construction;
+class VacuumDownstreamConstruction;  // 添加前向声明
 
 class G4VSensitiveDetector;
 class G4VModularPhysicsList;
@@ -85,6 +86,9 @@ private:
 
   ExitWindowC2Construction *fExitWindowC2Construction;  
   G4VSensitiveDetector* fWindowHoleSD;
+
+  VacuumDownstreamConstruction *fVacuumDownstreamConstruction;
+
 
   // VacuumUpstreamConstruction *fVacuumUpstreamConstruction;
   // VacuumDownstreamConstruction *fVacuumDownstreamConstruction;

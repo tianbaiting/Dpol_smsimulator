@@ -47,7 +47,7 @@
 #include "DeutSteppingAction.hh"
 #include "DeutTrackingAction.hh"
 #include "DeutPrimaryGeneratorAction.hh"
-
+#include "VacuumDownstreamConstruction.hh"
 
 
 //______________________________________________________________________________
@@ -67,6 +67,7 @@ DeutDetectorConstruction::DeutDetectorConstruction()
   fNeutronWinSD = 0;
   fExitWindowC2Construction = new ExitWindowC2Construction();
   fWindowHoleSD = 0;
+  fVacuumDownstreamConstruction = new VacuumDownstreamConstruction();
 }
 //______________________________________________________________________________
 DeutDetectorConstruction::~DeutDetectorConstruction()
@@ -77,6 +78,7 @@ DeutDetectorConstruction::~DeutDetectorConstruction()
   delete fNEBULAConstruction;
   delete fExitWindowNConstruction;
   delete fExitWindowC2Construction;
+  delete fVacuumDownstreamConstruction;  
   
 }
 //______________________________________________________________________________
@@ -141,6 +143,8 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
   fDipoleConstruction->ConstructSub();
   fDipoleConstruction->PutSAMURAIMagnet(expHall_log);
 
+  G4VPhysicalVolume* Dipole_phys = fDipoleConstruction->PutSAMURAIMagnet(expHall_log);  // 保存返回值
+
   G4SDManager *SDMan = G4SDManager::GetSDMpointer();
 
   // prepare parameter for target and PDC positions
@@ -169,7 +173,8 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
   //------------------------------ exit window for charged particles  
   fExitWindowC2Construction->ConstructSub();  
   //sim_samurai21: magAngle + 29.91*deg
-  fExitWindowC2Construction->SetAngle(-magAngle - 29.91*deg);  
+  G4double windowAngle = -magAngle - 29.91*deg;  // 保存角度供后续使用
+  fExitWindowC2Construction->SetAngle(windowAngle);  
   fExitWindowC2Construction->PutExitWindow(expHall_log);  
     
   if (fWindowHoleSD==0){  
@@ -177,6 +182,19 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
     SDMan->AddNewDetector(fWindowHoleSD);  
   }  
   fExitWindowC2Construction->GetWindowHoleVolume()->SetSensitiveDetector(fWindowHoleSD);
+
+  //------------------------------ Vacuum Downstream
+  G4LogicalVolume *vacuum_downstream_log = 
+    fVacuumDownstreamConstruction->ConstructSub(Dipole_phys, 
+                                                 fExitWindowC2Construction->GetWindowHolePhys());
+  G4ThreeVector vacuum_downstream_pos = fVacuumDownstreamConstruction->GetPosition();
+  G4RotationMatrix vacuum_rm; 
+  vacuum_rm.rotateY(windowAngle);  // 使用与exit window相同的角度
+  new G4PVPlacement(G4Transform3D(vacuum_rm, vacuum_downstream_pos),
+                    vacuum_downstream_log, "vacuum_downstream",
+                    expHall_log, false, 0);
+
+// ...existing code...
 
   //------------------------------- Beam Line ----------------------------------
   //------------------------------ Target
@@ -289,6 +307,7 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
     fPDC2Pos.y()/mm, 
     fPDC2Pos.z()/mm
   );
+
 
   //------------------------------ Beam Dump
   auto box_sol = new G4Box{"Box", 2.5*m/2, 2.5*m/2, 3*m/2};
