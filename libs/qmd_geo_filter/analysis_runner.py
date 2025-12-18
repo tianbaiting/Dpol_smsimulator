@@ -6,7 +6,10 @@
 """
 
 import os
+import gc
 import json
+import shutil
+import subprocess
 import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
@@ -301,6 +304,11 @@ class AnalysisRunner:
         angle_path = output_path.parent.parent  # 回到 angle 层级
         self._generate_angle_level_plots(angle_path, geo_filter, field_strength, deflection_angle)
         
+        # 释放内存：删除结果中的大数组
+        if 'gamma_momentum_data' in results:
+            del results['gamma_momentum_data']
+        gc.collect()
+        
         return results
     
     def _save_plots(self, output_path: Path, gamma: str,
@@ -416,7 +424,7 @@ class AnalysisRunner:
     def _generate_angle_level_plots(self, angle_path: Path, geo_filter: GeometryFilter,
                                      field_strength: float, deflection_angle: float):
         """
-        在 angle 层级生成几何布局图
+        在 angle 层级生成几何布局图（使用 geo_accepentce C++ 库）
         
         Args:
             angle_path: angle 层级的输出路径
@@ -429,26 +437,87 @@ class AnalysisRunner:
         if geometry_plot.exists():
             return
         
-        print(f"  Generating detector geometry plot at angle level...")
+        print(f"  Generating detector geometry plot using geo_accepentce library...")
         
-        # 获取探测器配置
-        target_pos = geo_filter.target_config.position if geo_filter.target_config else (0, 0, 0)
-        pdc_pos = geo_filter.pdc_config.position if geo_filter.pdc_config else (0, 0, 5000)
-        pdc_rotation = geo_filter.pdc_config.rotation_angle if geo_filter.pdc_config else deflection_angle
-        nebula_pos = geo_filter.nebula_config.position
-        
-        # 保存几何布局图
-        subdir = str(angle_path.relative_to(self.config.output_base_dir))
-        self.plot_utils.save_detector_geometry(
-            target_pos=target_pos,
-            pdc_pos=pdc_pos,
-            pdc_rotation=pdc_rotation,
-            nebula_pos=nebula_pos,
-            field_strength=field_strength,
-            deflection_angle=deflection_angle,
-            filename="detector_geometry",
-            output_subdir=subdir
+        # 使用 C++ geo_accepentce 库生成几何图
+        self._generate_geometry_plot_cpp(
+            angle_path,
+            field_strength,
+            deflection_angle
         )
+    
+    def _generate_geometry_plot_cpp(self, output_dir: Path, field_strength: float,
+                                     deflection_angle: float):
+        """
+        使用 C++ geo_accepentce 库生成几何布局图
+        
+        Args:
+            output_dir: 输出目录
+            field_strength: 磁场强度 [T]
+            deflection_angle: 束流偏转角度 [度]
+        """
+        # 定位可执行文件和配置
+        smsim_dir = os.environ.get('SMSIMDIR', '/home/tian/workspace/dpol/smsimulator5.5')
+        exe_path = Path(smsim_dir) / 'build' / 'bin' / 'RunGeoAcceptanceAnalysis'
+        
+        if not exe_path.exists():
+            print(f"  Warning: geo_accepentce executable not found at {exe_path}")
+            print(f"  Skipping geometry plot generation.")
+            return
+        
+        # 磁场映射文件
+        field_map_dir = Path(smsim_dir) / 'configs' / 'simulation' / 'geometry' / 'filed_map'
+        field_map_file = field_map_dir / f'field_{field_strength:.1f}T.dat'
+        
+        if not field_map_file.exists():
+            print(f"  Warning: Field map not found: {field_map_file}")
+            print(f"  Skipping geometry plot generation.")
+            return
+        
+        # 创建临时输出目录
+        temp_output = output_dir / 'geo_temp'
+        temp_output.mkdir(exist_ok=True)
+        
+        # 构建命令
+        cmd = [
+            str(exe_path),
+            '--fieldmap', str(field_map_file),
+            '--field', str(field_strength),
+            '--angle', str(deflection_angle),
+            '--output', str(temp_output)
+        ]
+        
+        try:
+            # 运行 C++ 程序生成几何图
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=30,
+                cwd=str(smsim_dir)
+            )
+            
+            if result.returncode == 0:
+                # 查找生成的几何图文件
+                geo_files = list(temp_output.glob('*geometry*.pdf'))
+                if geo_files:
+                    # 移动到目标位置
+                    shutil.move(str(geo_files[0]), str(output_dir / 'detector_geometry.pdf'))
+                    print(f"  Geometry plot saved to: {output_dir / 'detector_geometry.pdf'}")
+                else:
+                    print(f"  Warning: No geometry plot generated")
+            else:
+                print(f"  Warning: geo_accepentce failed with return code {result.returncode}")
+                if result.stderr:
+                    print(f"  Error: {result.stderr[:200]}")
+        except subprocess.TimeoutExpired:
+            print(f"  Warning: geo_accepentce timed out")
+        except Exception as e:
+            print(f"  Warning: Failed to run geo_accepentce: {e}")
+        finally:
+            # 清理临时目录
+            if temp_output.exists():
+                shutil.rmtree(temp_output, ignore_errors=True)
     
     def run_full_analysis(self):
         """运行完整分析"""

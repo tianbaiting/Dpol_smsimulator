@@ -16,4 +16,7 @@ if(BUILD_ANALYSIS)
     
     # 构建几何接受度分析库（依赖analysis库）
     add_subdirectory(geo_accepentce)
+    
+    # 构建 QMD 几何筛选库（依赖 geo_accepentce 库）
+    add_subdirectory(qmd_geo_filter)
 endif()
