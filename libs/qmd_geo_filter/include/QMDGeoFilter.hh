@@ -64,6 +64,27 @@ struct RatioResult {
 };
 
 /**
+ * @struct GeometryFilterResult
+ * @brief 详细的几何筛选结果
+ * 
+ * 分类说明：
+ * - bothAccepted: PDC 接受 proton 且 NEBULA 接受 neutron（绿色）
+ * - pdcOnlyAccepted: 只有 PDC 接受 proton（蓝色 proton）
+ * - nebulaOnlyAccepted: 只有 NEBULA 接受 neutron（蓝色 neutron）
+ * - bothRejected: PDC 和 NEBULA 都不接受（红色）
+ */
+struct GeometryFilterResult {
+    std::vector<int> bothAccepted;        // PDC 和 NEBULA 都接受的索引
+    std::vector<int> pdcOnlyAccepted;     // 只有 PDC 接受 proton 的索引
+    std::vector<int> nebulaOnlyAccepted;  // 只有 NEBULA 接受 neutron 的索引
+    std::vector<int> bothRejected;        // 都不接受的索引
+    
+    size_t totalPassed() const { return bothAccepted.size(); }  // 只有 both 才算通过
+    size_t size() const { return bothAccepted.size() + pdcOnlyAccepted.size() + 
+                                 nebulaOnlyAccepted.size() + bothRejected.size(); }
+};
+
+/**
  * @struct GammaAnalysisResult
  * @brief 单个 gamma 值的分析结果
  */
@@ -77,16 +98,28 @@ struct GammaAnalysisResult {
     int nAfterGeometry;
     
     // 三个阶段的 ratio: (pxp-pxn > 0) / (pxp-pxn < 0)
+    // 注意：ratio 使用旋转到反应平面后的 pxp-pxn 计算
     RatioResult ratioBeforeCut;
     RatioResult ratioAfterCut;
     RatioResult ratioAfterGeometry;
     
-    // 三个阶段的动量数据 (用于绘制 pxp-pxn 分布)
-    MomentumData rawMomenta;          // 原始数据（未旋转）
-    MomentumData rotatedMomentaRaw;   // 旋转后的原始数据（before cut, 但已旋转到反应平面）
-    MomentumData afterCutMomenta;     // cut后的旋转动量
-    MomentumData afterGeoMomenta;     // geometry后的旋转动量（通过的）
-    MomentumData rejectedByGeoMomenta; // 未通过 geometry 筛选的动量
+    // 三个阶段的动量数据
+    // 
+    // 【坐标系说明】
+    // - 所有动量都保存在原始靶子系（随机旋转的反应平面）
+    // - 只在计算 pxp-pxn 和 ratio 时才用 atan2 临时旋转到反应平面
+    // - 3D 可视化使用原始动量，真实反映探测器覆盖
+    //
+    MomentumData rawMomenta;              // 原始数据（靶子系）
+    MomentumData afterCutMomenta;         // cut 后的靶子系动量
+    MomentumData afterGeoMomenta;         // geometry 后的靶子系动量（通过的 = bothAccepted）
+    MomentumData rejectedByGeoMomenta;    // geometry 拒绝的靶子系动量
+    
+    // 详细的 geometry 分类（用于 3D 可视化）
+    MomentumData bothAcceptedMomenta;     // PDC 和 NEBULA 都接受（绿色）
+    MomentumData pdcOnlyMomenta;          // 只有 PDC 接受 proton（蓝色 proton）
+    MomentumData nebulaOnlyMomenta;       // 只有 NEBULA 接受 neutron（蓝色 neutron）
+    MomentumData bothRejectedMomenta;     // 都不接受（红色）
     
     // 效率
     double cutEfficiency;
@@ -98,10 +131,13 @@ struct GammaAnalysisResult {
     
     void ClearMomentumData() {
         rawMomenta.clear();
-        rotatedMomentaRaw.clear();
         afterCutMomenta.clear();
         afterGeoMomenta.clear();
         rejectedByGeoMomenta.clear();
+        bothAcceptedMomenta.clear();
+        pdcOnlyMomenta.clear();
+        nebulaOnlyMomenta.clear();
+        bothRejectedMomenta.clear();
     }
 };
 
@@ -160,16 +196,14 @@ public:
     void SetYpolParams(const YpolParams& params) { fYpolParams = params; }
     
     // 应用 cut
-    // 返回通过 cut 的索引和旋转后的动量
+    // 返回通过 cut 的索引和原始动量（靶子坐标系）
+    // cut 内部逻辑会临时旋转到反应平面判断条件，但输出只保存原始动量
     struct CutResult {
         std::vector<int> passedIndices;
-        MomentumData rotatedMomenta;  // 旋转后的动量
+        MomentumData momenta;  // 通过 cut 的原始动量（靶子坐标系）
     };
     
     CutResult ApplyCut(const MomentumData& data);
-    
-    // 仅旋转动量（不应用cut），用于计算 before cut 阶段的 ratio
-    MomentumData RotateAllMomenta(const MomentumData& data);
     
 private:
     CutResult ApplyZpolCut(const MomentumData& data);
@@ -275,7 +309,12 @@ public:
     MomentumData LoadQMDData(const std::string& target, const std::string& polType,
                              const std::string& gamma);
     
-    // 计算几何接受度
+    // 计算几何接受度（返回详细分类）
+    GeometryFilterResult ApplyGeometryFilterDetailed(const MomentumData& data,
+                                                      const TVector3& targetPos,
+                                                      double targetRotationAngle);
+    
+    // 计算几何接受度（返回通过的索引，兼容旧接口）
     std::vector<int> ApplyGeometryFilter(const MomentumData& data,
                                           const TVector3& targetPos,
                                           double targetRotationAngle);

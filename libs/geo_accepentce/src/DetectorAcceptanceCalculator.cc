@@ -507,6 +507,11 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
     return optimalConfig;
 }
 
+// 检查粒子是否击中PDC
+//@brief 检查粒子是否击中PDC探测器
+//@param particle 待检查的粒子信息, 包括初始位置、动量、质量、电荷等. 这个粒子信息应在实验室坐标系中. 而非靶点坐标系. 
+//@param hitPosition 如果击中，返回击中位置
+//@return 如果粒子击中PDC，返回true；否则返回false。
 bool DetectorAcceptanceCalculator::CheckPDCHit(const ParticleInfo& particle, 
                                                 TVector3& hitPosition)
 {
@@ -701,7 +706,7 @@ DetectorAcceptanceCalculator::CalculateAcceptanceForTarget(const TVector3& targe
         p.vertex = targetPos;
         
         // 旋转动量：从target局部坐标系到实验室坐标系
-        // 假设QMD数据中的动量是在target局部坐标系中定义的
+        // QMD数据中的动量是在target局部坐标系中定义的
         TVector3 pLocal = p.momentum.Vect();
         double px_lab = pLocal.X() * cos_theta + pLocal.Z() * sin_theta;
         double py_lab = pLocal.Y();
