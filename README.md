@@ -2,7 +2,9 @@
 SMSimulator
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/tianbaiting/Dpol_smsimulator)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/tianbaiting/Dpol_smsimulator)
 
+<a href="https://deepwiki.com/tianbaiting/Dpol_smsimulator"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 🚀 快速命令
 
   编译项目:      ./build.sh

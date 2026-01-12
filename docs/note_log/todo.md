@@ -42,3 +42,19 @@
 ## smsimualtor 加入exit window
 
 查看时候会影响到出射的粒子. 
+
+
+zpol: d_discrete: Pb208 Sn112 Sn124 Xe140
+
+ypol: phi_random Pb208 Xe130
+
+
+需要重新构造pdc位置
+
+
+加入氘核的路径,查看是否会击中exit window
+
+## 
+
+研究如何加入pdc的动量分辨率
+

@@ -1,22 +1,18 @@
 # =========================================================================
 # Geometry macro generated from template
 # Magnetic field: 1.20T
-# Angle: 10deg
+# Angle: 0deg
 # =========================================================================
 
 /control/getEnv SMSIMDIR
-# field map file
-/samurai/geometry/Dipole/Angle 30 deg
-/samurai/geometry/Dipole/FieldFile {SMSIMDIR}/configs/simulation/geometry/filed_map/180626-1,20T-3000.bin
-/samurai/geometry/Dipole/FieldFactor 1
 
 # Target
 /samurai/geometry/Target/SetTarget false
 /samurai/geometry/Target/Material Sn
 /samurai/geometry/Target/Size 80 80 30 mm
-/samurai/geometry/Target/Position -2.43 0.00 -90.79 cm
+/samurai/geometry/Target/Position 0 0 -400 cm
 # /samurai/geometry/Target/Position -2.43 0.00 -0.79 cm
-/samurai/geometry/Target/Angle 10.00 deg
+/samurai/geometry/Target/Angle 0.00 deg
 
 #-----------------------------------
 # PDCs
@@ -25,6 +21,8 @@
 /samurai/geometry/PDC/Position1 -100 0 300 cm
 /samurai/geometry/PDC/Position2 -100 0 400 cm
 # 最后一个是中心距离原点的距离。 第一个是距离原点连线的垂直线上的位移/
+# PDC is not added - SetPDC command not available
+
 
 #-----------------------------------
 # Dump
@@ -35,14 +33,22 @@
 
 #-----------------------------------
 # NEBULA
-/samurai/geometry/NEBULA/ParameterFileName geometry/NEBULA_Dayone.csv
-/samurai/geometry/NEBULA/DetectorParameterFileName geometry/NEBULA_Detectors_Dayone.csv
+/samurai/geometry/NEBULA/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Dayone.csv  
+/samurai/geometry/NEBULA/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
 #
 
 #-----------------------------------
 # UPDATE (should be called after changing geometry)
 /samurai/geometry/FillAir true
 /samurai/geometry/Update
+
+
+# field map file
+/samurai/geometry/Dipole/Angle 29 deg
+/samurai/geometry/Dipole/FieldFile {SMSIMDIR}/configs/simulation/geometry/filed_map/180626-1,20T-3000.bin
+/samurai/geometry/Dipole/FieldFactor 0
+
+
 
 # Automatically determine detector positions
 # /samurai/geometry/AutoConfig geometry/5deg_1.2T.mac

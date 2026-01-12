@@ -1,0 +1,40 @@
+# include 层级  
+/vis/open OGL  
+
+# get environment variable SMSIMDIR
+/control/getEnv SMSIMDIR
+
+/action/file/OverWrite y
+/action/file/RunName DTest
+/action/file/SaveDirectory {SMSIMDIR}/data/simulation/g4output
+
+# Load geometry (using relative path)
+/control/execute nopdc/B120T.mac  
+  
+# Z-X view  
+/vis/viewer/set/upVector 1 0 0  
+# /vis/viewer/set/rotationStyle freeRotation  
+  
+/vis/drawVolume  
+  
+# 添加坐标轴  
+/vis/scene/add/axes 0 0 0 6000 mm  
+  
+# 轨迹显示设置  
+/vis/scene/endOfEventAction accumulate  
+/vis/scene/add/trajectories smooth  
+/vis/modeling/trajectories/create/drawByCharge  
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true  
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1  
+  
+# 设置氘核束流  
+/action/gun/Type Pencil  
+/action/gun/SetBeamParticleName deuteron  
+/action/gun/Energy 190 MeV  
+/action/gun/Position 0 0 0 m  
+  
+/tracking/storeTrajectory 1  
+  
+# 运行事件  
+/run/beamOn 23  
+/vis/viewer/flush
