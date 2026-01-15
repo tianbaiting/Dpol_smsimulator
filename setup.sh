@@ -11,7 +11,7 @@ case "$CURRENT_HOST" in
     "TBTdebian")
         # geant4 for debian
         #------> added for setting up the GEANT4
-        source /home/tian/software/geant4/install/bin/geant4.sh
+        # source /home/tian/software/geant4/install/bin/geant4.sh
         #<------
         export TARTSYS=/home/tian/software/anaroot/install
 
@@ -19,11 +19,11 @@ case "$CURRENT_HOST" in
         # IMPORTANT: System TBB 2022+ removed tbb::task class, but ROOT's libImt.so needs it
         # LD_LIBRARY_PATH alone doesn't work because libImt.so hardcodes libtbb.so.2 path
         # Must use LD_PRELOAD to force loading the correct TBB version before any other library
-        export LD_PRELOAD="/home/tian/software/tbb-2020.3/lib/intel64/gcc4.8/libtbb.so.2${LD_PRELOAD:+:$LD_PRELOAD}"
+        # export LD_PRELOAD="/home/tian/software/tbb-2020.3/lib/intel64/gcc4.8/libtbb.so.2${LD_PRELOAD:+:$LD_PRELOAD}"
         
-        # Also add to LD_LIBRARY_PATH for other potential uses
-        export LD_LIBRARY_PATH=$(echo "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -v "tbb-2020.3" | tr '\n' ':' | sed 's/:$//')
-        export LD_LIBRARY_PATH="/home/tian/software/tbb-2020.3/lib/intel64/gcc4.8:$LD_LIBRARY_PATH"
+        # # Also add to LD_LIBRARY_PATH for other potential uses
+        # export LD_LIBRARY_PATH=$(echo "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -v "tbb-2020.3" | tr '\n' ':' | sed 's/:$//')
+        # export LD_LIBRARY_PATH="/home/tian/software/tbb-2020.3/lib/intel64/gcc4.8:$LD_LIBRARY_PATH"
 
         export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5
         ;;
