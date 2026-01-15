@@ -23,6 +23,16 @@
 
 set -e  # 遇到错误立即退出
 
+# =============================================================================
+# 自动加载环境配置
+# =============================================================================
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SMSIMDIR="${SCRIPT_DIR}/../../.."
+
+if [[ -f "${SMSIMDIR}/setup.sh" ]]; then
+    source "${SMSIMDIR}/setup.sh"
+fi
+
 # 颜色定义
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -38,7 +48,7 @@ NC='\033[0m' # No Color
 # 可用: 0.8, 1.0, 1.2, 1.4
 FIELD_STRENGTHS_FULL=(0.8 1.0 1.2 1.4)
 FIELD_STRENGTHS_QUICK=(1.0)
-FIELD_STRENGTHS_CUSTOM=(1.0)
+FIELD_STRENGTHS_CUSTOM=(1.0 1.2 1.4)
 
 # 束流偏转角度列表 [度]
 DEFLECTION_ANGLES_FULL=(0 5 10)
@@ -53,7 +63,7 @@ TARGETS_CUSTOM=("Pb208")
 # 极化类型列表
 POL_TYPES_FULL=("zpol" "ypol")
 POL_TYPES_QUICK=("zpol")
-POL_TYPES_CUSTOM=("zpol" "ypol")
+POL_TYPES_CUSTOM=("zpol")
 
 # Gamma 值列表
 GAMMA_VALUES_FULL=("050" "055" "060" "065" "070" "075" "080" "085")

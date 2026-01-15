@@ -1018,7 +1018,12 @@ void QMDGeoFilter::GenerateRatioComparisonPlot(const std::string& outputFile)
         gr_after->SetLineStyle(2);
         mg->Add(gr_after, "LP");
         
-        std::string label = result.target + "_" + result.polType;
+        // 标签格式: "1.00T_5deg_Pb208_ypol"
+        std::ostringstream labelStream;
+        labelStream << std::fixed << std::setprecision(2) << result.fieldStrength << "T_"
+                    << std::fixed << std::setprecision(0) << result.deflectionAngle << "deg_"
+                    << result.target << "_" << result.polType;
+        std::string label = labelStream.str();
         legend->AddEntry(gr_before, (label + " (before geo)").c_str(), "lp");
         legend->AddEntry(gr_after, (label + " (after geo)").c_str(), "lp");
         

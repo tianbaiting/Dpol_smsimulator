@@ -17,11 +17,11 @@
 #-----------------------------------
 # PDCs
 # Z should be distance from MAGcenter to PDC Z=0 plane
-/samurai/geometry/PDC/Angle 42.5 deg
-/samurai/geometry/PDC/Position1 -100 0 300 cm
-/samurai/geometry/PDC/Position2 -100 0 400 cm
+/samurai/geometry/PDC/Angle 50 deg
+/samurai/geometry/PDC/Position1 +100 0 400 cm
+/samurai/geometry/PDC/Position2 +100 0 500 cm
 # 最后一个是中心距离原点的距离。 第一个是距离原点连线的垂直线上的位移/
-# PDC is not added - SetPDC command not available
+# /samurai/geometry/PDC/SetPDC false
 
 
 #-----------------------------------
@@ -33,8 +33,8 @@
 
 #-----------------------------------
 # NEBULA
-/samurai/geometry/NEBULA/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Dayone.csv  
-/samurai/geometry/NEBULA/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
+/samurai/geometry/NEBULA/ParameterFileName /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/NEBULA_Dayone.csv  
+/samurai/geometry/NEBULA/DetectorParameterFileName /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
 #
 
 #-----------------------------------
@@ -44,9 +44,9 @@
 
 
 # field map file
-/samurai/geometry/Dipole/Angle 29 deg
-/samurai/geometry/Dipole/FieldFile {SMSIMDIR}/configs/simulation/geometry/filed_map/180703-1,40T-6000.table
-/samurai/geometry/Dipole/FieldFactor 0
+/samurai/geometry/Dipole/Angle 30 deg
+/samurai/geometry/Dipole/FieldFile /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/filed_map/180703-1,40T-3000.table
+/samurai/geometry/Dipole/FieldFactor 1
 
 
 

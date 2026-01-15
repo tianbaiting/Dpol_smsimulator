@@ -6,13 +6,17 @@
 
 /action/file/OverWrite y
 /action/file/RunName DTest
-/action/file/SaveDirectory {SMSIMDIR}/data/simulation/g4output
+/action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4output
 
-# Load geometry (using relative path)
-/control/execute nopdc/B120T.mac  
+# Load geometry with absolute path
+# /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B080T.mac   # 0.8T
+# /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B100T.mac   # 1.0T
+# /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B120T.mac   # 1.2T
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B140T.mac   # 1.4T
   
 # Z-X view  
-/vis/viewer/set/upVector 1 0 0  
+/vis/viewer/set/upVector 1 0 0
+/vis/viewer/set/viewpointThetaPhi 90. 90.
 # /vis/viewer/set/rotationStyle freeRotation  
   
 /vis/drawVolume  
@@ -30,11 +34,11 @@
 # 设置氘核束流  
 /action/gun/Type Pencil  
 /action/gun/SetBeamParticleName deuteron  
-/action/gun/Energy 190 MeV  
-/action/gun/Position 0 0 0 m  
+/action/gun/Energy 380 MeV  
+/action/gun/Position 0 0 -4 m  
   
 /tracking/storeTrajectory 1  
   
 # 运行事件  
-/run/beamOn 23  
+/run/beamOn 10
 /vis/viewer/flush

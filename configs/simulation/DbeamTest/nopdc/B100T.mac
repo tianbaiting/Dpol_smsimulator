@@ -1,6 +1,6 @@
 # =========================================================================
 # Geometry macro generated from template
-# Magnetic field: 1.20T
+# Magnetic field: 1.00T
 # Angle: 0deg
 # =========================================================================
 
@@ -17,9 +17,9 @@
 #-----------------------------------
 # PDCs
 # Z should be distance from MAGcenter to PDC Z=0 plane
-/samurai/geometry/PDC/Angle 42.5 deg
-/samurai/geometry/PDC/Position1 -100 0 300 cm
-/samurai/geometry/PDC/Position2 -100 0 400 cm
+/samurai/geometry/PDC/Angle 50 deg
+/samurai/geometry/PDC/Position1 -100 0 400 cm
+/samurai/geometry/PDC/Position2 -100 0 500 cm
 # 最后一个是中心距离原点的距离。 第一个是距离原点连线的垂直线上的位移/
 # PDC is not added - SetPDC command not available
 # /samurai/geometry/PDC/SetPDC false
@@ -45,7 +45,7 @@
 
 # field map file
 /samurai/geometry/Dipole/Angle 30 deg
-/samurai/geometry/Dipole/FieldFile /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/filed_map/180626-1,20T-3000.table
+/samurai/geometry/Dipole/FieldFile /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/filed_map/180626-1,00T-3000.table
 /samurai/geometry/Dipole/FieldFactor 1
 
 
