@@ -102,11 +102,21 @@ void Logger::Initialize(const LogConfig& config) {
 void Logger::Shutdown() {
     if (m_initialized) {
         // 避免在关闭 spdlog 线程池前再向异步 logger 提交日志（可能会抛出
-        // "thread pool doesn't exist anymore" 异常或引起竞态）。q
+        // "thread pool doesn't exist anymore" 异常或引起竞态）。
         // 使用直接输出到 stderr 代替 SM_INFO，以保证不会调用 spdlog 的异步机制。
         fprintf(stderr, "SMSimulator: Shutting down logger...\n");
-        Flush();
+        
+        // 先刷新所有待处理的日志
+        if (m_default_logger) {
+            m_default_logger->flush();
+        }
+        
+        // 重置默认logger指针，防止在shutdown后还有代码试图使用它
+        m_default_logger.reset();
+        
+        // 关闭spdlog（会清理线程池）
         spdlog::shutdown();
+        
         m_initialized = false;
     }
 }

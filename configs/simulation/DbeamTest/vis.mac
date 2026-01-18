@@ -1,5 +1,8 @@
 # include 层级  
-/vis/open OGL  
+# 使用 OGLS 存储模式以提高性能
+# OGLS: OpenGL存储模式，旋转更流畅
+# OGL: 默认OpenGL模式
+/vis/open OGLS 1280x720  
 
 # get environment variable SMSIMDIR
 /control/getEnv SMSIMDIR
@@ -12,8 +15,13 @@
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B080T.mac   # 0.8T
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B100T.mac   # 1.0T
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B120T.mac   # 1.2T
-/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B140T.mac   # 1.4T
-  
+# /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B140T.mac   # 1.4T
+# /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B160T.mac   # 1.6T
+# /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B180T.mac   # 1.8T
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B200T.mac   # 2.0T
+
+
+
 # Z-X view  
 /vis/viewer/set/upVector 1 0 0
 /vis/viewer/set/viewpointThetaPhi 90. 90.
@@ -25,11 +33,14 @@
 /vis/scene/add/axes 0 0 0 6000 mm  
   
 # 轨迹显示设置  
-/vis/scene/endOfEventAction accumulate  
+# 注意: accumulate 会导致轨迹累积越来越多，旋转会变卡
+# 如果不需要累积，可以用 /vis/scene/endOfEventAction refresh
+/vis/scene/endOfEventAction accumulate 10
 /vis/scene/add/trajectories smooth  
 /vis/modeling/trajectories/create/drawByCharge  
-/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true  
-/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1  
+# 关闭步进点绘制以提高性能
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts false
+# /vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1  
   
 # 设置氘核束流  
 /action/gun/Type Pencil  
@@ -38,6 +49,8 @@
 /action/gun/Position 0 0 -4 m  
   
 /tracking/storeTrajectory 1  
+
+# 
   
 # 运行事件  
 /run/beamOn 10

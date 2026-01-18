@@ -1,0 +1,3 @@
+\beamer@sectionintoc {1}{config}{3}{0}{1}
+\beamer@subsectionintoc {1}{1}{dpol hit exitwindow}{3}{0}{1}
+\beamer@subsectionintoc {1}{2}{target outside magnetic}{10}{0}{1}

@@ -22,13 +22,19 @@ foreach(loop_var IN LISTS TINC_FILES)
 endforeach()
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh "#endif\n")
 
+# 使用 MODULE 关键字生成字典，确保 ROOT 内部类型(TVector3, TLorentzVector等)能被正确解析
 ROOT_GENERATE_DICTIONARY(G__smrootdata
-  ${TINC_FILES}      
+  ${TINC_FILES}
+  MODULE smdata
   LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh
+  OPTIONS -I${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # 创建共享库（包含字典）
 add_library(smdata SHARED ${DATA_SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/G__smrootdata.cxx)
+
+# 确保字典正确生成后才编译库
+add_dependencies(smdata G__smrootdata)
 
 # 设置包含目录
 target_include_directories(smdata PUBLIC

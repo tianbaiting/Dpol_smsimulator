@@ -79,6 +79,11 @@ export G4SMDATADIR=$SMSIMDIR/libs/smg4lib/src/data
 export G4SMCPPFLAGS="-I$G4SMLIBDIR/include"
 export G4SMLDLIBS="-lsmphysics -lsmaction -lsmconstruction -lsmdata"
 
+# [EN] Remove system ROOT paths to avoid conflicts with conda ROOT / [CN] 移除系统ROOT路径以避免与conda ROOT冲突
+if [[ -n "$LD_LIBRARY_PATH" ]]; then
+    export LD_LIBRARY_PATH=$(echo "$LD_LIBRARY_PATH" | tr ':' '\n' | grep -v "/home/tian/software/root" | tr '\n' ':' | sed 's/:$//')
+fi
+
 
 #    echo $LD_LIBRARY_PATH
 #    echo

@@ -48,7 +48,7 @@ message(STATUS "========================================")
 # Find ROOT
 find_package(ROOT REQUIRED COMPONENTS 
     Core RIO Net Hist Graf Graf3d Gpad Tree Rint 
-    Postscript Matrix Physics MathCore Thread)
+    Postscript Matrix Physics MathCore Thread Geom EG)
 include(${ROOT_USE_FILE})
 
 # 移除可能导致冲突的 TBB 库

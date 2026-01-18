@@ -19,6 +19,9 @@ target_include_directories(sim_deuteron PRIVATE
     ${CMAKE_SOURCE_DIR}/libs/smg4lib/src/physics/include
 )
 
+# 定义 HAS_G4GDML 宏以启用 GDML 支持
+target_compile_definitions(sim_deuteron PRIVATE HAS_G4GDML=1)
+
 # 链接库
 target_link_libraries(sim_deuteron PRIVATE
     sim_deuteron_core

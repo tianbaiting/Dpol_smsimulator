@@ -37,10 +37,7 @@
 /samurai/geometry/NEBULA/DetectorParameterFileName /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
 #
 
-#-----------------------------------
-# UPDATE (should be called after changing geometry)
-/samurai/geometry/FillAir true
-/samurai/geometry/Update
+
 
 
 # field map file
@@ -52,3 +49,7 @@
 
 # Automatically determine detector positions
 # /samurai/geometry/AutoConfig geometry/5deg_1.2T.mac
+#-----------------------------------
+# UPDATE (should be called after changing geometry)
+/samurai/geometry/FillAir true
+/samurai/geometry/Update

@@ -62,6 +62,8 @@
 #include "G4PhysicalVolumeStore.hh"
 #include <cstdio>
 
+#include "SMLogger.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 int main(int argc,char** argv)
@@ -187,6 +189,9 @@ int main(int argc,char** argv)
   //                 be deleted in the main() program !
   delete visManager;
   delete runManager;
+
+  // 显式关闭日志系统，避免静态析构顺序问题
+  SMLogger::Logger::Instance().Shutdown();
 
   return 0;
 }
