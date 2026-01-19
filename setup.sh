@@ -27,6 +27,13 @@ case "$CURRENT_HOST" in
 
         export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5
         ;;
+    
+    "TBTPAD")
+        # geant4 for TBTPAD (rocky8)
+        source /home/tbt/Software/geant4/install/bin/geant4.sh
+        export TARTSYS=/home/tbt/Software/anaroot/install
+        export SMSIMDIR=/home/tbt/workspace/dpol/smsimulator5.5
+        ;;
 
     "spana03")
         # --- spana03 服务器配置 ---
