@@ -2,10 +2,15 @@
 # 使用 OGLS 存储模式以提高性能
 # OGLS: OpenGL存储模式，旋转更流畅
 # OGL: 默认OpenGL模式
-/vis/open OGLS 1280x720  
-
+# /vis/open OGLS 1280x720  
+/vis/open OGLIQt
+# /vis/open OGL
+# /vis/open OGLSQt
+# /vis/viewer/set/projection orthogonal
 # get environment variable SMSIMDIR
+# /vis/open OGLSQt
 /control/getEnv SMSIMDIR
+# /event/keepCurrentEvent true
 
 # /action/file/OverWrite y
 # /action/file/RunName DTest
@@ -21,37 +26,71 @@
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B200T.mac   # 2.0T
 /control/execute ${SMSIMDIR}/configs/simulation/geometry/5deg_1.2T.mac
 
+  
+# # 轨迹显示设置  
+# # 注意: accumulate 会导致轨迹累积越来越多，旋转会变卡
+# # 如果不需要累积，可以用 /vis/scene/endOfEventAction refresh
+# /vis/viewer/set/autoRefresh false
+# /vis/scene/endOfEventAction accumulate -1
+# /vis/scene/add/trajectories smooth  
+# /vis/modeling/trajectories/create/drawByCharge  
+# # 关闭步进点绘制以提高性能
+# # /vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts false
+# # /vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1  
+  
 
-# Z-X view  
+
+
+
+# ==========================================
+# 1. 视窗与刷新设置 (防止跑一半被清屏)
+# ==========================================
+# 先关闭自动刷新，把画面攒着
+/vis/viewer/set/autoRefresh false
+/vis/verbose errors
+
+# 设置 Z-X 视图 (俯视/侧视)
 /vis/viewer/set/upVector 1 0 0
 /vis/viewer/set/viewpointThetaPhi 90. 90.
-# /vis/viewer/set/rotationStyle freeRotation  
-  
-/vis/drawVolume  
-  
-# 添加坐标轴  
-/vis/scene/add/axes 0 0 0 6000 mm  
-  
-# 轨迹显示设置  
-# 注意: accumulate 会导致轨迹累积越来越多，旋转会变卡
-# 如果不需要累积，可以用 /vis/scene/endOfEventAction refresh
-/vis/scene/endOfEventAction accumulate 10
-/vis/scene/add/trajectories smooth  
-/vis/modeling/trajectories/create/drawByCharge  
-# 关闭步进点绘制以提高性能
-/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts false
-# /vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1  
-  
-# 设置氘核束流  
-/action/gun/Type Pencil  
-/action/gun/SetBeamParticleName deuteron  
-/action/gun/Energy 380 MeV  
-/action/gun/Position 0 0 -4 m  
-  
-/tracking/storeTrajectory 1  
+/vis/drawVolume
+/vis/scene/add/axes 0 0 0 6000 mm
 
-# 
-  
-# 运行事件  
-/run/beamOn 10
-/vis/viewer/flush
+# 轨迹无限累积
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories smooth
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1
+/vis/scene/endOfRunAction accumulate
+# ==========================================
+# 2. 第一波运行：380 MeV
+# ==========================================
+/action/gun/Type Pencil
+/action/gun/SetBeamParticleName deuteron
+/action/gun/Position 0 0 -4 m
+
+# 设置能量
+/action/gun/Energy 380 MeV
+
+# 运行 (画面此时不会更新，因为 autoRefresh false)
+/run/beamOn 5
+# 第二波：190 MeV (Y = 50 mm) <-- 关键修改
+# ==========================================
+# 我们重新申明一遍所有参数，防止模拟器“忘记”更新
+/action/gun/Type Pencil
+/action/gun/SetBeamParticleName deuteron
+
+# 【关键诊断步骤】把位置向上挪 mm
+/action/gun/Position 1 1 -4 m
+/action/gun/AngleY 0.14 rad
+# 设置新能量
+/action/gun/Energy 190 MeV
+/run/beamOn 5
+# ==========================================
+# 4. 最后：一次性把两条线画出来
+# ==========================================
+# 开启自动刷新
+/vis/viewer/set/autoRefresh true
+
+
+# /vis/reviewKeptEvents

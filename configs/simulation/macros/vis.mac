@@ -1,9 +1,9 @@
-/vis/open OGL  # Restore original OGL setting
+# /vis/open OGL  # Restore original OGL setting
 # /vis/open VRML2FILE
 #/vis/open DAWNFILE
 # /vis/open OGLSWin
 # /vis/open OGLIXWin
-
+/vis/open OGLIQt
 # get environment variable SMSIMDIR
 /control/getEnv SMSIMDIR
 
@@ -18,8 +18,8 @@
 
 # Z-X view
 /vis/viewer/set/upVector 1 0 0
-# /vis/viewer/set/viewpointThetaPhi 90. 90.
-/vis/viewer/set/rotationStyle freeRotation
+/vis/viewer/set/viewpointThetaPhi 90. 90.
+# /vis/viewer/set/rotationStyle freeRotation
 # X-Y view
 # /vis/viewer/set/viewpointThetaPhi 0. 90.
 
@@ -54,14 +54,14 @@
 # /action/gun/tree/InputFileName {SMSIMDIR}/data/simulation/g4input/ypol_slect_rotate_back/ypol_np_Pb208_g050.root
 # # /action/gun/tree/InputFileName {SMSIMDIR}/d_work/roo   tfiles/d+Pb208E190g050xyz/dbreakb01.root
 
-# /action/gun/tree/TreeName tree
-# /action/gun/tree/beamOn 23
-# /vis/viewer/flush
-# # /event/verbose 1
-# # /tracking/verbose 1
+/action/gun/tree/TreeName tree
+/action/gun/tree/beamOn 23
+/vis/viewer/flush
+/event/verbose 1
+/tracking/verbose 1
 
-# # /control/alias runf "/action/gun/tree/beamOn 1; /vis/viewer/flush "
-# # 上个命令失败了
+# /control/alias runf "/action/gun/tree/beamOn 1; /vis/viewer/flush "
+# 上个命令失败了
 
 # 设置氘核束流  
 /action/gun/Type Pencil  
