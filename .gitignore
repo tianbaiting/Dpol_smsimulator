@@ -36,3 +36,5 @@ Makefile
 *.cmake
 !CMakeLists.txt
 !cmake/*.cmake
+
+.cache

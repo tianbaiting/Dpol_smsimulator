@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(SMSimulator VERSION 5.5 LANGUAGES CXX)
 
 # 设置 C++ 标准
