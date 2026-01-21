@@ -23,6 +23,8 @@ d_work/geometry/filed_map/
 *.swp
 *.swo
 *~
+.github
+
 
 # OS
 .DS_Store

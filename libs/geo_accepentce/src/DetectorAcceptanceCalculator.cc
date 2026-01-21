@@ -303,12 +303,14 @@ bool DetectorAcceptanceCalculator::LoadQMDDataFromDirectory(const std::string& d
 
 DetectorAcceptanceCalculator::PDCConfiguration 
 DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& targetPos,
-                                                          double targetRotationAngle)
+                                                          double targetRotationAngle,
+                                                          double pxRange)
 {
     SM_INFO("=== Calculating Optimal PDC Position ===");
     SM_INFO("  Target position: ({:.1f}, {:.1f}, {:.1f}) mm", 
             targetPos.X(), targetPos.Y(), targetPos.Z());
     SM_INFO("  Target rotation angle: {:.2f}°", targetRotationAngle);
+    SM_INFO("  Px range for optimization: +/-{:.1f} MeV/c", pxRange);
     
     PDCConfiguration optimalConfig;
     
@@ -317,23 +319,27 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
         return optimalConfig;
     }
     
-    // PDC敏感区域半宽度 (从PDCConstruction.cc: 840 mm)
+    // [EN] PDC sensitive area half-width (from PDCConstruction.cc: 840 mm)
+    // [CN] PDC敏感区域半宽度 (从PDCConstruction.cc: 840 mm)
     const double pdcHalfWidth = 840.0;  // mm
     
     // ============================================================
-    // 1. 准备动量转换：target局部坐标系 -> 实验室坐标系
+    // 1. [EN] Prepare momentum transformation: target local -> lab frame
+    //    [CN] 准备动量转换：target局部坐标系 -> 实验室坐标系
     // ============================================================
     double theta_rad = targetRotationAngle * TMath::DegToRad();
     double cos_theta = TMath::Cos(theta_rad);
     double sin_theta = TMath::Sin(theta_rad);
     
-    // 旋转矩阵 R_y(θ): 将局部坐标系动量转换到实验室坐标系
+    // [EN] Rotation matrix R_y(θ): transform local momentum to lab frame
+    // [CN] 旋转矩阵 R_y(θ): 将局部坐标系动量转换到实验室坐标系
     // px_lab = px_local*cos(θ) + pz_local*sin(θ)
     // py_lab = py_local
     // pz_lab = -px_local*sin(θ) + pz_local*cos(θ)
     
     // ============================================================
-    // 2. 创建参考质子 (Px=0, Pz=627 MeV/c 在局部坐标系)
+    // 2. [EN] Create reference proton (Px=0, Pz=627 MeV/c in local frame)
+    //    [CN] 创建参考质子 (Px=0, Pz=627 MeV/c 在局部坐标系)
     // ============================================================
     double pz_local = 627.0;  // MeV/c
     double py_local = 0.0;
@@ -349,7 +355,7 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
     SM_INFO("  Reference proton (Px=0): ({:.1f}, {:.1f}, {:.1f}) MeV/c",
             px_ref_lab, py_ref_lab, pz_ref_lab);
     
-    // 追踪参考质子轨迹
+    // [EN] Track reference proton trajectory / [CN] 追踪参考质子轨迹
     auto trajectory_ref = fTrajectory->CalculateTrajectory(targetPos, p4_ref,
                                                             kProtonCharge, kProtonMass);
     
@@ -359,9 +365,10 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
     }
     
     // ============================================================
-    // 3. 创建边缘质子 (Px=+100, Pz=600 MeV/c 在局部坐标系)
+    // 3. [EN] Create edge proton (Px=+pxRange, Pz=600 MeV/c in local frame)
+    //    [CN] 创建边缘质子 (Px=+pxRange, Pz=600 MeV/c 在局部坐标系)
     // ============================================================
-    double px_edge_local = 100.0;  // MeV/c
+    double px_edge_local = pxRange;  // [EN] Use pxRange parameter / [CN] 使用pxRange参数
     
     double px_edge_lab = px_edge_local * cos_theta + pz_local * sin_theta;
     double pz_edge_lab = -px_edge_local * sin_theta + pz_local * cos_theta;
@@ -370,10 +377,10 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
     double E_edge = TMath::Sqrt(momentum_edge.Mag2() + kProtonMass * kProtonMass);
     TLorentzVector p4_edge(momentum_edge, E_edge);
     
-    SM_INFO("  Edge proton (Px=+100): ({:.1f}, {:.1f}, {:.1f}) MeV/c",
-            px_edge_lab, py_local, pz_edge_lab);
+    SM_INFO("  Edge proton (Px=+{:.0f}): ({:.1f}, {:.1f}, {:.1f}) MeV/c",
+            pxRange, px_edge_lab, py_local, pz_edge_lab);
     
-    // 追踪边缘质子轨迹
+    // [EN] Track edge proton trajectory / [CN] 追踪边缘质子轨迹
     auto trajectory_edge = fTrajectory->CalculateTrajectory(targetPos, p4_edge,
                                                              kProtonCharge, kProtonMass);
     
@@ -383,12 +390,9 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
     }
     
     // ============================================================
-    // 4. 沿两条轨迹扫描，找到边缘质子与参考质子的垂直距离 = PDC半宽度的位置
+    // 4. [EN] Scan along trajectories, find position where edge-center distance = PDC half-width
+    //    [CN] 沿两条轨迹扫描，找到边缘质子与参考质子的垂直距离 = PDC半宽度的位置
     // ============================================================
-    // 策略：在参考轨迹的每个点，找到边缘轨迹上最近的点，
-    //       计算它们在PDC局部X方向的距离
-    //       当这个距离等于PDC半宽度时，就是最佳PDC位置
-    
     SM_INFO("  Searching for optimal PDC position where edge-center distance = {:.0f} mm", 
             pdcHalfWidth);
     
@@ -396,7 +400,8 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
     double minDiffFromTarget = 1e9;
     double optimalSeparation = 0;
     
-    // 只在磁场外区域搜索 (Z > 500 mm)
+    // [EN] Only search outside the magnetic field region (Z > 500 mm)
+    // [CN] 只在磁场外区域搜索 (Z > 500 mm)
     size_t startIdx = 0;
     for (size_t i = 0; i < trajectory_ref.size(); i++) {
         if (trajectory_ref[i].position.Z() > 500) {
@@ -465,15 +470,16 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
             pdcMomentum.X(), pdcMomentum.Y(), pdcMomentum.Z());
     
     // ============================================================
-    // 6. 填充PDC配置
+    // 6. [EN] Fill PDC configuration / [CN] 填充PDC配置
     // ============================================================
     optimalConfig.position = pdcPos;
     optimalConfig.normal = pdcNormal;
     optimalConfig.rotationAngle = pdcRotationAngle;
     optimalConfig.width = 2 * pdcHalfWidth;  // 1680 mm
-    optimalConfig.pxMin = -100.0;
-    optimalConfig.pxMax = 100.0;
+    optimalConfig.pxMin = -pxRange;  // [EN] Use pxRange parameter / [CN] 使用pxRange参数
+    optimalConfig.pxMax = pxRange;   // [EN] Use pxRange parameter / [CN] 使用pxRange参数
     optimalConfig.isOptimal = true;
+    optimalConfig.isFixed = false;   // [EN] This is an optimized config, not fixed / [CN] 这是优化后的配置，非固定
     
     SM_INFO("Optimal PDC configuration:");
     SM_INFO("  Position: ({:.1f}, {:.1f}, {:.1f}) mm",
@@ -691,13 +697,15 @@ DetectorAcceptanceCalculator::CalculateAcceptance()
 
 DetectorAcceptanceCalculator::AcceptanceResult 
 DetectorAcceptanceCalculator::CalculateAcceptanceForTarget(const TVector3& targetPos,
-                                                           double targetRotationAngle)
+                                                           double targetRotationAngle,
+                                                           double pxRange)
 {
-    // 首先计算该target位置的最佳PDC配置
-    fPDCConfig = CalculateOptimalPDCPosition(targetPos, targetRotationAngle);
+    // [EN] First calculate optimal PDC config for this target position
+    // [CN] 首先计算该target位置的最佳PDC配置
+    fPDCConfig = CalculateOptimalPDCPosition(targetPos, targetRotationAngle, pxRange);
     
-    // 更新所有粒子的顶点位置为新的target位置
-    // 同时需要将粒子动量从target局部坐标系转换到实验室坐标系
+    // [EN] Update all particle vertices and transform momenta to lab frame
+    // [CN] 更新所有粒子的顶点位置为新的target位置，同时将动量从target局部坐标系转换到实验室坐标系
     double theta_rad = targetRotationAngle * TMath::DegToRad();
     double cos_theta = TMath::Cos(theta_rad);
     double sin_theta = TMath::Sin(theta_rad);
@@ -782,4 +790,43 @@ void DetectorAcceptanceCalculator::SaveResults(
     delete outFile;
     
     SM_INFO("Results saved to {}", filename);
+}
+
+DetectorAcceptanceCalculator::PDCConfiguration 
+DetectorAcceptanceCalculator::CreateFixedPDCConfiguration(const TVector3& pdcPosition,
+                                                           double pdcRotationAngle,
+                                                           double pxMin,
+                                                           double pxMax)
+{
+    // [EN] Create a fixed PDC configuration at given position
+    // [CN] 创建固定位置的PDC配置
+    
+    SM_INFO("=== Creating Fixed PDC Configuration ===");
+    SM_INFO("  Fixed PDC position: ({:.1f}, {:.1f}, {:.1f}) mm", 
+            pdcPosition.X(), pdcPosition.Y(), pdcPosition.Z());
+    SM_INFO("  Fixed PDC rotation angle: {:.2f}°", pdcRotationAngle);
+    SM_INFO("  Px range: [{:.1f}, {:.1f}] MeV/c", pxMin, pxMax);
+    
+    PDCConfiguration config;
+    config.position = pdcPosition;
+    config.rotationAngle = pdcRotationAngle;
+    
+    // [EN] Calculate normal vector from rotation angle / [CN] 从旋转角度计算法向量
+    double rotRad = pdcRotationAngle * TMath::DegToRad();
+    config.normal.SetXYZ(TMath::Sin(rotRad), 0, TMath::Cos(rotRad));
+    
+    // [EN] Use default PDC dimensions / [CN] 使用默认PDC尺寸
+    config.width = 2 * 840.0;   // 1680 mm
+    config.height = 2 * 390.0;  // 780 mm
+    config.depth = 2 * 190.0;   // 380 mm
+    
+    config.pxMin = pxMin;
+    config.pxMax = pxMax;
+    config.isOptimal = false;
+    config.isFixed = true;      // [EN] Mark as fixed configuration / [CN] 标记为固定配置
+    
+    SM_INFO("  PDC normal: ({:.4f}, {:.4f}, {:.4f})", 
+            config.normal.X(), config.normal.Y(), config.normal.Z());
+    
+    return config;
 }

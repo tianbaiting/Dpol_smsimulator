@@ -65,4 +65,4 @@ ypol: phi_random Pb208 Xe130
 pdc 尽量固定在exit window后面, 观察总的.  与qmdfilter可能再重新命名一个 或者加功能吧. 怎么加开关比较好.
 
 
-geant4里面和 qmd里面对比一下区别, 特别是靶位置有没有弄对. 对比
+geant4里面和 qmd里面对比一下区别, 特别是靶位置有没有弄对. 对比氘核轨迹 .

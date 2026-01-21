@@ -33,5 +33,5 @@
     }
     
     cout << "\n✓ All available libraries loaded successfully!" << endl;
-    cout << "  Library search path includes: /home/tbt/workspace/dpol/smsimulator5.5/build/lib\n" << endl;
+    cout << "  Library search path includes: /home/tian/workspace/dpol/smsimulator5.5/build/lib\n" << endl;
 }

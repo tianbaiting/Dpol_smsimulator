@@ -482,12 +482,24 @@ GeometryFilterResult QMDGeoFilter::ApplyGeometryFilterDetailed(const MomentumDat
 {
     GeometryFilterResult result;
     
-    // 使用 DetectorAcceptanceCalculator 进行几何接受度计算
-    // 先获取最佳 PDC 位置
-    auto pdcConfig = fDetectorCalc->CalculateOptimalPDCPosition(targetPos, targetRotationAngle);
-    fDetectorCalc->SetPDCConfiguration(pdcConfig);
+    // [EN] Use the already-set PDC configuration (either fixed or optimized)
+    // [CN] 使用已经设置好的PDC配置（固定或优化的）
+    // [EN] Note: The PDC config should be set in AnalyzeSingleConfiguration before calling this
+    // [CN] 注意：PDC配置应该在调用此函数之前在AnalyzeSingleConfiguration中设置
     
-    // 计算旋转参数：从靶子坐标系到实验室坐标系
+    // [EN] If PDC config is not set, calculate it now (fallback for direct calls)
+    // [CN] 如果PDC配置未设置，现在计算它（用于直接调用的回退）
+    auto currentPDCConfig = fDetectorCalc->GetPDCConfiguration();
+    if (!currentPDCConfig.isFixed && !currentPDCConfig.isOptimal) {
+        // [EN] PDC config not set, calculate optimal position
+        // [CN] PDC配置未设置，计算最佳位置
+        auto pdcConfig = fDetectorCalc->CalculateOptimalPDCPosition(
+            targetPos, targetRotationAngle, fConfig.pxRange);
+        fDetectorCalc->SetPDCConfiguration(pdcConfig);
+    }
+    
+    // [EN] Calculate rotation parameters: target frame -> lab frame
+    // [CN] 计算旋转参数：从靶子坐标系到实验室坐标系
 
     double rotAngleRad = targetRotationAngle * TMath::DegToRad();
     double cosA = std::cos(rotAngleRad);
@@ -650,7 +662,7 @@ QMDConfigurationResult QMDGeoFilter::AnalyzeSingleConfiguration(
     
     SM_INFO("Analyzing: {}T, {}deg, {}, {}", fieldStrength, deflectionAngle, target, polType);
     
-    // 加载磁场（如果需要）
+    // [EN] Load magnetic field (if needed) / [CN] 加载磁场（如果需要）
     if (std::abs(fCurrentFieldStrength - fieldStrength) > 0.01) {
         if (!LoadFieldMap(fieldStrength)) {
             SM_ERROR("Failed to load field map for {}T", fieldStrength);
@@ -658,13 +670,37 @@ QMDConfigurationResult QMDGeoFilter::AnalyzeSingleConfiguration(
         }
     }
     
-    // 计算 target 位置
+    // [EN] Calculate target position / [CN] 计算 target 位置
     auto targetPos = fBeamCalc->CalculateTargetPosition(deflectionAngle);
     configResult.targetPosition = targetPos;
     
-    // 获取 PDC 配置
+    // [EN] Get PDC configuration based on mode (fixed or optimized)
+    // [CN] 根据模式获取 PDC 配置（固定或优化）
     TVector3 targetVec(targetPos.position.X(), targetPos.position.Y(), targetPos.position.Z());
-    configResult.pdcConfig = fDetectorCalc->CalculateOptimalPDCPosition(targetVec, targetPos.rotationAngle);
+    
+    if (fConfig.useFixedPDC) {
+        // [EN] Use fixed PDC position mode / [CN] 使用固定PDC位置模式
+        SM_INFO("  Using FIXED PDC position mode");
+        SM_INFO("    PDC position: ({:.1f}, {:.1f}, {:.1f}) mm", 
+                fConfig.fixedPDCPosition.X(), fConfig.fixedPDCPosition.Y(), fConfig.fixedPDCPosition.Z());
+        SM_INFO("    PDC rotation: {:.2f} deg", fConfig.fixedPDCRotationAngle);
+        SM_INFO("    Px range: +/-{:.1f} MeV/c", fConfig.pxRange);
+        
+        configResult.pdcConfig = fDetectorCalc->CreateFixedPDCConfiguration(
+            fConfig.fixedPDCPosition,
+            fConfig.fixedPDCRotationAngle,
+            -fConfig.pxRange,
+            fConfig.pxRange
+        );
+    } else {
+        // [EN] Use optimized PDC position mode / [CN] 使用优化PDC位置模式
+        SM_INFO("  Using OPTIMIZED PDC position mode (pxRange=+/-{:.1f})", fConfig.pxRange);
+        configResult.pdcConfig = fDetectorCalc->CalculateOptimalPDCPosition(
+            targetVec, targetPos.rotationAngle, fConfig.pxRange);
+    }
+    
+    // [EN] Set PDC configuration to detector calculator / [CN] 将PDC配置设置到探测器计算器
+    fDetectorCalc->SetPDCConfiguration(configResult.pdcConfig);
     configResult.nebulaConfig = fDetectorCalc->GetNEBULAConfiguration();
     
     // 创建动量 cut
@@ -1325,10 +1361,11 @@ void QMDGeoFilter::GeneratePxpPxnComparisonPlot(const GammaAnalysisResult& gamma
 
 // =============================================================================
 // 3D 动量分布对比图 (geometry 分类显示)
-// 颜色说明：
-//   - 绿色: PDC 和 NEBULA 都接受 (bothAccepted)
-//   - 蓝色: 只有 PDC 接受 proton (pdcOnly) / 只有 NEBULA 接受 neutron (nebulaOnly)
-//   - 红色: 都不接受 (bothRejected)
+// [EN] Color coding: / [CN] 颜色说明：
+//   - Green: Both PDC and NEBULA accepted (bothAccepted) / 绿色: PDC 和 NEBULA 都接受
+//   - Red: Only PDC accepted proton (pdcOnly) / 红色: 只有 PDC 接受 proton
+//   - Blue: Only NEBULA accepted neutron (nebulaOnly) / 蓝色: 只有 NEBULA 接受 neutron
+//   - Gray: Neither accepted (bothRejected) / 灰色: 都不接受
 // =============================================================================
 
 void QMDGeoFilter::Generate3DMomentumComparisonPlot(const GammaAnalysisResult& gammaResult,
@@ -1338,8 +1375,8 @@ void QMDGeoFilter::Generate3DMomentumComparisonPlot(const GammaAnalysisResult& g
     gROOT->GetListOfSpecials()->Clear();
     
     // 创建 1x2 的 canvas：
-    // 左：Proton (绿色=both, 蓝色=pdcOnly, 红色=rejected)
-    // 右：Neutron (绿色=both, 蓝色=nebulaOnly, 红色=rejected)
+    // 左：Proton (绿色=both, 红色=pdcOnly, 灰色=rejected)
+    // 右：Neutron (绿色=both, 蓝色=nebulaOnly, 灰色=rejected)
     auto canvas = new TCanvas("c_3d_geo", "3D Momentum: Geometry Classification", 1600, 800);
     canvas->Clear();
     canvas->Divide(2, 1);
@@ -1399,8 +1436,7 @@ void QMDGeoFilter::Generate3DMomentumComparisonPlot(const GammaAnalysisResult& g
     h3_proton_frame->SetStats(0);
     h3_proton_frame->Draw();
     
-    // 使用 TPolyMarker3D 绘制散点
-    // 绿色: bothAccepted
+    // [EN] Green: bothAccepted / [CN] 绿色: 都接受
     auto pm_p_both = new TPolyMarker3D(both.size(), 8);  // 8 = full circle
     pm_p_both->SetMarkerColor(kGreen+2);
     pm_p_both->SetMarkerSize(0.5);
@@ -1409,19 +1445,20 @@ void QMDGeoFilter::Generate3DMomentumComparisonPlot(const GammaAnalysisResult& g
     }
     pm_p_both->Draw();
     
-    // 蓝色: pdcOnly (proton 被 PDC 接受)
+    // [EN] Red: pdcOnly (proton accepted by PDC) / [CN] 红色: 只有PDC接受
     auto pm_p_pdcOnly = new TPolyMarker3D(pdcOnly.size(), 8);
-    pm_p_pdcOnly->SetMarkerColor(kBlue);
+    pm_p_pdcOnly->SetMarkerColor(kRed);
     pm_p_pdcOnly->SetMarkerSize(0.5);
     for (size_t i = 0; i < pdcOnly.size(); ++i) {
         pm_p_pdcOnly->SetPoint(i, pdcOnly.pxp[i], pdcOnly.pyp[i], pdcOnly.pzp[i]);
     }
     pm_p_pdcOnly->Draw();
     
-    // 红色: bothRejected + nebulaOnly (proton 不被 PDC 接受)
+    // [EN] Gray: bothRejected + nebulaOnly (proton not accepted by PDC)
+    // [CN] 灰色: 都不接受 + 只有NEBULA接受（proton不被PDC接受）
     size_t nRejectedP = none.size() + nebulaOnly.size();
     auto pm_p_rejected = new TPolyMarker3D(nRejectedP, 8);
-    pm_p_rejected->SetMarkerColor(kRed);
+    pm_p_rejected->SetMarkerColor(kGray+1);
     pm_p_rejected->SetMarkerSize(0.3);
     size_t idx = 0;
     for (size_t i = 0; i < none.size(); ++i, ++idx) {
@@ -1433,11 +1470,11 @@ void QMDGeoFilter::Generate3DMomentumComparisonPlot(const GammaAnalysisResult& g
     pm_p_rejected->Draw();
     
     // 图例
-    auto leg_p = new TLegend(0.65, 0.75, 0.95, 0.95);
+    auto leg_p = new TLegend(0.60, 0.70, 0.95, 0.95);
     leg_p->SetHeader("Proton (PDC)", "C");
-    leg_p->AddEntry(pm_p_both, Form("Both accepted (%zu)", both.size()), "p");
-    leg_p->AddEntry(pm_p_pdcOnly, Form("PDC only (%zu)", pdcOnly.size()), "p");
-    leg_p->AddEntry(pm_p_rejected, Form("PDC rejected (%zu)", nRejectedP), "p");
+    leg_p->AddEntry(pm_p_both, Form("Both accepted (%zu) - Green", both.size()), "p");
+    leg_p->AddEntry(pm_p_pdcOnly, Form("PDC only (%zu) - Red", pdcOnly.size()), "p");
+    leg_p->AddEntry(pm_p_rejected, Form("PDC rejected (%zu) - Gray", nRejectedP), "p");
     leg_p->Draw();
     
     // ========== Neutron 图 ==========
@@ -1450,7 +1487,7 @@ void QMDGeoFilter::Generate3DMomentumComparisonPlot(const GammaAnalysisResult& g
     h3_neutron_frame->SetStats(0);
     h3_neutron_frame->Draw();
     
-    // 绿色: bothAccepted
+    // [EN] Green: bothAccepted / [CN] 绿色: 都接受
     auto pm_n_both = new TPolyMarker3D(both.size(), 8);
     pm_n_both->SetMarkerColor(kGreen+2);
     pm_n_both->SetMarkerSize(0.5);
@@ -1459,7 +1496,7 @@ void QMDGeoFilter::Generate3DMomentumComparisonPlot(const GammaAnalysisResult& g
     }
     pm_n_both->Draw();
     
-    // 蓝色: nebulaOnly (neutron 被 NEBULA 接受)
+    // [EN] Blue: nebulaOnly (neutron accepted by NEBULA) / [CN] 蓝色: 只有NEBULA接受
     auto pm_n_nebulaOnly = new TPolyMarker3D(nebulaOnly.size(), 8);
     pm_n_nebulaOnly->SetMarkerColor(kBlue);
     pm_n_nebulaOnly->SetMarkerSize(0.5);
@@ -1468,10 +1505,11 @@ void QMDGeoFilter::Generate3DMomentumComparisonPlot(const GammaAnalysisResult& g
     }
     pm_n_nebulaOnly->Draw();
     
-    // 红色: bothRejected + pdcOnly (neutron 不被 NEBULA 接受)
+    // [EN] Gray: bothRejected + pdcOnly (neutron not accepted by NEBULA)
+    // [CN] 灰色: 都不接受 + 只有PDC接受（neutron不被NEBULA接受）
     size_t nRejectedN = none.size() + pdcOnly.size();
     auto pm_n_rejected = new TPolyMarker3D(nRejectedN, 8);
-    pm_n_rejected->SetMarkerColor(kRed);
+    pm_n_rejected->SetMarkerColor(kGray+1);
     pm_n_rejected->SetMarkerSize(0.3);
     idx = 0;
     for (size_t i = 0; i < none.size(); ++i, ++idx) {
@@ -1483,11 +1521,11 @@ void QMDGeoFilter::Generate3DMomentumComparisonPlot(const GammaAnalysisResult& g
     pm_n_rejected->Draw();
     
     // 图例
-    auto leg_n = new TLegend(0.65, 0.75, 0.95, 0.95);
+    auto leg_n = new TLegend(0.60, 0.70, 0.95, 0.95);
     leg_n->SetHeader("Neutron (NEBULA)", "C");
-    leg_n->AddEntry(pm_n_both, Form("Both accepted (%zu)", both.size()), "p");
-    leg_n->AddEntry(pm_n_nebulaOnly, Form("NEBULA only (%zu)", nebulaOnly.size()), "p");
-    leg_n->AddEntry(pm_n_rejected, Form("NEBULA rejected (%zu)", nRejectedN), "p");
+    leg_n->AddEntry(pm_n_both, Form("Both accepted (%zu) - Green", both.size()), "p");
+    leg_n->AddEntry(pm_n_nebulaOnly, Form("NEBULA only (%zu) - Blue", nebulaOnly.size()), "p");
+    leg_n->AddEntry(pm_n_rejected, Form("NEBULA rejected (%zu) - Gray", nRejectedN), "p");
     leg_n->Draw();
     
     canvas->SaveAs(outputFile.c_str());
@@ -1520,10 +1558,11 @@ void QMDGeoFilter::Generate3DMomentum2DProjections(const GammaAnalysisResult& ga
     // 清除残留
     gROOT->GetListOfSpecials()->Clear();
     
-    // 创建 2x3 的 canvas：
-    // 上排：Proton (px vs py, px vs pz, py vs pz) - 分类叠加
-    // 下排：Neutron (px vs py, px vs pz, py vs pz) - 分类叠加
-    // 颜色：绿色=both, 蓝色=自己探测器接受, 红色=自己探测器拒绝
+    // [EN] 2x3 canvas: / [CN] 2x3 画布：
+    // [EN] Top row: Proton (px vs py, px vs pz, py vs pz) / [CN] 上排：Proton
+    // [EN] Bottom row: Neutron (px vs py, px vs pz, py vs pz) / [CN] 下排：Neutron
+    // [EN] Colors: Green=both, Blue=NEBULA only, Red=PDC only, Gray=none
+    // [CN] 颜色：绿色=都接受，蓝色=只有NEBULA接受，红色=只有PDC接受，灰色=都不接受
     auto canvas = new TCanvas("c_2d_proj", "2D Projections: Geometry Classification", 1500, 1000);
     canvas->Clear();
     canvas->Divide(3, 2);
@@ -1558,36 +1597,43 @@ void QMDGeoFilter::Generate3DMomentum2DProjections(const GammaAnalysisResult& ga
     canvas->cd(1);
     gPad->Clear();
     
-    // 红色: nebulaOnly + none (PDC 不接受)
-    auto gr_p_rej_xy = makeGraph(concat(none.pxp, nebulaOnly.pxp), 
-                                  concat(none.pyp, nebulaOnly.pyp), kRed);
-    gr_p_rej_xy->SetTitle("Proton p_{x} vs p_{y};p_{x} [MeV/c];p_{y} [MeV/c]");
-    gr_p_rej_xy->Draw("AP");
+    // [EN] Gray: none (neither accepted) / [CN] 灰色: 都不接受
+    auto gr_p_none_xy = makeGraph(none.pxp, none.pyp, kGray+1);
+    gr_p_none_xy->SetTitle("Proton p_{x} vs p_{y};p_{x} [MeV/c];p_{y} [MeV/c]");
+    gr_p_none_xy->Draw("AP");
     
-    // 蓝色: pdcOnly
-    auto gr_p_pdc_xy = makeGraph(pdcOnly.pxp, pdcOnly.pyp, kBlue);
+    // [EN] Blue: nebulaOnly (proton not accepted by PDC, but neutron accepted by NEBULA)
+    // [CN] 蓝色: 只有NEBULA接受
+    auto gr_p_neb_xy = makeGraph(nebulaOnly.pxp, nebulaOnly.pyp, kBlue);
+    gr_p_neb_xy->Draw("P SAME");
+    
+    // [EN] Red: pdcOnly (proton accepted by PDC) / [CN] 红色: 只有PDC接受
+    auto gr_p_pdc_xy = makeGraph(pdcOnly.pxp, pdcOnly.pyp, kRed);
     gr_p_pdc_xy->Draw("P SAME");
     
-    // 绿色: both
+    // [EN] Green: both / [CN] 绿色: 都接受
     auto gr_p_both_xy = makeGraph(both.pxp, both.pyp, kGreen+2);
     gr_p_both_xy->Draw("P SAME");
     
-    auto leg1 = new TLegend(0.65, 0.72, 0.95, 0.95);
-    leg1->AddEntry(gr_p_both_xy, Form("Both (%zu)", both.size()), "p");
-    leg1->AddEntry(gr_p_pdc_xy, Form("PDC only (%zu)", pdcOnly.size()), "p");
-    leg1->AddEntry(gr_p_rej_xy, Form("PDC rej (%zu)", none.size() + nebulaOnly.size()), "p");
+    auto leg1 = new TLegend(0.60, 0.68, 0.95, 0.95);
+    leg1->AddEntry(gr_p_both_xy, Form("Both (%zu) Green", both.size()), "p");
+    leg1->AddEntry(gr_p_pdc_xy, Form("PDC only (%zu) Red", pdcOnly.size()), "p");
+    leg1->AddEntry(gr_p_neb_xy, Form("NEBULA only (%zu) Blue", nebulaOnly.size()), "p");
+    leg1->AddEntry(gr_p_none_xy, Form("None (%zu) Gray", none.size()), "p");
     leg1->Draw();
     
     // ===== Proton px vs pz =====
     canvas->cd(2);
     gPad->Clear();
     
-    auto gr_p_rej_xz = makeGraph(concat(none.pxp, nebulaOnly.pxp), 
-                                  concat(none.pzp, nebulaOnly.pzp), kRed);
-    gr_p_rej_xz->SetTitle("Proton p_{x} vs p_{z};p_{x} [MeV/c];p_{z} [MeV/c]");
-    gr_p_rej_xz->Draw("AP");
+    auto gr_p_none_xz = makeGraph(none.pxp, none.pzp, kGray+1);
+    gr_p_none_xz->SetTitle("Proton p_{x} vs p_{z};p_{x} [MeV/c];p_{z} [MeV/c]");
+    gr_p_none_xz->Draw("AP");
     
-    auto gr_p_pdc_xz = makeGraph(pdcOnly.pxp, pdcOnly.pzp, kBlue);
+    auto gr_p_neb_xz = makeGraph(nebulaOnly.pxp, nebulaOnly.pzp, kBlue);
+    gr_p_neb_xz->Draw("P SAME");
+    
+    auto gr_p_pdc_xz = makeGraph(pdcOnly.pxp, pdcOnly.pzp, kRed);
     gr_p_pdc_xz->Draw("P SAME");
     
     auto gr_p_both_xz = makeGraph(both.pxp, both.pzp, kGreen+2);
@@ -1597,12 +1643,14 @@ void QMDGeoFilter::Generate3DMomentum2DProjections(const GammaAnalysisResult& ga
     canvas->cd(3);
     gPad->Clear();
     
-    auto gr_p_rej_yz = makeGraph(concat(none.pyp, nebulaOnly.pyp), 
-                                  concat(none.pzp, nebulaOnly.pzp), kRed);
-    gr_p_rej_yz->SetTitle("Proton p_{y} vs p_{z};p_{y} [MeV/c];p_{z} [MeV/c]");
-    gr_p_rej_yz->Draw("AP");
+    auto gr_p_none_yz = makeGraph(none.pyp, none.pzp, kGray+1);
+    gr_p_none_yz->SetTitle("Proton p_{y} vs p_{z};p_{y} [MeV/c];p_{z} [MeV/c]");
+    gr_p_none_yz->Draw("AP");
     
-    auto gr_p_pdc_yz = makeGraph(pdcOnly.pyp, pdcOnly.pzp, kBlue);
+    auto gr_p_neb_yz = makeGraph(nebulaOnly.pyp, nebulaOnly.pzp, kBlue);
+    gr_p_neb_yz->Draw("P SAME");
+    
+    auto gr_p_pdc_yz = makeGraph(pdcOnly.pyp, pdcOnly.pzp, kRed);
     gr_p_pdc_yz->Draw("P SAME");
     
     auto gr_p_both_yz = makeGraph(both.pyp, both.pzp, kGreen+2);
@@ -1612,34 +1660,41 @@ void QMDGeoFilter::Generate3DMomentum2DProjections(const GammaAnalysisResult& ga
     canvas->cd(4);
     gPad->Clear();
     
-    // 红色: pdcOnly + none (NEBULA 不接受)
-    auto gr_n_rej_xy = makeGraph(concat(none.pxn, pdcOnly.pxn), 
-                                  concat(none.pyn, pdcOnly.pyn), kRed);
-    gr_n_rej_xy->SetTitle("Neutron p_{x} vs p_{y};p_{x} [MeV/c];p_{y} [MeV/c]");
-    gr_n_rej_xy->Draw("AP");
+    // [EN] Gray: none (neither accepted) / [CN] 灰色: 都不接受
+    auto gr_n_none_xy = makeGraph(none.pxn, none.pyn, kGray+1);
+    gr_n_none_xy->SetTitle("Neutron p_{x} vs p_{y};p_{x} [MeV/c];p_{y} [MeV/c]");
+    gr_n_none_xy->Draw("AP");
     
-    // 蓝色: nebulaOnly
+    // [EN] Red: pdcOnly (neutron not accepted by NEBULA, but proton accepted by PDC)
+    // [CN] 红色: 只有PDC接受
+    auto gr_n_pdc_xy = makeGraph(pdcOnly.pxn, pdcOnly.pyn, kRed);
+    gr_n_pdc_xy->Draw("P SAME");
+    
+    // [EN] Blue: nebulaOnly (neutron accepted by NEBULA) / [CN] 蓝色: 只有NEBULA接受
     auto gr_n_neb_xy = makeGraph(nebulaOnly.pxn, nebulaOnly.pyn, kBlue);
     gr_n_neb_xy->Draw("P SAME");
     
-    // 绿色: both
+    // [EN] Green: both / [CN] 绿色: 都接受
     auto gr_n_both_xy = makeGraph(both.pxn, both.pyn, kGreen+2);
     gr_n_both_xy->Draw("P SAME");
     
-    auto leg4 = new TLegend(0.65, 0.72, 0.95, 0.95);
-    leg4->AddEntry(gr_n_both_xy, Form("Both (%zu)", both.size()), "p");
-    leg4->AddEntry(gr_n_neb_xy, Form("NEBULA only (%zu)", nebulaOnly.size()), "p");
-    leg4->AddEntry(gr_n_rej_xy, Form("NEBULA rej (%zu)", none.size() + pdcOnly.size()), "p");
+    auto leg4 = new TLegend(0.60, 0.68, 0.95, 0.95);
+    leg4->AddEntry(gr_n_both_xy, Form("Both (%zu) Green", both.size()), "p");
+    leg4->AddEntry(gr_n_neb_xy, Form("NEBULA only (%zu) Blue", nebulaOnly.size()), "p");
+    leg4->AddEntry(gr_n_pdc_xy, Form("PDC only (%zu) Red", pdcOnly.size()), "p");
+    leg4->AddEntry(gr_n_none_xy, Form("None (%zu) Gray", none.size()), "p");
     leg4->Draw();
     
     // ===== Neutron px vs pz =====
     canvas->cd(5);
     gPad->Clear();
     
-    auto gr_n_rej_xz = makeGraph(concat(none.pxn, pdcOnly.pxn), 
-                                  concat(none.pzn, pdcOnly.pzn), kRed);
-    gr_n_rej_xz->SetTitle("Neutron p_{x} vs p_{z};p_{x} [MeV/c];p_{z} [MeV/c]");
-    gr_n_rej_xz->Draw("AP");
+    auto gr_n_none_xz = makeGraph(none.pxn, none.pzn, kGray+1);
+    gr_n_none_xz->SetTitle("Neutron p_{x} vs p_{z};p_{x} [MeV/c];p_{z} [MeV/c]");
+    gr_n_none_xz->Draw("AP");
+    
+    auto gr_n_pdc_xz = makeGraph(pdcOnly.pxn, pdcOnly.pzn, kRed);
+    gr_n_pdc_xz->Draw("P SAME");
     
     auto gr_n_neb_xz = makeGraph(nebulaOnly.pxn, nebulaOnly.pzn, kBlue);
     gr_n_neb_xz->Draw("P SAME");
@@ -1651,10 +1706,12 @@ void QMDGeoFilter::Generate3DMomentum2DProjections(const GammaAnalysisResult& ga
     canvas->cd(6);
     gPad->Clear();
     
-    auto gr_n_rej_yz = makeGraph(concat(none.pyn, pdcOnly.pyn), 
-                                  concat(none.pzn, pdcOnly.pzn), kRed);
-    gr_n_rej_yz->SetTitle("Neutron p_{y} vs p_{z};p_{y} [MeV/c];p_{z} [MeV/c]");
-    gr_n_rej_yz->Draw("AP");
+    auto gr_n_none_yz = makeGraph(none.pyn, none.pzn, kGray+1);
+    gr_n_none_yz->SetTitle("Neutron p_{y} vs p_{z};p_{y} [MeV/c];p_{z} [MeV/c]");
+    gr_n_none_yz->Draw("AP");
+    
+    auto gr_n_pdc_yz = makeGraph(pdcOnly.pyn, pdcOnly.pzn, kRed);
+    gr_n_pdc_yz->Draw("P SAME");
     
     auto gr_n_neb_yz = makeGraph(nebulaOnly.pyn, nebulaOnly.pzn, kBlue);
     gr_n_neb_yz->Draw("P SAME");
@@ -1759,9 +1816,10 @@ void QMDGeoFilter::GenerateInteractive3DPlot(const GammaAnalysisResult& gammaRes
     // Sidebar
     html << "<div class=\"sidebar\">\n";
     html << "<div class=\"legend\"><h3>Legend</h3>\n";
-    html << "<div class=\"legend-item\"><div class=\"legend-color\" style=\"background: #00ff88;\"></div><span>Both Accepted (" << both.size() << ")</span></div>\n";
-    html << "<div class=\"legend-item\"><div class=\"legend-color\" style=\"background: #4488ff;\"></div><span>PDC only / NEBULA only</span></div>\n";
-    html << "<div class=\"legend-item\"><div class=\"legend-color\" style=\"background: #ff4444;\"></div><span>Both Rejected (" << none.size() << ")</span></div>\n";
+    html << "<div class=\"legend-item\"><div class=\"legend-color\" style=\"background: #00ff88;\"></div><span>Both Accepted (" << both.size() << ") - Green</span></div>\n";
+    html << "<div class=\"legend-item\"><div class=\"legend-color\" style=\"background: #ff4444;\"></div><span>PDC only (" << pdcOnly.size() << ") - Red</span></div>\n";
+    html << "<div class=\"legend-item\"><div class=\"legend-color\" style=\"background: #4488ff;\"></div><span>NEBULA only (" << nebulaOnly.size() << ") - Blue</span></div>\n";
+    html << "<div class=\"legend-item\"><div class=\"legend-color\" style=\"background: #888888;\"></div><span>Both Rejected (" << none.size() << ") - Gray</span></div>\n";
     html << "</div>\n";
     html << "<div class=\"stats\"><h3>Statistics</h3>\n";
     html << "<div class=\"stat-row\"><span>Both Accepted:</span><span class=\"stat-value\">" << both.size() << "</span></div>\n";
@@ -1775,8 +1833,9 @@ void QMDGeoFilter::GenerateInteractive3DPlot(const GammaAnalysisResult& gammaRes
     html << "<div class=\"control-group\"><label>Point Size</label><input type=\"range\" class=\"slider\" id=\"pointSize\" min=\"1\" max=\"10\" value=\"3\"></div>\n";
     html << "<div class=\"control-group\"><label>Point Opacity</label><input type=\"range\" class=\"slider\" id=\"opacity\" min=\"10\" max=\"100\" value=\"70\"></div>\n";
     html << "<div class=\"checkbox-group\"><input type=\"checkbox\" id=\"showBoth\" checked><label for=\"showBoth\">Show Both Accepted (Green)</label></div>\n";
-    html << "<div class=\"checkbox-group\"><input type=\"checkbox\" id=\"showPartial\" checked><label for=\"showPartial\">Show Partial (Blue)</label></div>\n";
-    html << "<div class=\"checkbox-group\"><input type=\"checkbox\" id=\"showRejected\" checked><label for=\"showRejected\">Show Rejected (Red)</label></div>\n";
+    html << "<div class=\"checkbox-group\"><input type=\"checkbox\" id=\"showPDCOnly\" checked><label for=\"showPDCOnly\">Show PDC Only (Red)</label></div>\n";
+    html << "<div class=\"checkbox-group\"><input type=\"checkbox\" id=\"showNEBULAOnly\" checked><label for=\"showNEBULAOnly\">Show NEBULA Only (Blue)</label></div>\n";
+    html << "<div class=\"checkbox-group\"><input type=\"checkbox\" id=\"showRejected\" checked><label for=\"showRejected\">Show Rejected (Gray)</label></div>\n";
     html << "<div class=\"checkbox-group\"><input type=\"checkbox\" id=\"autoRotate\"><label for=\"autoRotate\">Auto Rotate</label></div>\n";
     html << "<button class=\"btn\" id=\"resetBtn\">Reset View</button>\n";
     html << "<button class=\"btn secondary\" id=\"syncBtn\">Sync All Views</button>\n";
@@ -1797,7 +1856,7 @@ void QMDGeoFilter::GenerateInteractive3DPlot(const GammaAnalysisResult& gammaRes
     }
     html << "];\n";
     
-    // pdcOnlyProton (蓝色 - proton 视图)
+    // pdcOnlyProton (红色 - PDC only proton)
     html << "const pdcOnlyProton = [\n";
     for (size_t i = 0; i < pdcOnly.size(); ++i) {
         html << "[" << pdcOnly.pxp[i] * scale << "," << pdcOnly.pyp[i] * scale << "," << pdcOnly.pzp[i] * scale << "]";
@@ -1806,18 +1865,20 @@ void QMDGeoFilter::GenerateInteractive3DPlot(const GammaAnalysisResult& gammaRes
     }
     html << "];\n";
     
-    // rejectedProton (红色 - nebulaOnly + none 的 proton)
-    html << "const rejectedProton = [\n";
-    size_t rejPCount = nebulaOnly.size() + none.size();
-    size_t idx = 0;
-    for (size_t i = 0; i < nebulaOnly.size(); ++i, ++idx) {
+    // nebulaOnlyProton (蓝色 - NEBULA only 的 proton, 即 proton 未被 PDC 接受)
+    html << "const nebulaOnlyProton = [\n";
+    for (size_t i = 0; i < nebulaOnly.size(); ++i) {
         html << "[" << nebulaOnly.pxp[i] * scale << "," << nebulaOnly.pyp[i] * scale << "," << nebulaOnly.pzp[i] * scale << "]";
-        if (idx < rejPCount - 1) html << ",";
+        if (i < nebulaOnly.size() - 1) html << ",";
         html << "\n";
     }
-    for (size_t i = 0; i < none.size(); ++i, ++idx) {
+    html << "];\n";
+    
+    // noneProton (灰色 - 都不接受的 proton)
+    html << "const noneProton = [\n";
+    for (size_t i = 0; i < none.size(); ++i) {
         html << "[" << none.pxp[i] * scale << "," << none.pyp[i] * scale << "," << none.pzp[i] * scale << "]";
-        if (idx < rejPCount - 1) html << ",";
+        if (i < none.size() - 1) html << ",";
         html << "\n";
     }
     html << "];\n";
@@ -1831,7 +1892,7 @@ void QMDGeoFilter::GenerateInteractive3DPlot(const GammaAnalysisResult& gammaRes
     }
     html << "];\n";
     
-    // nebulaOnlyNeutron (蓝色 - neutron 视图)
+    // nebulaOnlyNeutron (蓝色 - NEBULA only neutron)
     html << "const nebulaOnlyNeutron = [\n";
     for (size_t i = 0; i < nebulaOnly.size(); ++i) {
         html << "[" << nebulaOnly.pxn[i] * scale << "," << nebulaOnly.pyn[i] * scale << "," << nebulaOnly.pzn[i] * scale << "]";
@@ -1840,18 +1901,20 @@ void QMDGeoFilter::GenerateInteractive3DPlot(const GammaAnalysisResult& gammaRes
     }
     html << "];\n";
     
-    // rejectedNeutron (红色 - pdcOnly + none 的 neutron)
-    html << "const rejectedNeutron = [\n";
-    size_t rejNCount = pdcOnly.size() + none.size();
-    idx = 0;
-    for (size_t i = 0; i < pdcOnly.size(); ++i, ++idx) {
+    // pdcOnlyNeutron (红色 - PDC only 的 neutron, 即 neutron 未被 NEBULA 接受)
+    html << "const pdcOnlyNeutron = [\n";
+    for (size_t i = 0; i < pdcOnly.size(); ++i) {
         html << "[" << pdcOnly.pxn[i] * scale << "," << pdcOnly.pyn[i] * scale << "," << pdcOnly.pzn[i] * scale << "]";
-        if (idx < rejNCount - 1) html << ",";
+        if (i < pdcOnly.size() - 1) html << ",";
         html << "\n";
     }
-    for (size_t i = 0; i < none.size(); ++i, ++idx) {
+    html << "];\n";
+    
+    // noneNeutron (灰色 - 都不接受的 neutron)
+    html << "const noneNeutron = [\n";
+    for (size_t i = 0; i < none.size(); ++i) {
         html << "[" << none.pxn[i] * scale << "," << none.pyn[i] * scale << "," << none.pzn[i] * scale << "]";
-        if (idx < rejNCount - 1) html << ",";
+        if (i < none.size() - 1) html << ",";
         html << "\n";
     }
     html << "];\n";
@@ -1927,40 +1990,44 @@ function createPoints(data, color, opacity = 0.7, size = 0.08) {
 const scenes = {};
 const pointGroups = {};
 
-// Proton view: 绿色=both, 蓝色=pdcOnly, 红色=rejected
+// Proton view: 绿色=both, 红色=pdcOnly, 蓝色=nebulaOnly, 灰色=none
 scenes.proton = createScene('proton-container');
 pointGroups.proton = {
     both: createPoints(bothProton, 0x00ff88),
-    partial: createPoints(pdcOnlyProton, 0x4488ff),
-    rejected: createPoints(rejectedProton, 0xff4444, 0.5)
+    pdcOnly: createPoints(pdcOnlyProton, 0xff4444),
+    nebulaOnly: createPoints(nebulaOnlyProton, 0x4488ff),
+    none: createPoints(noneProton, 0x888888, 0.4)
 };
 scenes.proton.scene.add(pointGroups.proton.both);
-scenes.proton.scene.add(pointGroups.proton.partial);
-scenes.proton.scene.add(pointGroups.proton.rejected);
+scenes.proton.scene.add(pointGroups.proton.pdcOnly);
+scenes.proton.scene.add(pointGroups.proton.nebulaOnly);
+scenes.proton.scene.add(pointGroups.proton.none);
 
-// Neutron view: 绿色=both, 蓝色=nebulaOnly, 红色=rejected  
+// Neutron view: 绿色=both, 蓝色=nebulaOnly, 红色=pdcOnly, 灰色=none
 scenes.neutron = createScene('neutron-container');
 pointGroups.neutron = {
     both: createPoints(bothNeutron, 0x00ff88),
-    partial: createPoints(nebulaOnlyNeutron, 0x4488ff),
-    rejected: createPoints(rejectedNeutron, 0xff4444, 0.5)
+    nebulaOnly: createPoints(nebulaOnlyNeutron, 0x4488ff),
+    pdcOnly: createPoints(pdcOnlyNeutron, 0xff4444),
+    none: createPoints(noneNeutron, 0x888888, 0.4)
 };
 scenes.neutron.scene.add(pointGroups.neutron.both);
-scenes.neutron.scene.add(pointGroups.neutron.partial);
-scenes.neutron.scene.add(pointGroups.neutron.rejected);
+scenes.neutron.scene.add(pointGroups.neutron.nebulaOnly);
+scenes.neutron.scene.add(pointGroups.neutron.pdcOnly);
+scenes.neutron.scene.add(pointGroups.neutron.none);
 
 // Combined view: proton 和 neutron 一起显示
 scenes.combined = createScene('combined-container');
 pointGroups.combined = {
     bothP: createPoints(bothProton, 0x00ff88),
     bothN: createPoints(bothNeutron, 0x00ff88, 0.5),
-    partialP: createPoints(pdcOnlyProton, 0x4488ff),
-    partialN: createPoints(nebulaOnlyNeutron, 0xffaa00)
+    pdcOnlyP: createPoints(pdcOnlyProton, 0xff4444),
+    nebulaOnlyN: createPoints(nebulaOnlyNeutron, 0x4488ff)
 };
 scenes.combined.scene.add(pointGroups.combined.bothP);
 scenes.combined.scene.add(pointGroups.combined.bothN);
-scenes.combined.scene.add(pointGroups.combined.partialP);
-scenes.combined.scene.add(pointGroups.combined.partialN);
+scenes.combined.scene.add(pointGroups.combined.pdcOnlyP);
+scenes.combined.scene.add(pointGroups.combined.nebulaOnlyN);
 
 // Diff view: pp - pn (只用 both accepted 的事件)
 const bothDiff = bothProton.map((p, i) => [
@@ -2021,18 +2088,24 @@ document.getElementById('showBoth').addEventListener('change', (e) => {
     pointGroups.diff.both.visible = visible;
 });
 
-document.getElementById('showPartial').addEventListener('change', (e) => {
+document.getElementById('showPDCOnly').addEventListener('change', (e) => {
     const visible = e.target.checked;
-    pointGroups.proton.partial.visible = visible;
-    pointGroups.neutron.partial.visible = visible;
-    pointGroups.combined.partialP.visible = visible;
-    pointGroups.combined.partialN.visible = visible;
+    pointGroups.proton.pdcOnly.visible = visible;
+    pointGroups.neutron.pdcOnly.visible = visible;
+    pointGroups.combined.pdcOnlyP.visible = visible;
+});
+
+document.getElementById('showNEBULAOnly').addEventListener('change', (e) => {
+    const visible = e.target.checked;
+    pointGroups.proton.nebulaOnly.visible = visible;
+    pointGroups.neutron.nebulaOnly.visible = visible;
+    pointGroups.combined.nebulaOnlyN.visible = visible;
 });
 
 document.getElementById('showRejected').addEventListener('change', (e) => {
     const visible = e.target.checked;
-    pointGroups.proton.rejected.visible = visible;
-    pointGroups.neutron.rejected.visible = visible;
+    pointGroups.proton.none.visible = visible;
+    pointGroups.neutron.none.visible = visible;
 });
 
 document.getElementById('autoRotate').addEventListener('change', (e) => {

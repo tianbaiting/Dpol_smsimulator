@@ -224,33 +224,55 @@ private:
  * 2. 应用动量 cut
  * 3. 利用 geo_accepentce 库计算几何接受度
  * 4. 生成分析图表
+ * 
+ * [EN] New features: / [CN] 新功能：
+ * - PDC fixed position mode (useFixedPDC)
+ * - Configurable Px range for PDC optimization
  */
 class QMDGeoFilter {
 public:
     struct AnalysisConfig {
-        // 磁场配置
+        // [EN] Magnetic field configuration / [CN] 磁场配置
         std::vector<double> fieldStrengths;  // [T]
         
-        // 偏转角度
-        std::vector<double> deflectionAngles;  // [度]
+        // [EN] Deflection angles / [CN] 偏转角度
+        std::vector<double> deflectionAngles;  // [deg]
         
-        // 靶材料
+        // [EN] Target materials / [CN] 靶材料
         std::vector<std::string> targets;
         
-        // 极化类型
+        // [EN] Polarization types / [CN] 极化类型
         std::vector<std::string> polTypes;  // "zpol", "ypol"
         
-        // gamma 值
+        // [EN] gamma values / [CN] gamma 值
         std::vector<std::string> gammaValues;
         
-        // b 范围
+        // [EN] b range / [CN] b 范围
         double bMin = 5.0;
         double bMax = 10.0;
         
-        // 路径配置
+        // [EN] Path configuration / [CN] 路径配置
         std::string qmdDataPath;
         std::string fieldMapPath;
         std::string outputPath;
+        
+        // ====== [EN] New: PDC configuration options / [CN] 新增：PDC配置选项 ======
+        
+        // [EN] Whether to use fixed PDC position instead of optimization
+        // [CN] 是否使用固定的PDC位置而不是优化
+        bool useFixedPDC = false;
+        
+        // [EN] Fixed PDC position [mm] (only used when useFixedPDC=true)
+        // [CN] 固定的PDC位置 [mm]（仅当useFixedPDC=true时使用）
+        TVector3 fixedPDCPosition = TVector3(-3500, 0, 2500);
+        
+        // [EN] Fixed PDC rotation angle [deg] (only used when useFixedPDC=true)
+        // [CN] 固定的PDC旋转角度 [度]（仅当useFixedPDC=true时使用）
+        double fixedPDCRotationAngle = -30.0;
+        
+        // [EN] Px range for PDC acceptance [MeV/c] (used for both optimization and fixed modes)
+        // [CN] PDC接收的Px范围 [MeV/c]（用于优化和固定模式）
+        double pxRange = 100.0;
         
         AnalysisConfig();
     };
@@ -290,6 +312,21 @@ public:
     void AddTarget(const std::string& target) { fConfig.targets.push_back(target); }
     void AddPolType(const std::string& polType) { fConfig.polTypes.push_back(polType); }
     void AddGamma(const std::string& gamma) { fConfig.gammaValues.push_back(gamma); }
+    
+    // ====== [EN] New: PDC configuration methods / [CN] 新增：PDC配置方法 ======
+    
+    // [EN] Enable fixed PDC position mode / [CN] 启用固定PDC位置模式
+    void SetUseFixedPDC(bool useFixed) { fConfig.useFixedPDC = useFixed; }
+    bool GetUseFixedPDC() const { return fConfig.useFixedPDC; }
+    
+    // [EN] Set fixed PDC position and rotation / [CN] 设置固定PDC位置和旋转角度
+    void SetFixedPDCPosition(const TVector3& pos, double rotAngle) {
+        fConfig.fixedPDCPosition = pos;
+        fConfig.fixedPDCRotationAngle = rotAngle;
+    }
+    
+    // [EN] Set Px range for PDC acceptance / [CN] 设置PDC接收的Px范围
+    void SetPxRange(double pxRange) { fConfig.pxRange = pxRange; }
     
     // 运行完整分析
     bool RunFullAnalysis();

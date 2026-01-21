@@ -18,24 +18,25 @@
  */
 class DetectorAcceptanceCalculator {
 public:
-    // 探测器配置
+    // [EN] Detector configuration / [CN] 探测器配置
     struct PDCConfiguration {
-        TVector3 position;       // PDC中心位置 [mm]
-        TVector3 normal;         // PDC平面法向量（单位矢量）
-        double rotationAngle;    // PDC绕Y轴旋转角度 [度] - 使PDC平面垂直于质子轨迹
-        double width;            // PDC有效宽度 [mm] (X方向, 2×840mm)
-        double height;           // PDC有效高度 [mm] (Y方向, 2×390mm)
-        double depth;            // PDC总厚度 [mm] (Z方向, 2×190mm)
-        double pxMin;            // 最小Px [MeV/c]
-        double pxMax;            // 最大Px [MeV/c]
-        bool isOptimal;          // 是否为最佳配置
+        TVector3 position;       // [EN] PDC center position [mm] / [CN] PDC中心位置 [mm]
+        TVector3 normal;         // [EN] PDC plane normal vector (unit) / [CN] PDC平面法向量（单位矢量）
+        double rotationAngle;    // [EN] PDC rotation angle around Y-axis [deg] / [CN] PDC绕Y轴旋转角度 [度]
+        double width;            // [EN] PDC effective width [mm] (X-direction, 2×840mm) / [CN] PDC有效宽度 [mm]
+        double height;           // [EN] PDC effective height [mm] (Y-direction, 2×390mm) / [CN] PDC有效高度 [mm]
+        double depth;            // [EN] PDC total depth [mm] (Z-direction, 2×190mm) / [CN] PDC总厚度 [mm]
+        double pxMin;            // [EN] Minimum Px [MeV/c] / [CN] 最小Px [MeV/c]
+        double pxMax;            // [EN] Maximum Px [MeV/c] / [CN] 最大Px [MeV/c]
+        bool isOptimal;          // [EN] Whether this is an optimal config / [CN] 是否为最佳配置
+        bool isFixed;            // [EN] Whether PDC position is fixed (not optimized) / [CN] 是否为固定位置（不优化）
         
-        // PDC尺寸来自PDCConstruction.cc:
+        // [EN] PDC dimensions from PDCConstruction.cc / [CN] PDC尺寸来自PDCConstruction.cc
         // Enclosure: 1700×800×190 mm (半尺寸)
         // Active area: 840×390 mm (半尺寸，每层)
         PDCConfiguration() : position(0,0,0), normal(0,0,1), rotationAngle(0),
                             width(2*840), height(2*390), depth(2*190),
-                            pxMin(-100), pxMax(100), isOptimal(false) {}
+                            pxMin(-100), pxMax(100), isOptimal(false), isFixed(false) {}
     };
     
     struct NEBULAConfiguration {
@@ -121,31 +122,45 @@ public:
     bool LoadQMDData(const std::string& dataFile, const std::string& polType = "");
     bool LoadQMDDataFromDirectory(const std::string& directory);
     
-    // 计算最佳PDC位置和旋转角度
-    // 要求:
-    // 1. PDC中心被从targetPos以targetRotationAngle发射的Pz=600MeV/c质子穿过
-    // 2. PDC平面近乎垂直于该质子轨迹
-    // 3. Px=±100MeV/c的质子刚好到达PDC边缘
+    // [EN] Calculate optimal PDC position and rotation angle / [CN] 计算最佳PDC位置和旋转角度
+    // [EN] Requirements: / [CN] 要求:
+    // 1. PDC center is traversed by proton with Pz=600MeV/c emitted from targetPos at targetRotationAngle
+    // 2. PDC plane is nearly perpendicular to the proton trajectory
+    // 3. Protons with Px=±pxRange reach the PDC edges
+    // [EN] pxRange: The Px range for edge protons [MeV/c], default 100 / [CN] pxRange: 边缘质子的Px范围 [MeV/c]，默认100
     PDCConfiguration CalculateOptimalPDCPosition(const TVector3& targetPos,
-                                                  double targetRotationAngle);
+                                                  double targetRotationAngle,
+                                                  double pxRange = 100.0);
     
-    // 兼容旧接口
+    // [EN] Legacy interface / [CN] 兼容旧接口
     PDCConfiguration CalculateOptimalPDCPosition(const TVector3& targetPos) {
-        return CalculateOptimalPDCPosition(targetPos, 0.0);
+        return CalculateOptimalPDCPosition(targetPos, 0.0, 100.0);
     }
+    
+    // [EN] Create a fixed PDC configuration at given position / [CN] 创建固定位置的PDC配置
+    // [EN] Use this when you want to use a pre-determined PDC position instead of optimization
+    // [CN] 当你想使用预设的PDC位置而不是优化时使用此方法
+    PDCConfiguration CreateFixedPDCConfiguration(const TVector3& pdcPosition,
+                                                  double pdcRotationAngle,
+                                                  double pxMin = -100.0,
+                                                  double pxMax = 100.0);
     
     // 检查粒子是否打到探测器
     bool CheckPDCHit(const ParticleInfo& particle, TVector3& hitPosition);
     bool CheckNEBULAHit(const ParticleInfo& particle, TVector3& hitPosition);
     
-    // 计算接受度
+    // [EN] Calculate acceptance with current PDC/NEBULA configuration / [CN] 使用当前PDC/NEBULA配置计算接受度
     AcceptanceResult CalculateAcceptance();
-    AcceptanceResult CalculateAcceptanceForTarget(const TVector3& targetPos,
-                                                  double targetRotationAngle);
     
-    // 兼容旧接口
+    // [EN] Calculate acceptance for given target position / [CN] 计算给定靶位置的接受度
+    // [EN] pxRange: Px range for PDC optimization [MeV/c], default 100 / [CN] pxRange: PDC优化的Px范围 [MeV/c]，默认100
+    AcceptanceResult CalculateAcceptanceForTarget(const TVector3& targetPos,
+                                                  double targetRotationAngle,
+                                                  double pxRange = 100.0);
+    
+    // [EN] Legacy interface / [CN] 兼容旧接口
     AcceptanceResult CalculateAcceptanceForTarget(const TVector3& targetPos) {
-        return CalculateAcceptanceForTarget(targetPos, 0.0);
+        return CalculateAcceptanceForTarget(targetPos, 0.0, 100.0);
     }
     
     // 扫描PDC位置找到最佳配置
