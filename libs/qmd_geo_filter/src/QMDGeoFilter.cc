@@ -231,13 +231,27 @@ std::string QMDGeoFilter::GetFieldMapFile(double fieldStrength, const std::strin
     // 根据磁场强度查找对应的 .table 文件
     // 格式：141114-0,8T-6000.table, 180626-1,00T-6000.table, etc.
     
-    std::vector<std::pair<double, std::string>> fieldFiles = {
-        {0.8, "141114-0,8T-6000.table"},
-        {1.0, "180626-1,00T-6000.table"},
+    // std::vector<std::pair<double, std::string>> fieldFiles = {
+    //     {0.8, "141114-0,8T-6000.table"},
+    //     {1.0, "180626-1,00T-6000.table"},
+    //     {1.2, "180626-1,20T-3000.table"},
+    //     {1.4, "180703-1,40T-6000.table"},
+        
+    // };
+   std::vector<std::pair<double, std::string>> fieldFiles = {
+        {0.8, "141114-0,8T-3000.table"},
+        {1.0, "180626-1,00T-3000.table"},
         {1.2, "180626-1,20T-3000.table"},
-        {1.4, "180703-1,40T-6000.table"}
-    };
-    
+        {1.4, "180703-1,40T-3000.table"},
+        {1.6, "180626-1,60T-3000.table"},
+        {1.8, "180703-1,80T-3000.table"},
+        {2.0, "180627-2,00T-3000.table"},
+        {2.2, "180628-2,20T-3000.table"},
+        {2.4, "180702-2,40T-3000.table"},
+        {2.6, "180703-2,60T-3000.table"},
+        {2.8, "180628-2,80T-3000.table"},
+        {3.0, "180629-3,00T-3000.table"}
+    }; 
     // 找最接近的磁场强度
     double minDiff = 1e10;
     std::string bestFile;
