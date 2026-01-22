@@ -65,8 +65,23 @@ set_target_properties(test_geo_acceptance PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
+# [EN] Create executable - Generate target position configs using BeamDeflectionCalculator
+# [CN] 创建可执行程序 - 使用 BeamDeflectionCalculator 生成靶点位置配置
+add_executable(GenerateTargetConfigs
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GenerateTargetConfigs.cc
+)
+target_link_libraries(GenerateTargetConfigs
+    GeoAcceptance
+    analysis
+    smlogger
+    ${ROOT_LIBRARIES}
+)
+set_target_properties(GenerateTargetConfigs PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
 # 安装
-install(TARGETS GeoAcceptance RunGeoAcceptanceAnalysis test_geo_acceptance
+install(TARGETS GeoAcceptance RunGeoAcceptanceAnalysis test_geo_acceptance GenerateTargetConfigs
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin

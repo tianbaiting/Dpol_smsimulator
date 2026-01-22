@@ -700,9 +700,14 @@ DetectorAcceptanceCalculator::CalculateAcceptanceForTarget(const TVector3& targe
                                                            double targetRotationAngle,
                                                            double pxRange)
 {
-    // [EN] First calculate optimal PDC config for this target position
-    // [CN] 首先计算该target位置的最佳PDC配置
-    fPDCConfig = CalculateOptimalPDCPosition(targetPos, targetRotationAngle, pxRange);
+    // [EN] Note: PDC configuration should be set before calling this function.
+    // [CN] 注意：在调用此函数之前应设置PDC配置。
+    // [EN] If PDC config not set, calculate optimal position as fallback.
+    // [CN] 如果未设置PDC配置，则作为后备计算最佳位置。
+    if (fPDCConfig.width <= 0) {
+        SM_INFO("  PDC not configured, calculating optimal position...");
+        fPDCConfig = CalculateOptimalPDCPosition(targetPos, targetRotationAngle, pxRange);
+    }
     
     // [EN] Update all particle vertices and transform momenta to lab frame
     // [CN] 更新所有粒子的顶点位置为新的target位置，同时将动量从target局部坐标系转换到实验室坐标系

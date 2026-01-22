@@ -4,6 +4,7 @@
 # OGL: 默认OpenGL模式
 # /vis/open OGLS 1280x720  
 /vis/open OGLIQt
+# /vis/open DAWN
 # /vis/open OGL
 # /vis/open OGLSQt
 # /vis/viewer/set/projection orthogonal
@@ -12,9 +13,9 @@
 /control/getEnv SMSIMDIR
 # /event/keepCurrentEvent true
 
-# /action/file/OverWrite y
-# /action/file/RunName DTest
-# /action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4output
+/action/file/OverWrite y
+/action/file/RunName DTest
+/action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4output
 
 # Load geometry with absolute path
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B080T.mac   # 0.8T
@@ -23,8 +24,8 @@
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B140T.mac   # 1.4T
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B160T.mac   # 1.6T
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B180T.mac   # 1.8T
-# /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B200T.mac   # 2.0T
-/control/execute ${SMSIMDIR}/configs/simulation/geometry/5deg_1.2T.mac
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B200T.mac   # 2.0T
+# /control/execute ${SMSIMDIR}/configs/simulation/geometry/5deg_1.2T.mac
 
   
 # # 轨迹显示设置  

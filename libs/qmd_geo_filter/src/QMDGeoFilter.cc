@@ -886,24 +886,44 @@ void QMDGeoFilter::GenerateDetectorGeometryPlot(double fieldStrength, double def
 {
     SM_INFO("Generating detector geometry plot: {}", outputFile);
     
-    // 复用 GeoAcceptanceManager 的绘图功能
-    // 首先设置配置
+    // [EN] Configure GeoAcceptanceManager / [CN] 配置 GeoAcceptanceManager
     GeoAcceptanceManager::AnalysisConfig geoConfig;
     geoConfig.fieldStrengths = {fieldStrength};
     geoConfig.deflectionAngles = {deflectionAngle};
     geoConfig.fieldMapFiles = {GetFieldMapFile(fieldStrength, fConfig.fieldMapPath)};
     geoConfig.outputPath = fConfig.outputPath;
     
+    // [EN] Pass PDC configuration from QMDGeoFilter config / [CN] 从QMDGeoFilter配置传递PDC配置
+    geoConfig.useFixedPDC = fConfig.useFixedPDC;
+    geoConfig.fixedPDCPosition = fConfig.fixedPDCPosition;
+    geoConfig.fixedPDCRotationAngle = fConfig.fixedPDCRotationAngle;
+    geoConfig.pxRange = fConfig.pxRange;
+    
     fGeoManager->SetConfig(geoConfig);
     
-    // 分析该配置以获取结果
+    // [EN] Configure track plotting with deuteron + proton tracks
+    // [CN] 配置轨迹绘图：氘核 + 质子轨迹
+    TrackPlotConfig trackConfig;
+    trackConfig.drawDeuteronTrack = true;       // [EN] Draw deuteron beam / [CN] 绘制氘核束流
+    trackConfig.drawCenterProtonTrack = true;   // [EN] Draw Px=0 proton / [CN] 绘制Px=0质子
+    trackConfig.pxEdgeValues = {100.0, fConfig.pxRange};  // [EN] Default 100 + configured range
+    trackConfig.pzProton = 627.0;
+    fGeoManager->SetTrackPlotConfig(trackConfig);
+    
+    // [EN] Analyze field configuration / [CN] 分析磁场配置
     fGeoManager->AnalyzeFieldConfiguration(
         GetFieldMapFile(fieldStrength, fConfig.fieldMapPath), 
         fieldStrength
     );
     
-    // 生成几何布局图
-    fGeoManager->GenerateGeometryPlot(outputFile);
+    // [EN] Get results and generate plot with tracks / [CN] 获取结果并生成带轨迹的图
+    auto results = fGeoManager->GetResults();
+    if (!results.empty()) {
+        fGeoManager->GenerateSingleConfigPlotWithTracks(results[0], outputFile, trackConfig);
+    } else {
+        // [EN] Fallback to basic geometry plot / [CN] 回退到基本几何图
+        fGeoManager->GenerateGeometryPlot(outputFile);
+    }
 }
 
 void QMDGeoFilter::GeneratePlots(const QMDConfigurationResult& result,

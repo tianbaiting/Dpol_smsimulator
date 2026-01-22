@@ -358,18 +358,47 @@ void TestOptimalPDCPosition(DetectorAcceptanceCalculator* detCalc,
 
 /**
  * @brief 使用库中的 GeoAcceptanceManager 来执行 target/PDC 计算并绘图
+ * 
+ * [EN] This function demonstrates how to use the GeoAcceptanceManager API
+ *      to calculate target positions and generate geometry plots with tracks.
+ * [CN] 此函数演示如何使用 GeoAcceptanceManager API 计算靶子位置并生成带轨迹的几何图。
+ * 
+ * [EN] The generated plots include: / [CN] 生成的图包括：
+ *   - Deuteron track (beam trajectory) / 氘核轨迹（束流轨迹）
+ *   - Center proton track (Px=0) / 中心质子轨迹 (Px=0)
+ *   - Edge proton tracks (Px=±100, ±150 MeV/c) / 边缘质子轨迹
+ * 
+ * @param pxEdgeValues Configurable Px values for edge proton tracks [MeV/c]
+ *                     Default: {100.0, 150.0} draws Px=±100 and Px=±150 tracks
  */
 void TestUsingGeoAcceptanceManager(const std::string& fieldMapFile,
                                   const std::vector<double>& deflectionAngles,
                                   const std::string& outputFile,
                                   const std::string& outputDir = "",
-                                  LogManager* logMgr = nullptr) {
+                                  LogManager* logMgr = nullptr,
+                                  const std::vector<double>& pxEdgeValues = {100.0, 150.0}) {
     PrintSeparator("测试5 (库调用): 使用 GeoAcceptanceManager 进行分析与绘图");
 
     GeoAcceptanceManager mgr;
     std::string actualOutputDir = outputDir.empty() ? GetOutputDir() : outputDir;
     mgr.SetOutputPath(actualOutputDir);
     std::cout << "输出目录: " << actualOutputDir << "\n";
+    
+    // [EN] Configure track plotting / [CN] 配置轨迹绘图
+    TrackPlotConfig trackConfig;
+    trackConfig.drawDeuteronTrack = true;      // [EN] Draw deuteron / [CN] 绘制氘核
+    trackConfig.drawCenterProtonTrack = true;  // [EN] Draw Px=0 proton / [CN] 绘制Px=0质子
+    trackConfig.pxEdgeValues = pxEdgeValues;   // [EN] Edge proton Px values / [CN] 边缘质子Px值
+    trackConfig.pzProton = 627.0;              // [EN] Proton Pz / [CN] 质子Pz
+    mgr.SetTrackPlotConfig(trackConfig);
+    
+    std::cout << "轨迹配置:\n";
+    std::cout << "  - 氘核轨迹: " << (trackConfig.drawDeuteronTrack ? "启用" : "禁用") << "\n";
+    std::cout << "  - 中心质子 (Px=0): " << (trackConfig.drawCenterProtonTrack ? "启用" : "禁用") << "\n";
+    std::cout << "  - 边缘质子 Px 值:";
+    for (double px : trackConfig.pxEdgeValues) std::cout << " ±" << px;
+    std::cout << " MeV/c\n";
+    std::cout << "  - 质子 Pz: " << trackConfig.pzProton << " MeV/c\n";
 
     // 添加偏转角度配置
     for (double a : deflectionAngles) mgr.AddDeflectionAngle(a);
@@ -386,9 +415,10 @@ void TestUsingGeoAcceptanceManager(const std::string& fieldMapFile,
     mgr.GenerateGeometryPlot(fullOutputPath);
     std::cout << "总体布局图已保存: " << fullOutputPath << "\n";
 
-    // 为每个配置单独生成详细图
+    // [EN] Generate detailed plots for each configuration with full track visualization
+    // [CN] 为每个配置生成完整轨迹可视化的详细图
     auto results = mgr.GetResults();
-    std::cout << "\n为每个配置生成单独的详细图（包含边缘质子轨迹 Px=±100 MeV/c）...\n";
+    std::cout << "\n为每个配置生成详细图（含氘核轨迹 + " << trackConfig.pxEdgeValues.size() * 2 + 1 << " 条质子轨迹）...\n";
     
     for (const auto& r : results) {
         std::ostringstream singleFilename;
@@ -396,7 +426,8 @@ void TestUsingGeoAcceptanceManager(const std::string& fieldMapFile,
                        << std::fixed << std::setprecision(2) << r.fieldStrength << "T_"
                        << std::fixed << std::setprecision(0) << r.deflectionAngle << "deg.png";
         
-        mgr.GenerateSingleConfigPlot(r, singleFilename.str());
+        // [EN] Use the new function with configurable tracks / [CN] 使用可配置轨迹的新函数
+        mgr.GenerateSingleConfigPlotWithTracks(r, singleFilename.str(), trackConfig);
         std::cout << "  配置 " << r.fieldStrength << " T, " << r.deflectionAngle 
                   << "° -> " << singleFilename.str() << "\n";
     }
@@ -460,8 +491,14 @@ void RunAllTestsForField(const std::string& fieldMapFile,
     if (outDir.back() != '/') outDir += '/';
     outDir += fieldBase;
 
+    // [EN] Configure edge proton Px values for track plotting
+    // [CN] 配置边缘质子Px值用于轨迹绘图
+    // [EN] Default: {100.0, 150.0} draws Px=±100 and Px=±150 MeV/c tracks
+    // [CN] 默认值: {100.0, 150.0} 绘制 Px=±100 和 Px=±150 MeV/c 轨迹
+    std::vector<double> pxEdgeValues = {100.0, 150.0};
+    
     // 调用 GeoAcceptanceManager 的封装测试（会生成图表到 outDir）
-    TestUsingGeoAcceptanceManager(fieldMapFile, deflectionAngles, "test_pdc_position.png", outDir, &logMgr);
+    TestUsingGeoAcceptanceManager(fieldMapFile, deflectionAngles, "test_pdc_position.png", outDir, &logMgr, pxEdgeValues);
 
     // TestCoordinateTransformConsistency is declared below; forward-declare if needed
     TestCoordinateTransformConsistency(rotationAngle);
@@ -704,7 +741,10 @@ int main(int argc, char** argv) {
     
     // 测试4: PDC最佳位置
     // 使用 GeoAcceptanceManager（库实现）来完成PDC计算与绘图，避免在测试中重新实现绘图逻辑
-    TestUsingGeoAcceptanceManager(fieldMapFile, deflectionAngles, "test_pdc_position.png", actualOutputDir, &logMgr);
+    // [EN] Configure edge proton Px values: {100.0, 150.0} draws Px=±100, ±150 MeV/c tracks
+    // [CN] 配置边缘质子Px值: {100.0, 150.0} 绘制 Px=±100, ±150 MeV/c 轨迹
+    std::vector<double> pxEdgeValues = {100.0, 150.0};
+    TestUsingGeoAcceptanceManager(fieldMapFile, deflectionAngles, "test_pdc_position.png", actualOutputDir, &logMgr, pxEdgeValues);
     
     // 测试6: 坐标变换一致性
     TestCoordinateTransformConsistency(rotationAngle);
