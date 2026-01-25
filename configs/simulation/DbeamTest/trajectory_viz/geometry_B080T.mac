@@ -3,7 +3,7 @@
 # [CN] 轨迹可视化几何配置
 # Magnetic field: 0.80T
 # =========================================================================
-
+/getEnv SMSIMDIR
 # Target - disabled for trajectory visualization
 /samurai/geometry/Target/SetTarget false
 /samurai/geometry/Target/Material Sn

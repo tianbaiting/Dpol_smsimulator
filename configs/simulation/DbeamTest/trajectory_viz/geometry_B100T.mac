@@ -1,4 +1,5 @@
 # Geometry configuration - Magnetic field: 1.00T
+/getEnv SMSIMDIR
 /samurai/geometry/Target/SetTarget false
 /samurai/geometry/Target/Material Sn
 /samurai/geometry/Target/Size 80 80 30 mm
