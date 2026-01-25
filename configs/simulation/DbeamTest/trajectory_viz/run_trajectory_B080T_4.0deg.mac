@@ -1,0 +1,73 @@
+# =========================================================================
+# [EN] Trajectory visualization for B=0.8T, beam angle=4.0 deg
+# [CN] 轨迹可视化: B=0.8T, 束流偏转角=4.0度
+# =========================================================================
+# Target position: X=-20.6120mm, Y=0.0063mm, Z=-851.8761mm
+# Deuteron: 380 MeV from (0, 0, -4m)
+# Proton: p=(0, ±100, 627) MeV/c, T=195 MeV, AngleY=±9.07°
+# =========================================================================
+
+# Visualization Setup
+/vis/open OGLIQt
+/vis/viewer/set/autoRefresh false
+/vis/verbose errors
+
+# Load Geometry - B=0.8T
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/trajectory_viz/geometry_B080T.mac
+
+/action/file/OverWrite y
+/action/file/RunName trajectory_B080T_4.0deg
+/action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4output
+
+# Z-X plane view (top view)
+/vis/viewer/set/upVector 1 0 0
+/vis/viewer/set/viewpointThetaPhi 90. 90.
+/vis/drawVolume
+/vis/scene/add/axes 0 0 0 6000 mm
+
+# Trajectory accumulation across runs
+/vis/scene/endOfEventAction accumulate
+/vis/scene/add/trajectories smooth
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1
+/vis/scene/endOfRunAction accumulate
+
+# ==========================================
+# 1. Deuteron: 380 MeV from (0, 0, -4m)
+# ==========================================
+/action/gun/Type Pencil
+/action/gun/SetBeamParticleName deuteron
+/action/gun/Position 0 0 -4000 mm
+/action/gun/Energy 380 MeV
+/action/gun/AngleX 0 deg
+/action/gun/AngleY 0 deg
+/run/beamOn 1
+
+# ==========================================
+# 2. Proton Py=+100 MeV/c from target
+# ==========================================
+/action/gun/Type Pencil
+/action/gun/SetBeamParticleName proton
+/action/gun/Position -20.6120 0.0063 -851.8761 mm
+/action/gun/Energy 195 MeV
+/action/gun/AngleX 0 deg
+/action/gun/AngleY 9.07 deg
+/run/beamOn 1
+
+# ==========================================
+# 3. Proton Py=-100 MeV/c from target
+# ==========================================
+/action/gun/Type Pencil
+/action/gun/SetBeamParticleName proton
+/action/gun/Position -20.6120 0.0063 -851.8761 mm
+/action/gun/Energy 195 MeV
+/action/gun/AngleX 0 deg
+/action/gun/AngleY -9.07 deg
+/run/beamOn 1
+
+# Refresh display
+/vis/viewer/set/autoRefresh true
+/vis/viewer/refresh
+
+# Save: /vis/ogl/export trajectory_B080T_4.0deg.png
