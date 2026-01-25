@@ -1,37 +1,45 @@
 # =========================================================================
-# [EN] Trajectory visualization for B=2.0T, beam angle=2.0 deg
-# [CN] 轨迹可视化: B=2.0T, 束流偏转角=2.0度
+# [EN] Trajectory visualization for B=2.00T, beam angle=2.0 deg
+# [CN] 轨迹可视化: B=2.00T, 束流偏转角=2.0度
 # =========================================================================
-# Target position: X=-6.6894mm, Y=0.0134mm, Z=-1309.1564mm
+# Target position: X=-207.8011mm, Y=0.0371mm, Z=-2009.1295mm
 # Deuteron: 380 MeV from (0, 0, -4m)
 # Proton: p=(0, ±100, 627) MeV/c, T=195 MeV, AngleY=±9.07°
 # =========================================================================
 
-# Visualization Setup
-/vis/open OGLIQt
-/vis/viewer/set/autoRefresh false
-/vis/verbose errors
+# 1. Open visualization
+/vis/open OGLIQt 1280x720
 
-# Load Geometry - B=2.0T
+# 2. Load Geometry - B=2.00T
 /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/trajectory_viz/geometry_B200T.mac
 
 /action/file/OverWrite y
 /action/file/RunName trajectory_B200T_2.0deg
 /action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4output
 
-# Z-X plane view (top view)
+# 3. Draw volume FIRST (required before adding scene elements)
+/vis/drawVolume
+
+# 4. Set Z-X plane view (top view)
 /vis/viewer/set/upVector 1 0 0
 /vis/viewer/set/viewpointThetaPhi 90. 90.
-/vis/drawVolume
+
+# 5. Add coordinate axes
 /vis/scene/add/axes 0 0 0 6000 mm
 
-# Trajectory accumulation across runs
-/vis/scene/endOfEventAction accumulate
+# ==========================================
+# [CRITICAL] Trajectory settings - BEFORE beamOn
+# ==========================================
 /vis/scene/add/trajectories smooth
 /vis/modeling/trajectories/create/drawByCharge
 /vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
-/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
+/vis/scene/endOfEventAction accumulate
 /vis/scene/endOfRunAction accumulate
+
+# Disable auto refresh during shooting
+/vis/viewer/set/autoRefresh false
+/vis/verbose warnings
 
 # ==========================================
 # 1. Deuteron: 380 MeV from (0, 0, -4m)
@@ -47,9 +55,8 @@
 # ==========================================
 # 2. Proton Py=+100 MeV/c from target
 # ==========================================
-/action/gun/Type Pencil
 /action/gun/SetBeamParticleName proton
-/action/gun/Position -6.6894 0.0134 -1309.1564 mm
+/action/gun/Position -207.8011 0.0371 -2009.1295 mm
 /action/gun/Energy 195 MeV
 /action/gun/AngleX 0 deg
 /action/gun/AngleY 9.07 deg
@@ -58,16 +65,20 @@
 # ==========================================
 # 3. Proton Py=-100 MeV/c from target
 # ==========================================
-/action/gun/Type Pencil
 /action/gun/SetBeamParticleName proton
-/action/gun/Position -6.6894 0.0134 -1309.1564 mm
+/action/gun/Position -207.8011 0.0371 -2009.1295 mm
 /action/gun/Energy 195 MeV
 /action/gun/AngleX 0 deg
 /action/gun/AngleY -9.07 deg
 /run/beamOn 1
 
-# Refresh display
+# ==========================================
+# Refresh and Export
+# ==========================================
 /vis/viewer/set/autoRefresh true
 /vis/viewer/refresh
+/vis/viewer/update
+/vis/viewer/zoomTo 0.3
 
-# Save: /vis/ogl/export trajectory_B200T_2.0deg.png
+# Export: /vis/ogl/export trajectory_B200T_2.0deg.png
+# Vector: /vis/ogl/printEPS
