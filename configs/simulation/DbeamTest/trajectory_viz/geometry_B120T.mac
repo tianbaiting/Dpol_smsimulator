@@ -10,10 +10,10 @@
 /samurai/geometry/Dump/SetDump false
 /samurai/geometry/Dump/Angle 36.67 deg
 /samurai/geometry/Dump/Position -0.93 -25.00 0.00 cm
-/samurai/geometry/NEBULA/ParameterFileName /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/NEBULA_Dayone.csv  
-/samurai/geometry/NEBULA/DetectorParameterFileName /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
+/samurai/geometry/NEBULA/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Dayone.csv  
+/samurai/geometry/NEBULA/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
 /samurai/geometry/Dipole/Angle 30 deg
-/samurai/geometry/Dipole/FieldFile /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/filed_map/180626-1,20T-3000.table
+/samurai/geometry/Dipole/FieldFile {SMSIMDIR}/configs/simulation/geometry/filed_map/180626-1,20T-3000.table
 /samurai/geometry/Dipole/FieldFactor 1
 /samurai/geometry/FillAir true
 /samurai/geometry/Update
