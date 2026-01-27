@@ -41,5 +41,5 @@ Makefile
 
 .cache
 output
-.wrl
-.gdml
+*.wrl
+*.gdml
