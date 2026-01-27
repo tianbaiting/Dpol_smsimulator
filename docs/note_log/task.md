@@ -69,3 +69,38 @@ px=±150MeV的 track(150 设置成 确定pdc位置的默认protontrack参数). �
 4 sim_deutron, 我需要在同样的pdc位置下, 在configs/simulation/DbeamTest/里, 不同beam偏转角度决定的靶点位置(有geo_acceptance_manager计算出来的), n p 画出来100MeV 150MeV track. 以及氘核track. 画出不同磁场下的轨迹图. 以及能量沉积点. 我希望用循环的方式在一个run里面完成. 最好是可以批量运行不同磁场 不同beam偏转角度的轨迹图. 以及能量沉积点的图, 放置在$SMSIMDIR/results目录下面mkdir目录. 命名要清楚. 方便后续查看.    循环只是为了把氘核质子画在一张图里面. x让氘核不使用targetangle的同时让np使用targetangle. 我希望的是不同磁场不同deg出不同的图, 而同一个磁场同一个deg的氘核质子画在一起. 
 
 2. 我希望qmd_geofilter的默认是PDC位置固定, 我可以画出固定pdc下的中子质子接受情况
+
+
+pdc固定位置为, /samurai/geometry/PDC/Angle 65 deg
+/samurai/geometry/PDC/Position1 +0 0 400 cm
+/samurai/geometry/PDC/Position2 +0 0 500 cm
+
+sim_deutron的geant4程序. 这里面写入不同的配置文件.
+
+靶点位置信息在
+[text](../../results/target_configs/target_summary_B200T.txt) [text](../../results/target_configs/target_summary_B160T.txt) [text](../../results/target_configs/target_summary_B120T.txt) [text](../../results/target_configs/target_summary_B100T.txt) [text](../../results/target_configs/target_summary_B80T.txt)
+
+我需要画出某一个磁场下,某一个beamp偏转角度下的轨迹图. 最好能够氘核质子画在一张图里(得保证 氘核 质子在一个run里面,可能得用/control/foreach run_one_particle.mac ).  氘核是380MeV的动能,在(0 , 0, -4m)出射, 质子是动量(100MeV,0,  627MeV/c) 从靶点位置出射,使用/samurai/geometry/Target/Angle ** deg.     不能的话就分别画出来.   
+
+最好批量运行不同磁场强度 不同偏转角度 ,导出png . 不行的话就把配置写出来用注释的方式写出来. 方便我以后直接运行. 写出配置,我只需要重新注释掉就行了.
+
+质子是动量(\pm 100MeV/c, 0,627MeV/c) (\pm 150MeV,0, 627MeV/c) 从靶点位置出射,使用/samurai/geometry/Target/Angle ** deg. 你采用tree的方式把这质子输入 . 只用射入质子 不用氘核了.
+
+在/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/track_vis_useTree这个目录下建立相关的配置文件.  以及批量运行脚本.  方便我以后直接运行.
+
+
+
+
+
+pdc固定位置为, /samurai/geometry/PDC/Angle 65 deg
+/samurai/geometry/PDC/Position1 +0 0 400 cm
+/samurai/geometry/PDC/Position2 +0 0 500 cm
+
+sim_deutron的geant4程序. 这里面写入不同的配置文件.
+
+靶点位置信息在
+[text](../../results/target_configs/target_summary_B200T.txt) [text](../../results/target_configs/target_summary_B160T.txt) [text](../../results/target_configs/target_summary_B120T.txt) [text](../../results/target_configs/target_summary_B100T.txt) [text](../../results/target_configs/target_summary_B80T.txt)
+
+我需要画出某一个磁场下,某一个beamp偏转角度下的轨迹图. 最好能够氘核质子画在一张图里(得保证 氘核 质子在一个run里面,得用/control/loop 实现循环在一个run里面循环不同的粒子以及动量 ).  氘核是380MeV的动能,在(0 , 0, -4m)出射, 质子是动量(100MeV,0,  627MeV/c) 从靶点位置出射,使用/samurai/geometry/Target/Angle ** deg.     不能的话就分别画出来.   
+
+最好批量运行不同磁场强度 不同偏转角度 ,导出png . 不行的话就把配置写出来用注释的方式写出来. 方便我以后直接运行. 写出配置,我只需要重新注释掉就行了.

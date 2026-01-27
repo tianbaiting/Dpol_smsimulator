@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2025/dev/Debian) (preloaded format=xelatex 2025.10.29)  18 JAN 2026 16:09
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2025/dev/Debian) (preloaded format=xelatex 2025.10.29)  26 JAN 2026 10:15
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -842,6 +842,29 @@ Package caption Info: End \AtBeginDocument code.
 
 [2
 
+] (./dpolconfig.toc)
+
+[3
+
+]
+LaTeX Font Info:    Trying to load font information for U+msa on input line 64.
+ (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 64.
+ (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <10.95> not available
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 64.
+LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <8> not available
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 64.
+LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <6> not available
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 64.
+
+
+[4
+
 ]
 File: figures/2026-01-18-14-46-58.png Graphic file (type bmp)
 <figures/2026-01-18-14-46-58.png>
@@ -850,7 +873,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[3
+[5
 
 ]
 File: figures/2026-01-18-14-48-03.png Graphic file (type bmp)
@@ -862,7 +885,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[4]
+[6]
 File: figures/2026-01-18-15-06-31.png Graphic file (type bmp)
 <figures/2026-01-18-15-06-31.png>
 
@@ -870,12 +893,12 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[5]
+[7]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[6]
+[8]
 File: figures/2026-01-18-15-06-55.png Graphic file (type bmp)
 <figures/2026-01-18-15-06-55.png>
 
@@ -883,7 +906,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[7]
+[9]
 File: figures/2026-01-18-15-07-40.png Graphic file (type bmp)
 <figures/2026-01-18-15-07-40.png>
 
@@ -891,7 +914,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[8]
+[10]
 File: figures/2026-01-18-15-08-25.png Graphic file (type bmp)
 <figures/2026-01-18-15-08-25.png>
 
@@ -899,24 +922,199 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[9]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 126.
- (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 126.
- (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <10.95> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 126.
-LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <8> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 126.
-LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <6> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 126.
+[11] (./dpolconfig.toc)
+
+[12]
+File: figures/2026-01-26-04-22-34.png Graphic file (type bmp)
+<figures/2026-01-26-04-22-34.png>
+
+Overfull \vbox (231.77591pt too high) detected at line 136
+ []
 
 
-[10]
+
+[13
+
+]
+File: figures/geant4proton/protons_B200T_2.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B200T_2.0deg.png>
+File: figures/geant4proton/protons_B200T_4.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B200T_4.0deg.png>
+File: figures/geant4proton/protons_B200T_6.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B200T_6.0deg.png>
+File: figures/geant4proton/protons_B200T_8.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B200T_8.0deg.png>
+File: figures/geant4proton/protons_B200T_10.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B200T_10.0deg.png>
+
+
+[14
+
+]
+
+[15
+
+
+]
+
+[16
+
+
+]
+
+[17
+
+
+]
+
+[18
+
+
+]
+File: figures/geant4proton/protons_B160T_2.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B160T_2.0deg.png>
+File: figures/geant4proton/protons_B160T_4.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B160T_4.0deg.png>
+File: figures/geant4proton/protons_B160T_6.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B160T_6.0deg.png>
+File: figures/geant4proton/protons_B160T_8.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B160T_8.0deg.png>
+File: figures/geant4proton/protons_B160T_10.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B160T_10.0deg.png>
+
+
+[19
+
+]
+
+[20
+
+
+]
+
+[21
+
+
+]
+
+[22
+
+
+]
+
+[23
+
+
+]
+File: figures/geant4proton/protons_B120T_2.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B120T_2.0deg.png>
+File: figures/geant4proton/protons_B120T_4.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B120T_4.0deg.png>
+File: figures/geant4proton/protons_B120T_6.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B120T_6.0deg.png>
+File: figures/geant4proton/protons_B120T_8.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B120T_8.0deg.png>
+File: figures/geant4proton/protons_B120T_10.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B120T_10.0deg.png>
+
+
+[24
+
+]
+
+[25
+
+
+]
+
+[26
+
+
+]
+
+[27
+
+
+]
+
+[28
+
+
+]
+File: figures/geant4proton/protons_B100T_2.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B100T_2.0deg.png>
+File: figures/geant4proton/protons_B100T_4.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B100T_4.0deg.png>
+File: figures/geant4proton/protons_B100T_6.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B100T_6.0deg.png>
+File: figures/geant4proton/protons_B100T_8.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B100T_8.0deg.png>
+File: figures/geant4proton/protons_B100T_10.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B100T_10.0deg.png>
+
+
+[29
+
+]
+
+[30
+
+
+]
+
+[31
+
+
+]
+
+[32
+
+
+]
+
+[33
+
+
+]
+File: figures/geant4proton/protons_B080T_2.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B080T_2.0deg.png>
+File: figures/geant4proton/protons_B080T_4.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B080T_4.0deg.png>
+File: figures/geant4proton/protons_B080T_6.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B080T_6.0deg.png>
+File: figures/geant4proton/protons_B080T_8.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B080T_8.0deg.png>
+File: figures/geant4proton/protons_B080T_10.0deg.png Graphic file (type bmp)
+<figures/geant4proton/protons_B080T_10.0deg.png>
+
+
+[34
+
+]
+
+[35
+
+
+]
+
+[36
+
+
+]
+
+[37
+
+
+]
+
+[38
+
+
+]
+
+[39
+
+]
 File: figures/config_0.80T_0deg.png Graphic file (type bmp)
 <figures/config_0.80T_0deg.png>
 File: figures/config_1.00T_0deg.png Graphic file (type bmp)
@@ -926,12 +1124,169 @@ File: figures/config_1.20T_0deg.png Graphic file (type bmp)
 File: figures/config_1.40T_0deg.png Graphic file (type bmp)
 <figures/config_1.40T_0deg.png>
 
-Overfull \vbox (56.68958pt too high) detected at line 169
+Overfull \vbox (56.68958pt too high) detected at line 367
  []
 
 
 
-[11
+[40
+
+]
+File: figures/test_pdc_position/config_0.80T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_0.80T_0deg.png>
+File: figures/test_pdc_position/config_1.00T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.00T_0deg.png>
+File: figures/test_pdc_position/config_1.20T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.20T_0deg.png>
+File: figures/test_pdc_position/config_1.40T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.40T_0deg.png>
+
+Overfull \vbox (87.11172pt too high) detected at line 408
+ []
+
+
+
+[41
+
+]
+File: figures/test_pdc_position/config_1.60T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.60T_0deg.png>
+File: figures/test_pdc_position/config_1.80T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.80T_0deg.png>
+File: figures/test_pdc_position/config_2.00T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.00T_0deg.png>
+File: figures/test_pdc_position/config_2.20T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.20T_0deg.png>
+
+Overfull \vbox (87.11172pt too high) detected at line 443
+ []
+
+
+
+[42
+
+]
+File: figures/test_pdc_position/config_2.40T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.40T_0deg.png>
+File: figures/test_pdc_position/config_2.60T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.60T_0deg.png>
+File: figures/test_pdc_position/config_2.80T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.80T_0deg.png>
+File: figures/test_pdc_position/config_3.00T_0deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_3.00T_0deg.png>
+
+Overfull \vbox (87.11172pt too high) detected at line 478
+ []
+
+
+
+[43
+
+]
+File: figures/test_pdc_position/config_0.80T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_0.80T_5deg.png>
+File: figures/test_pdc_position/config_1.00T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.00T_5deg.png>
+File: figures/test_pdc_position/config_1.20T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.20T_5deg.png>
+File: figures/test_pdc_position/config_1.40T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.40T_5deg.png>
+
+Overfull \vbox (87.11172pt too high) detected at line 513
+ []
+
+
+
+[44
+
+]
+File: figures/test_pdc_position/config_1.60T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.60T_5deg.png>
+File: figures/test_pdc_position/config_1.80T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.80T_5deg.png>
+File: figures/test_pdc_position/config_2.00T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.00T_5deg.png>
+File: figures/test_pdc_position/config_2.20T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.20T_5deg.png>
+
+Overfull \vbox (87.11172pt too high) detected at line 544
+ []
+
+
+
+[45
+
+]
+File: figures/test_pdc_position/config_2.40T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.40T_5deg.png>
+File: figures/test_pdc_position/config_2.60T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.60T_5deg.png>
+File: figures/test_pdc_position/config_2.80T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.80T_5deg.png>
+File: figures/test_pdc_position/config_3.00T_5deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_3.00T_5deg.png>
+
+Overfull \vbox (87.11172pt too high) detected at line 575
+ []
+
+
+
+[46
+
+]
+File: figures/test_pdc_position/config_0.80T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_0.80T_10deg.png>
+File: figures/test_pdc_position/config_1.00T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.00T_10deg.png>
+File: figures/test_pdc_position/config_1.20T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.20T_10deg.png>
+File: figures/test_pdc_position/config_1.40T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.40T_10deg.png>
+
+Overfull \vbox (87.11172pt too high) detected at line 610
+ []
+
+
+
+[47
+
+]
+File: figures/test_pdc_position/config_1.60T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.60T_10deg.png>
+File: figures/test_pdc_position/config_1.80T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_1.80T_10deg.png>
+File: figures/test_pdc_position/config_2.00T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.00T_10deg.png>
+File: figures/test_pdc_position/config_2.20T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.20T_10deg.png>
+
+Overfull \vbox (87.11172pt too high) detected at line 641
+ []
+
+
+
+[48
+
+]
+File: figures/test_pdc_position/config_2.40T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.40T_10deg.png>
+File: figures/test_pdc_position/config_2.60T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.60T_10deg.png>
+File: figures/test_pdc_position/config_2.80T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_2.80T_10deg.png>
+File: figures/test_pdc_position/config_3.00T_10deg.png Graphic file (type bmp)
+<figures/test_pdc_position/config_3.00T_10deg.png>
+
+Overfull \vbox (87.11172pt too high) detected at line 672
+ []
+
+
+
+[49
+
+]
+
+[50
 
 ]
 \tf@nav=\write6
@@ -949,15 +1304,15 @@ LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `dpolconfig.out' has not changed.
-(rerunfilecheck)             Checksum: 0E1AEC7997B3BC02023FF157970F8807;410.
+(rerunfilecheck)             Checksum: C9109046CAC22B8E00B62DBC3AD246EF;813.
  ) 
 Here is how much of TeX's memory you used:
- 29685 strings out of 473835
- 609955 string characters out of 5731945
- 984592 words of memory out of 5000000
- 52167 multiletter control sequences out of 15000+600000
+ 30376 strings out of 473835
+ 639617 string characters out of 5731945
+ 987147 words of memory out of 5000000
+ 52794 multiletter control sequences out of 15000+600000
  563946 words of font info for 67 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 128i,14n,123p,436b,741s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 128i,14n,123p,480b,741s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on dpolconfig.pdf (11 pages).
+Output written on dpolconfig.pdf (50 pages).

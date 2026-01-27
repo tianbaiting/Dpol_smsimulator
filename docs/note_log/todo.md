@@ -66,3 +66,7 @@ pdc 尽量固定在exit window后面, 观察总的.  与qmdfilter可能再重新
 
 
 geant4里面和 qmd里面对比一下区别, 特别是靶位置有没有弄对. 对比氘核轨迹 .
+
+```bash
+/control/getEnv SMSIMDIR
+```
