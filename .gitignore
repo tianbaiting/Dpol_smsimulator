@@ -40,3 +40,6 @@ Makefile
 !cmake/*.cmake
 
 .cache
+output
+.wrl
+.gdml
