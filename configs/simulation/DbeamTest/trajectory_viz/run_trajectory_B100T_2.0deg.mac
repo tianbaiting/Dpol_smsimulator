@@ -2,9 +2,16 @@
 # [EN] Trajectory visualization for B=1.00T, beam angle=2.0 deg
 # [CN] 轨迹可视化: B=1.00T, 束流偏转角=2.0度
 # =========================================================================
+# [EN] Uses /control/loop to shoot 3 tracks in sequence:
+#      1. Deuteron (380 MeV from upstream)
+#      2. Proton Py=+100 MeV/c (AngleX=-9.07 deg)
+#      3. Proton Py=-100 MeV/c (AngleX=+9.07 deg)
+# [CN] 使用 /control/loop 依次发射3条轨迹:
+#      1. 氘核 (380 MeV 从上游)
+#      2. 质子 Py=+100 MeV/c (AngleX=-9.07度)
+#      3. 质子 Py=-100 MeV/c (AngleX=+9.07度)
+# =========================================================================
 # Target position: X=-33.7681mm, Y=0.0131mm, Z=-762.6098mm
-# Deuteron: 380 MeV from (0, 0, -4m)
-# Proton: p=(0, ±100, 627) MeV/c, T=195 MeV, AngleY=±9.07°
 # =========================================================================
 
 # 1. Open visualization
@@ -29,6 +36,8 @@
 
 # ==========================================
 # [CRITICAL] Trajectory settings - BEFORE beamOn
+# [EN] Must configure trajectory visualization before any beamOn
+# [CN] 必须在任何 beamOn 之前配置轨迹可视化
 # ==========================================
 /vis/scene/add/trajectories smooth
 /vis/modeling/trajectories/create/drawByCharge
@@ -42,35 +51,14 @@
 /vis/verbose warnings
 
 # ==========================================
-# 1. Deuteron: 380 MeV from (0, 0, -4m)
+# [EN] Shoot 3 tracks using /control/loop
+# [CN] 使用 /control/loop 发射3条轨迹
 # ==========================================
+# [EN] /control/loop iterates over particle list and executes macro for each
+# [CN] /control/loop 遍历粒子列表，为每个粒子执行宏
 /action/gun/Type Pencil
-/action/gun/SetBeamParticleName deuteron
-/action/gun/Position 0 0 -4000 mm
-/action/gun/Energy 380 MeV
-/action/gun/AngleX 0 deg
-/action/gun/AngleY 0 deg
-/run/beamOn 1
 
-# ==========================================
-# 2. Proton Py=+100 MeV/c from target
-# ==========================================
-/action/gun/SetBeamParticleName proton
-/action/gun/Position -33.7681 0.0131 -762.6098 mm
-/action/gun/Energy 195 MeV
-/action/gun/AngleX 0 deg
-/action/gun/AngleY 9.07 deg
-/run/beamOn 1
-
-# ==========================================
-# 3. Proton Py=-100 MeV/c from target
-# ==========================================
-/action/gun/SetBeamParticleName proton
-/action/gun/Position -33.7681 0.0131 -762.6098 mm
-/action/gun/Energy 195 MeV
-/action/gun/AngleX 0 deg
-/action/gun/AngleY -9.07 deg
-/run/beamOn 1
+/control/loop /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/trajectory_viz/shoot_3tracks_B100T.mac TRACK 1 3 1
 
 # ==========================================
 # Refresh and Export

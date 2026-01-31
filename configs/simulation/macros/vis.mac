@@ -54,11 +54,11 @@
 # /action/gun/tree/InputFileName {SMSIMDIR}/data/simulation/g4input/ypol_slect_rotate_back/ypol_np_Pb208_g050.root
 # # /action/gun/tree/InputFileName {SMSIMDIR}/d_work/roo   tfiles/d+Pb208E190g050xyz/dbreakb01.root
 
-/action/gun/tree/TreeName tree
-/action/gun/tree/beamOn 23
-/vis/viewer/flush
-/event/verbose 1
-/tracking/verbose 1
+# /action/gun/tree/TreeName tree
+# /action/gun/tree/beamOn 23
+# /vis/viewer/flush
+# /event/verbose 1
+# /tracking/verbose 1
 
 # /control/alias runf "/action/gun/tree/beamOn 1; /vis/viewer/flush "
 # 上个命令失败了
@@ -67,15 +67,15 @@
 /action/gun/Type Pencil  
 /action/gun/SetBeamParticleName deuteron  
 /action/gun/Energy 380 MeV  
-/action/gun/Position 0 0 -4 m  
-  
-/tracking/storeTrajectory 1
+# /action/gun/Position 0 0 -4 m  
+/run/beamOn 10      
+# /tracking/storeTrajectory 1
 
 # /action/gun/Type Tree
-# /action/gun/tree/InputFileName input_tree/y_pol/phi_random/d+Xe130E190g060ynp.root
+# /action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4input/d+Pb208E190g050xyz/dbreakb01.root
 # /action/gun/tree/TreeName tree
 # /action/gun/tree/beamOn 20
 
 # 运行事件  
-/run/beamOn 10
+# /run/beamOn 10
 /vis/viewer/flush

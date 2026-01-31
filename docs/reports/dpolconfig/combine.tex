@@ -1,0 +1,25 @@
+% [EN] Combined trajectory visualization for D-beam test / [CN] D束流测试轨迹可视化
+
+% [EN] Define parameter lists for magnetic field scan / [CN] 定义磁场扫描参数列表
+\def\fields{080, 100, 120, 160, 200}
+
+% [EN] Generate slides automatically using foreach loop / [CN] 使用foreach循环自动生成幻灯片
+\foreach \b in \fields {
+    \begin{frame}{Combined Trajectories: $B = \b \times$0.01 T}
+        \centering
+        \begin{tabular}{ccc}
+            \includegraphics[width=0.28\textwidth]{./figures/combined_B\b T_2.0deg.png} &
+            \includegraphics[width=0.28\textwidth]{./figures/combined_B\b T_4.0deg.png} &
+            \includegraphics[width=0.28\textwidth]{./figures/combined_B\b T_6.0deg.png} \\
+            {\tiny $\theta = 2.0^\circ$} & {\tiny $\theta = 4.0^\circ$} & {\tiny $\theta = 6.0^\circ$} \\[0.3cm]
+            \includegraphics[width=0.28\textwidth]{./figures/combined_B\b T_8.0deg.png} &
+            \includegraphics[width=0.28\textwidth]{./figures/combined_B\b T_10.0deg.png} & \\
+            {\tiny $\theta = 8.0^\circ$} & {\tiny $\theta = 10.0^\circ$} & \\
+        \end{tabular}
+        \vfill
+        \begin{itemize}
+            \item {\color{magenta}Magenta}: Deuteron (380 MeV (190MeV/u)) trajectories
+            \item {\color{blue}Blue}: Proton trajectories (px = $\pm 100 MeV/c, \pm 150MeV/c$)
+        \end{itemize}
+    \end{frame}
+}

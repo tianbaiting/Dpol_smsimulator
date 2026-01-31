@@ -104,3 +104,7 @@ sim_deutron的geant4程序. 这里面写入不同的配置文件.
 我需要画出某一个磁场下,某一个beamp偏转角度下的轨迹图. 最好能够氘核质子画在一张图里(得保证 氘核 质子在一个run里面,得用/control/loop 实现循环在一个run里面循环不同的粒子以及动量 ).  氘核是380MeV的动能,在(0 , 0, -4m)出射, 质子是动量(100MeV,0,  627MeV/c) 从靶点位置出射,使用/samurai/geometry/Target/Angle ** deg.     不能的话就分别画出来.   
 
 最好批量运行不同磁场强度 不同偏转角度 ,导出png . 不行的话就把配置写出来用注释的方式写出来. 方便我以后直接运行. 写出配置,我只需要重新注释掉就行了.
+
+
+
+在/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/run_batch_wrl.sh, 生成了不同磁场下束流氘核的轨迹图, 在/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/track_vis_useTree/run_batch_v2.sh生成了不同磁场粒子的轨迹图wrl, 我希望合成生成氘核和质子的轨迹图, 并且把氘核的轨迹颜色改为洋红. 新建一个脚本实现这个功能/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/combainPD, 脚本放在这里. 生成的wrl图也放在这个文件夹的output目录下. 方便我查看.

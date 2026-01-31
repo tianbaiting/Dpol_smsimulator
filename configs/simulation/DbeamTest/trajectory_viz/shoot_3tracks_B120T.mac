@@ -1,0 +1,16 @@
+# =========================================================================
+# [EN] 3-track shooter for B=1.20T - called by /control/loop
+# [CN] B=1.20T 的3轨迹发射器 - 被 /control/loop 调用
+# =========================================================================
+# [EN] TRACK=1: Deuteron, TRACK=2: Proton up, TRACK=3: Proton down
+# [CN] TRACK=1: 氘核, TRACK=2: 质子上行, TRACK=3: 质子下行
+# =========================================================================
+
+# [EN] Use /control/if to select particle based on TRACK value
+# [CN] 使用 /control/if 根据 TRACK 值选择粒子
+
+/control/doif {TRACK} == 1 /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/trajectory_viz/tracks/deuteron.mac
+/control/doif {TRACK} == 2 /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/trajectory_viz/tracks/proton_up_B120T.mac
+/control/doif {TRACK} == 3 /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/trajectory_viz/tracks/proton_down_B120T.mac
+
+/run/beamOn 1

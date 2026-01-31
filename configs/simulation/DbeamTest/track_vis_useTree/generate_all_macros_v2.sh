@@ -68,12 +68,15 @@ while IFS=' ' read -r field angle tx ty tz; do
 # 1. Visualization setup
 /vis/open OGLIQt 1280x720
 # /vis/open OGL
-# 2. Load Geometry
-/control/execute ${TRAJVIZDIR}/geometry_B${field}T.mac
 
-# 3. Set Target position and angle (CRITICAL for particle direction)
+
+# 2. Set Target position and angle (CRITICAL for particle direction)
 /samurai/geometry/Target/Position ${tx_cm} ${ty_cm} ${tz_cm} cm
 /samurai/geometry/Target/Angle ${angle} deg
+
+# 3. Load Geometry
+/control/execute ${TRAJVIZDIR}/geometry_B${field}T.mac
+
 
 /action/file/OverWrite y
 /action/file/RunName protons_B${field}T_${angle}deg
@@ -126,6 +129,7 @@ while IFS=' ' read -r field angle tx ty tz; do
 
 # /vis/ogl/set/exportFormat pdf
 # /vis/viewer/set/background white
+# /control/shell sleep 1
 /vis/ogl/export ${VIZDIR}/output/protons_B${field}T_${angle}deg.png
 # Alternative export commands:
 # /vis/ogl/export ${VIZDIR}/output/protons_B${field}T_${angle}deg.png

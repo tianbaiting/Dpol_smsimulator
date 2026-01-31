@@ -1,0 +1,7 @@
+# [EN] Proton Py=+100 MeV/c from target / [CN] 质子 Py=+100 MeV/c 从靶发射
+/action/gun/Type Pencil
+/action/gun/SetBeamParticleName proton
+/action/gun/Position -33.7681 0.0131 -762.6098 mm
+/action/gun/Energy 195 MeV
+/action/gun/AngleX -9.07 deg
+/action/gun/AngleY 0 deg

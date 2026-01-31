@@ -4,775 +4,342 @@
   <define/>
 
   <materials>
-    <isotope N="54" Z="26" name="Fe540x55bec06354b0">
+    <isotope N="54" Z="26" name="Fe540x55a08c7c48d0">
       <atom unit="g/mole" value="53.9396"/>
     </isotope>
-    <isotope N="56" Z="26" name="Fe560x55bec0636fe0">
+    <isotope N="56" Z="26" name="Fe560x55a08c7c4c40">
       <atom unit="g/mole" value="55.9349"/>
     </isotope>
-    <isotope N="57" Z="26" name="Fe570x55bec0637030">
+    <isotope N="57" Z="26" name="Fe570x55a08c7c4c90">
       <atom unit="g/mole" value="56.9354"/>
     </isotope>
-    <isotope N="58" Z="26" name="Fe580x55bec06370d0">
+    <isotope N="58" Z="26" name="Fe580x55a08c7c4d30">
       <atom unit="g/mole" value="57.9333"/>
     </isotope>
-    <element name="Fe0x55bec0637120">
-      <fraction n="0.05845" ref="Fe540x55bec06354b0"/>
-      <fraction n="0.91754" ref="Fe560x55bec0636fe0"/>
-      <fraction n="0.02119" ref="Fe570x55bec0637030"/>
-      <fraction n="0.00282" ref="Fe580x55bec06370d0"/>
+    <element name="Fe0x55a08c7c4d80">
+      <fraction n="0.05845" ref="Fe540x55a08c7c48d0"/>
+      <fraction n="0.91754" ref="Fe560x55a08c7c4c40"/>
+      <fraction n="0.02119" ref="Fe570x55a08c7c4c90"/>
+      <fraction n="0.00282" ref="Fe580x55a08c7c4d30"/>
     </element>
-    <material name="G4_Fe0x55bec0636e70" state="solid">
+    <material name="G4_Fe0x55a08c7c4ad0" state="solid">
       <T unit="K" value="293.15"/>
       <MEE unit="eV" value="286"/>
       <D unit="g/cm3" value="7.874"/>
-      <fraction n="1" ref="Fe0x55bec0637120"/>
+      <fraction n="1" ref="Fe0x55a08c7c4d80"/>
     </material>
-    <isotope N="12" Z="6" name="C120x55bec063d320">
-      <atom unit="g/mole" value="12"/>
-    </isotope>
-    <isotope N="13" Z="6" name="C130x55bec063d370">
-      <atom unit="g/mole" value="13.0034"/>
-    </isotope>
-    <element name="C0x55bec063d3c0">
-      <fraction n="0.9893" ref="C120x55bec063d320"/>
-      <fraction n="0.0107" ref="C130x55bec063d370"/>
-    </element>
-    <isotope N="1" Z="1" name="H10x55bec061e540">
+    <isotope N="1" Z="1" name="H10x55a08c7b2180">
       <atom unit="g/mole" value="1.00782503081372"/>
     </isotope>
-    <isotope N="2" Z="1" name="H20x55bec062f6f0">
+    <isotope N="2" Z="1" name="H20x55a08c7b2590">
       <atom unit="g/mole" value="2.01410199966617"/>
     </isotope>
-    <element name="H0x55bec062f740">
-      <fraction n="0.999885" ref="H10x55bec061e540"/>
-      <fraction n="0.000115" ref="H20x55bec062f6f0"/>
+    <element name="H0x55a08c7b2600">
+      <fraction n="0.999885" ref="H10x55a08c7b2180"/>
+      <fraction n="0.000115" ref="H20x55a08c7b2590"/>
     </element>
-    <material name="G4_PLASTIC_SC_VINYLTOLUENE0x55bec063fff0" state="solid">
-      <T unit="K" value="293.15"/>
-      <MEE unit="eV" value="64.7"/>
-      <D unit="g/cm3" value="1.032"/>
-      <fraction n="0.914708531800025" ref="C0x55bec063d3c0"/>
-      <fraction n="0.0852914681999746" ref="H0x55bec062f740"/>
+    <material name="G4_Galactic0x55a08c7b2410" state="gas">
+      <T unit="K" value="2.73"/>
+      <P unit="pascal" value="3e-18"/>
+      <MEE unit="eV" value="21.8"/>
+      <D unit="g/cm3" value="1e-25"/>
+      <fraction n="1" ref="H0x55a08c7b2600"/>
     </material>
-    <isotope N="36" Z="18" name="Ar360x55bec0638c50">
+    <isotope N="112" Z="50" name="Sn1120x55a08c971430">
+      <atom unit="g/mole" value="111.905"/>
+    </isotope>
+    <isotope N="114" Z="50" name="Sn1140x55a08c971c20">
+      <atom unit="g/mole" value="113.903"/>
+    </isotope>
+    <isotope N="115" Z="50" name="Sn1150x55a08c971c70">
+      <atom unit="g/mole" value="114.903"/>
+    </isotope>
+    <isotope N="116" Z="50" name="Sn1160x55a08c971cf0">
+      <atom unit="g/mole" value="115.902"/>
+    </isotope>
+    <isotope N="117" Z="50" name="Sn1170x55a08c971d40">
+      <atom unit="g/mole" value="116.903"/>
+    </isotope>
+    <isotope N="118" Z="50" name="Sn1180x55a08c971de0">
+      <atom unit="g/mole" value="117.902"/>
+    </isotope>
+    <isotope N="119" Z="50" name="Sn1190x55a08c971e30">
+      <atom unit="g/mole" value="118.903"/>
+    </isotope>
+    <isotope N="120" Z="50" name="Sn1200x55a08c971e80">
+      <atom unit="g/mole" value="119.902"/>
+    </isotope>
+    <isotope N="122" Z="50" name="Sn1220x55a08c971ed0">
+      <atom unit="g/mole" value="121.903"/>
+    </isotope>
+    <isotope N="124" Z="50" name="Sn1240x55a08c971d90">
+      <atom unit="g/mole" value="123.905"/>
+    </isotope>
+    <element name="Sn0x55a08c971110">
+      <fraction n="0.0097" ref="Sn1120x55a08c971430"/>
+      <fraction n="0.0066" ref="Sn1140x55a08c971c20"/>
+      <fraction n="0.0034" ref="Sn1150x55a08c971c70"/>
+      <fraction n="0.1454" ref="Sn1160x55a08c971cf0"/>
+      <fraction n="0.0768" ref="Sn1170x55a08c971d40"/>
+      <fraction n="0.2422" ref="Sn1180x55a08c971de0"/>
+      <fraction n="0.0859" ref="Sn1190x55a08c971e30"/>
+      <fraction n="0.3258" ref="Sn1200x55a08c971e80"/>
+      <fraction n="0.0463" ref="Sn1220x55a08c971ed0"/>
+      <fraction n="0.0579" ref="Sn1240x55a08c971d90"/>
+    </element>
+    <material name="G4_Sn0x55a08c971ae0" state="solid">
+      <T unit="K" value="293.15"/>
+      <MEE unit="eV" value="488"/>
+      <D unit="g/cm3" value="7.31"/>
+      <fraction n="1" ref="Sn0x55a08c971110"/>
+    </material>
+    <isotope N="36" Z="18" name="Ar360x55a08c7c6370">
       <atom unit="g/mole" value="35.9675"/>
     </isotope>
-    <isotope N="38" Z="18" name="Ar380x55bec0638ca0">
+    <isotope N="38" Z="18" name="Ar380x55a08c7c63c0">
       <atom unit="g/mole" value="37.9627"/>
     </isotope>
-    <isotope N="40" Z="18" name="Ar400x55bec063cd40">
+    <isotope N="40" Z="18" name="Ar400x55a08c7c6410">
       <atom unit="g/mole" value="39.9624"/>
     </isotope>
-    <element name="Ar0x55bec063cd90">
-      <fraction n="0.003365" ref="Ar360x55bec0638c50"/>
-      <fraction n="0.000632" ref="Ar380x55bec0638ca0"/>
-      <fraction n="0.996003" ref="Ar400x55bec063cd40"/>
+    <element name="Ar0x55a08c7c6460">
+      <fraction n="0.003365" ref="Ar360x55a08c7c6370"/>
+      <fraction n="0.000632" ref="Ar380x55a08c7c63c0"/>
+      <fraction n="0.996003" ref="Ar400x55a08c7c6410"/>
     </element>
-    <material name="mat_PDC0x55bec063dce0" state="gas">
+    <isotope N="12" Z="6" name="C120x55a08c7c6a40">
+      <atom unit="g/mole" value="12"/>
+    </isotope>
+    <isotope N="13" Z="6" name="C130x55a08c7c6a90">
+      <atom unit="g/mole" value="13.0034"/>
+    </isotope>
+    <element name="C0x55a08c7c6ae0">
+      <fraction n="0.9893" ref="C120x55a08c7c6a40"/>
+      <fraction n="0.0107" ref="C130x55a08c7c6a90"/>
+    </element>
+    <material name="mat_PDC0x55a08c7cb430" state="gas">
       <T unit="K" value="293.15"/>
       <MEE unit="eV" value="115.300596017496"/>
       <D unit="g/cm3" value="0.00184956800145449"/>
-      <fraction n="0.673406503531459" ref="Ar0x55bec063cd90"/>
-      <fraction n="0.269956612827264" ref="C0x55bec063d3c0"/>
-      <fraction n="0.0566368836412769" ref="H0x55bec062f740"/>
+      <fraction n="0.673406503531459" ref="Ar0x55a08c7c6460"/>
+      <fraction n="0.269956612827264" ref="C0x55a08c7c6ae0"/>
+      <fraction n="0.0566368836412769" ref="H0x55a08c7b2600"/>
     </material>
-    <isotope N="14" Z="7" name="N140x55bec07f47f0">
-      <atom unit="g/mole" value="14.0031"/>
-    </isotope>
-    <isotope N="15" Z="7" name="N150x55bec07f4860">
-      <atom unit="g/mole" value="15.0001"/>
-    </isotope>
-    <element name="N0x55bec07f48d0">
-      <fraction n="0.99632" ref="N140x55bec07f47f0"/>
-      <fraction n="0.00368" ref="N150x55bec07f4860"/>
-    </element>
-    <isotope N="16" Z="8" name="O160x55bec07f4a60">
+    <isotope N="16" Z="8" name="O160x55a08c96f1f0">
       <atom unit="g/mole" value="15.9949"/>
     </isotope>
-    <isotope N="17" Z="8" name="O170x55bec07f4ab0">
+    <isotope N="17" Z="8" name="O170x55a08c96f240">
       <atom unit="g/mole" value="16.9991"/>
     </isotope>
-    <isotope N="18" Z="8" name="O180x55bec07f4b20">
+    <isotope N="18" Z="8" name="O180x55a08c96f2b0">
       <atom unit="g/mole" value="17.9992"/>
     </isotope>
-    <element name="O0x55bec07f4b70">
-      <fraction n="0.99757" ref="O160x55bec07f4a60"/>
-      <fraction n="0.00038" ref="O170x55bec07f4ab0"/>
-      <fraction n="0.00205" ref="O180x55bec07f4b20"/>
+    <element name="O0x55a08c96f300">
+      <fraction n="0.99757" ref="O160x55a08c96f1f0"/>
+      <fraction n="0.00038" ref="O170x55a08c96f240"/>
+      <fraction n="0.00205" ref="O180x55a08c96f2b0"/>
     </element>
-    <material name="G4_AIR0x55bec07f4690" state="gas">
+    <material name="G4_WATER0x55a08c96fea0" state="liquid">
       <T unit="K" value="293.15"/>
-      <MEE unit="eV" value="85.7"/>
-      <D unit="g/cm3" value="0.00120479"/>
-      <fraction n="0.000124000124000124" ref="C0x55bec063d3c0"/>
-      <fraction n="0.755267755267755" ref="N0x55bec07f48d0"/>
-      <fraction n="0.231781231781232" ref="O0x55bec07f4b70"/>
-      <fraction n="0.0128270128270128" ref="Ar0x55bec063cd90"/>
+      <MEE unit="eV" value="78"/>
+      <D unit="g/cm3" value="1"/>
+      <fraction n="0.111898477841067" ref="H0x55a08c7b2600"/>
+      <fraction n="0.888101522158933" ref="O0x55a08c96f300"/>
     </material>
   </materials>
 
   <solids>
-    <box lunit="mm" name="yoke_box0x55bec08026f0" x="6700" y="4640" z="3500"/>
-    <box lunit="mm" name="vchamber_box0x55bec07f83d0" x="3240" y="800" z="3502"/>
-    <subtraction name="yoke_solid0x55bec0804ed0">
-      <first ref="yoke_box0x55bec08026f0"/>
-      <second ref="vchamber_box0x55bec07f83d0"/>
+    <box lunit="mm" name="yoke_box0x55a08c97cc20" x="6700" y="4640" z="3500"/>
+    <box lunit="mm" name="vchamber_box0x55a08c97cd40" x="3240" y="800" z="3502"/>
+    <subtraction name="yoke_solid0x55a08c97d030">
+      <first ref="yoke_box0x55a08c97cc20"/>
+      <second ref="vchamber_box0x55a08c97cd40"/>
     </subtraction>
-    <trap alpha1="0" alpha2="0" aunit="deg" lunit="mm" name="vchamber_trap0x55bec02c4de0" phi="0" theta="0" x1="3240" x2="5140" x3="3240" x4="5140" y1="1128.8463" y2="1128.8463" z="800"/>
-    <subtraction name="yoke_solid0x55bec0804ca0">
-      <first ref="yoke_solid0x55bec0804ed0"/>
-      <second ref="vchamber_trap0x55bec02c4de0"/>
-      <position name="yoke_solid0x55bec0804ca0_pos" unit="mm" x="0" y="0" z="1185.57685"/>
-      <rotation name="yoke_solid0x55bec0804ca0_rot" unit="deg" x="90" y="0" z="0"/>
+    <trap alpha1="0" alpha2="0" aunit="deg" lunit="mm" name="vchamber_trap0x55a08c97ce40" phi="0" theta="0" x1="3240" x2="5140" x3="3240" x4="5140" y1="1128.8463" y2="1128.8463" z="800"/>
+    <subtraction name="yoke_solid0x55a08c97d180">
+      <first ref="yoke_solid0x55a08c97d030"/>
+      <second ref="vchamber_trap0x55a08c97ce40"/>
+      <position name="yoke_solid0x55a08c97d180_pos" unit="mm" x="0" y="0" z="1185.57685"/>
+      <rotation name="yoke_solid0x55a08c97d180_rot" unit="deg" x="90" y="0" z="0"/>
     </subtraction>
-    <box lunit="mm" name="NeutronDetector0x55bec2b9cdf0" x="120" y="1800" z="120"/>
-    <box lunit="mm" name="VetoDetector0x55bec2e28540" x="320" y="1900" z="10"/>
-    <box lunit="mm" name="U_box0x55bec2cc0720" x="1680" y="780" z="8"/>
-    <box lunit="mm" name="X_box0x55bec2c7e0d0" x="1680" y="780" z="16"/>
-    <box lunit="mm" name="V_box0x55bec2cb96c0" x="1680" y="780" z="16"/>
-    <box lunit="mm" name="PDCenc_box0x55bec2d69a70" x="1700" y="800" z="190"/>
-    <box lunit="mm" name="expHall_box0x55bec08042a0" x="14000" y="5000" z="20000"/>
+    <box lunit="mm" name="NeutronWindowBox0x55a08c97ee00" x="2430" y="800" z="3"/>
+    <box lunit="mm" name="Flange0x55a08c97e3c0" x="2730" y="1150" z="30"/>
+    <box lunit="mm" name="WindowBox0x55a08c97e4c0" x="2490" y="860" z="130"/>
+    <union name="Flange_WindowBox0x55a08c97e6c0">
+      <first ref="Flange0x55a08c97e3c0"/>
+      <second ref="WindowBox0x55a08c97e4c0"/>
+      <position name="Flange_WindowBox0x55a08c97e6c0_pos" unit="mm" x="-25" y="0" z="80"/>
+    </union>
+    <box lunit="mm" name="WindowHole0x55a08c97e5c0" x="2430" y="800" z="400"/>
+    <subtraction name="ExitWindowN0x55a08c97e9e0">
+      <first ref="Flange_WindowBox0x55a08c97e6c0"/>
+      <second ref="WindowHole0x55a08c97e5c0"/>
+      <position name="ExitWindowN0x55a08c97e9e0_pos" unit="mm" x="-25" y="0" z="0"/>
+    </subtraction>
+    <box lunit="mm" name="windowc2_flange_box0x55a08c97f410" x="3340" y="1200" z="30"/>
+    <box lunit="mm" name="windowc2_tubeholder_box0x55a08c97f5b0" x="3340" y="130" z="130"/>
+    <union name="windowc2_flng_hldr0x55a08c97f830">
+      <first ref="windowc2_flange_box0x55a08c97f410"/>
+      <second ref="windowc2_tubeholder_box0x55a08c97f5b0"/>
+      <position name="windowc2_flng_hldr0x55a08c97f830_pos" unit="mm" x="0" y="465" z="80"/>
+    </union>
+    <union name="windowc2_flng_hldr20x55a08c97fb10">
+      <first ref="windowc2_flng_hldr0x55a08c97f830"/>
+      <second ref="windowc2_tubeholder_box0x55a08c97f5b0"/>
+      <position name="windowc2_flng_hldr20x55a08c97fb10_pos" unit="mm" x="0" y="-465" z="80"/>
+    </union>
+    <box lunit="mm" name="windowc2_hole_box0x55a08c97f6f0" x="2940" y="800" z="30"/>
+    <subtraction name="windowc2_flng_hldr2_hole0x55a08c97fe40">
+      <first ref="windowc2_flng_hldr20x55a08c97fb10"/>
+      <second ref="windowc2_hole_box0x55a08c97f6f0"/>
+    </subtraction>
+    <box lunit="mm" name="vacuum_box0x55a08c980710" x="3000" y="1000" z="2000"/>
+    <subtraction name="vacuum_upstream0x55a08c980810">
+      <first ref="vacuum_box0x55a08c980710"/>
+      <second ref="yoke_solid0x55a08c97d180"/>
+      <position name="vacuum_upstream0x55a08c980810_pos" unit="mm" x="-170.51" y="0" z="-2172.46"/>
+      <rotation name="vacuum_upstream0x55a08c980810_rot" unit="deg" x="0" y="29.91" z="0"/>
+    </subtraction>
+    <box lunit="mm" name="subt20x55a08c980a80" x="1800" y="1200" z="4000"/>
+    <subtraction name="vacuum_upstream0x55a08c980b80">
+      <first ref="vacuum_upstream0x55a08c980810"/>
+      <second ref="subt20x55a08c980a80"/>
+      <position name="vacuum_upstream0x55a08c980b80_pos" unit="mm" x="1950" y="0" z="0"/>
+      <rotation name="vacuum_upstream0x55a08c980b80_rot" unit="deg" x="0" y="29.91" z="0"/>
+    </subtraction>
+    <box lunit="mm" name="tgt_box0x55a08c981190" x="50" y="50" z="5"/>
+    <box lunit="mm" name="U_box0x55a08c982220" x="1680" y="780" z="8"/>
+    <box lunit="mm" name="X_box0x55a08c982630" x="1680" y="780" z="16"/>
+    <box lunit="mm" name="V_box0x55a08c982a60" x="1680" y="780" z="16"/>
+    <box lunit="mm" name="PDCenc_box0x55a08c981fb0" x="1700" y="800" z="190"/>
+    <box lunit="mm" name="Box0x55a08c9833f0" x="2500" y="2500" z="3000"/>
+    <box lunit="mm" name="Opening0x55a08c9834f0" x="340" y="380" z="1200"/>
+    <subtraction name="Dump0x55a08c9835f0">
+      <first ref="Box0x55a08c9833f0"/>
+      <second ref="Opening0x55a08c9834f0"/>
+      <position name="Dump0x55a08c9835f0_pos" unit="mm" x="0" y="250" z="-900"/>
+    </subtraction>
+    <box lunit="mm" name="expHall_box0x55a08c972900" x="14000" y="5000" z="20000"/>
   </solids>
 
   <structure>
-    <volume name="yoke_log0x55bec0804510">
-      <materialref ref="G4_Fe0x55bec0636e70"/>
-      <solidref ref="yoke_solid0x55bec0804ca0"/>
+    <volume name="yoke_log0x55a08c97d3f0">
+      <materialref ref="G4_Fe0x55a08c7c4ad0"/>
+      <solidref ref="yoke_solid0x55a08c97d180"/>
     </volume>
-    <volume name="NeutronDetector0x55bec08043a0">
-      <materialref ref="G4_PLASTIC_SC_VINYLTOLUENE0x55bec063fff0"/>
-      <solidref ref="NeutronDetector0x55bec2b9cdf0"/>
+    <volume name="NeutronWindow0x55a08c97ef60">
+      <materialref ref="G4_Fe0x55a08c7c4ad0"/>
+      <solidref ref="NeutronWindowBox0x55a08c97ee00"/>
     </volume>
-    <volume name="VetoDetector0x55bec0802d50">
-      <materialref ref="G4_PLASTIC_SC_VINYLTOLUENE0x55bec063fff0"/>
-      <solidref ref="VetoDetector0x55bec2e28540"/>
+    <volume name="NeutronWindowFlange0x55a08c97ec60">
+      <materialref ref="G4_Fe0x55a08c7c4ad0"/>
+      <solidref ref="ExitWindowN0x55a08c97e9e0"/>
     </volume>
-    <volume name="U0x55bec2dabcf0">
-      <materialref ref="mat_PDC0x55bec063dce0"/>
-      <solidref ref="U_box0x55bec2cc0720"/>
+    <volume name="ExitWindowC2_log0x55a08c97ffe0">
+      <materialref ref="G4_Fe0x55a08c7c4ad0"/>
+      <solidref ref="windowc2_flng_hldr2_hole0x55a08c97fe40"/>
     </volume>
-    <volume name="X0x55bec2d9b590">
-      <materialref ref="mat_PDC0x55bec063dce0"/>
-      <solidref ref="X_box0x55bec2c7e0d0"/>
+    <volume name="ExitWindowC2Hole_log0x55a08c980170">
+      <materialref ref="G4_Galactic0x55a08c7b2410"/>
+      <solidref ref="windowc2_hole_box0x55a08c97f6f0"/>
     </volume>
-    <volume name="V0x55bec2cb9970">
-      <materialref ref="mat_PDC0x55bec063dce0"/>
-      <solidref ref="V_box0x55bec2cb96c0"/>
+    <volume name="vacuum_upstream_log0x55a08c980d70">
+      <materialref ref="G4_Galactic0x55a08c7b2410"/>
+      <solidref ref="vacuum_upstream0x55a08c980b80"/>
     </volume>
-    <volume name="PDC0x55bec07f8450">
-      <materialref ref="mat_PDC0x55bec063dce0"/>
-      <solidref ref="PDCenc_box0x55bec2d69a70"/>
-      <physvol name="PDCSD_U0x55bec2e8fa60">
-        <volumeref ref="U0x55bec2dabcf0"/>
-        <position name="PDCSD_U0x55bec2e8fa60_pos" unit="mm" x="0" y="0" z="-12"/>
-      </physvol>
-      <physvol name="PDCSD_X0x55bec2d9b840">
-        <volumeref ref="X0x55bec2d9b590"/>
-      </physvol>
-      <physvol name="PDCSD_V0x55bec2b57ad0">
-        <volumeref ref="V0x55bec2cb9970"/>
-        <position name="PDCSD_V0x55bec2b57ad0_pos" unit="mm" x="0" y="0" z="12"/>
+    <volume name="targetSD_log0x55a08c9813e0">
+      <materialref ref="G4_Sn0x55a08c971ae0"/>
+      <solidref ref="tgt_box0x55a08c981190"/>
+    </volume>
+    <volume name="target_log0x55a08c981270">
+      <materialref ref="G4_Sn0x55a08c971ae0"/>
+      <solidref ref="tgt_box0x55a08c981190"/>
+      <physvol name="Target_SD0x55a08c9815a0">
+        <volumeref ref="targetSD_log0x55a08c9813e0"/>
+        <scale name="Target_SD0x55a08c9815a0_scl" x="0" y="0" z="1"/>
       </physvol>
     </volume>
-    <volume name="expHall_log0x55bec08051f0">
-      <materialref ref="G4_AIR0x55bec07f4690"/>
-      <solidref ref="expHall_box0x55bec08042a0"/>
-      <physvol name="yoke0x55bec0805190">
-        <volumeref ref="yoke_log0x55bec0804510"/>
-        <rotation name="yoke0x55bec0805190_rot" unit="deg" x="0" y="30" z="0"/>
-      </physvol>
-      <physvol copynumber="1" name="Neut0x55bec2d4cb10">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d4cb10_pos" unit="mm" x="1901.8" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="2" name="Neut0x55bec0806700">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0806700_pos" unit="mm" x="1779.4" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="3" name="Neut0x55bec0802b90">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0802b90_pos" unit="mm" x="1657" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="4" name="Neut0x55bec2bb3c60">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb3c60_pos" unit="mm" x="1534.6" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="5" name="Neut0x55bec2bb3cc0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb3cc0_pos" unit="mm" x="1412.2" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="6" name="Neut0x55bec2bb3d20">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb3d20_pos" unit="mm" x="1289.8" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="7" name="Neut0x55bec2bb3d80">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb3d80_pos" unit="mm" x="1167.4" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="8" name="Neut0x55bec2bb3de0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb3de0_pos" unit="mm" x="1045" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="9" name="Neut0x55bec2bb3e40">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb3e40_pos" unit="mm" x="922.6" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="10" name="Neut0x55bec2bb3ea0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb3ea0_pos" unit="mm" x="800.2" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="11" name="Neut0x55bec2bb3f00">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb3f00_pos" unit="mm" x="677.8" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="12" name="Neut0x55bec2b95700">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b95700_pos" unit="mm" x="555.4" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="13" name="Neut0x55bec2d50150">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d50150_pos" unit="mm" x="433" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="14" name="Neut0x55bec2e524d0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e524d0_pos" unit="mm" x="310.6" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="15" name="Neut0x55bec2c2b090">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c2b090_pos" unit="mm" x="188.2" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="16" name="Neut0x55bec2d99cc0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d99cc0_pos" unit="mm" x="65.8" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="17" name="Neut0x55bec2bd7d00">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bd7d00_pos" unit="mm" x="-56.6" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="18" name="Neut0x55bec2cd4330">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2cd4330_pos" unit="mm" x="-179" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="19" name="Neut0x55bec2d77710">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d77710_pos" unit="mm" x="-301.4" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="20" name="Neut0x55bec2cc1320">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2cc1320_pos" unit="mm" x="-423.8" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="21" name="Neut0x55bec2b89ba0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b89ba0_pos" unit="mm" x="-546.2" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="22" name="Neut0x55bec2bada00">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bada00_pos" unit="mm" x="-668.6" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="23" name="Neut0x55bec2dabfa0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2dabfa0_pos" unit="mm" x="-791" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="24" name="Neut0x55bec2e8ffc0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e8ffc0_pos" unit="mm" x="-913.4" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="25" name="Neut0x55bec2cb9c20">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2cb9c20_pos" unit="mm" x="-1035.8" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="26" name="Neut0x55bec2b57fd0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b57fd0_pos" unit="mm" x="-1158.2" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="27" name="Neut0x55bec2e95fc0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e95fc0_pos" unit="mm" x="-1280.6" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="28" name="Neut0x55bec2c79f80">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c79f80_pos" unit="mm" x="-1403" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="29" name="Neut0x55bec2b45d10">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b45d10_pos" unit="mm" x="-1525.4" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="30" name="Neut0x55bec2a12060">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2a12060_pos" unit="mm" x="-1647.8" y="0" z="7249.72"/>
-      </physvol>
-      <physvol copynumber="31" name="Neut0x55bec2c3d0f0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c3d0f0_pos" unit="mm" x="1901.8" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="32" name="Neut0x55bec2d8f740">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d8f740_pos" unit="mm" x="1779.4" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="33" name="Neut0x55bec2b12c20">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b12c20_pos" unit="mm" x="1657" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="34" name="Neut0x55bec2c476d0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c476d0_pos" unit="mm" x="1534.6" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="35" name="Neut0x55bec2c4eec0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c4eec0_pos" unit="mm" x="1412.2" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="36" name="Neut0x55bec2d1e230">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d1e230_pos" unit="mm" x="1289.8" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="37" name="Neut0x55bec2bb0900">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb0900_pos" unit="mm" x="1167.4" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="38" name="Neut0x55bec2c458d0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c458d0_pos" unit="mm" x="1045" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="39" name="Neut0x55bec2b55bd0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b55bd0_pos" unit="mm" x="922.6" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="40" name="Neut0x55bec2a05fe0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2a05fe0_pos" unit="mm" x="800.2" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="41" name="Neut0x55bec2c53010">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c53010_pos" unit="mm" x="677.8" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="42" name="Neut0x55bec2c1cb20">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c1cb20_pos" unit="mm" x="555.4" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="43" name="Neut0x55bec2e064d0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e064d0_pos" unit="mm" x="433" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="44" name="Neut0x55bec2bb63a0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bb63a0_pos" unit="mm" x="310.6" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="45" name="Neut0x55bec2be6750">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2be6750_pos" unit="mm" x="188.2" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="46" name="Neut0x55bec2c86af0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c86af0_pos" unit="mm" x="65.8" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="47" name="Neut0x55bec2cb37a0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2cb37a0_pos" unit="mm" x="-56.6" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="48" name="Neut0x55bec2d593c0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d593c0_pos" unit="mm" x="-179" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="49" name="Neut0x55bec2b3e570">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b3e570_pos" unit="mm" x="-301.4" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="50" name="Neut0x55bec2d74d00">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d74d00_pos" unit="mm" x="-423.8" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="51" name="Neut0x55bec2c31030">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c31030_pos" unit="mm" x="-546.2" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="52" name="Neut0x55bec2e929b0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e929b0_pos" unit="mm" x="-668.6" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="53" name="Neut0x55bec0802e40">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0802e40_pos" unit="mm" x="-791" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="54" name="Neut0x55bec0806530">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0806530_pos" unit="mm" x="-913.4" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="55" name="Neut0x55bec0804ba0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0804ba0_pos" unit="mm" x="-1035.8" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="56" name="Neut0x55bec2e78bc0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e78bc0_pos" unit="mm" x="-1158.2" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="57" name="Neut0x55bec0806630">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0806630_pos" unit="mm" x="-1280.6" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="58" name="Neut0x55bec2d7c480">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d7c480_pos" unit="mm" x="-1403" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="59" name="Neut0x55bec0804f80">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0804f80_pos" unit="mm" x="-1525.4" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="60" name="Neut0x55bec0804fe0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0804fe0_pos" unit="mm" x="-1647.8" y="0" z="7379.72"/>
-      </physvol>
-      <physvol copynumber="61" name="Neut0x55bec07f7ea0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec07f7ea0_pos" unit="mm" x="1901.8" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="62" name="Neut0x55bec08045c0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec08045c0_pos" unit="mm" x="1779.4" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="63" name="Neut0x55bec0804620">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0804620_pos" unit="mm" x="1657" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="64" name="Neut0x55bec0804480">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0804480_pos" unit="mm" x="1534.6" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="65" name="Neut0x55bec0806270">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0806270_pos" unit="mm" x="1412.2" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="66" name="Neut0x55bec0802c10">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0802c10_pos" unit="mm" x="1289.8" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="67" name="Neut0x55bec0802c70">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0802c70_pos" unit="mm" x="1167.4" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="68" name="Neut0x55bec0805d70">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0805d70_pos" unit="mm" x="1045" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="69" name="Neut0x55bec0805ab0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec0805ab0_pos" unit="mm" x="922.6" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="70" name="Neut0x55bec2cb7120">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2cb7120_pos" unit="mm" x="800.2" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="71" name="Neut0x55bec2cb71b0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2cb71b0_pos" unit="mm" x="677.8" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="72" name="Neut0x55bec2e78660">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e78660_pos" unit="mm" x="555.4" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="73" name="Neut0x55bec2e786f0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e786f0_pos" unit="mm" x="433" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="74" name="Neut0x55bec2e78940">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e78940_pos" unit="mm" x="310.6" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="75" name="Neut0x55bec2c7dd00">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c7dd00_pos" unit="mm" x="188.2" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="76" name="Neut0x55bec2c7dd90">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c7dd90_pos" unit="mm" x="65.8" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="77" name="Neut0x55bec2c7dfb0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c7dfb0_pos" unit="mm" x="-56.6" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="78" name="Neut0x55bec2c7e040">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c7e040_pos" unit="mm" x="-179" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="79" name="Neut0x55bec2cc0380">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2cc0380_pos" unit="mm" x="-301.4" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="80" name="Neut0x55bec2cc0600">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2cc0600_pos" unit="mm" x="-423.8" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="81" name="Neut0x55bec2cc0690">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2cc0690_pos" unit="mm" x="-546.2" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="82" name="Neut0x55bec2b9ca20">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b9ca20_pos" unit="mm" x="-668.6" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="83" name="Neut0x55bec2b9cab0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b9cab0_pos" unit="mm" x="-791" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="84" name="Neut0x55bec2b9cd00">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b9cd00_pos" unit="mm" x="-913.4" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="85" name="Neut0x55bec2e28170">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e28170_pos" unit="mm" x="-1035.8" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="86" name="Neut0x55bec2e28200">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e28200_pos" unit="mm" x="-1158.2" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="87" name="Neut0x55bec2e28420">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e28420_pos" unit="mm" x="-1280.6" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="88" name="Neut0x55bec2e284b0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e284b0_pos" unit="mm" x="-1403" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="89" name="Neut0x55bec2c37830">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c37830_pos" unit="mm" x="-1525.4" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="90" name="Neut0x55bec2c37920">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c37920_pos" unit="mm" x="-1647.8" y="0" z="8095.72"/>
-      </physvol>
-      <physvol copynumber="91" name="Neut0x55bec2c379b0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c379b0_pos" unit="mm" x="1901.8" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="92" name="Neut0x55bec2e2e4e0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e2e4e0_pos" unit="mm" x="1779.4" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="93" name="Neut0x55bec2e2e570">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e2e570_pos" unit="mm" x="1657" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="94" name="Neut0x55bec2e2e7c0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e2e7c0_pos" unit="mm" x="1534.6" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="95" name="Neut0x55bec2d69510">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d69510_pos" unit="mm" x="1412.2" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="96" name="Neut0x55bec2d695a0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d695a0_pos" unit="mm" x="1289.8" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="97" name="Neut0x55bec2d697c0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d697c0_pos" unit="mm" x="1167.4" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="98" name="Neut0x55bec2d69850">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d69850_pos" unit="mm" x="1045" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="99" name="Neut0x55bec2b951d0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b951d0_pos" unit="mm" x="922.6" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="100" name="Neut0x55bec080a6e0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec080a6e0_pos" unit="mm" x="800.2" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="101" name="Neut0x55bec2dc3af0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2dc3af0_pos" unit="mm" x="677.8" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="102" name="Neut0x55bec2b95450">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b95450_pos" unit="mm" x="555.4" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="103" name="Neut0x55bec2b954e0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2b954e0_pos" unit="mm" x="433" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="104" name="Neut0x55bec2d4fbf0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d4fbf0_pos" unit="mm" x="310.6" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="105" name="Neut0x55bec2d4fc80">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d4fc80_pos" unit="mm" x="188.2" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="106" name="Neut0x55bec2d4fea0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d4fea0_pos" unit="mm" x="65.8" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="107" name="Neut0x55bec2d4ff30">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d4ff30_pos" unit="mm" x="-56.6" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="108" name="Neut0x55bec2e51fa0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e51fa0_pos" unit="mm" x="-179" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="109" name="Neut0x55bec2e52220">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e52220_pos" unit="mm" x="-301.4" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="110" name="Neut0x55bec2e522b0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2e522b0_pos" unit="mm" x="-423.8" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="111" name="Neut0x55bec2c2ab30">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c2ab30_pos" unit="mm" x="-546.2" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="112" name="Neut0x55bec2c2abc0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c2abc0_pos" unit="mm" x="-668.6" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="113" name="Neut0x55bec2c2ae10">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2c2ae10_pos" unit="mm" x="-791" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="114" name="Neut0x55bec2d99760">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d99760_pos" unit="mm" x="-913.4" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="115" name="Neut0x55bec2d997f0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d997f0_pos" unit="mm" x="-1035.8" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="116" name="Neut0x55bec2d99a10">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d99a10_pos" unit="mm" x="-1158.2" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="117" name="Neut0x55bec2d99aa0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2d99aa0_pos" unit="mm" x="-1280.6" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="118" name="Neut0x55bec2bd77d0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bd77d0_pos" unit="mm" x="-1403" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="119" name="Neut0x55bec2bd7a50">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bd7a50_pos" unit="mm" x="-1525.4" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="120" name="Neut0x55bec2bd7ae0">
-        <volumeref ref="NeutronDetector0x55bec08043a0"/>
-        <position name="Neut0x55bec2bd7ae0_pos" unit="mm" x="-1647.8" y="0" z="8225.72"/>
-      </physvol>
-      <physvol copynumber="121" name="Veto0x55bec2cd3dd0">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2cd3dd0_pos" unit="mm" x="1832" y="0" z="6974.72"/>
-      </physvol>
-      <physvol copynumber="122" name="Veto0x55bec2cd4080">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2cd4080_pos" unit="mm" x="1522" y="0" z="6989.72"/>
-      </physvol>
-      <physvol copynumber="123" name="Veto0x55bec2cd4110">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2cd4110_pos" unit="mm" x="1212" y="0" z="6974.72"/>
-      </physvol>
-      <physvol copynumber="124" name="Veto0x55bec2bbb600">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2bbb600_pos" unit="mm" x="902" y="0" z="6989.72"/>
-      </physvol>
-      <physvol copynumber="125" name="Veto0x55bec2bbb850">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2bbb850_pos" unit="mm" x="592" y="0" z="6974.72"/>
-      </physvol>
-      <physvol copynumber="126" name="Veto0x55bec2bbb8e0">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2bbb8e0_pos" unit="mm" x="282" y="0" z="6989.72"/>
-      </physvol>
-      <physvol copynumber="127" name="Veto0x55bec2d771b0">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2d771b0_pos" unit="mm" x="-28" y="0" z="6974.72"/>
-      </physvol>
-      <physvol copynumber="128" name="Veto0x55bec2d77240">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2d77240_pos" unit="mm" x="-338" y="0" z="6989.72"/>
-      </physvol>
-      <physvol copynumber="129" name="Veto0x55bec2d77490">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2d77490_pos" unit="mm" x="-648" y="0" z="6974.72"/>
-      </physvol>
-      <physvol copynumber="130" name="Veto0x55bec2cc0dc0">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2cc0dc0_pos" unit="mm" x="-958" y="0" z="6989.72"/>
-      </physvol>
-      <physvol copynumber="131" name="Veto0x55bec2cc0e50">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2cc0e50_pos" unit="mm" x="-1268" y="0" z="6974.72"/>
-      </physvol>
-      <physvol copynumber="132" name="Veto0x55bec2cc1070">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2cc1070_pos" unit="mm" x="-1578" y="0" z="6989.72"/>
-      </physvol>
-      <physvol copynumber="133" name="Veto0x55bec2cc1100">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2cc1100_pos" unit="mm" x="1832" y="0" z="7820.72"/>
-      </physvol>
-      <physvol copynumber="134" name="Veto0x55bec2b3ce40">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2b3ce40_pos" unit="mm" x="1522" y="0" z="7835.72"/>
-      </physvol>
-      <physvol copynumber="135" name="Veto0x55bec2b3d0c0">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2b3d0c0_pos" unit="mm" x="1212" y="0" z="7820.72"/>
-      </physvol>
-      <physvol copynumber="136" name="Veto0x55bec2b3d150">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2b3d150_pos" unit="mm" x="902" y="0" z="7835.72"/>
-      </physvol>
-      <physvol copynumber="137" name="Veto0x55bec2b89640">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2b89640_pos" unit="mm" x="592" y="0" z="7820.72"/>
-      </physvol>
-      <physvol copynumber="138" name="Veto0x55bec2b896d0">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2b896d0_pos" unit="mm" x="282" y="0" z="7835.72"/>
-      </physvol>
-      <physvol copynumber="139" name="Veto0x55bec2b89920">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2b89920_pos" unit="mm" x="-28" y="0" z="7820.72"/>
-      </physvol>
-      <physvol copynumber="140" name="Veto0x55bec2bad4a0">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2bad4a0_pos" unit="mm" x="-338" y="0" z="7835.72"/>
-      </physvol>
-      <physvol copynumber="141" name="Veto0x55bec2bad530">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2bad530_pos" unit="mm" x="-648" y="0" z="7820.72"/>
-      </physvol>
-      <physvol copynumber="142" name="Veto0x55bec2bad750">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2bad750_pos" unit="mm" x="-958" y="0" z="7835.72"/>
-      </physvol>
-      <physvol copynumber="143" name="Veto0x55bec2bad7e0">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2bad7e0_pos" unit="mm" x="-1268" y="0" z="7820.72"/>
-      </physvol>
-      <physvol copynumber="144" name="Veto0x55bec2d4e3c0">
-        <volumeref ref="VetoDetector0x55bec0802d50"/>
-        <position name="Veto0x55bec2d4e3c0_pos" unit="mm" x="-1578" y="0" z="7835.72"/>
-      </physvol>
-      <physvol name="PDC10x55bec2b57db0">
-        <volumeref ref="PDC0x55bec07f8450"/>
-        <position name="PDC10x55bec2b57db0_pos" unit="mm" x="-2764.0479596571" y="0" z="1536.24180281471"/>
-        <rotation name="PDC10x55bec2b57db0_rot" unit="deg" x="0" y="42.5" z="0"/>
-      </physvol>
-      <physvol copynumber="1" name="PDC20x55bec2c63490">
-        <volumeref ref="PDC0x55bec07f8450"/>
-        <position name="PDC20x55bec2c63490_pos" unit="mm" x="-3439.63816727276" y="0" z="2273.51913962484"/>
-        <rotation name="PDC20x55bec2c63490_rot" unit="deg" x="0" y="42.5" z="0"/>
+    <volume name="U0x55a08c982320">
+      <materialref ref="mat_PDC0x55a08c7cb430"/>
+      <solidref ref="U_box0x55a08c982220"/>
+    </volume>
+    <volume name="X0x55a08c982750">
+      <materialref ref="mat_PDC0x55a08c7cb430"/>
+      <solidref ref="X_box0x55a08c982630"/>
+    </volume>
+    <volume name="V0x55a08c982b60">
+      <materialref ref="mat_PDC0x55a08c7cb430"/>
+      <solidref ref="V_box0x55a08c982a60"/>
+    </volume>
+    <volume name="PDC0x55a08c9820b0">
+      <materialref ref="mat_PDC0x55a08c7cb430"/>
+      <solidref ref="PDCenc_box0x55a08c981fb0"/>
+      <physvol name="PDCSD_U0x55a08c982520">
+        <volumeref ref="U0x55a08c982320"/>
+        <position name="PDCSD_U0x55a08c982520_pos" unit="mm" x="0" y="0" z="-12"/>
+      </physvol>
+      <physvol name="PDCSD_X0x55a08c982950">
+        <volumeref ref="X0x55a08c982750"/>
+      </physvol>
+      <physvol name="PDCSD_V0x55a08c982d60">
+        <volumeref ref="V0x55a08c982b60"/>
+        <position name="PDCSD_V0x55a08c982d60_pos" unit="mm" x="0" y="0" z="12"/>
+      </physvol>
+    </volume>
+    <volume name="Dump0x55a08c9837f0">
+      <materialref ref="G4_WATER0x55a08c96fea0"/>
+      <solidref ref="Dump0x55a08c9835f0"/>
+    </volume>
+    <volume name="expHall_log0x55a08c972980">
+      <materialref ref="G4_Galactic0x55a08c7b2410"/>
+      <solidref ref="expHall_box0x55a08c972900"/>
+      <physvol name="yoke0x55a08c97d5e0">
+        <volumeref ref="yoke_log0x55a08c97d3f0"/>
+      </physvol>
+      <physvol name="yoke0x55a08c97d710">
+        <volumeref ref="yoke_log0x55a08c97d3f0"/>
+      </physvol>
+      <physvol name="WinN0x55a08c97f130">
+        <volumeref ref="NeutronWindow0x55a08c97ef60"/>
+        <position name="WinN0x55a08c97f130_pos" unit="mm" x="1356.69" y="0" z="2028.3"/>
+      </physvol>
+      <physvol name="WinN_flange0x55a08c97f270">
+        <volumeref ref="NeutronWindowFlange0x55a08c97ec60"/>
+        <position name="WinN_flange0x55a08c97f270_pos" unit="mm" x="1381.69" y="0" z="1883.3"/>
+      </physvol>
+      <physvol name="WinC20x55a08c980300">
+        <volumeref ref="ExitWindowC2_log0x55a08c97ffe0"/>
+        <position name="WinC20x55a08c980300_pos" unit="mm" x="-1441.59224829734" y="0" z="2847.94429393361"/>
+        <rotation name="WinC20x55a08c980300_rot" unit="deg" x="0" y="29.91" z="0"/>
+      </physvol>
+      <physvol name="WinC2_Hole0x55a08c980490">
+        <volumeref ref="ExitWindowC2Hole_log0x55a08c980170"/>
+        <position name="WinC2_Hole0x55a08c980490_pos" unit="mm" x="-1441.59224829734" y="0" z="2847.94429393361"/>
+        <rotation name="WinC2_Hole0x55a08c980490_rot" unit="deg" x="0" y="29.91" z="0"/>
+      </physvol>
+      <physvol name="vacuum_downstream0x55a08c980fd0">
+        <volumeref ref="vacuum_upstream_log0x55a08c980d70"/>
+        <position name="vacuum_downstream0x55a08c980fd0_pos" unit="mm" x="-935.473628598453" y="0" z="1968.13241472642"/>
+        <rotation name="vacuum_downstream0x55a08c980fd0_rot" unit="deg" x="0" y="29.91" z="0"/>
+      </physvol>
+      <physvol name="Target0x55a08c9816b0">
+        <volumeref ref="target_log0x55a08c981270"/>
+        <scale name="Target0x55a08c9816b0_scl" x="0" y="0" z="1"/>
+      </physvol>
+      <physvol name="PDC10x55a08c983190">
+        <volumeref ref="PDC0x55a08c9820b0"/>
+      </physvol>
+      <physvol copynumber="1" name="PDC20x55a08c9832e0">
+        <volumeref ref="PDC0x55a08c9820b0"/>
+      </physvol>
+      <physvol name="Dump0x55a08c9839f0">
+        <volumeref ref="Dump0x55a08c9837f0"/>
       </physvol>
     </volume>
   </structure>
 
   <setup name="Default" version="1.0">
-    <world ref="expHall_log0x55bec08051f0"/>
+    <world ref="expHall_log0x55a08c972980"/>
   </setup>
 
 </gdml>

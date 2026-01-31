@@ -1,0 +1,11 @@
+# =========================================================================
+# [EN] Single track shooter - called by /control/loop with PARTICLE alias
+# [CN] 单轨迹发射器 - 被 /control/loop 以 PARTICLE 别名调用
+# =========================================================================
+# Usage: /control/loop shoot_track.mac PARTICLE deuteron proton_up proton_down
+# Each call sets gun parameters based on {PARTICLE} and fires one event
+# =========================================================================
+
+/control/getEnv PARTICLE
+/control/execute {VIZDIR}/tracks/{PARTICLE}.mac
+/run/beamOn 1

@@ -70,3 +70,15 @@ geant4里面和 qmd里面对比一下区别, 特别是靶位置有没有弄对. 
 ```bash
 /control/getEnv SMSIMDIR
 ```
+
+todo
+
+dicussion with aki 
+
+- [] target
+- [] vacuum exit whindos
+- [] 支架 in magnet
+- [] polar mechanics
+
+
+26号. 

@@ -1,0 +1,7 @@
+# [EN] Deuteron: 380 MeV from upstream / [CN] 氘核: 380 MeV 从上游发射
+/action/gun/Type Pencil
+/action/gun/SetBeamParticleName deuteron
+/action/gun/Position 0 0 -4000 mm
+/action/gun/Energy 380 MeV
+/action/gun/AngleX 0 deg
+/action/gun/AngleY 0 deg

@@ -5,11 +5,11 @@
 # =========================================================================
 /control/getEnv SMSIMDIR
 # Target - disabled for trajectory visualization
-/samurai/geometry/Target/SetTarget false
-/samurai/geometry/Target/Material Sn
-/samurai/geometry/Target/Size 80 80 30 mm
-/samurai/geometry/Target/Position 0 0 -400 cm
-/samurai/geometry/Target/Angle 0.00 deg
+# /samurai/geometry/Target/SetTarget false
+# /samurai/geometry/Target/Material Sn
+# /samurai/geometry/Target/Size 80 80 30 mm
+# /samurai/geometry/Target/Position 0 0 -400 cm
+# /samurai/geometry/Target/Angle 0.00 deg
 
 #-----------------------------------
 # PDCs - Fixed position as specified

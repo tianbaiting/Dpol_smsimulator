@@ -30,10 +30,14 @@
 #-----------------------------------
 # PDCs
 # Z should be distance from MAGcenter to PDC Z=0 plane
-/samurai/geometry/PDC/Angle 42.5 deg
-/samurai/geometry/PDC/Position1 -100 0 300 cm
-/samurai/geometry/PDC/Position2 -100 0 400 cm
+# /samurai/geometry/PDC/Angle 42.5 deg
+# /samurai/geometry/PDC/Position1 -100 0 300 cm
+# /samurai/geometry/PDC/Position2 -100 0 400 cm
 # 最后一个是中心距离原点的距离。 第一个是距离原点连线的垂直线上的位移/
+
+/samurai/geometry/PDC/Angle 65 deg
+/samurai/geometry/PDC/Position1 0 0 400 cm
+/samurai/geometry/PDC/Position2 0 0 500 cm
 
 #-----------------------------------
 # Dump

@@ -27,6 +27,7 @@
 /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B200T.mac   # 2.0T
 # /control/execute ${SMSIMDIR}/configs/simulation/geometry/5deg_1.2T.mac
 
+
   
 # # 轨迹显示设置  
 # # 注意: accumulate 会导致轨迹累积越来越多，旋转会变卡
@@ -68,29 +69,24 @@
 # ==========================================
 /action/gun/Type Pencil
 /action/gun/SetBeamParticleName deuteron
-/action/gun/Position 0 0 -4 m
+/action/gun/Position 0 0 -4000 mm
 
 # 设置能量
 /action/gun/Energy 380 MeV
 
-# 运行 (画面此时不会更新，因为 autoRefresh false)
-/run/beamOn 5
-# 第二波：190 MeV (Y = 50 mm) <-- 关键修改
-# ==========================================
-# 我们重新申明一遍所有参数，防止模拟器“忘记”更新
-/action/gun/Type Pencil
-/action/gun/SetBeamParticleName deuteron
+/run/beamOn 1
+# # ==========================================# /action/gun/Type Pencil
+# /action/gun/SetBeamParticleName deuteron
 
-# 【关键诊断步骤】把位置向上挪 mm
-/action/gun/Position 1 1 -4 m
-/action/gun/AngleY 0.14 rad
-# 设置新能量
-/action/gun/Energy 190 MeV
-/run/beamOn 5
-# ==========================================
-# 4. 最后：一次性把两条线画出来
-# ==========================================
-# 开启自动刷新
+# # 【关键诊断步骤】把位置向上挪 mm# /action/gun/Position 1 1 -4 m
+# /action/gun/AngleY 0.14 rad
+# # 设置新能量
+# /action/gun/Energy 190 MeV
+# /run/beamOn 5
+# # ==========================================
+# # 4. 最后：一次性把两条线画出来
+# # ==========================================
+# # 开启自动刷新
 /vis/viewer/set/autoRefresh true
 
 
