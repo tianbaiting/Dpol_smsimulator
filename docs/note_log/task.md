@@ -108,3 +108,7 @@ sim_deutron的geant4程序. 这里面写入不同的配置文件.
 
 
 在/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/run_batch_wrl.sh, 生成了不同磁场下束流氘核的轨迹图, 在/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/track_vis_useTree/run_batch_v2.sh生成了不同磁场粒子的轨迹图wrl, 我希望合成生成氘核和质子的轨迹图, 并且把氘核的轨迹颜色改为洋红. 新建一个脚本实现这个功能/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/combainPD, 脚本放在这里. 生成的wrl图也放在这个文件夹的output目录下. 方便我查看.
+
+add same momentum netron.  so 4 proton , 4 neutron. 
+
+请你参考/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/track_vis_useTree, 但是这次是在Angle0deg下面进行, 只运行靶点位置在0 0 -4m, 靶点不转动的情况.  生成质子和中子的轨迹图.  质子动量(\pm 100MeV/c, 0,627MeV/c) (\pm 150MeV,0, 627MeV/c) , 中子动量同质子.     第二步, 参照combainPD脚本, 但是这一次是把DEUTERON_DIR="${SMSIMDIR}/configs/simulation/DbeamTest/nopdc/output"这里面的合并到Angle0deg/combineD里面

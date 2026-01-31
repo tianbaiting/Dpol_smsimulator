@@ -11,7 +11,7 @@
 SMSIMDIR="${SMSIMDIR:-/home/tian/workspace/dpol/smsimulator5.5}"
 VIZDIR="${SMSIMDIR}/configs/simulation/DbeamTest/track_vis_useTree"
 TRAJVIZDIR="${SMSIMDIR}/configs/simulation/DbeamTest/trajectory_viz"
-ROOTFILE="${VIZDIR}/rootfiles/protons_4tracks.root"
+ROOTFILE="${VIZDIR}/rootfiles/pn_8tracks.root"
 
 # [EN] Target positions: FIELD ANGLE TX TY TZ
 # [CN] 靶点位置: 磁场 角度 X Y Z (单位mm, cm需要转换)
@@ -62,7 +62,7 @@ while IFS=' ' read -r field angle tx ty tz; do
 # =========================================================================
 # Field: B=${field:0:1}.${field:1}T, Beam angle=${angle} deg
 # Target position: X=${tx}mm, Y=${ty}mm, Z=${tz}mm
-# Proton momenta: Px = ±100, ±150 MeV/c (4 tracks total)
+# Proton + Neutron momenta: Px = ±100, ±150 MeV/c (8 tracks total: 4p + 4n)
 # =========================================================================
 
 # 1. Visualization setup
@@ -111,7 +111,7 @@ while IFS=' ' read -r field angle tx ty tz; do
 /action/gun/Type Tree
 /action/gun/tree/InputFileName ${ROOTFILE}
 /action/gun/tree/TreeName tree
-/action/gun/tree/beamOn 4
+/action/gun/tree/beamOn 8
 
 # ==========================================
 # Refresh and Save

@@ -59,10 +59,10 @@ echo "[CONFIG] Format: $FORMAT"
 echo "=========================================="
 
 # Check ROOT tree exists
-ROOTFILE="${VIZDIR}/rootfiles/protons_4tracks.root"
+ROOTFILE="${VIZDIR}/rootfiles/pn_8tracks.root"
 if [[ ! -f "$ROOTFILE" ]]; then
     echo "[ERROR] ROOT tree not found: $ROOTFILE"
-    echo "Run ./setup.sh first"
+    echo "Run ./setup.sh first to generate 8 tracks (4 protons + 4 neutrons)"
     exit 1
 fi
 

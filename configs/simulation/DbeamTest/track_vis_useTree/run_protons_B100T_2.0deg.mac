@@ -4,7 +4,7 @@
 # =========================================================================
 # Field: B=1.00T, Beam angle=2.0 deg
 # Target position: X=-7.7287mm, Y=0.0075mm, Z=-1151.8117mm
-# Proton momenta: Px = ±100, ±150 MeV/c (4 tracks total)
+# Proton + Neutron momenta: Px = ±100, ±150 MeV/c (8 tracks total: 4p + 4n)
 # =========================================================================
 
 # 1. Visualization setup
@@ -51,9 +51,9 @@
 # Load proton data from single ROOT tree
 # ==========================================
 /action/gun/Type Tree
-/action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/track_vis_useTree/rootfiles/protons_4tracks.root
+/action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/track_vis_useTree/rootfiles/pn_8tracks.root
 /action/gun/tree/TreeName tree
-/action/gun/tree/beamOn 4
+/action/gun/tree/beamOn 8
 
 # ==========================================
 # Refresh and Save

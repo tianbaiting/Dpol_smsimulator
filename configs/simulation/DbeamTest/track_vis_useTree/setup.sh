@@ -15,16 +15,16 @@ echo "=========================================="
 mkdir -p "${VIZDIR}/rootfiles"
 mkdir -p "${VIZDIR}/output"
 
-# Step 2: Generate single ROOT tree
+# Step 2: Generate single ROOT tree with 8 tracks (4 protons + 4 neutrons)
 echo ""
-echo "[Step 1] Generating single ROOT tree..."
+echo "[Step 1] Generating ROOT tree with 8 tracks (4p + 4n)..."
 cd "${VIZDIR}"
 
 # Correct ROOT command syntax
-root -l -b -q 'GenProtonTree_Single.C("rootfiles/protons_4tracks.root")' 2>&1
+root -l -b -q 'GenProtonTree_Single.C("rootfiles/pn_8tracks.root")' 2>&1
 
-if [[ -f "${VIZDIR}/rootfiles/protons_4tracks.root" ]]; then
-    echo "[OK] ROOT tree generated: rootfiles/protons_4tracks.root"
+if [[ -f "${VIZDIR}/rootfiles/pn_8tracks.root" ]]; then
+    echo "[OK] ROOT tree generated: rootfiles/pn_8tracks.root"
 else
     echo "[ERROR] Failed to generate ROOT tree"
     exit 1
