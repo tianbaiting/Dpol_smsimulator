@@ -1,0 +1,63 @@
+# =========================================================================
+# [EN] Proton + Neutron trajectory visualization at 0-degree target
+# [CN] 0度靶点位置的质子+中子轨迹可视化
+# =========================================================================
+# Field: B=2.00T
+# Target position: (0, 0, -400) cm = (0, 0, -4m)
+# Target angle: 0 deg
+# Tracks: 4 protons + 4 neutrons = 8 total
+# =========================================================================
+
+# 1. Visualization setup
+/vis/open VRML2FILE
+
+# 2. Set Target position and angle (FIXED at 0 deg)
+/samurai/geometry/Target/Position 0 0 -400 cm
+/samurai/geometry/Target/Angle 0 deg
+
+# 3. Load Geometry
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/trajectory_viz/geometry_B200T.mac
+
+/action/file/OverWrite y
+/action/file/RunName pn_B200T_0deg
+/action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4output
+
+# 4. Draw volume
+/vis/drawVolume
+
+# 5. Set Z-X plane view (top view)
+/vis/viewer/set/upVector 1 0 0
+/vis/viewer/set/viewpointThetaPhi 90. 90.
+
+# 6. Add coordinate axes
+/vis/scene/add/axes 0 0 0 6000 mm
+
+# ==========================================
+# Trajectory visualization settings
+# ==========================================
+/vis/scene/add/trajectories smooth
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 3
+/vis/scene/endOfEventAction accumulate
+
+/vis/viewer/set/autoRefresh false
+/vis/verbose warnings
+
+# ==========================================
+# Load proton+neutron data from ROOT tree
+# ==========================================
+/action/gun/Type Tree
+/action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/Angle0deg/rootfiles/pn_8tracks_0deg.root
+/action/gun/tree/TreeName tree
+/action/gun/tree/beamOn 8
+
+# ==========================================
+# Refresh and flush
+# ==========================================
+/vis/viewer/set/autoRefresh true
+/vis/viewer/refresh
+/vis/viewer/update
+/vis/viewer/flush
+
+exit

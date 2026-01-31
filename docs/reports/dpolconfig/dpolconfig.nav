@@ -39,15 +39,17 @@
 \headcommand {\beamer@framepages {17}{17}}
 \headcommand {\slideentry {1}{1}{11}{18/18}{target outside magnetic}{0}}
 \headcommand {\beamer@framepages {18}{18}}
-\headcommand {\beamer@sectionpages {3}{18}}
-\headcommand {\beamer@subsectionpages {8}{18}}
-\headcommand {\sectionentry {2}{filter}{19}{filter}{0}}
-\headcommand {\beamer@subsectionpages {19}{18}}
-\headcommand {\beamer@subsectionentry {0}{2}{1}{19}{nebula acceptance}}
-\headcommand {\slideentry {2}{1}{1}{19/19}{nebula acceptance}{0}}
+\headcommand {\slideentry {1}{1}{12}{19/19}{target outside magnetic}{0}}
 \headcommand {\beamer@framepages {19}{19}}
-\headcommand {\beamer@partpages {1}{19}}
-\headcommand {\beamer@subsectionpages {19}{19}}
-\headcommand {\beamer@sectionpages {19}{19}}
-\headcommand {\beamer@documentpages {19}}
-\headcommand {\gdef \inserttotalframenumber {19}}
+\headcommand {\beamer@sectionpages {3}{19}}
+\headcommand {\beamer@subsectionpages {8}{19}}
+\headcommand {\sectionentry {2}{filter}{20}{filter}{0}}
+\headcommand {\beamer@subsectionpages {20}{19}}
+\headcommand {\beamer@subsectionentry {0}{2}{1}{20}{nebula acceptance}}
+\headcommand {\slideentry {2}{1}{1}{20/20}{nebula acceptance}{0}}
+\headcommand {\beamer@framepages {20}{20}}
+\headcommand {\beamer@partpages {1}{20}}
+\headcommand {\beamer@subsectionpages {20}{20}}
+\headcommand {\beamer@sectionpages {20}{20}}
+\headcommand {\beamer@documentpages {20}}
+\headcommand {\gdef \inserttotalframenumber {20}}
