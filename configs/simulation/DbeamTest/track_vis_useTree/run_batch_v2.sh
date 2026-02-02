@@ -66,6 +66,7 @@ if [[ ! -f "$ROOTFILE" ]]; then
     exit 1
 fi
 
+
 mkdir -p "${OUTDIR}"
 cd "${VIZDIR}"
 
