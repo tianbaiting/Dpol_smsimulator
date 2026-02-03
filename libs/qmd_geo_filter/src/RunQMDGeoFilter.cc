@@ -29,7 +29,8 @@
  *   
  *   // [EN] Fixed PDC mode / [CN] 固定PDC模式
  *   config.useFixedPDC = true;
- *   config.fixedPDCPosition = TVector3(-3500, 0, 2500);  // [mm]
+ *   config.fixedPDCPosition1 = TVector3(-3500, 0, 2500);  // [mm]
+ *   config.fixedPDCPosition2 = TVector3(-3500, 0, 3500);  // [mm]
  *   config.fixedPDCRotationAngle = -30.0;  // [deg]
  *   
  *   // [EN] Or optimized PDC mode (default) / [CN] 或优化PDC模式（默认）
@@ -76,10 +77,11 @@ void PrintUsage(const char* progName) {
     
     std::cout << "PDC Configuration Options:\n";
     std::cout << "  --fixed-pdc           Use fixed PDC position instead of optimization\n";
-    std::cout << "  --pdc-x <mm>          Fixed PDC X position (default: -3500)\n";
-    std::cout << "  --pdc-y <mm>          Fixed PDC Y position (default: 0)\n";
-    std::cout << "  --pdc-z <mm>          Fixed PDC Z position (default: 2500)\n";
-    std::cout << "  --pdc-angle <deg>     Fixed PDC rotation angle (default: -30)\n";
+    std::cout << "  --pdc-x <mm>          Fixed PDC X position (applies to PDC1/2)\n";
+    std::cout << "  --pdc-y <mm>          Fixed PDC Y position (applies to PDC1/2)\n";
+    std::cout << "  --pdc-z <mm>          Fixed PDC Z position (applies to PDC1/2)\n";
+    std::cout << "  --pdc-angle <deg>     Fixed PDC rotation angle (default: 65)\n";
+    std::cout << "  --pdc-macro <path>    PDC macro file (Angle/Position1/Position2)\n";
     std::cout << "  --px-range <MeV/c>    Px range for PDC acceptance (default: 100)\n";
     std::cout << "\n";
     
@@ -94,12 +96,12 @@ void PrintUsage(const char* progName) {
     std::cout << "\n";
     
     std::cout << "PDC Position Note:\n";
-    std::cout << "  The sim_deuteron geometry uses:\n";
+    std::cout << "  The sim_deuteron geometry uses (SAMURAI definition):\n";
     std::cout << "    /samurai/geometry/PDC/Angle 65 deg\n";
     std::cout << "    /samurai/geometry/PDC/Position1 +0 0 400 cm\n";
     std::cout << "    /samurai/geometry/PDC/Position2 +0 0 500 cm\n";
-    std::cout << "  This corresponds to PDC centered around Z=4500mm, rotated 65 deg from beam.\n";
-    std::cout << "  In QMDGeoFilter coordinates (lab frame), use --pdc-angle to set rotation.\n";
+    std::cout << "  QMDGeoFilter interprets fixed PDC Position1/2 in SAMURAI frame,\n";
+    std::cout << "  then rotates around origin by -Angle to convert into lab frame.\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -115,8 +117,9 @@ int main(int argc, char* argv[]) {
     
     // [EN] PDC configuration - default to FIXED mode / [CN] PDC配置 - 默认使用固定模式
     bool useFixedPDC = true;  // [EN] Default: fixed PDC / [CN] 默认：固定PDC位置
-    double pdcX = -3625, pdcY = 0.0, pdcZ = 1690.0;
-    double pdcAngle = -25.0;
+    double pdcX = 0.0, pdcY = 0.0, pdcZ = 4000.0;
+    double pdcAngle = 65.0;
+    std::string pdcMacroPath;
     double pxRange = 100.0;
     
     // [EN] Command line options / [CN] 命令行选项
@@ -134,6 +137,7 @@ int main(int argc, char* argv[]) {
         {"pdc-y",     required_argument, 0, 'Y'},
         {"pdc-z",     required_argument, 0, 'Z'},
         {"pdc-angle", required_argument, 0, 'R'},
+        {"pdc-macro", required_argument, 0, 'M'},
         {"px-range",  required_argument, 0, 'P'},
         {"help",      no_argument,       0, 'h'},
         {0, 0, 0, 0}
@@ -188,6 +192,9 @@ int main(int argc, char* argv[]) {
             case 'R':  // --pdc-angle
                 pdcAngle = std::stod(optarg);
                 break;
+            case 'M':  // --pdc-macro
+                pdcMacroPath = optarg;
+                break;
             case 'P':  // --px-range
                 pxRange = std::stod(optarg);
                 break;
@@ -209,8 +216,10 @@ int main(int argc, char* argv[]) {
     
     // [EN] Apply PDC configuration / [CN] 应用PDC配置
     config.useFixedPDC = useFixedPDC;
-    config.fixedPDCPosition = TVector3(pdcX, pdcY, pdcZ);
+    config.fixedPDCPosition1 = TVector3(pdcX, pdcY, pdcZ);
+    config.fixedPDCPosition2 = TVector3(pdcX, pdcY, pdcZ);
     config.fixedPDCRotationAngle = pdcAngle;
+    config.pdcMacroPath = pdcMacroPath;
     config.pxRange = pxRange;
     
     // [EN] Print configuration / [CN] 打印配置
@@ -233,8 +242,12 @@ int main(int argc, char* argv[]) {
     SM_INFO("PDC Configuration:");
     if (config.useFixedPDC) {
         SM_INFO("  Mode: FIXED position");
-        SM_INFO("  Position: ({}, {}, {}) mm", pdcX, pdcY, pdcZ);
+        SM_INFO("  PDC1 Position: ({}, {}, {}) mm", pdcX, pdcY, pdcZ);
+        SM_INFO("  PDC2 Position: ({}, {}, {}) mm", pdcX, pdcY, pdcZ);
         SM_INFO("  Rotation: {} deg", pdcAngle);
+        if (!pdcMacroPath.empty()) {
+            SM_INFO("  Macro: {}", pdcMacroPath);
+        }
     } else {
         SM_INFO("  Mode: OPTIMIZED (calculate for each target position)");
     }

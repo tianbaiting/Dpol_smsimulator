@@ -23,6 +23,53 @@
 #include <cstdlib>
 #include <regex>
 
+namespace {
+// [EN] Right-handed rotation around Y-axis, consistent with Geant4::rotateY / [CN] 与Geant4::rotateY一致的右手系Y轴旋转
+// [EN] x' = x*cos + z*sin, z' = -x*sin + z*cos / [CN] x' = x*cos + z*sin, z' = -x*sin + z*cos
+TVector3 RotateYDeg(const TVector3& v, double angleDeg)
+{
+    double rad = angleDeg * TMath::DegToRad();
+    double cosA = TMath::Cos(rad);
+    double sinA = TMath::Sin(rad);
+    return TVector3(v.X() * cosA + v.Z() * sinA,
+                    v.Y(),
+                    -v.X() * sinA + v.Z() * cosA);
+}
+
+// [EN] Compute PDC rectangle corners in XZ projection using center, normal, width, depth
+// [CN] 在XZ投影中根据中心、法向、宽度、厚度计算PDC矩形四角
+void ComputePdcCornersXZ(const DetectorAcceptanceCalculator::PDCConfiguration& cfg,
+                         double& c1z, double& c1x,
+                         double& c2z, double& c2x,
+                         double& c3z, double& c3x,
+                         double& c4z, double& c4x)
+{
+    // [EN] Build tangent in XZ plane (perpendicular to normal) / [CN] 构造XZ平面的切向（与法向垂直）
+    TVector3 n = cfg.normal;
+    TVector3 t(-n.Z(), 0.0, n.X());
+    if (t.Mag() < 1e-9) {
+        t.SetXYZ(1.0, 0.0, 0.0);
+    }
+    t = t.Unit();
+    
+    // [EN] Use local axes: width along t, depth along n / [CN] 宽度沿t方向，厚度沿n方向
+    double halfW = cfg.width * 0.5;
+    double halfD = cfg.depth * 0.5;
+    
+    const double z0 = cfg.position.Z();
+    const double x0 = cfg.position.X();
+    
+    c1z = z0 + (-halfW * t.Z()) + ( halfD * n.Z());
+    c1x = x0 + (-halfW * t.X()) + ( halfD * n.X());
+    c2z = z0 + ( halfW * t.Z()) + ( halfD * n.Z());
+    c2x = x0 + ( halfW * t.X()) + ( halfD * n.X());
+    c3z = z0 + ( halfW * t.Z()) + (-halfD * n.Z());
+    c3x = x0 + ( halfW * t.X()) + (-halfD * n.X());
+    c4z = z0 + (-halfW * t.Z()) + (-halfD * n.Z());
+    c4x = x0 + (-halfW * t.X()) + (-halfD * n.X());
+}
+}
+
 // 从磁场文件名解析磁场强度
 // 文件名格式示例: "141114-0,8T-6000.table" -> 0.8 T
 //                 "180626-1,00T-6000.table" -> 1.0 T
@@ -56,8 +103,9 @@ static double ParseFieldStrengthFromFilename(const std::string& filename) {
 // AnalysisConfig 构造函数 - 使用环境变量设置默认路径
 GeoAcceptanceManager::AnalysisConfig::AnalysisConfig()
     : useFixedPDC(false),
-      fixedPDCPosition(-3625.0, 0.0, 1690.0),  // [EN] Default PDC position / [CN] 默认PDC位置
-      fixedPDCRotationAngle(-25.0),          // [EN] Default PDC rotation / [CN] 默认PDC旋转角度
+      fixedPDCPosition1(0.0, 0.0, 4000.0),    // [EN] Default PDC1 position / [CN] 默认PDC1位置
+      fixedPDCPosition2(0.0, 0.0, 5000.0),    // [EN] Default PDC2 position / [CN] 默认PDC2位置
+      fixedPDCRotationAngle(65.0),           // [EN] Default PDC rotation / [CN] 默认PDC旋转角度
       pxRange(100.0)                        // [EN] Default Px range / [CN] 默认Px范围
 {
     // 获取 SMSIMDIR 环境变量
@@ -246,26 +294,50 @@ bool GeoAcceptanceManager::AnalyzeFieldConfiguration(const std::string& fieldMap
         
         // 2. [EN] Get PDC configuration based on mode / [CN] 根据模式获取PDC配置
         if (fConfig.useFixedPDC) {
-            // [EN] Use fixed PDC position / [CN] 使用固定PDC位置
+            // [EN] Use fixed PDC position (SAMURAI definition) / [CN] 使用固定PDC位置（SAMURAI定义）
+            // [EN] Convert to lab frame by rotating around origin / [CN] 通过绕原点旋转转换到实验室坐标系
+            // [EN] SAMURAI uses clockwise positive, so lab rotation = -samuraiAngle / [CN] SAMURAI顺时针为正，因此实验室角度 = -samurai角度
+            double labRotation = -fConfig.fixedPDCRotationAngle;
+            TVector3 labPdcPos1 = RotateYDeg(fConfig.fixedPDCPosition1, labRotation);
+            TVector3 labPdcPos2 = RotateYDeg(fConfig.fixedPDCPosition2, labRotation);
             SM_INFO("  Using FIXED PDC position mode");
-            SM_INFO("    PDC position: ({:.1f}, {:.1f}, {:.1f}) mm", 
-                    fConfig.fixedPDCPosition.X(), fConfig.fixedPDCPosition.Y(), fConfig.fixedPDCPosition.Z());
-            SM_INFO("    PDC rotation: {:.2f} deg", fConfig.fixedPDCRotationAngle);
+            SM_INFO("    PDC1 position (SAMURAI): ({:.1f}, {:.1f}, {:.1f}) mm", 
+                    fConfig.fixedPDCPosition1.X(), fConfig.fixedPDCPosition1.Y(), fConfig.fixedPDCPosition1.Z());
+            SM_INFO("    PDC2 position (SAMURAI): ({:.1f}, {:.1f}, {:.1f}) mm", 
+                    fConfig.fixedPDCPosition2.X(), fConfig.fixedPDCPosition2.Y(), fConfig.fixedPDCPosition2.Z());
+            SM_INFO("    PDC rotation (SAMURAI): {:.2f} deg", fConfig.fixedPDCRotationAngle);
+            SM_INFO("    PDC1 position (LAB): ({:.1f}, {:.1f}, {:.1f}) mm", 
+                    labPdcPos1.X(), labPdcPos1.Y(), labPdcPos1.Z());
+            SM_INFO("    PDC2 position (LAB): ({:.1f}, {:.1f}, {:.1f}) mm", 
+                    labPdcPos2.X(), labPdcPos2.Y(), labPdcPos2.Z());
+            SM_INFO("    PDC rotation (LAB): {:.2f} deg", labRotation);
             result.pdcConfig = fDetectorCalc->CreateFixedPDCConfiguration(
-                fConfig.fixedPDCPosition,
-                fConfig.fixedPDCRotationAngle,
+                labPdcPos1,
+                labRotation,
                 -fConfig.pxRange,
                 fConfig.pxRange
             );
+            result.pdcConfig2 = fDetectorCalc->CreateFixedPDCConfiguration(
+                labPdcPos2,
+                labRotation,
+                -fConfig.pxRange,
+                fConfig.pxRange
+            );
+            result.usePdcPair = true;
         } else {
             // [EN] Calculate optimal PDC position / [CN] 计算最佳PDC位置
             SM_INFO("  Using OPTIMIZED PDC position mode");
             result.pdcConfig = fDetectorCalc->CalculateOptimalPDCPosition(
                 result.targetPos.position, result.targetPos.rotationAngle, fConfig.pxRange);
+            result.usePdcPair = false;
         }
         
         // [EN] Set PDC configuration before calculating acceptance / [CN] 在计算接受度之前设置PDC配置
-        fDetectorCalc->SetPDCConfiguration(result.pdcConfig);
+        if (result.usePdcPair) {
+            fDetectorCalc->SetPDCConfigurationPair(result.pdcConfig, result.pdcConfig2, true);
+        } else {
+            fDetectorCalc->SetPDCConfiguration(result.pdcConfig);
+        }
         
         // 3. 计算接受度
         result.acceptance = fDetectorCalc->CalculateAcceptanceForTarget(
@@ -345,9 +417,14 @@ void GeoAcceptanceManager::GenerateTextReport(const std::string& filename) const
         outFile << std::endl;
         
         outFile << "PDC Configuration:" << std::endl;
-        outFile << "  Position: (" << result.pdcConfig.position.X() << ", "
+        outFile << "  PDC1 Position: (" << result.pdcConfig.position.X() << ", "
                 << result.pdcConfig.position.Y() << ", "
                 << result.pdcConfig.position.Z() << ") mm" << std::endl;
+        if (result.usePdcPair) {
+            outFile << "  PDC2 Position: (" << result.pdcConfig2.position.X() << ", "
+                    << result.pdcConfig2.position.Y() << ", "
+                    << result.pdcConfig2.position.Z() << ") mm" << std::endl;
+        }
         outFile << "  Rotation: " << result.pdcConfig.rotationAngle << " deg" << std::endl;
         outFile << "  Px range: [" << result.pdcConfig.pxMin << ", "
                 << result.pdcConfig.pxMax << "] MeV/c" << std::endl;
@@ -688,30 +765,10 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
         
         // 2. 绘制PDC (矩形)
         // PDC尺寸: 约 1680 x 780 mm (宽 x 高)
-        double pdcHalfWidth = result.pdcConfig.width / 2.0;
-        double pdcHalfDepth = result.pdcConfig.depth / 2.0;
-        
-        // PDC中心位置
-        double pdcZ = result.pdcConfig.position.Z();
-        double pdcX = result.pdcConfig.position.X();
-        
-        // PDC方向 (使用法向量，与test_pdc_position.cc一致)
-        double nx = result.pdcConfig.normal.X();
-        double nz = result.pdcConfig.normal.Z();
-        
-        // 切向量 (垂直于法向量，在XZ平面内)
-        double tx = nz;   // 切向量
-        double tz = -nx;
-        
-        // 四个角点（在XZ平面的投影）
-        double corner1_z = pdcZ - pdcHalfWidth * tx + pdcHalfDepth * nz;
-        double corner1_x = pdcX - pdcHalfWidth * tz + pdcHalfDepth * nx;
-        double corner2_z = pdcZ + pdcHalfWidth * tx + pdcHalfDepth * nz;
-        double corner2_x = pdcX + pdcHalfWidth * tz + pdcHalfDepth * nx;
-        double corner3_z = pdcZ + pdcHalfWidth * tx - pdcHalfDepth * nz;
-        double corner3_x = pdcX + pdcHalfWidth * tz - pdcHalfDepth * nx;
-        double corner4_z = pdcZ - pdcHalfWidth * tx - pdcHalfDepth * nz;
-        double corner4_x = pdcX - pdcHalfWidth * tz - pdcHalfDepth * nx;
+        // [EN] PDC corners in XZ projection / [CN] PDC在XZ平面的角点
+        double corner1_z, corner1_x, corner2_z, corner2_x, corner3_z, corner3_x, corner4_z, corner4_x;
+        ComputePdcCornersXZ(result.pdcConfig, corner1_z, corner1_x, corner2_z, corner2_x,
+                            corner3_z, corner3_x, corner4_z, corner4_x);
         
         TGraph* pdcGraph = new TGraph(5);
         pdcGraph->SetPoint(0, corner1_z, corner1_x);
@@ -724,6 +781,26 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
         pdcGraph->SetLineWidth(2);
         pdcGraph->Draw("F");
         pdcGraph->Draw("L SAME");
+        
+        // [EN] If using two PDC planes, draw the second one / [CN] 若使用双层PDC，绘制第二层
+        if (result.usePdcPair) {
+            double c1_z2, c1_x2, c2_z2, c2_x2, c3_z2, c3_x2, c4_z2, c4_x2;
+            ComputePdcCornersXZ(result.pdcConfig2, c1_z2, c1_x2, c2_z2, c2_x2,
+                                c3_z2, c3_x2, c4_z2, c4_x2);
+            
+            TGraph* pdcGraph2 = new TGraph(5);
+            pdcGraph2->SetPoint(0, c1_z2, c1_x2);
+            pdcGraph2->SetPoint(1, c2_z2, c2_x2);
+            pdcGraph2->SetPoint(2, c3_z2, c3_x2);
+            pdcGraph2->SetPoint(3, c4_z2, c4_x2);
+            pdcGraph2->SetPoint(4, c1_z2, c1_x2);
+            pdcGraph2->SetFillColorAlpha(color, 0.10);
+            pdcGraph2->SetLineColor(color);
+            pdcGraph2->SetLineWidth(2);
+            pdcGraph2->SetLineStyle(3);
+            pdcGraph2->Draw("F");
+            pdcGraph2->Draw("L SAME");
+        }
         
         // 3. 绘制NEBULA位置 (固定在Z=5000附近)
         // NEBULA尺寸: 约 3600 x 1800 mm (宽 x 高)
@@ -759,6 +836,15 @@ void GeoAcceptanceManager::GenerateGeometryPlot(const std::string& filename) con
         pdcLabel->SetTextSize(0.02);
         pdcLabel->SetTextColor(color);
         pdcLabel->Draw();
+        
+        if (result.usePdcPair) {
+            TLatex* pdcLabel2 = new TLatex(result.pdcConfig2.position.Z() + 100,
+                                           result.pdcConfig2.position.X() + 200,
+                                           "PDC2");
+            pdcLabel2->SetTextSize(0.02);
+            pdcLabel2->SetTextColor(color);
+            pdcLabel2->Draw();
+        }
         
         // 添加到图例
         std::ostringstream legendEntry;
@@ -1013,23 +1099,9 @@ void GeoAcceptanceManager::GenerateSingleConfigPlot(const ConfigurationResult& r
     }
     
     // 绘制PDC
-    double pdcHalfWidth = result.pdcConfig.width / 2.0;
-    double pdcHalfDepth = result.pdcConfig.depth / 2.0;
-    double pdcZ = result.pdcConfig.position.Z();
-    double pdcX = result.pdcConfig.position.X();
-    double nx = result.pdcConfig.normal.X();
-    double nz = result.pdcConfig.normal.Z();
-    double tx = nz;
-    double tz = -nx;
-    
-    double corner1_z = pdcZ - pdcHalfWidth * tx + pdcHalfDepth * nz;
-    double corner1_x = pdcX - pdcHalfWidth * tz + pdcHalfDepth * nx;
-    double corner2_z = pdcZ + pdcHalfWidth * tx + pdcHalfDepth * nz;
-    double corner2_x = pdcX + pdcHalfWidth * tz + pdcHalfDepth * nx;
-    double corner3_z = pdcZ + pdcHalfWidth * tx - pdcHalfDepth * nz;
-    double corner3_x = pdcX + pdcHalfWidth * tz - pdcHalfDepth * nx;
-    double corner4_z = pdcZ - pdcHalfWidth * tx - pdcHalfDepth * nz;
-    double corner4_x = pdcX - pdcHalfWidth * tz - pdcHalfDepth * nx;
+    double corner1_z, corner1_x, corner2_z, corner2_x, corner3_z, corner3_x, corner4_z, corner4_x;
+    ComputePdcCornersXZ(result.pdcConfig, corner1_z, corner1_x, corner2_z, corner2_x,
+                        corner3_z, corner3_x, corner4_z, corner4_x);
     
     TGraph* pdcGraph = new TGraph(5);
     pdcGraph->SetPoint(0, corner1_z, corner1_x);
@@ -1042,6 +1114,44 @@ void GeoAcceptanceManager::GenerateSingleConfigPlot(const ConfigurationResult& r
     pdcGraph->SetLineWidth(2);
     pdcGraph->Draw("F");
     pdcGraph->Draw("L SAME");
+    
+    if (result.usePdcPair) {
+        double c1_z2, c1_x2, c2_z2, c2_x2, c3_z2, c3_x2, c4_z2, c4_x2;
+        ComputePdcCornersXZ(result.pdcConfig2, c1_z2, c1_x2, c2_z2, c2_x2,
+                            c3_z2, c3_x2, c4_z2, c4_x2);
+        
+        TGraph* pdcGraph2 = new TGraph(5);
+        pdcGraph2->SetPoint(0, c1_z2, c1_x2);
+        pdcGraph2->SetPoint(1, c2_z2, c2_x2);
+        pdcGraph2->SetPoint(2, c3_z2, c3_x2);
+        pdcGraph2->SetPoint(3, c4_z2, c4_x2);
+        pdcGraph2->SetPoint(4, c1_z2, c1_x2);
+        pdcGraph2->SetFillColorAlpha(kOrange, 0.15);
+        pdcGraph2->SetLineColor(kOrange+1);
+        pdcGraph2->SetLineWidth(2);
+        pdcGraph2->SetLineStyle(3);
+        pdcGraph2->Draw("F");
+        pdcGraph2->Draw("L SAME");
+    }
+    
+    if (result.usePdcPair) {
+        double c1_z2, c1_x2, c2_z2, c2_x2, c3_z2, c3_x2, c4_z2, c4_x2;
+        ComputePdcCornersXZ(result.pdcConfig2, c1_z2, c1_x2, c2_z2, c2_x2,
+                            c3_z2, c3_x2, c4_z2, c4_x2);
+        
+        TGraph* pdcGraph2 = new TGraph(5);
+        pdcGraph2->SetPoint(0, c1_z2, c1_x2);
+        pdcGraph2->SetPoint(1, c2_z2, c2_x2);
+        pdcGraph2->SetPoint(2, c3_z2, c3_x2);
+        pdcGraph2->SetPoint(3, c4_z2, c4_x2);
+        pdcGraph2->SetPoint(4, c1_z2, c1_x2);
+        pdcGraph2->SetFillColorAlpha(kOrange, 0.15);
+        pdcGraph2->SetLineColor(kOrange+1);
+        pdcGraph2->SetLineWidth(2);
+        pdcGraph2->SetLineStyle(3);
+        pdcGraph2->Draw("F");
+        pdcGraph2->Draw("L SAME");
+    }
     
     // 绘制NEBULA
     double nebulaZ = 5000;
@@ -1069,6 +1179,15 @@ void GeoAcceptanceManager::GenerateSingleConfigPlot(const ConfigurationResult& r
     pdcLabel->SetTextSize(0.025);
     pdcLabel->SetTextColor(kOrange+1);
     pdcLabel->Draw();
+    
+    if (result.usePdcPair) {
+        TLatex* pdcLabel2 = new TLatex(result.pdcConfig2.position.Z() + 150,
+                                       result.pdcConfig2.position.X() + 300,
+                                       "PDC2");
+        pdcLabel2->SetTextSize(0.025);
+        pdcLabel2->SetTextColor(kOrange+1);
+        pdcLabel2->Draw();
+    }
     
     TLatex* nebulaLabel = new TLatex(5200, 0, "NEBULA");
     nebulaLabel->SetTextSize(0.025);
@@ -1103,10 +1222,15 @@ void GeoAcceptanceManager::GenerateSingleConfigPlot(const ConfigurationResult& r
     
     std::ostringstream infoText2;
     infoText2 << std::fixed << std::setprecision(1);
-    infoText2 << "PDC: (" << result.pdcConfig.position.X() << ", " 
+    infoText2 << "PDC1: (" << result.pdcConfig.position.X() << ", " 
               << result.pdcConfig.position.Y() << ", " 
               << result.pdcConfig.position.Z() << ") mm, Rot: " 
               << result.pdcConfig.rotationAngle << "#circ";
+    if (result.usePdcPair) {
+        infoText2 << " | PDC2: (" << result.pdcConfig2.position.X() << ", "
+                  << result.pdcConfig2.position.Y() << ", "
+                  << result.pdcConfig2.position.Z() << ") mm";
+    }
     TLatex* info2 = new TLatex(0.12, 0.85, infoText2.str().c_str());
     info2->SetNDC();
     info2->SetTextSize(0.022);
@@ -1388,29 +1512,37 @@ void GeoAcceptanceManager::GenerateSingleConfigPlotWithTracks(
     targetLabel->Draw();
     
     // ========== [EN] Draw PDC / [CN] 绘制PDC ==========
-    double pdcHalfWidth = result.pdcConfig.width / 2.0;
-    double pdcHalfDepth = result.pdcConfig.depth / 2.0;
-    double pdcZ = result.pdcConfig.position.Z();
-    double pdcX = result.pdcConfig.position.X();
-    double nx = result.pdcConfig.normal.X(), nz = result.pdcConfig.normal.Z();
-    double tx = nz, tz = -nx;
+    double corner1_z, corner1_x, corner2_z, corner2_x, corner3_z, corner3_x, corner4_z, corner4_x;
+    ComputePdcCornersXZ(result.pdcConfig, corner1_z, corner1_x, corner2_z, corner2_x,
+                        corner3_z, corner3_x, corner4_z, corner4_x);
     
     TGraph* pdcGraph = new TGraph(5);
-    pdcGraph->SetPoint(0, pdcZ - pdcHalfWidth*tx + pdcHalfDepth*nz, pdcX - pdcHalfWidth*tz + pdcHalfDepth*nx);
-    pdcGraph->SetPoint(1, pdcZ + pdcHalfWidth*tx + pdcHalfDepth*nz, pdcX + pdcHalfWidth*tz + pdcHalfDepth*nx);
-    pdcGraph->SetPoint(2, pdcZ + pdcHalfWidth*tx - pdcHalfDepth*nz, pdcX + pdcHalfWidth*tz - pdcHalfDepth*nx);
-    pdcGraph->SetPoint(3, pdcZ - pdcHalfWidth*tx - pdcHalfDepth*nz, pdcX - pdcHalfWidth*tz - pdcHalfDepth*nx);
-    pdcGraph->SetPoint(4, pdcZ - pdcHalfWidth*tx + pdcHalfDepth*nz, pdcX - pdcHalfWidth*tz + pdcHalfDepth*nx);
+    pdcGraph->SetPoint(0, corner1_z, corner1_x);
+    pdcGraph->SetPoint(1, corner2_z, corner2_x);
+    pdcGraph->SetPoint(2, corner3_z, corner3_x);
+    pdcGraph->SetPoint(3, corner4_z, corner4_x);
+    pdcGraph->SetPoint(4, corner1_z, corner1_x);
     pdcGraph->SetFillColorAlpha(kOrange, 0.3);
     pdcGraph->SetLineColor(kOrange+1);
     pdcGraph->SetLineWidth(2);
     pdcGraph->Draw("F");
     pdcGraph->Draw("L SAME");
     
+    double pdcZ = result.pdcConfig.position.Z();
+    double pdcX = result.pdcConfig.position.X();
     TLatex* pdcLabel = new TLatex(pdcZ + 150, pdcX + 300, "PDC");
     pdcLabel->SetTextSize(0.025);
     pdcLabel->SetTextColor(kOrange+1);
     pdcLabel->Draw();
+    
+    if (result.usePdcPair) {
+        double pdcZ2 = result.pdcConfig2.position.Z();
+        double pdcX2 = result.pdcConfig2.position.X();
+        TLatex* pdcLabel2 = new TLatex(pdcZ2 + 150, pdcX2 + 300, "PDC2");
+        pdcLabel2->SetTextSize(0.025);
+        pdcLabel2->SetTextColor(kOrange+1);
+        pdcLabel2->Draw();
+    }
     
     // ========== [EN] Draw NEBULA / [CN] 绘制NEBULA ==========
     TBox* nebula = new TBox(4900, -1800, 5100, 1800);
@@ -1451,10 +1583,15 @@ void GeoAcceptanceManager::GenerateSingleConfigPlotWithTracks(
     
     std::ostringstream infoText2;
     infoText2 << std::fixed << std::setprecision(1);
-    infoText2 << "PDC: (" << result.pdcConfig.position.X() << ", "
+    infoText2 << "PDC1: (" << result.pdcConfig.position.X() << ", "
               << result.pdcConfig.position.Y() << ", "
               << result.pdcConfig.position.Z() << ") mm, Rot: "
               << result.pdcConfig.rotationAngle << "#circ";
+    if (result.usePdcPair) {
+        infoText2 << " | PDC2: (" << result.pdcConfig2.position.X() << ", "
+                  << result.pdcConfig2.position.Y() << ", "
+                  << result.pdcConfig2.position.Z() << ") mm";
+    }
     TLatex* info2 = new TLatex(0.12, 0.85, infoText2.str().c_str());
     info2->SetNDC();
     info2->SetTextSize(0.022);

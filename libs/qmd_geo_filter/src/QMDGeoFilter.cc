@@ -38,6 +38,86 @@
 #include <random>
 #include <sys/stat.h>
 
+namespace {
+// [EN] Right-handed rotation around Y-axis, consistent with Geant4::rotateY / [CN] 与Geant4::rotateY一致的右手系Y轴旋转
+// [EN] x' = x*cos + z*sin, z' = -x*sin + z*cos / [CN] x' = x*cos + z*sin, z' = -x*sin + z*cos
+TVector3 RotateYDeg(const TVector3& v, double angleDeg)
+{
+    double rad = angleDeg * TMath::DegToRad();
+    double cosA = std::cos(rad);
+    double sinA = std::sin(rad);
+    return TVector3(v.X() * cosA + v.Z() * sinA,
+                    v.Y(),
+                    -v.X() * sinA + v.Z() * cosA);
+}
+
+// [EN] Parse SAMURAI PDC settings from Geant4 macro (Angle/Position1/Position2)
+// [CN] 从Geant4宏文件解析SAMURAI的PDC设置（Angle/Position1/Position2）
+bool ParsePdcMacro(const std::string& macroPath,
+                   double& angleDegOut,
+                   TVector3& pos1Out,
+                   TVector3& pos2Out)
+{
+    std::ifstream ifs(macroPath);
+    if (!ifs.is_open()) {
+        return false;
+    }
+    
+    bool hasAngle = false;
+    bool hasPos1 = false;
+    bool hasPos2 = false;
+    
+    std::string line;
+    while (std::getline(ifs, line)) {
+        if (line.empty()) continue;
+        if (line[0] == '#') continue;
+        
+        // [EN] Strip inline comments / [CN] 去除行内注释
+        size_t hashPos = line.find('#');
+        if (hashPos != std::string::npos) {
+            line = line.substr(0, hashPos);
+        }
+        
+        std::istringstream iss(line);
+        std::string cmd;
+        if (!(iss >> cmd)) continue;
+        
+        if (cmd == "/samurai/geometry/PDC/Angle") {
+            double angle = 0.0;
+            std::string unit;
+            if (iss >> angle) {
+                if (iss >> unit) {
+                    // [EN] Only "deg" is expected / [CN] 只处理deg
+                }
+                angleDegOut = angle;
+                hasAngle = true;
+            }
+        } else if (cmd == "/samurai/geometry/PDC/Position1" ||
+                   cmd == "/samurai/geometry/PDC/Position2") {
+            double x = 0.0, y = 0.0, z = 0.0;
+            std::string unit;
+            if (iss >> x >> y >> z) {
+                double scale = 1.0;  // [EN] default mm / [CN] 默认mm
+                if (iss >> unit) {
+                    if (unit == "cm") scale = 10.0;
+                    else if (unit == "mm") scale = 1.0;
+                }
+                TVector3 pos(x * scale, y * scale, z * scale);
+                if (cmd == "/samurai/geometry/PDC/Position1") {
+                    pos1Out = pos;
+                    hasPos1 = true;
+                } else {
+                    pos2Out = pos;
+                    hasPos2 = true;
+                }
+            }
+        }
+    }
+    
+    return hasAngle && hasPos1 && hasPos2;
+}
+}
+
 // =============================================================================
 // QMDMomentumCut 实现
 // =============================================================================
@@ -335,7 +415,7 @@ std::string QMDGeoFilter::BuildQMDDataPath(const std::string& target,
  * 
  * 与实验室坐标系的关系：
  *   靶子坐标系相对于实验室坐标系绕 y 轴旋转了 targetRotationAngle（通常为 -5°）。
- *   要将靶子系中的动量转换到实验室系，需要绕 y 轴旋转 -targetRotationAngle。
+ *   要将靶子系中的动量转换到实验室系，需要绕 y 轴旋转 +targetRotationAngle。
  * 
  * 后续处理：
  *   - 物理分析（如 pxp-pxn 分布）在靶子坐标系中进行，这是反应平面的自然定义。
@@ -469,12 +549,10 @@ MomentumData QMDGeoFilter::LoadQMDData(const std::string& target,
  * 但是探测器 (PDC, NEBULA) 的位置是在实验室坐标系中定义的。
  * 因此在检查探测器 hit 之前，需要将动量从靶子坐标系旋转到实验室坐标系。
  * 
- * 旋转方法：绕 y 轴旋转 -targetRotationAngle
- *   px_lab = px_target * cos(-angle) - pz_target * sin(-angle)
- *          = px_target * cos(angle) + pz_target * sin(angle)
+ * 旋转方法：绕 y 轴旋转 +targetRotationAngle
+ *   px_lab = px_target * cos(angle) + pz_target * sin(angle)
  *   py_lab = py_target (不变)
- *   pz_lab = px_target * sin(-angle) + pz_target * cos(-angle)
- *          = -px_target * sin(angle) + pz_target * cos(angle)
+ *   pz_lab = -px_target * sin(angle) + pz_target * cos(angle)
  * 
  * @param data 动量数据（靶子坐标系）
  * @param targetPos 靶位置（实验室坐标系）
@@ -514,7 +592,7 @@ GeometryFilterResult QMDGeoFilter::ApplyGeometryFilterDetailed(const MomentumDat
     
     // [EN] Calculate rotation parameters: target frame -> lab frame
     // [CN] 计算旋转参数：从靶子坐标系到实验室坐标系
-
+    // [EN] Use +targetRotationAngle (same as DetectorAcceptanceCalculator) / [CN] 使用+targetRotationAngle（与DetectorAcceptanceCalculator一致）
     double rotAngleRad = targetRotationAngle * TMath::DegToRad();
     double cosA = std::cos(rotAngleRad);
     double sinA = std::sin(rotAngleRad);
@@ -694,27 +772,75 @@ QMDConfigurationResult QMDGeoFilter::AnalyzeSingleConfiguration(
     
     if (fConfig.useFixedPDC) {
         // [EN] Use fixed PDC position mode / [CN] 使用固定PDC位置模式
-        SM_INFO("  Using FIXED PDC position mode");
-        SM_INFO("    PDC position: ({:.1f}, {:.1f}, {:.1f}) mm", 
-                fConfig.fixedPDCPosition.X(), fConfig.fixedPDCPosition.Y(), fConfig.fixedPDCPosition.Z());
-        SM_INFO("    PDC rotation: {:.2f} deg", fConfig.fixedPDCRotationAngle);
+        // [EN] Convert SAMURAI definition to lab frame (rotate around origin) / [CN] 将SAMURAI定义转换到实验室坐标系（绕原点旋转）
+        // [EN] SAMURAI uses clockwise positive, so lab rotation = -samuraiAngle / [CN] SAMURAI顺时针为正，因此实验室角度 = -samurai角度
+        double samuraiAngle = fConfig.fixedPDCRotationAngle;
+        TVector3 samuraiPos1 = fConfig.fixedPDCPosition1;
+        TVector3 samuraiPos2 = fConfig.fixedPDCPosition2;
+        
+        // [EN] Optional macro override (e.g. B100T.mac) / [CN] 可选宏文件覆盖
+        if (!fConfig.pdcMacroPath.empty()) {
+            double macroAngle = 0.0;
+            TVector3 pos1, pos2;
+            if (ParsePdcMacro(fConfig.pdcMacroPath, macroAngle, pos1, pos2)) {
+                samuraiAngle = macroAngle;
+                samuraiPos1 = pos1;
+                samuraiPos2 = pos2;
+                SM_INFO("  Using PDC macro: {}", fConfig.pdcMacroPath);
+                SM_INFO("    PDC angle (SAMURAI): {:.2f} deg", samuraiAngle);
+                SM_INFO("    PDC pos1 (SAMURAI): ({:.1f}, {:.1f}, {:.1f}) mm",
+                        pos1.X(), pos1.Y(), pos1.Z());
+                SM_INFO("    PDC pos2 (SAMURAI): ({:.1f}, {:.1f}, {:.1f}) mm",
+                        pos2.X(), pos2.Y(), pos2.Z());
+            } else {
+                SM_WARN("  Failed to parse PDC macro: {} (using fixed values)",
+                        fConfig.pdcMacroPath);
+            }
+        }
+        
+        double labRotation = -samuraiAngle;
+        TVector3 labPdcPos1 = RotateYDeg(samuraiPos1, labRotation);
+        TVector3 labPdcPos2 = RotateYDeg(samuraiPos2, labRotation);
+        SM_INFO("  Using FIXED PDC position mode (dual planes, require both hits)");
+        SM_INFO("    PDC1 position (SAMURAI): ({:.1f}, {:.1f}, {:.1f}) mm", 
+                samuraiPos1.X(), samuraiPos1.Y(), samuraiPos1.Z());
+        SM_INFO("    PDC2 position (SAMURAI): ({:.1f}, {:.1f}, {:.1f}) mm", 
+                samuraiPos2.X(), samuraiPos2.Y(), samuraiPos2.Z());
+        SM_INFO("    PDC rotation (SAMURAI): {:.2f} deg", samuraiAngle);
+        SM_INFO("    PDC1 position (LAB): ({:.1f}, {:.1f}, {:.1f}) mm",
+                labPdcPos1.X(), labPdcPos1.Y(), labPdcPos1.Z());
+        SM_INFO("    PDC2 position (LAB): ({:.1f}, {:.1f}, {:.1f}) mm",
+                labPdcPos2.X(), labPdcPos2.Y(), labPdcPos2.Z());
+        SM_INFO("    PDC rotation (LAB): {:.2f} deg", labRotation);
         SM_INFO("    Px range: +/-{:.1f} MeV/c", fConfig.pxRange);
         
         configResult.pdcConfig = fDetectorCalc->CreateFixedPDCConfiguration(
-            fConfig.fixedPDCPosition,
-            fConfig.fixedPDCRotationAngle,
+            labPdcPos1,
+            labRotation,
             -fConfig.pxRange,
             fConfig.pxRange
         );
+        configResult.pdcConfig2 = fDetectorCalc->CreateFixedPDCConfiguration(
+            labPdcPos2,
+            labRotation,
+            -fConfig.pxRange,
+            fConfig.pxRange
+        );
+        configResult.usePdcPair = true;
     } else {
         // [EN] Use optimized PDC position mode / [CN] 使用优化PDC位置模式
         SM_INFO("  Using OPTIMIZED PDC position mode (pxRange=+/-{:.1f})", fConfig.pxRange);
         configResult.pdcConfig = fDetectorCalc->CalculateOptimalPDCPosition(
             targetVec, targetPos.rotationAngle, fConfig.pxRange);
+        configResult.usePdcPair = false;
     }
     
     // [EN] Set PDC configuration to detector calculator / [CN] 将PDC配置设置到探测器计算器
-    fDetectorCalc->SetPDCConfiguration(configResult.pdcConfig);
+    if (configResult.usePdcPair) {
+        fDetectorCalc->SetPDCConfigurationPair(configResult.pdcConfig, configResult.pdcConfig2, true);
+    } else {
+        fDetectorCalc->SetPDCConfiguration(configResult.pdcConfig);
+    }
     configResult.nebulaConfig = fDetectorCalc->GetNEBULAConfiguration();
     
     // 创建动量 cut
@@ -895,9 +1021,24 @@ void QMDGeoFilter::GenerateDetectorGeometryPlot(double fieldStrength, double def
     
     // [EN] Pass PDC configuration from QMDGeoFilter config / [CN] 从QMDGeoFilter配置传递PDC配置
     geoConfig.useFixedPDC = fConfig.useFixedPDC;
-    geoConfig.fixedPDCPosition = fConfig.fixedPDCPosition;
+    geoConfig.fixedPDCPosition1 = fConfig.fixedPDCPosition1;
+    geoConfig.fixedPDCPosition2 = fConfig.fixedPDCPosition2;
     geoConfig.fixedPDCRotationAngle = fConfig.fixedPDCRotationAngle;
     geoConfig.pxRange = fConfig.pxRange;
+    
+    if (geoConfig.useFixedPDC && !fConfig.pdcMacroPath.empty()) {
+        double macroAngle = 0.0;
+        TVector3 pos1, pos2;
+        if (ParsePdcMacro(fConfig.pdcMacroPath, macroAngle, pos1, pos2)) {
+            // [EN] Sync geometry plot with macro-defined PDC / [CN] 用宏定义同步几何绘图的PDC
+            geoConfig.fixedPDCPosition1 = pos1;
+            geoConfig.fixedPDCPosition2 = pos2;
+            geoConfig.fixedPDCRotationAngle = macroAngle;
+            SM_INFO("Geometry plot uses PDC macro: {}", fConfig.pdcMacroPath);
+        } else {
+            SM_WARN("Geometry plot: failed to parse PDC macro: {}", fConfig.pdcMacroPath);
+        }
+    }
     
     fGeoManager->SetConfig(geoConfig);
     

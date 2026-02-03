@@ -89,7 +89,8 @@ public:
         
         // [EN] PDC configuration / [CN] PDC配置
         bool useFixedPDC = false;           // [EN] Use fixed PDC position / [CN] 使用固定PDC位置
-        TVector3 fixedPDCPosition;          // [EN] Fixed PDC position (mm) / [CN] 固定PDC位置
+        TVector3 fixedPDCPosition1;         // [EN] Fixed PDC1 position (mm) / [CN] 固定PDC1位置
+        TVector3 fixedPDCPosition2;         // [EN] Fixed PDC2 position (mm) / [CN] 固定PDC2位置
         double fixedPDCRotationAngle = 60.0; // [EN] Fixed PDC rotation (deg) / [CN] 固定PDC旋转角度
         double pxRange = 100.0;             // [EN] Px range for PDC sizing / [CN] PDC尺寸的Px范围
         
@@ -103,6 +104,8 @@ public:
         double deflectionAngle;
         BeamDeflectionCalculator::TargetPosition targetPos;
         DetectorAcceptanceCalculator::PDCConfiguration pdcConfig;
+        DetectorAcceptanceCalculator::PDCConfiguration pdcConfig2;
+        bool usePdcPair = false;
         DetectorAcceptanceCalculator::AcceptanceResult acceptance;
     };
 

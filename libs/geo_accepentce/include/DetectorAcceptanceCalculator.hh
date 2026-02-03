@@ -90,6 +90,9 @@ private:
     ParticleTrajectory* fTrajectory;
     
     PDCConfiguration fPDCConfig;
+    PDCConfiguration fPDCConfig2;
+    bool fUsePdcPair = false;           // [EN] Use two PDC planes / [CN] 使用双层PDC
+    bool fRequireBothPdcPlanes = true;  // [EN] Require hit on both planes / [CN] 需要同时命中两层
     NEBULAConfiguration fNEBULAConfig;
     
     // 事例数据
@@ -110,10 +113,25 @@ public:
     void SetMagneticField(MagneticField* magField);
     
     // 配置探测器
-    void SetPDCConfiguration(const PDCConfiguration& config) { fPDCConfig = config; }
+    void SetPDCConfiguration(const PDCConfiguration& config) { 
+        fPDCConfig = config; 
+        fUsePdcPair = false; 
+        fRequireBothPdcPlanes = true;
+    }
+    // [EN] Set two PDC planes and require both hits / [CN] 设置两层PDC并要求同时命中
+    void SetPDCConfigurationPair(const PDCConfiguration& config1,
+                                 const PDCConfiguration& config2,
+                                 bool requireBoth = true) {
+        fPDCConfig = config1;
+        fPDCConfig2 = config2;
+        fUsePdcPair = true;
+        fRequireBothPdcPlanes = requireBoth;
+    }
     void SetNEBULAConfiguration(const NEBULAConfiguration& config) { fNEBULAConfig = config; }
     
     PDCConfiguration GetPDCConfiguration() const { return fPDCConfig; }
+    PDCConfiguration GetPDCConfiguration2() const { return fPDCConfig2; }
+    bool GetUsePdcPair() const { return fUsePdcPair; }
     NEBULAConfiguration GetNEBULAConfiguration() const { return fNEBULAConfig; }
     
     // 从QMD数据加载粒子信息
@@ -147,6 +165,10 @@ public:
     
     // 检查粒子是否打到探测器
     bool CheckPDCHit(const ParticleInfo& particle, TVector3& hitPosition);
+    // [EN] Check hit against an explicit PDC configuration / [CN] 使用显式PDC配置检查命中
+    bool CheckPDCHitWithConfig(const ParticleInfo& particle,
+                               const PDCConfiguration& config,
+                               TVector3& hitPosition) const;
     bool CheckNEBULAHit(const ParticleInfo& particle, TVector3& hitPosition);
     
     // [EN] Calculate acceptance with current PDC/NEBULA configuration / [CN] 使用当前PDC/NEBULA配置计算接受度

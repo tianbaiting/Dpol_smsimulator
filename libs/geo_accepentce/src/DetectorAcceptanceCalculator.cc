@@ -518,42 +518,43 @@ DetectorAcceptanceCalculator::CalculateOptimalPDCPosition(const TVector3& target
 //@param particle 待检查的粒子信息, 包括初始位置、动量、质量、电荷等. 这个粒子信息应在实验室坐标系中. 而非靶点坐标系. 
 //@param hitPosition 如果击中，返回击中位置
 //@return 如果粒子击中PDC，返回true；否则返回false。
-bool DetectorAcceptanceCalculator::CheckPDCHit(const ParticleInfo& particle, 
-                                                TVector3& hitPosition)
+bool DetectorAcceptanceCalculator::CheckPDCHitWithConfig(const ParticleInfo& particle,
+                                                          const PDCConfiguration& config,
+                                                          TVector3& hitPosition) const
 {
     // 中性粒子不受磁场影响，直线传播
     if (TMath::Abs(particle.charge) < 0.5) {
         // 直线与PDC平面相交
         TVector3 direction = particle.momentum.Vect().Unit();
-        TVector3 toPlane = fPDCConfig.position - particle.vertex;
+        TVector3 toPlane = config.position - particle.vertex;
         
-        double denom = direction.Dot(fPDCConfig.normal);
+        double denom = direction.Dot(config.normal);
         if (TMath::Abs(denom) < 1e-6) return false; // 平行于平面
         
-        double t = toPlane.Dot(fPDCConfig.normal) / denom;
+        double t = toPlane.Dot(config.normal) / denom;
         if (t < 0) return false; // 反方向
         
         hitPosition = particle.vertex + direction * t;
         
         // 转换到PDC局部坐标系检查是否在范围内
-        TVector3 localPos = hitPosition - fPDCConfig.position;
+        TVector3 localPos = hitPosition - config.position;
         
         // PDC局部坐标系：
         // X轴：垂直于法向量且在水平面内
         // Y轴：垂直于X和法向量（接近竖直）
         // Z轴：法向量方向
-        TVector3 pdcLocalX(-fPDCConfig.normal.Z(), 0, fPDCConfig.normal.X());
+        TVector3 pdcLocalX(-config.normal.Z(), 0, config.normal.X());
         if (pdcLocalX.Mag() < 1e-6) {
             pdcLocalX.SetXYZ(1, 0, 0);  // 法向量接近垂直时的备用
         }
         pdcLocalX = pdcLocalX.Unit();
-        TVector3 pdcLocalY = fPDCConfig.normal.Cross(pdcLocalX).Unit();
+        TVector3 pdcLocalY = config.normal.Cross(pdcLocalX).Unit();
         
         double localX = localPos.Dot(pdcLocalX);
         double localY = localPos.Dot(pdcLocalY);
         
-        if (TMath::Abs(localX) < fPDCConfig.width / 2.0 &&
-            TMath::Abs(localY) < fPDCConfig.height / 2.0) {
+        if (TMath::Abs(localX) < config.width / 2.0 &&
+            TMath::Abs(localY) < config.height / 2.0) {
             return true;
         }
         return false;
@@ -566,23 +567,23 @@ bool DetectorAcceptanceCalculator::CheckPDCHit(const ParticleInfo& particle,
                                                         particle.charge, particle.mass);
     
     // PDC局部坐标系
-    TVector3 pdcLocalX(-fPDCConfig.normal.Z(), 0, fPDCConfig.normal.X());
+    TVector3 pdcLocalX(-config.normal.Z(), 0, config.normal.X());
     if (pdcLocalX.Mag() < 1e-6) {
         pdcLocalX.SetXYZ(1, 0, 0);
     }
     pdcLocalX = pdcLocalX.Unit();
-    TVector3 pdcLocalY = fPDCConfig.normal.Cross(pdcLocalX).Unit();
+    TVector3 pdcLocalY = config.normal.Cross(pdcLocalX).Unit();
     
     // 检查轨迹是否穿过PDC平面
     for (size_t i = 0; i < trajectory.size(); i++) {
         const auto& point = trajectory[i];
-        TVector3 toPoint = point.position - fPDCConfig.position;
-        double signedDist = toPoint.Dot(fPDCConfig.normal);
+        TVector3 toPoint = point.position - config.position;
+        double signedDist = toPoint.Dot(config.normal);
         
         // 检测穿越平面（符号变化）
         if (i > 0) {
-            TVector3 toPrev = trajectory[i-1].position - fPDCConfig.position;
-            double prevDist = toPrev.Dot(fPDCConfig.normal);
+            TVector3 toPrev = trajectory[i-1].position - config.position;
+            double prevDist = toPrev.Dot(config.normal);
             
             if (signedDist * prevDist <= 0) {  // 穿过平面
                 // 线性插值找到精确交点
@@ -590,19 +591,19 @@ bool DetectorAcceptanceCalculator::CheckPDCHit(const ParticleInfo& particle,
                 hitPosition = trajectory[i-1].position * (1-t) + point.position * t;
                 
                 // 检查横向范围
-                TVector3 localPos = hitPosition - fPDCConfig.position;
+                TVector3 localPos = hitPosition - config.position;
                 double localX = localPos.Dot(pdcLocalX);
                 double localY = localPos.Dot(pdcLocalY);
                 
-                if (TMath::Abs(localX) < fPDCConfig.width / 2.0 &&
-                    TMath::Abs(localY) < fPDCConfig.height / 2.0) {
+                if (TMath::Abs(localX) < config.width / 2.0 &&
+                    TMath::Abs(localY) < config.height / 2.0) {
                     
                     // 检查Px是否在接受范围内（在局部坐标系中）
                     // 插值动量
                     TVector3 interpMom = trajectory[i-1].momentum * (1-t) + point.momentum * t;
                     double px_local = interpMom.Dot(pdcLocalX);
                     
-                    if (px_local >= fPDCConfig.pxMin && px_local <= fPDCConfig.pxMax) {
+                    if (px_local >= config.pxMin && px_local <= config.pxMax) {
                         return true;
                     }
                 }
@@ -611,6 +612,29 @@ bool DetectorAcceptanceCalculator::CheckPDCHit(const ParticleInfo& particle,
     }
     
     return false;
+}
+
+bool DetectorAcceptanceCalculator::CheckPDCHit(const ParticleInfo& particle, 
+                                                TVector3& hitPosition)
+{
+    if (fUsePdcPair) {
+        TVector3 hit1, hit2;
+        bool hitPlane1 = CheckPDCHitWithConfig(particle, fPDCConfig, hit1);
+        bool hitPlane2 = CheckPDCHitWithConfig(particle, fPDCConfig2, hit2);
+        if (fRequireBothPdcPlanes) {
+            if (hitPlane1 && hitPlane2) {
+                hitPosition = hit2;  // [EN] Use downstream plane as representative / [CN] 以下游平面作为代表
+                return true;
+            }
+            return false;
+        }
+        if (hitPlane1 || hitPlane2) {
+            hitPosition = hitPlane2 ? hit2 : hit1;  // [EN] Prefer plane2 when hit / [CN] 若命中则优先plane2
+            return true;
+        }
+        return false;
+    }
+    return CheckPDCHitWithConfig(particle, fPDCConfig, hitPosition);
 }
 
 bool DetectorAcceptanceCalculator::CheckNEBULAHit(const ParticleInfo& particle,

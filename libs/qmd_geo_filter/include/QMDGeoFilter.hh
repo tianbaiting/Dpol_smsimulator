@@ -156,6 +156,8 @@ struct QMDConfigurationResult {
     
     // 探测器配置
     DetectorAcceptanceCalculator::PDCConfiguration pdcConfig;
+    DetectorAcceptanceCalculator::PDCConfiguration pdcConfig2;
+    bool usePdcPair = false;
     DetectorAcceptanceCalculator::NEBULAConfiguration nebulaConfig;
     BeamDeflectionCalculator::TargetPosition targetPosition;
 };
@@ -262,13 +264,26 @@ public:
         // [CN] 是否使用固定的PDC位置而不是优化
         bool useFixedPDC = false;
         
-        // [EN] Fixed PDC position [mm] (only used when useFixedPDC=true)
-        // [CN] 固定的PDC位置 [mm]（仅当useFixedPDC=true时使用）
-        TVector3 fixedPDCPosition = TVector3(-3500, 0, 2500);
+        // [EN] Fixed PDC positions in SAMURAI frame before rotation [mm]
+        // [CN] 固定PDC位置（SAMURAI旋转前坐标系）[mm]
+        // [EN] This matches sim_deuteron "/samurai/geometry/PDC/Position1/2" convention
+        // [CN] 与sim_deuteron的"/samurai/geometry/PDC/Position1/2"定义一致
+        // [EN] Default PDC positions from SAMURAI macro (cm -> mm) / [CN] SAMURAI宏默认PDC位置（cm -> mm）
+        TVector3 fixedPDCPosition1 = TVector3(0, 0, 4000);
+        TVector3 fixedPDCPosition2 = TVector3(0, 0, 5000);
         
-        // [EN] Fixed PDC rotation angle [deg] (only used when useFixedPDC=true)
-        // [CN] 固定的PDC旋转角度 [度]（仅当useFixedPDC=true时使用）
-        double fixedPDCRotationAngle = -30.0;
+        // [EN] Fixed PDC rotation angle in SAMURAI definition [deg]
+        // [CN] 固定PDC旋转角度（SAMURAI定义）[度]
+        // [EN] SAMURAI uses clockwise positive; we will convert to lab frame internally
+        // [CN] SAMURAI以顺时针为正，内部会转换到实验室坐标系
+        // [EN] Default PDC rotation from SAMURAI macro / [CN] SAMURAI宏默认PDC旋转
+        double fixedPDCRotationAngle = 65.0;
+
+        // [EN] Optional: read PDC Angle/Position from Geant4 macro (e.g. B100T.mac)
+        // [CN] 可选：从Geant4宏文件读取PDC Angle/Position（如 B100T.mac）
+        // [EN] If set, overrides fixedPDCPosition1/2 and fixedPDCRotationAngle
+        // [CN] 设置后将覆盖 fixedPDCPosition1/2 和 fixedPDCRotationAngle
+        std::string pdcMacroPath;
         
         // [EN] Px range for PDC acceptance [MeV/c] (used for both optimization and fixed modes)
         // [CN] PDC接收的Px范围 [MeV/c]（用于优化和固定模式）
@@ -321,7 +336,14 @@ public:
     
     // [EN] Set fixed PDC position and rotation / [CN] 设置固定PDC位置和旋转角度
     void SetFixedPDCPosition(const TVector3& pos, double rotAngle) {
-        fConfig.fixedPDCPosition = pos;
+        // [EN] Legacy setter: apply same position to both PDC planes / [CN] 兼容接口：两层PDC使用同一位置
+        fConfig.fixedPDCPosition1 = pos;
+        fConfig.fixedPDCPosition2 = pos;
+        fConfig.fixedPDCRotationAngle = rotAngle;
+    }
+    void SetFixedPDCPositions(const TVector3& pos1, const TVector3& pos2, double rotAngle) {
+        fConfig.fixedPDCPosition1 = pos1;
+        fConfig.fixedPDCPosition2 = pos2;
         fConfig.fixedPDCRotationAngle = rotAngle;
     }
     
