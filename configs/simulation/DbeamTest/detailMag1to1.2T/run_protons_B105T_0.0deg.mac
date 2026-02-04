@@ -1,0 +1,44 @@
+# =========================================================================
+# [EN] Proton+Neutron trajectories using Tree input + Target parameters
+# [CN] 使用Tree输入 + Target参数的质子/中子轨迹可视化
+# =========================================================================
+# Field: B=1.05T, Beam angle=0.0 deg
+# Target position: X=0.0000mm, Y=0.0000mm, Z=-4000.0000mm
+# Proton + Neutron momenta: Px = ±100, ±150 MeV/c (8 tracks total: 4p + 4n)
+# =========================================================================
+
+/vis/open OGLIQt 1280x720
+
+/samurai/geometry/Target/Position 0.0000 0.0000 -400.0000 cm
+/samurai/geometry/Target/Angle 0.0 deg
+
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B105T.mac
+
+/action/file/OverWrite y
+/action/file/RunName protons_B105T_0.0deg
+/action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/detailMag1to1.2T/output
+
+/vis/drawVolume
+/vis/viewer/set/upVector 1 0 0
+/vis/viewer/set/viewpointThetaPhi 90. 90.
+/vis/scene/add/axes 0 0 0 6000 mm
+
+/vis/scene/add/trajectories smooth
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 3
+/vis/scene/endOfEventAction accumulate
+
+/vis/viewer/set/autoRefresh false
+/vis/verbose warnings
+
+/action/gun/Type Tree
+/action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/track_vis_useTree/rootfiles/pn_8tracks.root
+/action/gun/tree/TreeName tree
+/action/gun/tree/beamOn 8
+
+/vis/viewer/set/autoRefresh true
+/vis/viewer/refresh
+/vis/viewer/update
+
+/vis/ogl/export /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/detailMag1to1.2T/output/protons_B105T_0.0deg.png

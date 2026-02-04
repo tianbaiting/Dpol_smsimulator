@@ -63,7 +63,7 @@ urls = [
     # "http://ribf.riken.jp/~hsato/fieldmaps/180704-0,95T-3000.zip",
     # "http://ribf.riken.jp/~hsato/fieldmaps/180704-0,90T-3000.zip",
     # "http://ribf.riken.jp/~hsato/fieldmaps/180626-0,85T-3000.zip",
-    "http://ribf.riken.jp/~hsato/fieldmaps/141114-0,8T-3000.zip",
+    # "http://ribf.riken.jp/~hsato/fieldmaps/141114-0,8T-3000.zip",
 
 
 ]
