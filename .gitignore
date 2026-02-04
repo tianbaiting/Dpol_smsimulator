@@ -45,3 +45,22 @@ results/
 result/
 *.wrl
 *.gdml
+*output*/
+*output/
+
+
+# LaTeX intermediate files
+*.aux
+*.log
+*.nav
+*.snm
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.lof
+*.lot
+*.gz
