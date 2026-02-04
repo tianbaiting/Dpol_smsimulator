@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2025/dev/Debian) (preloaded format=xelatex 2025.10.29)  1 FEB 2026 01:12
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2025/dev/Debian) (preloaded format=xelatex 2025.10.29)  5 FEB 2026 02:24
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -717,7 +717,7 @@ File: pgflibraryarrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \arrowsize=\dimen333
 )) (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypositioning.code.tex
 File: tikzlibrarypositioning.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (./dpolconfig.aux (./combine.aux) (./angle0deg.aux))
+) (./dpolconfig.aux (./combine.aux) (./detailMag.aux) (./angle0deg.aux))
 \openout1 = `dpolconfig.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 36.
@@ -850,20 +850,20 @@ Package caption Info: End \AtBeginDocument code.
 \openout2 = `combine.aux'.
 
  (./combine.tex
-LaTeX Font Info:    Trying to load font information for U+msa on input line 25.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 22.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 25.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 22.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <10.95> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 25.
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 22.
 LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <8> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 25.
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 22.
 LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <6> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 25.
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 22.
 File: figures/combined_B080T_2.0deg.png Graphic file (type bmp)
 <figures/combined_B080T_2.0deg.png>
 File: figures/combined_B080T_4.0deg.png Graphic file (type bmp)
@@ -871,17 +871,17 @@ File: figures/combined_B080T_4.0deg.png Graphic file (type bmp)
 File: figures/combined_B080T_6.0deg.png Graphic file (type bmp)
 <figures/combined_B080T_6.0deg.png>
 LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <5> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 25.
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 22.
 File: figures/combined_B080T_8.0deg.png Graphic file (type bmp)
 <figures/combined_B080T_8.0deg.png>
 File: figures/combined_B080T_10.0deg.png Graphic file (type bmp)
 <figures/combined_B080T_10.0deg.png>
 LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <14.4> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 25.
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 22.
 LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <10> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 25.
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 22.
 LaTeX Font Info:    Font shape `TU/lmss/m/it' in size <7> not available
-(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 25.
+(Font)              Font shape `TU/lmss/m/sl' tried instead on input line 22.
 
 
 [3
@@ -948,8 +948,164 @@ File: figures/combined_B200T_10.0deg.png Graphic file (type bmp)
 [7
 
 ])
+\openout2 = `detailMag.aux'.
+
+ (./detailMag.tex
+File: figures/detailMag/combined_B100T_0.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_0.0deg.png>
+File: figures/detailMag/combined_B100T_1.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_1.0deg.png>
+File: figures/detailMag/combined_B100T_2.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_2.0deg.png>
+File: figures/detailMag/combined_B100T_3.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_3.0deg.png>
+File: figures/detailMag/combined_B100T_4.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_4.0deg.png>
+
 
 [8
+
+
+
+
+]
+File: figures/detailMag/combined_B100T_5.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_5.0deg.png>
+File: figures/detailMag/combined_B100T_6.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_6.0deg.png>
+File: figures/detailMag/combined_B100T_7.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_7.0deg.png>
+File: figures/detailMag/combined_B100T_8.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_8.0deg.png>
+File: figures/detailMag/combined_B100T_9.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B100T_9.0deg.png>
+
+
+[9
+
+]
+File: figures/detailMag/combined_B105T_0.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_0.0deg.png>
+File: figures/detailMag/combined_B105T_1.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_1.0deg.png>
+File: figures/detailMag/combined_B105T_2.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_2.0deg.png>
+File: figures/detailMag/combined_B105T_3.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_3.0deg.png>
+File: figures/detailMag/combined_B105T_4.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_4.0deg.png>
+
+
+[10
+
+]
+File: figures/detailMag/combined_B105T_5.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_5.0deg.png>
+File: figures/detailMag/combined_B105T_6.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_6.0deg.png>
+File: figures/detailMag/combined_B105T_7.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_7.0deg.png>
+File: figures/detailMag/combined_B105T_8.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_8.0deg.png>
+File: figures/detailMag/combined_B105T_9.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B105T_9.0deg.png>
+
+
+[11
+
+]
+File: figures/detailMag/combined_B110T_0.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_0.0deg.png>
+File: figures/detailMag/combined_B110T_1.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_1.0deg.png>
+File: figures/detailMag/combined_B110T_2.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_2.0deg.png>
+File: figures/detailMag/combined_B110T_3.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_3.0deg.png>
+File: figures/detailMag/combined_B110T_4.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_4.0deg.png>
+
+
+[12
+
+]
+File: figures/detailMag/combined_B110T_5.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_5.0deg.png>
+File: figures/detailMag/combined_B110T_6.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_6.0deg.png>
+File: figures/detailMag/combined_B110T_7.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_7.0deg.png>
+File: figures/detailMag/combined_B110T_8.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_8.0deg.png>
+File: figures/detailMag/combined_B110T_9.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B110T_9.0deg.png>
+
+
+[13
+
+]
+File: figures/detailMag/combined_B115T_0.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_0.0deg.png>
+File: figures/detailMag/combined_B115T_1.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_1.0deg.png>
+File: figures/detailMag/combined_B115T_2.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_2.0deg.png>
+File: figures/detailMag/combined_B115T_3.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_3.0deg.png>
+File: figures/detailMag/combined_B115T_4.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_4.0deg.png>
+
+
+[14
+
+]
+File: figures/detailMag/combined_B115T_5.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_5.0deg.png>
+File: figures/detailMag/combined_B115T_6.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_6.0deg.png>
+File: figures/detailMag/combined_B115T_7.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_7.0deg.png>
+File: figures/detailMag/combined_B115T_8.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_8.0deg.png>
+File: figures/detailMag/combined_B115T_9.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B115T_9.0deg.png>
+
+
+[15
+
+]
+File: figures/detailMag/combined_B120T_0.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_0.0deg.png>
+File: figures/detailMag/combined_B120T_1.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_1.0deg.png>
+File: figures/detailMag/combined_B120T_2.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_2.0deg.png>
+File: figures/detailMag/combined_B120T_3.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_3.0deg.png>
+File: figures/detailMag/combined_B120T_4.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_4.0deg.png>
+
+
+[16
+
+]
+File: figures/detailMag/combined_B120T_5.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_5.0deg.png>
+File: figures/detailMag/combined_B120T_6.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_6.0deg.png>
+File: figures/detailMag/combined_B120T_7.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_7.0deg.png>
+File: figures/detailMag/combined_B120T_8.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_8.0deg.png>
+File: figures/detailMag/combined_B120T_9.0deg.png Graphic file (type bmp)
+<figures/detailMag/combined_B120T_9.0deg.png>
+
+
+[17
+
+])
+
+[18
 
 
 
@@ -973,7 +1129,7 @@ File: figures/combined_B200T_0deg.png Graphic file (type bmp)
 <figures/combined_B200T_0deg.png>
 
 
-[9
+[19
 
 
 ])
@@ -991,7 +1147,7 @@ Overfull \vbox (56.68958pt too high) detected at line 374
 
 
 
-[10
+[20
 
 
 
@@ -1010,7 +1166,7 @@ Overfull \vbox (87.11172pt too high) detected at line 415
 
 
 
-[11
+[21
 
 ]
 File: figures/test_pdc_position/config_1.60T_0deg.png Graphic file (type bmp)
@@ -1027,7 +1183,7 @@ Overfull \vbox (87.11172pt too high) detected at line 450
 
 
 
-[12
+[22
 
 ]
 File: figures/test_pdc_position/config_2.40T_0deg.png Graphic file (type bmp)
@@ -1044,7 +1200,7 @@ Overfull \vbox (87.11172pt too high) detected at line 485
 
 
 
-[13
+[23
 
 ]
 File: figures/test_pdc_position/config_0.80T_5deg.png Graphic file (type bmp)
@@ -1061,7 +1217,7 @@ Overfull \vbox (87.11172pt too high) detected at line 520
 
 
 
-[14
+[24
 
 ]
 File: figures/test_pdc_position/config_1.60T_5deg.png Graphic file (type bmp)
@@ -1078,7 +1234,7 @@ Overfull \vbox (87.11172pt too high) detected at line 551
 
 
 
-[15
+[25
 
 ]
 File: figures/test_pdc_position/config_2.40T_5deg.png Graphic file (type bmp)
@@ -1095,7 +1251,7 @@ Overfull \vbox (87.11172pt too high) detected at line 582
 
 
 
-[16
+[26
 
 ]
 File: figures/test_pdc_position/config_0.80T_10deg.png Graphic file (type bmp)
@@ -1112,7 +1268,7 @@ Overfull \vbox (87.11172pt too high) detected at line 617
 
 
 
-[17
+[27
 
 ]
 File: figures/test_pdc_position/config_1.60T_10deg.png Graphic file (type bmp)
@@ -1129,7 +1285,7 @@ Overfull \vbox (87.11172pt too high) detected at line 648
 
 
 
-[18
+[28
 
 ]
 File: figures/test_pdc_position/config_2.40T_10deg.png Graphic file (type bmp)
@@ -1146,11 +1302,11 @@ Overfull \vbox (87.11172pt too high) detected at line 679
 
 
 
-[19
+[29
 
 ]
 
-[20
+[30
 
 ]
 \tf@nav=\write6
@@ -1162,21 +1318,21 @@ Overfull \vbox (87.11172pt too high) detected at line 679
 \tf@snm=\write8
 \openout8 = `dpolconfig.snm'.
 
- (./dpolconfig.aux (./combine.aux) (./angle0deg.aux))
+ (./dpolconfig.aux (./combine.aux) (./detailMag.aux) (./angle0deg.aux))
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
 Package rerunfilecheck Info: File `dpolconfig.out' has not changed.
-(rerunfilecheck)             Checksum: FF741B5F2BC403BF7CDFD7D25FBF536A;470.
+(rerunfilecheck)             Checksum: A72CE54C107F221CB0F580B6DBB05C19;471.
  ) 
 Here is how much of TeX's memory you used:
- 30388 strings out of 473835
- 637499 string characters out of 5731945
- 986886 words of memory out of 5000000
- 52781 multiletter control sequences out of 15000+600000
+ 30877 strings out of 473835
+ 658963 string characters out of 5731945
+ 987294 words of memory out of 5000000
+ 53220 multiletter control sequences out of 15000+600000
  568152 words of font info for 90 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  128i,14n,123p,480b,690s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on dpolconfig.pdf (20 pages).
+Output written on dpolconfig.pdf (30 pages).

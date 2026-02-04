@@ -1,4 +1,4 @@
 \beamer@sectionintoc {1}{config}{3}{0}{1}
-\beamer@subsectionintoc {1}{1}{target outside magnetic}{8}{0}{1}
-\beamer@sectionintoc {2}{filter}{20}{0}{2}
-\beamer@subsectionintoc {2}{1}{nebula acceptance}{20}{0}{2}
+\beamer@subsectionintoc {1}{1}{target outside magnetic}{18}{0}{1}
+\beamer@sectionintoc {2}{filter}{30}{0}{2}
+\beamer@subsectionintoc {2}{1}{nebula acceptance}{30}{0}{2}
