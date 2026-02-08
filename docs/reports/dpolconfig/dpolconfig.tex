@@ -14,7 +14,7 @@
 \usepackage{tikz}
 \usepackage{xfp}
 \usepackage{subcaption}
-\usepackage{graphicx}
+% duplicate graphicx removed
 \usepackage{pgffor} % [EN] Required for \foreach loop / [CN] 用于foreach循环
 \usetikzlibrary{shapes,arrows,positioning}
 
@@ -46,260 +46,58 @@
 \end{frame}
 \section{config}
 
+\subsection{rough scan}
+
+\begin{frame}
+    \frametitle{rough scan on parameter}
+
+Angle : 2, 4, 6, 8, 10 degree
+
+magnetic field: 0.8, 1.0, 1.2, 1.6, 2.0 T
+
+    
+    For magnetic field settings below 1.2 T, deuterons exit from the neutron exit window. Above 1.2 T, protons are prone to collisions. Therefore, a more detailed parameter scan test is conducted between 1.0 and 1.2 T at frame. see detailed in after  frame\ref{detailed}{click to jump to detailed scan}.
+
+\end{frame}
+
 \include{combine}
+
+\subsection{detailed scan}\label{detailed}
+\begin{frame}
+    \frametitle{more detailed config}
+% 由于1.2 以下磁场, 氘核从neutron exit window 出来, 大于1.2T 质子容易撞击 所以选择1.0到1.2T来之间进行更详细的参数扫描测试
+    For magnetic field settings below 1.2 T, deuterons exit from the neutron exit window. Above 1.2 T, protons are prone to collisions. Therefore, a more detailed parameter scan test is conducted between 1.0 and 1.2 T.
+
+\end{frame}
+
 \include{detailMag}
 
-% \subsection{deutron hit exitwindow}
 
-% \begin{frame}
-%     \tableofcontents[currentsection]
-% \end{frame}
-
-% \begin{frame}
-%     \frametitle{Operational Constraints} % 或者是 Magnetic Field Requirements
-    
-%     \begin{itemize}
-%         \item \textbf{Requirement for Exit Window Configuration:}
-%         A magnetic field of $B \geq 1.0~\text{T}$ is mandatory.
-        
-%         \item \textbf{Rationale:}
-%         At lower field strengths ($B < 1.0~\text{T}$), the trajectory of beam line risks hitting on the vacuum exit window frame.
-%     \end{itemize}
-% \end{frame}
-
-% \begin{figure}[ht]
-% 	\centering
-% 	\includegraphics[width=-1.8\linewidth]{figures/2026-01-18-14-46-58.png}
-% 	\caption{1.0T}
-% 	\label{fig:2025-01-18-14-46-58}
-% \end{figure}
-
-% \begin{figure}[ht]
-% 	\centering
-% 	\includegraphics[width=-1.8\linewidth]{figures/2026-01-18-14-48-03.png}
-% 	\caption{0.8T}
-% 	\label{fig:2025-01-18-14-48-03}
-% \end{figure}
-
-% \begin{figure}[ht]
-% 	\centering
-% 	\includegraphics[width=-1.8\linewidth]{figures/2026-01-18-14-48-23.png}
-% 	\caption{0.6T}
-% 	\label{fig:2025-01-18-14-48-23}
-% \end{figure}
-
-% \begin{figure}[ht]
-% 	\centering
-% 	\includegraphics[width=-1.8\linewidth]{figures/2026-01-18-15-06-31.png}
-% 	\caption{0.4T}
-% 	\label{fig:2025-01-18-15-06-31}
-% \end{figure}
+\begin{frame}
+    \frametitle{final choice of config}
+    1.15T , 3deg
+\begin{columns}
+    \begin{column}{0.5\textwidth}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.4\linewidth]{figures/2026-02-05-21-11-01.png}
+	\caption{1.15T , 3deg configuration visualization}
+	\label{fig:2026-02-05-21-11-01}
+\end{figure}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.4\linewidth]{figures/2026-02-05-21-15-17.png}
+	\caption{Caption}
+	\label{fig:2026-02-05-21-15-17}
+\end{figure}
+    \end{column}
+\end{columns} 
 
 
-% \begin{figure}[ht]
-% 	\centering
-% 	\includegraphics[width=-1.8\linewidth]{figures/2026-01-18-15-06-55.png}
-% 	\caption{0.2T} 
-% 	\label{fig:2025-01-18-15-06-55}
-% \end{figure}
 
-% \begin{figure}[ht]
-% 	\centering
-% 	\includegraphics[width=-1.8\linewidth]{figures/2026-01-18-15-07-40.png}
-% 	\caption{0.0T}
-% 	\label{fig:2025-01-18-15-07-40}
-% \end{figure}
-
-
-% \begin{figure}[ht]
-% 	\centering
-% 	\includegraphics[width=-1.8\linewidth]{figures/2026-01-18-15-08-25.png}
-% 	\caption{-1.8T}
-% 	\label{fig:2025-01-18-15-08-25}
-% \end{figure}
-
-
-% \subsection{proton hit exitwindow}
-
-% \begin{frame}
-%     \tableofcontents[currentsection]
-% \end{frame}
-
-% \begin{frame}
-%     i'am afriad that i caculate the wrong posit ion of target. 
-
-%     i should use geant3 code to do cross check with my Runge-Kutta code that caculate the deutron trajectory.
-% \begin{figure}[ht]
-% 	\centering
-% 	\includegraphics[width=-1.8\linewidth]{figures/2026-01-26-04-22-34.png}
-% 	\caption{Caption}
-% 	\label{fig:2025-01-26-04-22-34}
-% \end{figure}
-
-
-% \end{frame}
-
-% % -------------------------------------------------------------------
-% % Magnetic Field B = 1.0 T (Satisfies Requirement)
-% % -------------------------------------------------------------------
-% \begin{frame}[allowframebreaks]{Simulation Scan: B = 1.0 T (Baseline)}
-%     \centering
-%     % 1.0 deg
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B200T_2.0deg.png}
-%         \caption{protons\_B199T\_2.0deg.png}
-%     \end{figure}
-    
-%     % 3.0 deg
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B200T_4.0deg.png}
-%         \caption{protons\_B199T\_4.0deg.png}
-%     \end{figure}
-
-%     % 5.0 deg
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B200T_6.0deg.png}
-%         \caption{protons\_B199T\_6.0deg.png}
-%     \end{figure}
-
-%     % 7.0 deg
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B200T_8.0deg.png}
-%         \caption{protons\_B199T\_8.0deg.png}
-%     \end{figure}
-
-%     % 9.0 deg
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B200T_10.0deg.png}
-%         \caption{protons\_B199T\_10.0deg.png}
-%     \end{figure}
-% \end{frame}
-
-% % -------------------------------------------------------------------
-% % Magnetic Field B = 0.6 T (Below Requirement)
-% % -------------------------------------------------------------------
-% \begin{frame}[allowframebreaks]{Simulation Scan: B = 0.6 T}
-%     \centering
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B160T_2.0deg.png}
-%         \caption{protons\_B159T\_2.0deg.png}
-%     \end{figure}
-    
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B160T_4.0deg.png}
-%         \caption{protons\_B159T\_4.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B160T_6.0deg.png}
-%         \caption{protons\_B159T\_6.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B160T_8.0deg.png}
-%         \caption{protons\_B159T\_8.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B160T_10.0deg.png}
-%         \caption{protons\_B159T\_10.0deg.png}
-%     \end{figure}
-% \end{frame}
-
-% % -------------------------------------------------------------------
-% % Magnetic Field B = 0.2 T
-% % -------------------------------------------------------------------
-% \begin{frame}[allowframebreaks]{Simulation Scan: B = 0.2 T}
-%     \centering
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B120T_2.0deg.png}
-%         \caption{protons\_B119T\_2.0deg.png}
-%     \end{figure}
-    
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B120T_4.0deg.png}
-%         \caption{protons\_B119T\_4.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B120T_6.0deg.png}
-%         \caption{protons\_B119T\_6.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B120T_8.0deg.png}
-%         \caption{protons\_B119T\_8.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B120T_10.0deg.png}
-%         \caption{protons\_B119T\_10.0deg.png}
-%     \end{figure}
-% \end{frame}
-
-% % -------------------------------------------------------------------
-% % Magnetic Field B = 0.0 T
-% % -------------------------------------------------------------------
-% \begin{frame}[allowframebreaks]{Simulation Scan: B = 0.0 T}
-%     \centering
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B100T_2.0deg.png}
-%         \caption{protons\_B99T\_2.0deg.png}
-%     \end{figure}
-    
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B100T_4.0deg.png}
-%         \caption{protons\_B99T\_4.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B100T_6.0deg.png}
-%         \caption{protons\_B99T\_6.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B100T_8.0deg.png}
-%         \caption{protons\_B99T\_8.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B100T_10.0deg.png}
-%         \caption{protons\_B99T\_10.0deg.png}
-%     \end{figure}
-% \end{frame}
-
-% % -------------------------------------------------------------------
-% % Magnetic Field B = -1.8 T (Worst Case)
-% % -------------------------------------------------------------------
-% \begin{frame}[allowframebreaks]{Simulation Scan: B = -1.8 T}
-%     \centering
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B080T_2.0deg.png}
-%         \caption{protons\_B79T\_2.0deg.png}
-%     \end{figure}
-    
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B080T_4.0deg.png}
-%         \caption{protons\_B79T\_4.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B080T_6.0deg.png}
-%         \caption{protons\_B79T\_6.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B080T_8.0deg.png}
-%         \caption{protons\_B79T\_8.0deg.png}
-%     \end{figure}
-
-%     \begin{figure}[ht]
-%         \includegraphics[width=-1.6\linewidth]{figures/geant4proton/protons_B080T_10.0deg.png}
-%         \caption{protons\_B79T\_10.0deg.png}
-%     \end{figure}
-% \end{frame}
-
-
+\end{frame}
 \subsection{target outside magnetic}
 
 \begin{frame}
