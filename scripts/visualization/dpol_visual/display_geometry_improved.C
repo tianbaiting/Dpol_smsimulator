@@ -1,3 +1,4 @@
+// Usage: root -l 'scripts/visualization/dpol_visual/display_geometry_improved.C()'
 #include "TEveManager.h"
 #include "TGeoManager.h"
 #include "TEveGeoNode.h"

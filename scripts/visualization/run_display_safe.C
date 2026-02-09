@@ -1,3 +1,4 @@
+// Usage: root -l 'scripts/visualization/run_display_safe.C(0, true)'
 #include "TSystem.h"
 #include "TApplication.h"
 

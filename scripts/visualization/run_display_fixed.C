@@ -1,3 +1,4 @@
+// Usage: root -l 'scripts/visualization/run_display_fixed.C(0)'
 #include "TSystem.h"
 #include "TApplication.h"
 #include "TROOT.h"

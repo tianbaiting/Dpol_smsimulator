@@ -1,5 +1,7 @@
+// Usage: root -l 'scripts/visualization/run_display.C(0, true)'
 #include "TSystem.h"
 #include "TApplication.h"
+#include "TEvePointSet.h"
 
 // 包含我们所有自定义类的头文件
 #include "GeometryManager.hh"
@@ -9,9 +11,10 @@
 #include "RecoEvent.hh"
 #include "MagneticField.hh"
 #include "ParticleTrajectory.hh"
+#include <cstring>
 
 // 主函数
-void run_display(Long64_t event_id = 0, bool show_trajectories = true) {
+void run_display(Long64_t event_id = 0, bool show_trajectories = true, const char* overlay_file = "") {
     // 1. 加载我们编译好的库
     // 加载库，确保只加载一次
     static bool loaded = false;
@@ -75,6 +78,82 @@ void run_display(Long64_t event_id = 0, bool show_trajectories = true) {
             Info("run_display", "显示事件 %lld (无轨迹)", event_id);
             display.DisplayEvent(event);
         }
+
+        // [EN] Optional overlay from step-scan results. / [CN] 可选叠加步长扫描结果。
+        if (overlay_file && std::strlen(overlay_file) > 0) {
+            TFile overlay(overlay_file, "READ");
+            if (!overlay.IsZombie()) {
+                TTree* trajTree = (TTree*)overlay.Get("traj");
+                TTree* hitTree = (TTree*)overlay.Get("step_scan");
+
+                if (trajTree) {
+                    double stepSize = 0.0;
+                    Long64_t evt = -1;
+                    int pid = -1;
+                    std::vector<double>* x = nullptr;
+                    std::vector<double>* y = nullptr;
+                    std::vector<double>* z = nullptr;
+
+                    trajTree->SetBranchAddress("step_size", &stepSize);
+                    trajTree->SetBranchAddress("event_id", &evt);
+                    trajTree->SetBranchAddress("particle_id", &pid);
+                    trajTree->SetBranchAddress("x", &x);
+                    trajTree->SetBranchAddress("y", &y);
+                    trajTree->SetBranchAddress("z", &z);
+
+                    std::vector<int> colors = {kRed, kBlue, kGreen+2, kMagenta+2, kOrange+7, kCyan+2};
+                    int colorIndex = 0;
+
+                    Long64_t n = trajTree->GetEntries();
+                    for (Long64_t i = 0; i < n; ++i) {
+                        trajTree->GetEntry(i);
+                        if (evt != event_id) continue;
+                        if (!x || !y || !z) continue;
+                        if (x->size() < 2) continue;
+
+                        std::vector<TrajectoryPoint> traj;
+                        traj.reserve(x->size());
+                        for (size_t ip = 0; ip < x->size(); ++ip) {
+                            TrajectoryPoint pt;
+                            pt.position.SetXYZ((*x)[ip], (*y)[ip], (*z)[ip]);
+                            traj.push_back(pt);
+                        }
+                        int color = colors[colorIndex % colors.size()];
+                        colorIndex++;
+                        TString name = Form("Step_%.1fmm_pid%d", stepSize, pid);
+                        display.DrawTrajectory(traj, name.Data(), color, 1);
+                    }
+                }
+
+                if (hitTree) {
+                    double stepSize = 0.0;
+                    Long64_t evt = -1;
+                    double hx = 0.0, hy = 0.0, hz = 0.0;
+                    hitTree->SetBranchAddress("step_size", &stepSize);
+                    hitTree->SetBranchAddress("event_id", &evt);
+                    hitTree->SetBranchAddress("hit_x", &hx);
+                    hitTree->SetBranchAddress("hit_y", &hy);
+                    hitTree->SetBranchAddress("hit_z", &hz);
+
+                    TEvePointSet* pdcHits = new TEvePointSet("PDC_Hits_Overlay");
+                    pdcHits->SetMarkerColor(kYellow+2);
+                    pdcHits->SetMarkerStyle(20);
+                    pdcHits->SetMarkerSize(2.0);
+
+                    Long64_t n = hitTree->GetEntries();
+                    for (Long64_t i = 0; i < n; ++i) {
+                        hitTree->GetEntry(i);
+                        if (evt != event_id) continue;
+                        pdcHits->SetNextPoint(hx, hy, hz);
+                    }
+
+                    if (display.GetCurrentEventElements()) {
+                        display.GetCurrentEventElements()->AddElement(pdcHits);
+                    }
+                    display.Redraw();
+                }
+            }
+        }
         
         // 打印事件信息
         Info("run_display", "事件 %lld: %zu 个原始hit, %zu 个重建hit, %zu 个重建轨迹", 
@@ -113,4 +192,3 @@ void run_display_no_trajectory(Long64_t event_id = 0) {
 void run_display_with_trajectory(Long64_t event_id = 0) {
     run_display(event_id, true);
 }
-

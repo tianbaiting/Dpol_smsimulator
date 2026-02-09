@@ -1,3 +1,4 @@
+// Usage: root -l 'scripts/visualization/visualize_3d_field.C()'
 /**
  * 三维磁场可视化宏
  * 功能：
