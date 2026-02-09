@@ -9,6 +9,7 @@ EventDataReader::EventDataReader(const char* filePath)
 {
     // It is good practice to load libraries in the main macro,
     // but loading here ensures the class is self-contained.
+    // [EN] Load ROOT dictionary so branch objects (e.g., TBeamSimData) can be instantiated. / [CN] 加载ROOT字典以便分支对象（如TBeamSimData）可被实例化。
     gSystem->Load("libsmdata.so");
 
     m_file = TFile::Open(m_filePath.Data());
@@ -23,9 +24,11 @@ EventDataReader::EventDataReader(const char* filePath)
         m_file = nullptr;
         return;
     }
+    // [EN] FragSimData is the mandatory fragment hit branch used by reconstruction. / [CN] FragSimData是重建必需的碎片击中分支。
     m_tree->SetBranchAddress("FragSimData", &m_fragSimDataArray);
     
     // Try to set NEBULA branch
+    // [EN] NEBULAPla is optional; allow analysis to run without NEBULA data. / [CN] NEBULAPla是可选分支，允许无NEBULA数据时继续分析。
     if (m_tree->GetBranch("NEBULAPla")) {
         m_tree->SetBranchAddress("NEBULAPla", &m_nebulaDataArray);
         SM_INFO("EventDataReader: Found NEBULAPla branch");
@@ -35,6 +38,7 @@ EventDataReader::EventDataReader(const char* filePath)
     }
     
     // Try to set beam branch using vector<TBeamSimData> format
+    // [EN] Beam vector is optional and only present in newer simulation outputs. / [CN] beam向量是可选的，仅出现在较新的模拟输出中。
     if (m_tree->GetBranch("beam")) {
         m_tree->SetBranchAddress("beam", &m_beamDataVector);
         SM_INFO("EventDataReader: Found beam branch (vector<TBeamSimData> format)");

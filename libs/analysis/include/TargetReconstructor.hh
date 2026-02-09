@@ -71,6 +71,18 @@ public:
                                                                   double tol = 1.0,
                                                                   int maxIterations = 100) const;
 
+    // [EN] Three-point constrained gradient descent: target + two PDC points constrain the track; optimize start position while fixing momentum. / [CN] 三点约束梯度下降：用靶点+两个PDC点约束轨迹，优化出射点位置并固定动量。
+    // [EN] pdcSigma/targetSigma: position uncertainties (mm) for weighted loss = sum(d^2/sigma^2). / [CN] pdcSigma/targetSigma：位置测量误差(mm)，用于加权loss = sum(d^2/sigma^2)。
+    TargetReconstructionResult ReconstructAtTargetThreePointGradientDescent(const RecoTrack& track,
+                                                                            const TVector3& targetPos,
+                                                                            bool saveTrajectories = false,
+                                                                            const TVector3& fixedMomentum = TVector3(0, 0, 627.0),
+                                                                            double learningRate = 0.05,
+                                                                            double tol = 1.0,
+                                                                            int maxIterations = 200,
+                                                                            double pdcSigma = 0.5,
+                                                                            double targetSigma = 5.0) const;
+
     // TMinuit 优化方法：使用 ROOT 内置的 MIGRAD 算法 (拟牛顿法)
     // recordSteps: 是否记录优化步骤（仅用于调试，会影响性能）
     TargetReconstructionResult ReconstructAtTargetMinuit(const RecoTrack& track,

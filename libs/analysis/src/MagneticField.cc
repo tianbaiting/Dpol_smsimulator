@@ -46,6 +46,7 @@ bool MagneticField::LoadFieldMap(const std::string& filename)
     
     SM_INFO("MagneticField::LoadFieldMap: 正在加载磁场文件 {}", filename);
     
+    // [EN] Read grid dimensions to map linearized field arrays to 3D indices. / [CN] 读取网格尺寸以将线性磁场数组映射到三维索引。
     // 读取第一行: Nx Ny Nz NFields
     int nfields;
     if (!(file >> fNx >> fNy >> fNz >> nfields)) {
@@ -56,6 +57,7 @@ bool MagneticField::LoadFieldMap(const std::string& filename)
     fTotalPoints = fNx * fNy * fNz;
     SM_INFO("网格尺寸: {} x {} x {} = {} 点", fNx, fNy, fNz, fTotalPoints);
     
+    // [EN] Skip header lines so numerical parsing starts at the field table. / [CN] 跳过表头行以便直接读取磁场数值表。
     // 跳过列标题行 (6行) 和分隔符行 (1行)
     std::string line;
     std::getline(file, line); // 读取第一行剩余部分
@@ -72,6 +74,7 @@ bool MagneticField::LoadFieldMap(const std::string& filename)
     // 初始化范围变量
     bool firstPoint = true;
     
+    // [EN] Stream all grid points to preserve cache-friendly contiguous storage. / [CN] 顺序读取网格点以保持缓存友好的连续存储。
     // 读取数据点
     double x, y, z, bx, by, bz;
     int pointCount = 0;
@@ -111,6 +114,7 @@ bool MagneticField::LoadFieldMap(const std::string& filename)
         fTotalPoints = pointCount;
     }
     
+    // [EN] Step size derives from bounds to support trilinear interpolation. / [CN] 由范围计算步长以支持三线性插值。
     // 计算网格步长
     fXstep = (fNx > 1) ? (fXmax - fXmin) / (fNx - 1) : 0;
     fYstep = (fNy > 1) ? (fYmax - fYmin) / (fNy - 1) : 0;
@@ -125,6 +129,7 @@ bool MagneticField::LoadFieldMap(const std::string& filename)
 void MagneticField::SetRotationAngle(double angle) 
 {
     fRotationAngle = angle;
+    // [EN] Cache sin/cos to avoid recomputation during per-step field queries. / [CN] 预缓存正弦余弦以避免每步查询时重复计算。
     // 磁铁绕Y轴旋转angle度（从上往下看顺时针为正）
     // 这意味着磁铁+Z方向在实验室中偏向-X方向
     double angleRad = angle * TMath::Pi() / 180.0;  // 使用正角度
@@ -201,6 +206,7 @@ TVector3 MagneticField::GetFieldRaw(const TVector3& position) const
 
 TVector3 MagneticField::GetFieldWithSymmetry(double x, double y, double z) const 
 {
+    // [EN] Use mirror symmetry to extend limited field maps without duplicating data. / [CN] 利用镜像对称扩展有限磁场表而无需复制数据。
     // 处理坐标对称性，将所有坐标映射到原始数据覆盖的区域 (x>=0, z>=0)
     double map_x = x;
     double map_z = z;
@@ -242,6 +248,7 @@ TVector3 MagneticField::GetFieldWithSymmetry(double x, double y, double z) const
 double MagneticField::InterpolateTrilinear(const std::vector<double>& data, 
                                          double x, double y, double z) const 
 {
+    // [EN] Trilinear weights ensure smooth forces for stable Runge-Kutta integration. / [CN] 三线性权重保证力场平滑以稳定Runge-Kutta积分。
     // 将坐标转换为网格索引
     double fx = (x - fXmin) / fXstep;
     double fy = (y - fYmin) / fYstep;

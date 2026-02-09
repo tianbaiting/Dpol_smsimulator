@@ -43,6 +43,7 @@ ParticleTrajectory::CalculateTrajectory(const TVector3& initialPosition,
     
     if (TMath::Abs(charge) < 1e-6) {
         SM_DEBUG("Neutral particle - no magnetic deflection");
+        // [EN] Neutral tracks are propagated as straight lines to preserve TOF and geometry. / [CN] 中性粒子沿直线传播以保持飞行时间与几何关系。
         // For neutral particles, just straight line
         TrajectoryPoint start(initialPosition, initialMomentum.Vect(), 0.0, TVector3(0,0,0));
         trajectory.push_back(start);
@@ -70,9 +71,11 @@ ParticleTrajectory::CalculateTrajectory(const TVector3& initialPosition,
     // std::cout << "  Charge: " << charge << " e" << std::endl;
     // std::cout << "  Mass: " << mass << " MeV/c²" << std::endl;
     
+    // [EN] Convert spatial step to time step using beta*c for consistent relativistic updates. / [CN] 用beta*c将空间步长转换为时间步长以保持相对论更新一致。
     // Integration parameters
     double dt = fStepSize / (initialMomentum.Beta() * kSpeedOfLight); // Time step [ns]
     
+    // [EN] Integrate until time/distance thresholds to avoid unphysical extrapolation. / [CN] 以时间/距离阈值截断积分以避免不物理外推。
     // Main integration loop
     int stepCount = 0;
     const int maxSteps = static_cast<int>(fMaxTime / dt);
@@ -160,6 +163,7 @@ ParticleTrajectory::TrajectoryPoint
 ParticleTrajectory::RungeKuttaStep(const TrajectoryPoint& current, 
                                   double charge, double mass, double dt) const
 {
+    // [EN] RK4 balances accuracy and cost for curved tracks in non-uniform fields. / [CN] 四阶RK在非均匀磁场曲线轨迹中兼顾精度与成本。
     // 4th order Runge-Kutta integration for relativistic motion
     
     TVector3 r0 = current.position;

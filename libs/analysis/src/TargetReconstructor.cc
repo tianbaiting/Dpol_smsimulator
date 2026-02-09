@@ -388,6 +388,176 @@ TargetReconstructionResult TargetReconstructor::ReconstructAtTargetGradientDesce
     return result;
 }
 
+// [EN] Three-point constrained gradient descent: minimize weighted distance^2 to target + PDC1/PDC2. / [CN] 三点约束梯度下降：最小化到靶点+PDC1/PDC2的加权距离平方。
+TargetReconstructionResult TargetReconstructor::ReconstructAtTargetThreePointGradientDescent(
+    const RecoTrack& track,
+    const TVector3& targetPos,
+    bool saveTrajectories,
+    const TVector3& fixedMomentum,
+    double learningRate,
+    double tol,
+    int maxIterations,
+    double pdcSigma,
+    double targetSigma) const {
+
+    TargetReconstructionResult result;
+    result.success = false;
+    result.finalDistance = std::numeric_limits<double>::max();
+    result.totalIterations = 0;
+
+    TVector3 pdc1 = track.start;
+    TVector3 pdc2 = track.end;
+    if (fixedMomentum.Mag() < 1e-6) {
+        std::cerr << "TargetReconstructor (3-point GD): fixed momentum is zero" << std::endl;
+        return result;
+    }
+    if (pdcSigma <= 0.0 || targetSigma <= 0.0) {
+        std::cerr << "TargetReconstructor (3-point GD): sigma must be positive" << std::endl;
+        return result;
+    }
+
+    // [EN] Use target position as initial guess and optimize start position. / [CN] 以靶点为初值，优化出射点位置。
+    TVector3 currentPos = targetPos;
+    TVector3 bestPos = currentPos;
+
+    double mass = fProtonMass;
+    double charge = +1.0; // [EN] Forward propagation from start position to PDCs. / [CN] 从出射点向PDC正向传播。
+
+    auto computeLoss = [&](const TVector3& startPos, double& outMinDist) -> double {
+        double energy = std::sqrt(fixedMomentum.Mag2() + mass * mass);
+        TLorentzVector p4(fixedMomentum.X(), fixedMomentum.Y(), fixedMomentum.Z(), energy);
+
+        ParticleTrajectory traj(fMagField);
+        std::vector<ParticleTrajectory::TrajectoryPoint> pts =
+            traj.CalculateTrajectory(startPos, p4, charge, mass);
+
+        if (pts.empty()) {
+            outMinDist = std::numeric_limits<double>::max();
+            return std::numeric_limits<double>::max();
+        }
+
+        auto minDistToPoint = [&](const TVector3& point) -> double {
+            double minDist = std::numeric_limits<double>::max();
+            for (const auto& pt : pts) {
+                double dist = (pt.position - point).Mag();
+                if (dist < minDist) minDist = dist;
+            }
+            return minDist;
+        };
+
+        double dTarget = minDistToPoint(targetPos);
+        double dPDC1 = minDistToPoint(pdc1);
+        double dPDC2 = minDistToPoint(pdc2);
+
+        // [EN] Weighted sum of squared distances (chi2-like). / [CN] 加权距离平方和（类似卡方）。
+        double loss = (dTarget * dTarget) / (targetSigma * targetSigma)
+                    + (dPDC1 * dPDC1) / (pdcSigma * pdcSigma)
+                    + (dPDC2 * dPDC2) / (pdcSigma * pdcSigma);
+
+        outMinDist = std::max({dTarget, dPDC1, dPDC2});
+
+        if (saveTrajectories) {
+            result.trialTrajectories.emplace_back();
+            auto& trajPoints = result.trialTrajectories.back();
+            trajPoints.reserve(pts.size());
+            for (const auto& pt : pts) {
+                TrajectoryPoint tp;
+                tp.position = pt.position;
+                tp.momentum = pt.momentum;
+                tp.time = pt.time;
+                trajPoints.push_back(tp);
+            }
+            result.trialMomenta.push_back(fixedMomentum.Mag());
+            result.distances.push_back(outMinDist);
+        }
+
+        return loss;
+    };
+
+    double bestMinDist = std::numeric_limits<double>::max();
+    double bestLoss = computeLoss(bestPos, bestMinDist);
+
+    // [EN] Gradient descent on start position with finite differences. / [CN] 对出射点位置做有限差分梯度下降。
+    for (int iter = 0; iter < maxIterations; ++iter) {
+        double currentMinDist = std::numeric_limits<double>::max();
+        double currentLoss = computeLoss(currentPos, currentMinDist);
+
+        result.optimizationSteps_P.push_back(fixedMomentum.Mag());
+        result.optimizationSteps_Loss.push_back(currentLoss);
+        result.totalIterations++;
+
+        if (currentLoss < bestLoss) {
+            bestLoss = currentLoss;
+            bestPos = currentPos;
+            bestMinDist = currentMinDist;
+        }
+
+        // [EN] Convergence check using RMS distance threshold. / [CN] 用RMS距离阈值判断收敛。
+        double rmsDist = std::sqrt(currentLoss / 3.0);
+        if (rmsDist <= tol) {
+            result.success = true;
+            break;
+        }
+
+        // Finite-difference gradient
+        TVector3 grad(0, 0, 0);
+        for (int k = 0; k < 3; ++k) {
+            double comp = (k == 0) ? currentPos.X() : (k == 1 ? currentPos.Y() : currentPos.Z());
+            double dp = std::max(0.5, std::abs(comp) * 0.01);
+
+            TVector3 pPlus = currentPos;
+            TVector3 pMinus = currentPos;
+            if (k == 0) { pPlus.SetX(comp + dp); pMinus.SetX(comp - dp); }
+            if (k == 1) { pPlus.SetY(comp + dp); pMinus.SetY(comp - dp); }
+            if (k == 2) { pPlus.SetZ(comp + dp); pMinus.SetZ(comp - dp); }
+
+            double tmp = 0.0;
+            double lossPlus = computeLoss(pPlus, tmp);
+            double lossMinus = computeLoss(pMinus, tmp);
+            double g = (lossPlus - lossMinus) / (2.0 * dp);
+
+            if (k == 0) grad.SetX(g);
+            if (k == 1) grad.SetY(g);
+            if (k == 2) grad.SetZ(g);
+        }
+
+        TVector3 nextPos = currentPos - grad * learningRate;
+
+        // [EN] If loss increases, shrink step size. / [CN] 若损失上升则缩小步长。
+        double tmpMinDist = 0.0;
+        double nextLoss = computeLoss(nextPos, tmpMinDist);
+        if (nextLoss > currentLoss) {
+            nextPos = currentPos - grad * (learningRate * 0.5);
+        }
+
+        currentPos = nextPos;
+    }
+
+    // [EN] Build final trajectory from best start position. / [CN] 用最优出射点位置构建最终轨迹。
+    double bestEnergy = std::sqrt(fixedMomentum.Mag2() + mass * mass);
+    TLorentzVector bestP4(fixedMomentum.X(), fixedMomentum.Y(), fixedMomentum.Z(), bestEnergy);
+    ParticleTrajectory traj(fMagField);
+    std::vector<ParticleTrajectory::TrajectoryPoint> finalTraj =
+        traj.CalculateTrajectory(bestPos, bestP4, charge, mass);
+
+    if (!finalTraj.empty()) {
+        result.bestMomentum = bestP4;
+        result.finalDistance = bestMinDist;
+        if (saveTrajectories) {
+            result.bestTrajectory.clear();
+            for (const auto& pt : finalTraj) {
+                TrajectoryPoint tp;
+                tp.position = pt.position;
+                tp.momentum = pt.momentum;
+                tp.time = pt.time;
+                result.bestTrajectory.push_back(tp);
+            }
+        }
+    }
+
+    return result;
+}
+
 // TMinuit 回调函数：计算目标函数值 (最小化与目标点的距离)
 void TargetReconstructor::MinuitFunction(Int_t& npar, Double_t* grad, Double_t& result, 
                                         Double_t* parameters, Int_t flag) {

@@ -24,6 +24,7 @@ bool GeometryManager::LoadGeometry(const std::string& filename) {
 
     // Post-parsing processing
     if (fParams.count("/samurai/geometry/PDC/Angle")) {
+        // [EN] Store angles in radians to keep trigonometry consistent in reconstruction. / [CN] 角度统一存为弧度以保持重建中的三角计算一致。
         fAngleRad = atof(fParams["/samurai/geometry/PDC/Angle"].c_str()) * TMath::DegToRad();
     }
 
@@ -32,6 +33,7 @@ bool GeometryManager::LoadGeometry(const std::string& filename) {
         double x, y, z;
         std::string unit;
         ss >> x >> y >> z >> unit;
+        // [EN] Geometry is normalized to mm for downstream tracking and display. / [CN] 几何参数统一为mm以匹配后续追踪与显示。
         if (unit == "cm") { x*=10; y*=10; z*=10; } // convert to mm
         fPDC1_Position.SetXYZ(x, y, z);
     }
@@ -41,6 +43,7 @@ bool GeometryManager::LoadGeometry(const std::string& filename) {
         double x, y, z;
         std::string unit;
         ss >> x >> y >> z >> unit;
+        // [EN] Geometry is normalized to mm for downstream tracking and display. / [CN] 几何参数统一为mm以匹配后续追踪与显示。
         if (unit == "cm") { x*=10; y*=10; z*=10; } // convert to mm
         fPDC2_Position.SetXYZ(x, y, z);
     }
@@ -51,6 +54,7 @@ bool GeometryManager::LoadGeometry(const std::string& filename) {
         double x, y, z;
         std::string unit;
         ss >> x >> y >> z >> unit;
+        // [EN] Geometry is normalized to mm for downstream tracking and display. / [CN] 几何参数统一为mm以匹配后续追踪与显示。
         if (unit == "cm") { x*=10; y*=10; z*=10; } // convert to mm
         fTarget_Position.SetXYZ(x, y, z);
     }
@@ -99,6 +103,7 @@ void GeometryManager::ParseLine(const std::string& line) {
         key == "/samurai/geometry/PDC/Position2" ||
         key == "/samurai/geometry/Target/Position" ||
         key == "/samurai/geometry/Target/Angle") {
+        // [EN] Only whitelist parameters used in reconstruction to keep parsing deterministic. / [CN] 仅保留重建所需参数以确保解析确定性。
         fParams[key] = value;
     }
 }
