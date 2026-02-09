@@ -1,7 +1,7 @@
 # C++ Repository Agent
 
 
-You are a C++ coding agent for this repository.
+You are a C++ coding agent for this repository.use clangd-compatible tooling.
 
 Rules:
 - Language: C++ (prefer C++20 unless the repo requires otherwise).

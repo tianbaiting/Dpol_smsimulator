@@ -24,30 +24,11 @@
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B140T.mac   # 1.4T
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B160T.mac   # 1.6T
 # /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B180T.mac   # 1.8T
-/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B200T.mac   # 2.0T
-# /control/execute ${SMSIMDIR}/configs/simulation/geometry/5deg_1.2T.mac
+# /control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/nopdc/B200T.mac   # 2.0T
+# /control/execute {SMSIMDIR}/configs/simulation/geometry/3deg_1.15T.mac
 
+/control/execute {SMSIMDIR}/configs/simulation/DbeamTest/detailMag1to1.2T/run_deuteron_B115T.mac
 
-  
-# # 轨迹显示设置  
-# # 注意: accumulate 会导致轨迹累积越来越多，旋转会变卡
-# # 如果不需要累积，可以用 /vis/scene/endOfEventAction refresh
-# /vis/viewer/set/autoRefresh false
-# /vis/scene/endOfEventAction accumulate -1
-# /vis/scene/add/trajectories smooth  
-# /vis/modeling/trajectories/create/drawByCharge  
-# # 关闭步进点绘制以提高性能
-# # /vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts false
-# # /vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1  
-  
-
-
-
-
-# ==========================================
-# 1. 视窗与刷新设置 (防止跑一半被清屏)
-# ==========================================
-# 先关闭自动刷新，把画面攒着
 /vis/viewer/set/autoRefresh false
 /vis/verbose errors
 
@@ -65,16 +46,43 @@
 /vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1
 /vis/scene/endOfRunAction accumulate
 # ==========================================
-# 2. 第一波运行：380 MeV
-# ==========================================
-/action/gun/Type Pencil
-/action/gun/SetBeamParticleName deuteron
-/action/gun/Position 0 0 -4000 mm
 
-# 设置能量
-/action/gun/Energy 380 MeV
+# # ==========================================
+# /action/gun/Type Pencil
+# /action/gun/SetBeamParticleName deuteron
+# /action/gun/Position 0 0 -4000 mm
 
-/run/beamOn 1
+# # 设置能量
+# /action/gun/Energy 380 MeV
+
+# /run/beamOn 1
+# /samurai/geometry/Target/Positiom 0 0 -4 m
+# 切换到高斯束  
+# # 创建一个针对轨迹级别的过滤器
+# /vis/filtering/trajectories/create/attributeFilter primaryFilter
+
+# # 设置过滤属性为 "Parent ID" (初级粒子的 Parent ID 为 0)
+# /vis/filtering/trajectories/primaryFilter/setAttribute ParentID
+# /vis/filtering/trajectories/primaryFilter/addValue 0
+/vis/filtering/trajectories/create/particleFilter particleTypeFilter
+/vis/filtering/trajectories/particleTypeFilter/add deuteron
+
+# 这样即便有初级中子或光子（如果存在的话），也不会显示
+
+/action/gun/Type Gaus  
+# 设置粒子种类  
+/action/gun/SetBeamParticleName deuteron  
+# /action/gun/Position 0 0 -4000 mm
+# 设置中心能量  
+/action/gun/Energy 380 MeV  
+# 设置位置高斯宽度（可选）  
+/action/gun/PositionXSigma 1 mm  
+/action/gun/PositionYSigma 1 mm  
+# 设置角度高斯宽度（可选）  
+/action/gun/AngleXSigma 0.1 mrad  
+/action/gun/AngleYSigma 0.1 mrad  
+# 发射事件  
+/run/beamOn 100
 # # ==========================================# /action/gun/Type Pencil
 # /action/gun/SetBeamParticleName deuteron
 

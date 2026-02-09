@@ -1,0 +1,20 @@
+# Usage: ./bin/sim_deuteron configs/simulation/macros/test_g4input_ypol_np_Pb208_g050.mac
+
+# Geometry configuration
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/5deg_1.2T.mac
+
+# Output settings
+/action/file/OverWrite y
+/action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/results/g4input_test
+/action/file/RunName ypol_np_Pb208_g050_test
+
+# Disable trajectory storage to save memory
+/tracking/storeTrajectory 0
+
+# Tree input
+/action/gun/Type Tree
+/action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4input/ypol_all_selected/ypol_np_Pb208_g050.root
+/action/gun/tree/TreeName tree
+
+# Run limited events for test
+/run/beamOn 5
