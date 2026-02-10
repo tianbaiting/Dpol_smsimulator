@@ -212,18 +212,17 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
     auto *LogicTargetSD = 
       new G4LogicalVolume {tgt_box, TargetMaterial, "targetSD_log"};
 
-    auto rm = new G4RotationMatrix;
     new G4PVPlacement {
-      rm, {0,0,0}, LogicTargetSD, "Target_SD", 
+      nullptr, {0,0,0}, LogicTargetSD, "Target_SD",
       LogicTarget, false, 0, false
     };
 
-    rm->rotateY(-fTargetAngle);
+    G4RotationMatrix target_rm;
+    target_rm.rotateY(-fTargetAngle);
     new G4PVPlacement {
-      rm, fTargetPos, LogicTarget, "Target", 
+      G4Transform3D(target_rm, fTargetPos), LogicTarget, "Target",
       expHall_log, false, 0, true
     };
-    delete rm;
 
     if (fTargetSD==0){
       fTargetSD = new FragmentSD("/Target");
