@@ -46,8 +46,8 @@ void GenInputRoot_np_atime(const std::string& inputFile /*= SMSIMDIR-based defau
     // 拼接输出目录和文件名
     const char* smsDir = getenv("SMSIMDIR");
     std::string outDir;
-    if (smsDir) outDir = std::string(smsDir) + "/d_work/rootfiles/" + folderName + "/";
-    else outDir = "/d_work/rootfiles/" + folderName + "/"; // fallback
+    if (smsDir) outDir = std::string(smsDir) + "/data/simulation/g4input/" + folderName + "/";
+    else outDir = "/data/simulation/g4input/" + folderName + "/"; // fallback
     std::string outFile = outDir + fileName;
 
 

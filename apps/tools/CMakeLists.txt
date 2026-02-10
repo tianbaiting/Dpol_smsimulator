@@ -19,9 +19,10 @@ endif()
 # 实际的可执行工具可以在这里添加
 ##############################################################################
 
-# 示例：如果有真正需要编译的工具
-# if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/some_tool_with_main.cc)
-#     add_executable(some_tool some_tool_with_main.cc)
-#     target_link_libraries(some_tool PRIVATE ${ROOT_LIBRARIES})
-#     install(TARGETS some_tool RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-# endif()
+# QMD rawdata -> g4input generator (standalone executable)
+set(QMD_GEN_SRC ${CMAKE_SOURCE_DIR}/scripts/event_generator/dpol_eventgen/GenInputRoot_qmdrawdata.cc)
+if(EXISTS ${QMD_GEN_SRC})
+    add_executable(GenInputRoot_qmdrawdata ${QMD_GEN_SRC})
+    target_link_libraries(GenInputRoot_qmdrawdata PRIVATE smdata spdlog::spdlog ${ROOT_LIBRARIES})
+    install(TARGETS GenInputRoot_qmdrawdata RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
