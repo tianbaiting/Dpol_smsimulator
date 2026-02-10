@@ -65,10 +65,10 @@ result/
 *.lot
 *.q
 
+*.gdml
 
 # root intermediate files
 *.d
 *.so
 *.pcm
-
 clangd_db/
