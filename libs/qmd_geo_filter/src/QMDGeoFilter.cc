@@ -321,6 +321,8 @@ std::string QMDGeoFilter::GetFieldMapFile(double fieldStrength, const std::strin
    std::vector<std::pair<double, std::string>> fieldFiles = {
         {0.8, "141114-0,8T-3000.table"},
         {1.0, "180626-1,00T-3000.table"},
+        {1.1, "180703-1,10T-3000.table"},
+        {1.15, "180703-1,15T-3000.table"},
         {1.2, "180626-1,20T-3000.table"},
         {1.4, "180703-1,40T-3000.table"},
         {1.6, "180626-1,60T-3000.table"},
