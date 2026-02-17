@@ -1,0 +1,106 @@
+\documentclass[compress]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs} % For professional looking tables
+\usepackage{hyperref}
+\usepackage{physics}
+\usepackage{tikz}
+%includepdf
+\usepackage{pdfpages}
+ \usepackage{siunitx}
+% Theme choice
+\usetheme{Madrid}
+\usecolortheme{default}
+
+
+
+
+\setbeamertemplate{footline}[frame number]
+
+\setbeamertemplate{headline}{%
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=2.25ex,dp=1ex,center]{section in head/foot}%
+      \insertsectionnavigationhorizontal{\paperwidth}{\hskip0pt plus1filll}{\hskip0pt plus1filll}%
+    \end{beamercolorbox}%
+  }%
+}
+
+\title{Dpol Configuration}
+
+% 使用 \addtobeamertemplate 可以在标题页插入内容
+\author{
+    \includegraphics[width=0.7\textwidth]{./img/schematic_of_beamline.pdf} \\ % 装置图放在中间
+    \vspace{0.3cm}
+    Baiting Tian
+}
+
+\date{SAMURAI Collaboration ,\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{configuration}
+
+magnetic field : 1.15T \\
+exit window : remove one of them \\
+target position :  (-12 , 0 , -1069)mm , (beam rotate 3 deg ), (0,0,0)is the center of magnet\\
+polarimeter: before the magnet 
+
+\begin{columns}[T,onlytextwidth]
+
+% \begin{figure}
+%     \centering
+% \includegraphics[width=0.8\textwidth]{figures/detailMag/combined_B115T_3.0deg.png}
+% \end{figure}
+    \begin{column}{0.6\textwidth}
+\begin{figure}[ht]
+	\centering
+\includegraphics[width=\linewidth,trim=9cm 9cm 10cm 10cm,clip]{figures/detailMag/combined_B115T_3.0deg.png}
+	\caption{overview( using smsimulator)}
+\end{figure}
+    \tiny{\color{yellow}yellow: Proton  \color{black}(Pz=627Mev/c, Px=$\pm$100,$\pm$150MeV/c)\\ \color{green}green: neutron,\color{magenta}Magenta Deuteron (190 MeV/u)}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+\begin{figure}[ht]
+	\centering
+\includegraphics[width=\linewidth]{figures/2026-02-05-21-11-01.png}
+	\caption{downstream view}
+	\label{fig:2026-02-05-21-11-01}
+\end{figure}
+    \end{column}
+\end{columns}     
+\end{frame}
+
+
+\begin{frame}{polarimeter}
+\begin{figure}
+    \centering
+\includegraphics[width=0.8\textwidth]{img/polarimeter_cad_view.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Summary }
+\begin{itemize}
+\item Confirm final magnetic field setting and field map (1.15 T).
+\item Confirm which exit window is removed and the final geometry.
+\item target position (-12 , 0 , -1069)mm,and beam rotation (3 deg), target material/thickness
+\item Polarimeter: exact location (z), CAD/geometry file, and material/thickness
+\end{itemize}
+\end{frame}
+
+    
+\section*{backup}
+\begin{frame}
+backup slides
+\end{frame}
+% \includegraphics[pages={1}]{../qmdrawdataAna/QMDrawdata.pdf}
+
+% \includepdf[pages={5-7},fitpaper=true]{../qmdrawdataAna/QMDrawAna.pdf}
+\includepdf[pages={5-7}]{../qmdrawdataAna/QMDrawAna.pdf}
+\end{document}
