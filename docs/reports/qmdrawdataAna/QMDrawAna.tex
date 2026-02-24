@@ -134,7 +134,21 @@
 \section{cut on unphysical breakup}
 
 
-
+\begin{frame}{unphysical breakup}
+    \begin{itemize}
+        \item \textbf{Issue}: QMD simulations show unphysical breakup events where the relative momentum between proton and neutron exceeds 200 MeV/c.
+        \item \textbf{Solution}: Apply a cut to remove these events:
+        \begin{align*}
+            p^p_{i'} - p^n_{i'} \in (-150, 150) \mathrm{MeV/c}
+        \end{align*}
+        where \(i'\) is the polarization direction (z for z-polarization, y for y-polarization).
+        \item \textbf{Reaction-plane definition}: rotate each event around beam \(z\) axis by \(-\phi\), with \(\phi=\tan^{-1}\!\left((p^p_y+p^n_y)/(p^p_x+p^n_x)\right)\), so that \(P_x^{\mathrm{tot}}\) is aligned in the reaction plane.
+        \item \textbf{Observable}:
+        \[
+        R=\frac{N(P_x^p>P_x^n)}{N(P_x^p<P_x^n)}
+        \]
+    \end{itemize}
+\end{frame}
 
 
 \section{obersevation R }
@@ -228,6 +242,154 @@ $\gamma \uparrow  \quad \rightarrow \quad P^p_x - P^n_x \downarrow$
     Here we concentrate on which range of $P_{\perp}$ has more significant IVR effect. Thus we can foucus on that range in the reconstruction proton and neutron momenta.
 \end{frame}
 
+\begin{frame}{distribution on b parameter and obersevation on b}
+\begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Y-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/ypol_R_vs_b.png}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Z-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/zpol_R_vs_b.png}
+    \end{column}
+\end{columns}
+\vspace{0.15cm}
+\small
+After unphysical cut \(|p_{i'}^p-p_{i'}^n|<150\) MeV/c, \(R\) is evaluated in each \(b\)-bin (1 fm width).
+\end{frame}
+
+\begin{frame}{distribution on b parameter and obersevation on b (zoom, y in [0,3])}
+\begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Y-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/ypol_R_vs_b_y03.png}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Z-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/zpol_R_vs_b_y03.png}
+    \end{column}
+\end{columns}
+\vspace{0.15cm}
+\small
+Zoomed view with fixed y-axis range [0,3] for comparing moderate-\(R\) behavior across \(\gamma\).
+\end{frame}
+
+\begin{frame}{distribution on $P_x^{tot}$ in reaction plane and obersevation}
+\begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Y-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/ypol_R_vs_sum_px.png}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Z-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/zpol_R_vs_sum_px.png}
+    \end{column}
+\end{columns}
+\vspace{0.15cm}
+\small
+\(P_x^{tot}=P_x^p+P_x^n\) is taken after event-wise reaction-plane alignment.
+\end{frame}
+
+\begin{frame}{distribution on proton $p_x$ and obersevation}
+\begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Y-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/ypol_R_vs_pxp.png}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Z-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/zpol_R_vs_pxp.png}
+    \end{column}
+\end{columns}
+\vspace{0.15cm}
+\small
+For each proton-\(p_x\) bin, \(R\) is still computed by event ordering \(P_x^p>P_x^n\) vs \(P_x^p<P_x^n\).
+\end{frame}
+
+\begin{frame}{distribution on neutron $p_x$ and obersevation}
+\begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Y-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/ypol_R_vs_pxn.png}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Z-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/zpol_R_vs_pxn.png}
+    \end{column}
+\end{columns}
+\vspace{0.15cm}
+\small
+For each neutron-\(p_x\) bin, the same \(R\) definition is applied.
+\end{frame}
+
+\begin{frame}{distribution on neutron $p_x$ and obersevation (zoom, y in [0,3])}
+\begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Y-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/ypol_R_vs_pxn_y03.png}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+        \centering
+        \textbf{Z-polarized (\(^{208}\)Pb)}\\
+        \includegraphics[width=\textwidth]{img/generated/zpol_R_vs_pxn_y03.png}
+    \end{column}
+\end{columns}
+\vspace{0.15cm}
+\small
+Zoomed view with fixed y-axis range [0,3], used to inspect the practical momentum-window sensitivity.
+\end{frame}
+
+\begin{frame}{Recommended single-particle $p_x$ windows}
+\centering
+\begin{tabular}{c c c c}
+\toprule
+Dataset & Particle & Suggested \(p_x\) window (MeV/c) & \(\Delta R_\gamma\) (spread) \\
+\midrule
+Y-pol & proton & [25, 50] & 31.97 \\
+Y-pol & neutron & [0, 25] & 5.40 \\
+Z-pol & proton & [25, 50] & 6.53 \\
+Z-pol & neutron & [0, 25] & 1.61 \\
+\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+
+\begin{itemize}
+    \item Sensitivity ranking is done by \(\max_\gamma(R)-\min_\gamma(R)\) with high-statistics requirement (\(N_{\mathrm{bin}}\ge 2000\)).
+    \item For current Pb208 sample, proton \(p_x\in[25,50]\) MeV/c is the strongest region in both y-pol and z-pol.
+    \item Neutron sensitivity is weaker and concentrated near \(p_x\in[0,25]\) MeV/c.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Global R after unphysical cut (\(^{208}\)Pb)}
+\centering
+\begin{tabular}{c c c}
+\toprule
+\(\gamma\) & \(R_{\mathrm{ypol}}\) & \(R_{\mathrm{zpol}}\) \\
+\midrule
+0.50 & 1.692 & 1.066 \\
+0.60 & 2.162 & 0.793 \\
+0.70 & 2.476 & 1.497 \\
+0.80 & 2.827 & 1.419 \\
+\bottomrule
+\end{tabular}
+\vspace{0.25cm}
+
+\begin{itemize}
+    \item Y-polarized sample shows a monotonic increase of global \(R\) with \(\gamma\) in this selection.
+    \item Z-polarized sample is non-monotonic and more sensitive to bin-level fluctuations.
+\end{itemize}
+\end{frame}
 
 
 \section*{backup}
