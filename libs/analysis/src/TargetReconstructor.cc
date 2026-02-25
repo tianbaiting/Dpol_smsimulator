@@ -16,7 +16,8 @@ TargetReconstructionResult* TargetReconstructor::fgResultPtr = nullptr;
 bool TargetReconstructor::fgRecordSteps = false;
 
 TargetReconstructor::TargetReconstructor(MagneticField* magField)
-    : fMagField(magField), fProtonMass(938.272) {
+    // [EN] Default 10 mm is selected from B=1.15T, 3deg scan to keep reconstruction stable while reducing runtime. / [CN] 默认10 mm来自B=1.15T、3deg扫描，在保持重建稳定的同时显著降低计算耗时。
+    : fMagField(magField), fProtonMass(938.272), fTrajectoryStepSize(10.0) {
 }
 
 TargetReconstructor::~TargetReconstructor() {}
@@ -93,6 +94,7 @@ TargetReconstructionResult TargetReconstructor::ReconstructAtTargetWithDetails(c
             TLorentzVector initialP4(initialP.X(), initialP.Y(), initialP.Z(), energy);
 
             ParticleTrajectory traj(fMagField);
+            traj.SetStepSize(fTrajectoryStepSize);
             std::vector<ParticleTrajectory::TrajectoryPoint> pts = traj.CalculateTrajectory(
                 startPos, initialP4, charge, mass
             );
@@ -197,6 +199,7 @@ double TargetReconstructor::CalculateMinimumDistance(double momentum,
     TLorentzVector initialP4(initialP.X(), initialP.Y(), initialP.Z(), energy);
 
     ParticleTrajectory traj(fMagField);
+    traj.SetStepSize(fTrajectoryStepSize);
     std::vector<ParticleTrajectory::TrajectoryPoint> pts = traj.CalculateTrajectory(
         startPos, initialP4, charge, mass
     );
@@ -348,6 +351,7 @@ TargetReconstructionResult TargetReconstructor::ReconstructAtTargetGradientDesce
     TLorentzVector initialP4(initialP.X(), initialP.Y(), initialP.Z(), energy);
 
     ParticleTrajectory traj(fMagField);
+    traj.SetStepSize(fTrajectoryStepSize);
     std::vector<ParticleTrajectory::TrajectoryPoint> finalTraj = traj.CalculateTrajectory(
         startPos, initialP4, charge, mass
     );
@@ -428,6 +432,7 @@ TargetReconstructionResult TargetReconstructor::ReconstructAtTargetThreePointGra
         TLorentzVector p4(fixedMomentum.X(), fixedMomentum.Y(), fixedMomentum.Z(), energy);
 
         ParticleTrajectory traj(fMagField);
+        traj.SetStepSize(fTrajectoryStepSize);
         std::vector<ParticleTrajectory::TrajectoryPoint> pts =
             traj.CalculateTrajectory(startPos, p4, charge, mass);
 
@@ -537,6 +542,7 @@ TargetReconstructionResult TargetReconstructor::ReconstructAtTargetThreePointGra
     double bestEnergy = std::sqrt(fixedMomentum.Mag2() + mass * mass);
     TLorentzVector bestP4(fixedMomentum.X(), fixedMomentum.Y(), fixedMomentum.Z(), bestEnergy);
     ParticleTrajectory traj(fMagField);
+    traj.SetStepSize(fTrajectoryStepSize);
     std::vector<ParticleTrajectory::TrajectoryPoint> finalTraj =
         traj.CalculateTrajectory(bestPos, bestP4, charge, mass);
 
@@ -711,6 +717,7 @@ TargetReconstructionResult TargetReconstructor::ReconstructAtTargetMinuit(
     TLorentzVector initialP4(initialP.X(), initialP.Y(), initialP.Z(), energy);
 
     ParticleTrajectory traj(fMagField);
+    traj.SetStepSize(fTrajectoryStepSize);
     std::vector<ParticleTrajectory::TrajectoryPoint> finalTraj = traj.CalculateTrajectory(
         startPos, initialP4, charge, mass
     );

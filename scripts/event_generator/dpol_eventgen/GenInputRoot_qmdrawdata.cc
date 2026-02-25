@@ -10,6 +10,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <cctype>
 #include <cmath>
 #include <cstdlib>
 #include <filesystem>
@@ -36,10 +37,20 @@ enum class Mode {
     kBoth
 };
 
+enum class DatasetKind {
+    kYpol,
+    kZpol
+};
+
 struct Options {
     fs::path input_base;
     fs::path output_base;
     Mode mode = Mode::kBoth;
+    bool cut_unphysical = true;
+    double cut_ypol_axis_limit = 150.0;
+    double cut_zpol_axis_limit = 150.0;
+    bool rotate_ypol = false;
+    bool rotate_zpol = true;
 };
 
 struct HeaderInfo {
@@ -166,24 +177,45 @@ fs::path MakeOutputPath(const fs::path& input, const fs::path& input_base, const
     return out;
 }
 
-void ConvertFile(const fs::path& input, const fs::path& output, std::optional<long> max_events) {
+bool ParseBoolOption(std::string value) {
+    for (auto& c : value) {
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    }
+    if (value == "on" || value == "true" || value == "1" || value == "yes" || value == "y") {
+        return true;
+    }
+    if (value == "off" || value == "false" || value == "0" || value == "no" || value == "n") {
+        return false;
+    }
+    throw std::runtime_error("Invalid boolean option value: " + value);
+}
+
+void ConvertFile(
+    const fs::path& input,
+    const fs::path& output,
+    std::optional<long> max_events,
+    DatasetKind dataset,
+    const Options& opts
+) {
+    const std::string input_str = input.string();
+    const std::string output_str = output.string();
     std::ifstream fin(input);
     if (!fin.is_open()) {
-        throw std::runtime_error("Cannot open input file: " + input.string());
+        throw std::runtime_error("Cannot open input file: " + input_str);
     }
 
     std::string line;
     if (!std::getline(fin, line)) {
-        throw std::runtime_error("Missing header line 1 in: " + input.string());
+        throw std::runtime_error("Missing header line 1 in: " + input_str);
     }
     if (!std::getline(fin, line)) {
-        throw std::runtime_error("Missing header line 2 in: " + input.string());
+        throw std::runtime_error("Missing header line 2 in: " + input_str);
     }
 
     fs::create_directories(output.parent_path());
     TFile out_file(output.c_str(), "RECREATE");
     if (out_file.IsZombie()) {
-        throw std::runtime_error("Cannot create output file: " + output.string());
+        throw std::runtime_error("Cannot create output file: " + output_str);
     }
 
     TTree tree("tree", "Input tree for simultaneous n-p");
@@ -193,17 +225,62 @@ void ConvertFile(const fs::path& input, const fs::path& output, std::optional<lo
     tree.Branch("TBeamSimData", &gBeamSimDataArray);
 
     const TVector3 position(0.0, 0.0, 0.0);
-    long event_count = 0;
+    long raw_line_count = 0;
+    long parsed_event_count = 0;
+    long selected_event_count = 0;
+    long cut_removed_count = 0;
+    long rotated_event_count = 0;
+    long written_event_count = 0;
 
     while (std::getline(fin, line)) {
-        if (max_events.has_value() && event_count >= *max_events) {
-            break;
-        }
+        ++raw_line_count;
         std::istringstream iss(line);
         int no = 0;
         double pxp = 0.0, pyp = 0.0, pzp = 0.0, pxn = 0.0, pyn = 0.0, pzn = 0.0;
         if (!(iss >> no >> pxp >> pyp >> pzp >> pxn >> pyn >> pzn)) {
             continue;
+        }
+        ++parsed_event_count;
+        if (max_events.has_value() && selected_event_count >= *max_events) {
+            break;
+        }
+        ++selected_event_count;
+
+        if (opts.cut_unphysical) {
+            const double axis_delta = (dataset == DatasetKind::kYpol)
+                ? std::abs(pyp - pyn)
+                : std::abs(pzp - pzn);
+            const double axis_limit = (dataset == DatasetKind::kYpol)
+                ? opts.cut_ypol_axis_limit
+                : opts.cut_zpol_axis_limit;
+            if (axis_delta >= axis_limit) {
+                // [EN] Remove events with too large p-n relative momentum on polarization axis / [CN] 去除极化轴上p-n相对动量过大的非物理事件
+                ++cut_removed_count;
+                continue;
+            }
+        }
+
+        const bool do_rotate = (dataset == DatasetKind::kYpol && opts.rotate_ypol)
+            || (dataset == DatasetKind::kZpol && opts.rotate_zpol);
+        if (do_rotate) {
+            // [EN] Align total transverse momentum with reaction-plane x axis via event-wise z-rotation / [CN] 逐事件绕z轴旋转，使总横动量与反应平面x轴对齐
+            const double sum_px = pxp + pxn;
+            const double sum_py = pyp + pyn;
+            const double phi = std::atan2(sum_py, sum_px);
+            const double angle = -phi;
+            const double cos_a = std::cos(angle);
+            const double sin_a = std::sin(angle);
+
+            const double rot_pxp = cos_a * pxp - sin_a * pyp;
+            const double rot_pyp = sin_a * pxp + cos_a * pyp;
+            const double rot_pxn = cos_a * pxn - sin_a * pyn;
+            const double rot_pyn = sin_a * pxn + cos_a * pyn;
+
+            pxp = rot_pxp;
+            pyp = rot_pyp;
+            pxn = rot_pxn;
+            pyn = rot_pyn;
+            ++rotated_event_count;
         }
 
         gBeamSimDataArray->clear();
@@ -228,17 +305,26 @@ void ConvertFile(const fs::path& input, const fs::path& output, std::optional<lo
         gBeamSimDataArray->push_back(neutron);
 
         tree.Fill();
-        ++event_count;
+        ++written_event_count;
 
-        if (event_count % 10000 == 0) {
-            spdlog::info("Processed {} events from {}", event_count, input.string());
+        if (written_event_count % 10000 == 0) {
+            spdlog::info("Processed {} accepted events from {}", written_event_count, input_str.c_str());
         }
     }
 
     out_file.cd();
     tree.Write();
     out_file.Close();
-    spdlog::info("Wrote {} events to {}", event_count, output.string());
+    spdlog::info(
+        "Wrote {} events to {} (raw_lines={}, parsed={}, selected={}, cut_removed={}, rotated={})",
+        written_event_count,
+        output_str.c_str(),
+        raw_line_count,
+        parsed_event_count,
+        selected_event_count,
+        cut_removed_count,
+        rotated_event_count
+    );
 }
 
 Options ParseArgs(int argc, char* argv[]) {
@@ -260,8 +346,23 @@ Options ParseArgs(int argc, char* argv[]) {
             opts.input_base = fs::path(argv[++i]);
         } else if (arg == "--output-base" && i + 1 < argc) {
             opts.output_base = fs::path(argv[++i]);
+        } else if (arg == "--cut-unphysical" && i + 1 < argc) {
+            opts.cut_unphysical = ParseBoolOption(argv[++i]);
+        } else if (arg == "--cut-ypol-axis-limit" && i + 1 < argc) {
+            opts.cut_ypol_axis_limit = std::stod(argv[++i]);
+        } else if (arg == "--cut-zpol-axis-limit" && i + 1 < argc) {
+            opts.cut_zpol_axis_limit = std::stod(argv[++i]);
+        } else if (arg == "--rotate-ypol" && i + 1 < argc) {
+            opts.rotate_ypol = ParseBoolOption(argv[++i]);
+        } else if (arg == "--rotate-zpol" && i + 1 < argc) {
+            opts.rotate_zpol = ParseBoolOption(argv[++i]);
         } else if (arg == "--help") {
-            spdlog::info("Usage: GenInputRoot_qmdrawdata --mode [ypol|zpol|both] --input-base PATH --output-base PATH");
+            spdlog::info(
+                "Usage: GenInputRoot_qmdrawdata --mode [ypol|zpol|both] "
+                "--input-base PATH --output-base PATH "
+                "[--cut-unphysical on|off] [--cut-ypol-axis-limit 150] [--cut-zpol-axis-limit 150] "
+                "[--rotate-ypol on|off] [--rotate-zpol on|off]"
+            );
             std::exit(0);
         } else {
             throw std::runtime_error("Unknown argument: " + arg);
@@ -301,26 +402,36 @@ fs::path ResolveOutputBase(const fs::path& cli_output) {
     return fs::path(sms_dir) / "data" / "simulation" / "g4input";
 }
 
-void ProcessYpol(const fs::path& input_base, const fs::path& output_base) {
+void ProcessYpol(const fs::path& input_base, const fs::path& output_base, const Options& opts) {
     const fs::path root_dir = input_base / "y_pol" / "phi_random";
     const auto files = CollectDatFiles(root_dir);
     if (files.empty()) {
-        spdlog::warn("No y_pol phi_random dbreak*.dat found under {}", root_dir.string());
+        const std::string root_dir_str = root_dir.string();
+        spdlog::warn("No y_pol phi_random dbreak*.dat found under {}", root_dir_str.c_str());
         return;
     }
     for (const auto& file : files) {
         const auto out = MakeOutputPath(file, input_base, output_base);
-        spdlog::info("Converting y_pol file {}", file.string());
-        ConvertFile(file, out, std::nullopt);
+        const std::string file_str = file.string();
+        spdlog::info("Converting y_pol file {}", file_str.c_str());
+        ConvertFile(file, out, std::nullopt, DatasetKind::kYpol, opts);
     }
 }
 
-void ProcessZpol(const fs::path& input_base, const fs::path& output_base) {
+void ProcessZpol(const fs::path& input_base, const fs::path& output_base, const Options& opts) {
     const fs::path root_dir = input_base / "z_pol" / "b_discrete";
     const auto files = CollectDatFiles(root_dir);
     if (files.empty()) {
-        spdlog::warn("No z_pol b_discrete dbreak*.dat found under {}", root_dir.string());
+        const std::string root_dir_str = root_dir.string();
+        spdlog::warn("No z_pol b_discrete dbreak*.dat found under {}", root_dir_str.c_str());
         return;
+    }
+    if (opts.rotate_zpol) {
+        const std::string output_base_str = output_base.string();
+        spdlog::warn(
+            "rotate-zpol is ON: generated files under {} will contain rotated z_pol momenta.",
+            output_base_str.c_str()
+        );
     }
 
     std::map<fs::path, std::vector<ZFileInfo>> grouped;
@@ -343,7 +454,8 @@ void ProcessZpol(const fs::path& input_base, const fs::path& output_base) {
             }
         }
         if (b_max <= 0.0) {
-            spdlog::warn("Non-positive b_max in {}, keeping all events", dir.string());
+            const std::string dir_str = dir.string();
+            spdlog::warn("Non-positive b_max in {}, keeping all events", dir_str.c_str());
         }
         for (const auto& entry : entries) {
             long keep_events = entry.events;
@@ -359,8 +471,9 @@ void ProcessZpol(const fs::path& input_base, const fs::path& output_base) {
                 }
             }
             const auto out = MakeOutputPath(entry.path, input_base, output_base);
-            spdlog::info("Converting z_pol file {} with b={} (keep {}/{})", entry.path.string(), entry.b, keep_events, entry.events);
-            ConvertFile(entry.path, out, keep_events);
+            const std::string path_str = entry.path.string();
+            spdlog::info("Converting z_pol file {} with b={} (keep {}/{})", path_str.c_str(), entry.b, keep_events, entry.events);
+            ConvertFile(entry.path, out, keep_events, DatasetKind::kZpol, opts);
         }
     }
 }
@@ -375,10 +488,10 @@ int main(int argc, char* argv[]) {
         const auto output_base = ResolveOutputBase(opts.output_base);
 
         if (opts.mode == Mode::kYpol || opts.mode == Mode::kBoth) {
-            ProcessYpol(input_base, output_base);
+            ProcessYpol(input_base, output_base, opts);
         }
         if (opts.mode == Mode::kZpol || opts.mode == Mode::kBoth) {
-            ProcessZpol(input_base, output_base);
+            ProcessZpol(input_base, output_base, opts);
         }
     } catch (const std::exception& ex) {
         spdlog::error("Failed: {}", ex.what());

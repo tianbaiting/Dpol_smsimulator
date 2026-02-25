@@ -49,26 +49,31 @@ NC='\033[0m' # No Color
 FIELD_STRENGTHS_FULL=(0.8 1.0 1.2 1.4)
 FIELD_STRENGTHS_QUICK=(1.0)
 FIELD_STRENGTHS_CUSTOM=(1.0 1.2 1.4 1.6 1.8)
+FIELD_STRENGTHS_DETAIL=(1.10 1.15 1.20)
 
 # 束流偏转角度列表 [度]
 DEFLECTION_ANGLES_FULL=(0 5 10)
 DEFLECTION_ANGLES_QUICK=(5)
 DEFLECTION_ANGLES_CUSTOM=(5 10)
+DEFLECTION_ANGLES_DETAIL=(2 3 4 5)
 
 # 靶材料列表
 TARGETS_FULL=("Pb208" "Sn124" "Sn112")
 TARGETS_QUICK=("Pb208")
 TARGETS_CUSTOM=("Pb208")
+TARGETS_DETAIL=("Pb208")
 
 # 极化类型列表
 POL_TYPES_FULL=("zpol" "ypol")
 POL_TYPES_QUICK=("zpol")
 POL_TYPES_CUSTOM=("zpol")
+POL_TYPES_DETAIL=("zpol")
 
 # Gamma 值列表
 GAMMA_VALUES_FULL=("050" "060" "070" "080")
 GAMMA_VALUES_QUICK=("050" "060")
 GAMMA_VALUES_CUSTOM=("050" "060" "070" "080")
+GAMMA_VALUES_DETAIL=("050" "060" "070" "080")
 
 # =============================================================================
 # 路径配置
@@ -87,6 +92,9 @@ EXECUTABLE="$SMSIMDIR/build/bin/RunQMDGeoFilter"
 
 # 输出目录
 OUTPUT_DIR="$SMSIMDIR/results/qmd_geo_filter"
+
+# 磁场文件目录
+FIELD_MAP_DIR="$SMSIMDIR/configs/simulation/geometry/filed_map"
 
 # =============================================================================
 # 函数定义
@@ -135,12 +143,14 @@ QMD Geometry Filter Analysis Runner
 模式:
     --full              运行完整分析（所有配置）
     --quick             快速测试（最少配置）
+    --detail            detail 磁场分析（1.10/1.15/1.20T, 2/3/4/5 deg）
     --custom            自定义配置（修改脚本中的 CUSTOM 变量）
     --help              显示此帮助信息
 
 选项:
     --dry-run           只显示将要运行的命令，不实际执行
     --output DIR        指定输出目录（默认: $OUTPUT_DIR）
+    --fieldmap DIR      指定磁场文件目录（默认: $FIELD_MAP_DIR）
 
 环境变量:
     SMSIMDIR            SMSimulator 根目录（默认: $SMSIMDIR）
@@ -206,6 +216,11 @@ build_command() {
     for gamma in "${GAMMA_VALUES[@]}"; do
         CMD="$CMD --gamma $gamma"
     done
+
+    # 添加磁场文件目录
+    if [ -n "$FIELD_MAP_DIR" ]; then
+        CMD="$CMD --fieldmap $FIELD_MAP_DIR"
+    fi
     
     # 添加输出目录
     CMD="$CMD --output $OUTPUT_DIR"
@@ -221,6 +236,7 @@ print_configuration() {
     echo -e "  ${GREEN}靶材料:${NC}      ${TARGETS[*]}"
     echo -e "  ${GREEN}极化类型:${NC}    ${POL_TYPES[*]}"
     echo -e "  ${GREEN}Gamma值:${NC}     ${GAMMA_VALUES[*]}"
+    echo -e "  ${GREEN}磁场目录:${NC}    $FIELD_MAP_DIR"
     echo -e "  ${GREEN}输出目录:${NC}    $OUTPUT_DIR"
     echo ""
     
@@ -296,6 +312,10 @@ while [[ $# -gt 0 ]]; do
             MODE="quick"
             shift
             ;;
+        --detail)
+            MODE="detail"
+            shift
+            ;;
         --custom)
             MODE="custom"
             shift
@@ -306,6 +326,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --output)
             OUTPUT_DIR="$2"
+            shift 2
+            ;;
+        --fieldmap)
+            FIELD_MAP_DIR="$2"
             shift 2
             ;;
         --help|-h)
@@ -335,6 +359,13 @@ case $MODE in
         TARGETS=("${TARGETS_QUICK[@]}")
         POL_TYPES=("${POL_TYPES_QUICK[@]}")
         GAMMA_VALUES=("${GAMMA_VALUES_QUICK[@]}")
+        ;;
+    detail)
+        FIELD_STRENGTHS=("${FIELD_STRENGTHS_DETAIL[@]}")
+        DEFLECTION_ANGLES=("${DEFLECTION_ANGLES_DETAIL[@]}")
+        TARGETS=("${TARGETS_DETAIL[@]}")
+        POL_TYPES=("${POL_TYPES_DETAIL[@]}")
+        GAMMA_VALUES=("${GAMMA_VALUES_DETAIL[@]}")
         ;;
     custom)
         FIELD_STRENGTHS=("${FIELD_STRENGTHS_CUSTOM[@]}")

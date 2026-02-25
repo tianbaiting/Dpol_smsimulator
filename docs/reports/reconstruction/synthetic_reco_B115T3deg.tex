@@ -1,0 +1,150 @@
+% [EN] Build: cd docs/reports/reconstruction && latexmk -pdf synthetic_reco_B115T3deg.tex / [CN] 编译: cd docs/reports/reconstruction && latexmk -pdf synthetic_reco_B115T3deg.tex
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{siunitx}
+
+\title[Synthetic p/n Reconstruction]{Synthetic Proton/Neutron Reconstruction Study}
+\subtitle{B = 1.15 T, Beam Deflection = 3.0$^\circ$}
+\author{SMSimulator5.5 Analysis}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Study Goal and Configuration}
+\textbf{Goal}: Evaluate reconstruction quality with synthetic beam input and focus on
+\[
+\Delta P_x = P_x^{\mathrm{reco}} - P_x^{\mathrm{true}} .
+\]
+
+\vspace{0.3cm}
+\textbf{Configuration}
+\begin{itemize}
+\item Magnetic setting from macro: \texttt{run\_protons\_B115T\_3.0deg.mac}
+\item Geometry/field macro: \texttt{geometry\_B115T.mac}
+\item Target from macro: \((-12.488, 0.009, -1069.458)\,\mathrm{mm}\), angle \(3.0^\circ\)
+\item Dipole field map: \texttt{180703-1,15T-3000.table}, rotation \(30^\circ\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Synthetic Input Dataset}
+\textbf{Generator setup}
+\begin{itemize}
+\item Proton momentum: \((x_p, 0, 627)\,\mathrm{MeV}/c\), \(x_p \sim \mathcal{U}[-150,150]\)
+\item Neutron momentum: \((x_n, 0, 627)\,\mathrm{MeV}/c\), \(x_n \sim \mathcal{U}[-150,150]\)
+\item Generated events: 20,000
+\item Reconstruction analysis sample: 3,000 events
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Event statistics in analyzed sample}
+\begin{itemize}
+\item Events with reconstructed PDC track: 2597 / 3000 (\(\sim 86.6\%\))
+\item Events with neutron TOF reconstruction: 994 / 3000 (\(\sim 33.1\%\))
+\item Proton Minuit attempts: 600 events, Minuit success: 344 (\(\sim 57.3\%\))
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Reconstruction Pipelines}
+\textbf{Proton (charged, PDC-based)}
+\begin{itemize}
+\item Build PDC track from PDC1/PDC2 reconstructed points.
+\item Method A: \textbf{TMinuit} back-propagation in field to target.
+\item Method B: \textbf{Three-point constrained} fit (target + two PDC points).
+\end{itemize}
+
+\textbf{Neutron (neutral, NEBULA TOF)}
+\begin{itemize}
+\item Cluster NEBULA hits in time window.
+\item Reconstruct hit position and TOF.
+\item Start point fixed at target (from macro), direction \(=\) target \(\rightarrow\) hit.
+\item Compute \(\beta\), \(\gamma\), and 3D momentum:
+\[
+\beta=\frac{L/t}{c},\quad p=\gamma m_n \beta c .
+\]
+\end{itemize}
+\end{frame}
+
+\begin{frame}{PDC Position Precision}
+\begin{center}
+\includegraphics[width=0.92\textwidth]{../../../results/synthetic_reco/B115T_3deg/plots/pdc_position_residuals.png}
+\end{center}
+
+\small
+In this synthetic setup, PDC residual histograms peak at 0 mm in the analyzed events
+(\( \langle \Delta r_{PDC1} \rangle = 0 \), \( \langle \Delta r_{PDC2} \rangle = 0 \)).
+\end{frame}
+
+\begin{frame}{Proton \( \Delta P_x \): Key Result}
+\begin{columns}[T]
+\column{0.50\textwidth}
+\includegraphics[width=\textwidth]{../../../results/synthetic_reco/B115T_3deg/plots/proton_dpx_comparison.png}
+
+\column{0.50\textwidth}
+\includegraphics[width=\textwidth]{../../../results/synthetic_reco/B115T_3deg/plots/proton_dpx_vs_true.png}
+\end{columns}
+
+\vspace{0.25cm}
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & Count & Mean(\(\Delta P_x\)) & RMS(\(\Delta P_x\)) \\
+\midrule
+TMinuit & 600 & +230.969 MeV/c & 54.115 MeV/c \\
+Three-point & 600 & 0.000 MeV/c & 0.000 MeV/c \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}{Proton \( P_x^{true} \) vs \( P_x^{reco} \)}
+\begin{center}
+\includegraphics[width=0.92\textwidth]{../../../results/synthetic_reco/B115T_3deg/plots/proton_px_true_vs_reco.png}
+\end{center}
+
+\small
+The Minuit branch shows a clear positive \(P_x\) bias in this sample.
+\end{frame}
+
+\begin{frame}{Neutron \( \Delta P_x \) and 3D Momentum}
+\begin{columns}[T]
+\column{0.48\textwidth}
+\includegraphics[width=\textwidth]{../../../results/synthetic_reco/B115T_3deg/plots/neutron_dpx.png}
+
+\column{0.52\textwidth}
+\includegraphics[width=\textwidth]{../../../results/synthetic_reco/B115T_3deg/plots/neutron_px_true_vs_reco_and_dpx_vs_true.png}
+\end{columns}
+
+\vspace{0.2cm}
+\small
+Neutron TOF reconstruction summary (994 events):
+\[
+\text{Mean}(\Delta P_x)=+1.758~\mathrm{MeV}/c,\quad
+\text{RMS}(\Delta P_x)=17.152~\mathrm{MeV}/c .
+\]
+\end{frame}
+
+\begin{frame}{Conclusions and Next Actions}
+\textbf{Conclusions}
+\begin{itemize}
+\item The pipeline reconstructs proton and neutron 3D momentum from synthetic input.
+\item Neutron TOF reconstruction gives moderate \(P_x\) bias and finite spread.
+\item Proton Minuit currently shows large positive \( \Delta P_x \) bias in this sample.
+\end{itemize}
+
+\textbf{Immediate next actions}
+\begin{itemize}
+\item Diagnose proton Minuit bias with event-level \((P_x^{true}, P_x^{reco})\) outliers.
+\item Re-check coordinate/sign conventions between beam truth and reconstruction frame.
+\item Add per-bin \(P_x^{true}\) calibration/validation before production usage.
+\end{itemize}
+\end{frame}
+
+\end{document}

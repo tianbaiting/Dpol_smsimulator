@@ -41,6 +41,10 @@ public:
     TargetReconstructor(MagneticField* magField);
     ~TargetReconstructor();
 
+    // [EN] Configure RK step size used by internal ParticleTrajectory calls. / [CN] 配置内部ParticleTrajectory调用使用的RK步长。
+    void SetTrajectoryStepSize(double stepSize) { if (stepSize > 0.0) fTrajectoryStepSize = stepSize; }
+    double GetTrajectoryStepSize() const { return fTrajectoryStepSize; }
+
     // Reconstruct four-momentum at the target for a given RecoTrack and target position.
     // Uses negative charge (-1) for backward propagation from farther PDC point.
     // pMin/pMax: search range in MeV/c. tol: acceptance distance in mm. maxRounds controls refinement.
@@ -104,6 +108,7 @@ public:
 private:
     MagneticField* fMagField;
     double fProtonMass; // MeV/c^2
+    double fTrajectoryStepSize; // [mm]
     
     // Static data for TMinuit callback function
     static TargetReconstructor* fgCurrentInstance;

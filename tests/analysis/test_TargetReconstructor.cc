@@ -426,6 +426,74 @@ TEST_F(TargetReconstructorTest, GradientDescentWithStepRecording) {
 }
 
 /**
+ * @brief 对比不同重建方法的效果
+ */
+TEST_F(TargetReconstructorTest, ComparePDCReconstructionMethods) {
+    TVector3 targetPos(0, 0, -700);
+    TVector3 trueMom(0, 0, 627.0);
+    double protonMass = 938.272;
+    double energy = TMath::Sqrt(trueMom.Mag2() + protonMass * protonMass);
+    TLorentzVector trueP4(trueMom.X(), trueMom.Y(), trueMom.Z(), energy);
+
+    std::cout << "\n=== Test: Compare PDC Reconstruction Methods ===" << std::endl;
+    std::cout << "True momentum: (" << trueMom.X() << ", " << trueMom.Y()
+              << ", " << trueMom.Z() << ") MeV/c" << std::endl;
+
+    RecoTrack track = CreateSimulatedTrack(targetPos, trueP4, 1.0, protonMass);
+
+    // [EN] Grid-refinement baseline on momentum magnitude. / [CN] 基于动量大小的网格细化基线方法。
+    TargetReconstructionResult gridResult = reconstructor->ReconstructAtTargetWithDetails(
+        track, targetPos, false, 100.0, 2500.0, 1.0, 4
+    );
+
+    // [EN] Gradient descent on momentum magnitude. / [CN] 基于动量大小的梯度下降方法。
+    TargetReconstructionResult gdResult = reconstructor->ReconstructAtTargetGradientDescent(
+        track, targetPos, false, 900.0, 50.0, 1.0, 80
+    );
+
+    // [EN] TMinuit MIGRAD optimizer on momentum magnitude. / [CN] 基于动量大小的TMinuit MIGRAD优化方法。
+    TargetReconstructionResult minuitResult = reconstructor->ReconstructAtTargetMinuit(
+        track, targetPos, false, 900.0, 1.0, 300, false
+    );
+
+    // [EN] Three-point constrained optimization with fixed momentum (0,0,627). / [CN] 固定动量(0,0,627)的三点约束优化方法。
+    TargetReconstructionResult threePointResult = reconstructor->ReconstructAtTargetThreePointGradientDescent(
+        track, targetPos, false, TVector3(0, 0, 627.0), 0.05, 1.0, 200, 0.5, 5.0
+    );
+
+    auto relativeError = [&](const TLorentzVector& reco) {
+        return (reco.Vect() - trueMom).Mag() / trueMom.Mag();
+    };
+
+    double gridErr = relativeError(gridResult.bestMomentum);
+    double gdErr = relativeError(gdResult.bestMomentum);
+    double minuitErr = relativeError(minuitResult.bestMomentum);
+    double threePointErr = relativeError(threePointResult.bestMomentum);
+
+    std::cout << "Grid:   dist=" << gridResult.finalDistance << " mm, relErr=" << (gridErr * 100.0) << "%" << std::endl;
+    std::cout << "GD:     dist=" << gdResult.finalDistance << " mm, relErr=" << (gdErr * 100.0) << "%" << std::endl;
+    std::cout << "Minuit: dist=" << minuitResult.finalDistance << " mm, relErr=" << (minuitErr * 100.0) << "%" << std::endl;
+    std::cout << "3Point: dist=" << threePointResult.finalDistance << " mm, relErr=" << (threePointErr * 100.0) << "%" << std::endl;
+
+    EXPECT_TRUE(std::isfinite(gridResult.finalDistance));
+    EXPECT_TRUE(std::isfinite(gdResult.finalDistance));
+    EXPECT_TRUE(std::isfinite(minuitResult.finalDistance));
+    EXPECT_TRUE(std::isfinite(threePointResult.finalDistance));
+
+    EXPECT_LT(gridResult.finalDistance, 20.0);
+    EXPECT_LT(gdResult.finalDistance, 20.0);
+    EXPECT_LT(minuitResult.finalDistance, 20.0);
+    EXPECT_LT(threePointResult.finalDistance, 20.0);
+
+    EXPECT_LT(gridErr, 0.20);
+    EXPECT_LT(gdErr, 0.20);
+    EXPECT_LT(minuitErr, 0.20);
+    EXPECT_LT(threePointErr, 0.20);
+
+    std::cout << "================================================\n" << std::endl;
+}
+
+/**
  * @brief 性能基准测试：批量重建 (无可视化)
  */
 TEST_F(TargetReconstructorTest, PerformanceBenchmark) {
