@@ -40,12 +40,6 @@ SMSimulator
     └─ visualization/      可视化脚本
 ```
 
-🔧 编译选项
-
-  Release 模式:   cmake .. -DCMAKE_BUILD_TYPE=Release
-  Debug 模式:     cmake .. -DCMAKE_BUILD_TYPE=Debug
-  不构建测试:     cmake .. -DBUILD_TESTS=OFF
-  不用 ANAROOT:   cmake .. -DWITH_ANAROOT=OFF
 
 
 📝 运行示例
@@ -138,15 +132,6 @@ SMSimulator
   A: 1) 检查环境变量
      2) 尝试 make VERBOSE=1 查看详细信息
      3) 删除 build 目录重新编译
-
-
-💡 提示
-
-  • 首次编译需要较长时间，请耐心等待
-  • 使用 -j$(nproc) 可以并行编译
-  • Debug 模式有更多调试信息但运行较慢
-  • 定期运行 ./test.sh 确保代码正确性
-  • 查看 CMake 配置摘要确认依赖是否正确找到
 
 
 

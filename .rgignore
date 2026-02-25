@@ -1,0 +1,23 @@
+# Heavy runtime/output trees
+data/
+results/
+build/
+.cache/
+clangd_db/
+output/
+
+# Large simulation map/data directories
+configs/simulation/geometry/filed_map/
+configs/simulation/**/output/
+configs/simulation/**/rootfiles/
+
+# Large binary-like artifacts
+*.root
+*.dat
+*.table
+*.gdml
+*.wrl
+*.npy
+*.npz
+*.h5
+*.hdf5

@@ -1,0 +1,23 @@
+# Keep recursive text search off heavy runtime trees
+data/
+results/
+build/
+.cache/
+clangd_db/
+output/
+
+# Simulation-generated huge content
+configs/simulation/geometry/filed_map/
+configs/simulation/**/output/
+configs/simulation/**/rootfiles/
+
+# Large non-source artifacts
+*.root
+*.dat
+*.table
+*.gdml
+*.wrl
+*.npy
+*.npz
+*.h5
+*.hdf5

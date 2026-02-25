@@ -26,6 +26,9 @@ d_work/geometry/filed_map/
 .github
 
 
+*.ipynb
+
+
 # OS
 .DS_Store
 Thumbs.db
@@ -72,3 +75,5 @@ result/
 *.so
 *.pcm
 clangd_db/
+
+.tags

@@ -8,12 +8,12 @@
 /control/getEnv SMSIMDIR
 
 /action/file/OverWrite y
-/action/file/RunName Dbeamtest
+/action/file/RunName TEST
 /action/file/SaveDirectory {SMSIMDIR}/data/simulation/g4output
 
 # Load geometry
 # /control/execute {SMSIMDIR}/configs/simulation/geometry/5deg_1.2T.mac
-/control/execute {SMSIMDIR}/configs/simulation/geometry/5deg_1.2T.mac
+/control/execute {SMSIMDIR}/configs/simulation/geometry/3deg_1.15T.mac
 # /control/execute geometry/geom_deuteron.mac
 
 # Z-X view
@@ -64,17 +64,24 @@
 # 上个命令失败了
 
 # 设置氘核束流  
-/action/gun/Type Pencil  
-/action/gun/SetBeamParticleName deuteron  
-/action/gun/Energy 380 MeV  
-# /action/gun/Position 0 0 -4 m  
-/run/beamOn 10      
+# /action/gun/Type Pencil  
+# /action/gun/SetBeamParticleName deuteron  
+# /action/gun/Energy 380 MeV  
+# /run/beamOn 10      
 # /tracking/storeTrajectory 1
 
 # /action/gun/Type Tree
-# /action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4input/d+Pb208E190g050xyz/dbreakb01.root
+# # /action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/data/simulation/g4input/z_pol/b_discrete/d+Sn112E190g060zpn/dbreakb07.root
+# /action/gun/tree/InputFileName {SMSIMDIR}/data/simulation/g4input/y_pol/phi_random/d+Pb208E190g060ynp/dbreak.root
 # /action/gun/tree/TreeName tree
-# /action/gun/tree/beamOn 20
+# /action/gun/tree/beamOn 1000
+
+
+/action/gun/Type Pencil
+/action/gun/SetBeamParticleName neutron
+/action/gun/Energy 190 MeV
+/run/beamOn 10
+
 
 # 运行事件  
 # /run/beamOn 10
