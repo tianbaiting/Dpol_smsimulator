@@ -1,0 +1,63 @@
+{
+  "campaign": "formal_B115T3deg_diskR150_pz500_700",
+  "geometry": {
+    "path": "/home/tian/workspace/dpol/smsimulator5.5/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227.mac",
+    "sha256": "eee69451e252e8de135724c27095dc7422bd2d607b40882de92ef5d479dffd9a"
+  },
+  "target": {
+    "angle_deg": 3.0,
+    "position_mm": [
+      -12.4883,
+      0.0089,
+      -1069.4585
+    ],
+    "position_cm_for_macro": [
+      -1.2488,
+      0.0009,
+      -106.9458
+    ]
+  },
+  "momentum_sampling": {
+    "px_py": {
+      "shape": "uniform_disk",
+      "r_max_mevc": 150.0
+    },
+    "pz": {
+      "distribution": "uniform",
+      "min_mevc": 500.0,
+      "max_mevc": 700.0
+    }
+  },
+  "splits": {
+    "train": {
+      "requested_events": 200000,
+      "seed": 20260301,
+      "tree_input_root": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/tree_input/tree_input_train.root",
+      "sim_root": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/sim_root/nntrain_B115T_3deg_train0000.root",
+      "dataset_csv": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/dataset/dataset_train.csv",
+      "dataset_rows": 47211
+    },
+    "val": {
+      "requested_events": 30000,
+      "seed": 20260302,
+      "tree_input_root": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/tree_input/tree_input_val.root",
+      "sim_root": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/sim_root/nntrain_B115T_3deg_val0000.root",
+      "dataset_csv": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/dataset/dataset_val.csv",
+      "dataset_rows": 6942
+    },
+    "test": {
+      "requested_events": 30000,
+      "seed": 20260303,
+      "tree_input_root": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/tree_input/tree_input_test.root",
+      "sim_root": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/sim_root/nntrain_B115T_3deg_test0000.root",
+      "dataset_csv": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/dataset/dataset_test.csv",
+      "dataset_rows": 7033
+    }
+  },
+  "artifacts": {
+    "model_dir": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/model",
+    "model_meta_json": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/model/model_meta.json",
+    "metrics_val_json": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/predictions/metrics_val.json",
+    "metrics_test_json": "/home/tian/workspace/dpol/smsimulator5.5/20260227_205732/predictions/metrics_test.json"
+  }
+}

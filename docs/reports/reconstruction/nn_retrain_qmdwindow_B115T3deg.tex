@@ -1,0 +1,166 @@
+% [EN] Build: cd docs/reports/reconstruction && latexmk -pdf nn_retrain_qmdwindow_B115T3deg.tex / [CN] 编译: cd docs/reports/reconstruction && latexmk -pdf nn_retrain_qmdwindow_B115T3deg.tex
+\documentclass[11pt]{beamer}
+\usetheme{Madrid}
+\usepackage{booktabs}
+\usepackage{amsmath}
+
+\title{QMD-Window Retraining Plan and Results\\B115T, Target 3deg}
+\author{SMSimulator Reconstruction}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Motivation}
+\begin{itemize}
+\item Task: reconstruct target proton momentum \((p_x,p_y,p_z)\) from PDC two-point track.
+\item Existing formal model (wide sampling) is usable, but dataset efficiency is low.
+\item Baseline campaign: \texttt{20260227\_205732}.
+\end{itemize}
+
+\textbf{Baseline key numbers}
+\begin{itemize}
+\item Sampling: \(p_\perp \le 150\) MeV/c, \(p_z \in [500,700]\) MeV/c.
+\item Effective keep fraction (after PDC track reconstruction cuts): \(\sim 24\%\).
+\item Momentum-norm RMSE: val \(9.19\) MeV/c, test \(9.84\) MeV/c.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Retraining Campaign Definition}
+\textbf{Geometry and setup}
+\begin{itemize}
+\item Geometry macro:
+\texttt{configs/simulation/DbeamTest/detailMag1to1.2T/geometry\_B115T\_pdcOptimized\_20260227.mac}
+\item Target transform in run macro:
+\((-1.2488,\,0.0009,\,-106.9458)\) cm, angle \(3.0^\circ\).
+\end{itemize}
+
+\textbf{New sampling window}
+\begin{itemize}
+\item \(p_\perp \le 100\) MeV/c (disk in \(p_x,p_y\)).
+\item \(p_z \in [560,680]\) MeV/c.
+\end{itemize}
+
+\textbf{Split size and seeds}
+\begin{itemize}
+\item train/val/test = \(200000/30000/30000\).
+\item Seeds: 20260301 / 20260302 / 20260303.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Pipeline}
+\begin{enumerate}
+\item Generate tree-input ROOT with proton truth sampled in new momentum window.
+\item Run Geant4 simulation for train, val, test independently.
+\item Build dataset CSV/ROOT with PDC track reconstruction.
+\item Train MLP: \(6 \rightarrow 128 \rightarrow 128 \rightarrow 64 \rightarrow 3\).
+\item Evaluate val/test with independent hold-out files.
+\end{enumerate}
+
+\textbf{Tools}
+\begin{itemize}
+\item \texttt{run\_formal\_training.sh}
+\item \texttt{generate\_tree\_input\_disk\_pz.C}
+\item \texttt{build\_dataset.C}, \texttt{train\_mlp.py}, \texttt{infer\_mlp.py}, \texttt{evaluate\_mlp.py}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{MLP Architecture}
+\textbf{Network: \(6 \rightarrow 128 \rightarrow 128 \rightarrow 64 \rightarrow 3\)}
+\begin{itemize}
+  \item Input (6): \texttt{pdc1\_x, pdc1\_y, pdc1\_z, pdc2\_x, pdc2\_y, pdc2\_z}
+  \item Three hidden layers with \textbf{ReLU} activations: 128, 128, 64 units.
+  \item Output (3): \((p_x, p_y, p_z)_\text{truth}\) in MeV/c (no output activation).
+\end{itemize}
+
+\textbf{Evaluation metrics (post-training)}
+\begin{itemize}
+  \item Per-component RMSE, MAE, bias, and \(p_{95}\) for \(p_x, p_y, p_z\).
+  \item Momentum-norm RMSE: \(\sqrt{\langle(|\hat{\vec{p}}| - |\vec{p}|)^2\rangle}\).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Loss Function and Optimiser}
+\textbf{Training loss: MSE over all three components}
+\[
+  \mathcal{L} = \frac{1}{3N}\sum_{i=1}^{N}
+  \left[(\hat{p}_x^{(i)}-p_x^{(i)})^2
+       +(\hat{p}_y^{(i)}-p_y^{(i)})^2
+       +(\hat{p}_z^{(i)}-p_z^{(i)})^2\right]
+\]
+Implemented as \texttt{nn.MSELoss()} in PyTorch.
+
+\textbf{Optimiser and hyperparameters}
+\begin{itemize}
+  \item Optimiser: \textbf{Adam}, \(\text{lr}=10^{-3}\), weight decay \(10^{-5}\).
+  \item Batch size: 1024; Max epochs: 120.
+  \item \textbf{Early stopping}: patience = 12 epochs on validation loss;
+        best-checkpoint model is restored at the end.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Data Preprocessing and Split}
+\textbf{Feature normalisation (inputs only)}
+\begin{itemize}
+  \item \(z\)-score standardisation using training-set mean and std:
+        \(\tilde{x} = (x - \mu_\text{train})/\sigma_\text{train}\).
+  \item Labels \((p_x, p_y, p_z)\) are \emph{not} normalised.
+  \item Mean/std saved in \texttt{model\_meta.json} for inference.
+\end{itemize}
+
+\textbf{Dataset split (external files, fixed seeds)}
+\begin{itemize}
+  \item train / val / test = 200\,000 / 30\,000 / 30\,000 events.
+  \item Seeds: 20260301 / 20260302 / 20260303.
+  \item Val loss used for model selection; test set held out until final evaluation.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Acceptance and Quality Criteria}
+\textbf{Primary objective}
+\begin{itemize}
+\item Improve effective kept samples by reducing out-of-acceptance phase space.
+\end{itemize}
+
+\textbf{Evaluation criteria}
+\begin{itemize}
+\item Keep fraction should improve from baseline \(\sim24\%\).
+\item Test \(|\vec{p}|\) RMSE should remain stable or improve.
+\item Component-wise RMSE (\(p_x,p_y,p_z\)) tracked for regression.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Results}
+\begin{table}
+\centering
+\begin{tabular}{lcc}
+\toprule
+Metric & Baseline (Wide) & QMD-Window (New) \\
+\midrule
+Train kept fraction & 23.61\% & 44.48\% \\
+Val kept fraction & 23.14\% & 44.16\% \\
+Test kept fraction & 23.44\% & 45.02\% \\
+Val \(|\vec{p}|\) RMSE (MeV/c) & 9.19 & 6.01 \\
+Test \(|\vec{p}|\) RMSE (MeV/c) & 9.84 & 5.88 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{frame}
+
+\begin{frame}{Conclusion}
+\begin{itemize}
+\item Narrowing to qmd-window significantly improves effective kept samples (\(\sim24\%\rightarrow\sim45\%\)).
+\item Hold-out accuracy also improves (test \(|\vec{p}|\) RMSE \(9.84 \rightarrow 5.88\) MeV/c).
+\item This window is therefore a strong default candidate for B115T/3deg proton momentum reconstruction.
+\item If future edge generalization drops, next step is two-stage training:
+\begin{itemize}
+\item Stage 1: qmd-window pretrain.
+\item Stage 2: short fine-tune with wider window.
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\end{document}

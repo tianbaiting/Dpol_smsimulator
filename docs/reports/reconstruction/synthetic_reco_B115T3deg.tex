@@ -47,40 +47,179 @@
 \vspace{0.2cm}
 \textbf{Event statistics in analyzed sample}
 \begin{itemize}
-\item Events with reconstructed PDC track: 2597 / 3000 (\(\sim 86.6\%\))
-\item Events with neutron TOF reconstruction: 994 / 3000 (\(\sim 33.1\%\))
-\item Proton Minuit attempts: 600 events, Minuit success: 344 (\(\sim 57.3\%\))
+\item Events with reconstructed PDC track: 2597 / 3000 (\(86.57\%\))
+\item Events with neutron TOF reconstruction: 994 / 3000 (\(33.13\%\))
+\item Proton fit sample cap: 600 events (Minuit/Three-point branches)
+\item Three-point fit convergence: \(362/600 = 60.33\%\)
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Reconstruction Pipelines}
-\textbf{Proton (charged, PDC-based)}
+\begin{frame}{PDC Reconstruction Process (Charged Proton)}
+\textbf{Input}
 \begin{itemize}
-\item Build PDC track from PDC1/PDC2 reconstructed points.
-\item Method A: \textbf{TMinuit} back-propagation in field to target.
-\item Method B: \textbf{Three-point constrained} fit (target + two PDC points).
+\item \texttt{FragSimData} PDC hits (\(U/V\) layers for PDC1/PDC2).
+\item Geometry from \texttt{geometry\_B115T.mac} (PDC positions/angles + target transform).
 \end{itemize}
 
-\textbf{Neutron (neutral, NEBULA TOF)}
+\textbf{Reconstruction chain}
 \begin{itemize}
-\item Cluster NEBULA hits in time window.
-\item Reconstruct hit position and TOF.
-\item Start point fixed at target (from macro), direction \(=\) target \(\rightarrow\) hit.
-\item Compute \(\beta\), \(\gamma\), and 3D momentum:
+\item Convert \(U/V\) hits to CoM points in each chamber, with configured smearing.
+\item Build one straight \texttt{RecoTrack} with two points:
 \[
-\beta=\frac{L/t}{c},\quad p=\gamma m_n \beta c .
+\vec{r}_1=\text{PDC1 reco point},\quad \vec{r}_2=\text{PDC2 reco point}.
+\]
+\item Target back-tracing in field map (\(B=1.15\)T):
+\begin{itemize}
+\item Method A: \textbf{TMinuit} RK-based target momentum fit.
+\item Method B: \textbf{Three-point (free-parameter)} fit with 6D optimization
+\((x_0,y_0,z_0,p_{x0},p_{y0},p_{z0})\), constrained by target/PDC1/PDC2 distances.
+\end{itemize}
+\item Validation observable:
+\[
+\Delta P_x = P_x^{\mathrm{reco}} - P_x^{\mathrm{true}}.
 \]
 \end{itemize}
 \end{frame}
 
-\begin{frame}{PDC Position Precision}
+\section{Neural Network Target-Momentum Reconstruction}
+
+\begin{frame}{NN Objective and Scope}
+\textbf{Objective}
+\begin{itemize}
+\item Reconstruct target momentum directly:
+\[
+(\hat p_x,\hat p_y,\hat p_z)=f(\text{PDC two-point track}).
+\]
+\item This branch predicts momentum components, not \(B\rho\), and does not use matrix inversion.
+\end{itemize}
+
+\textbf{Scope in this revision}
+\begin{itemize}
+\item Offline ML pipeline only (dataset/training/inference/evaluation scripts).
+\item Not yet integrated into the online C++ auto-chain backend.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Dataset Construction}
+\textbf{Sources}
+\begin{itemize}
+\item Simulation tree branches: \texttt{FragSimData} and \texttt{beam}.
+\item Geometry/coordinate transform from selected macro.
+\end{itemize}
+
+\textbf{Features and labels}
+\begin{itemize}
+\item Input \(X\in\mathbb{R}^6\): \(\texttt{pdc1\_x,y,z}\), \(\texttt{pdc2\_x,y,z}\).
+\item Target \(Y\in\mathbb{R}^3\): \((p_x^{true},p_y^{true},p_z^{true})\) of proton truth momentum in target frame.
+\end{itemize}
+
+\textbf{Filtering and outputs}
+\begin{itemize}
+\item Keep events with proton truth, valid reconstructed PDC track, and finite feature/label values.
+\item Output files: \texttt{dataset\_train.root} and \texttt{dataset\_train.csv}.
+\item Builder script: \texttt{scripts/reconstruction/nn\_target\_momentum/build\_dataset.C}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Train/Validation/Test Split and Model}
+\textbf{Split policy}
+\begin{itemize}
+\item Formal campaign uses three independent simulation runs (train/val/test).
+\item Seeds: train \texttt{20260301}, val \texttt{20260302}, test \texttt{20260303}.
+\item \texttt{train\_mlp.py} consumes external split files (\texttt{--train-csv --val-csv --test-csv}).
+\end{itemize}
+
+\textbf{Model and training}
+\begin{itemize}
+\item MLP regressor: \(6 \rightarrow 128 \rightarrow 128 \rightarrow 64 \rightarrow 3\) (ReLU).
+\item Input z-score normalization from training split statistics.
+\item Optimizer/loss: Adam + MSE with early stopping.
+\item Training script: \texttt{scripts/reconstruction/nn\_target\_momentum/train\_mlp.py}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Evaluation and Current Limitations}
+\textbf{Where to read official hold-out metrics}
+\begin{itemize}
+\item Hold-out metrics are reported from dedicated val/test datasets.
+\item Files: \texttt{predictions/metrics\_val.json} and \texttt{predictions/metrics\_test.json}.
+\item Training metadata also stores \texttt{val\_metrics} and \texttt{test\_metrics} in \texttt{model\_meta.json}.
+\end{itemize}
+
+\textbf{Generalization note}
+\begin{itemize}
+\item Inputs currently include only PDC two-point coordinates.
+\item Beam/field configuration is learned implicitly from the training data distribution.
+\item Validity remains configuration-dependent; retraining is required when geometry/field changes.
+\item Effective dataset size is limited by PDC track availability after reconstruction cuts.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{QMD-Window Retraining Test (New)}
+\textbf{New campaign setup}
+\begin{itemize}
+\item Geometry: \texttt{geometry\_B115T\_pdcOptimized\_20260227.mac}, target \(3^\circ\).
+\item Sampling narrowed to \(p_\perp \le 100\) MeV/c and \(p_z \in [560,680]\) MeV/c.
+\item Split size unchanged: train/val/test \(=200000/30000/30000\).
+\end{itemize}
+
+\textbf{Baseline vs new test}
 \begin{center}
-\includegraphics[width=0.92\textwidth]{../../../results/synthetic_reco/B115T_3deg/plots/pdc_position_residuals.png}
+\small
+\begin{tabular}{lcc}
+\toprule
+Metric & Baseline (Wide) & QMD-window (New) \\
+\midrule
+Train kept fraction & 23.61\% & 44.48\% \\
+Val kept fraction & 23.14\% & 44.16\% \\
+Test kept fraction & 23.44\% & 45.02\% \\
+Val \(|\vec p|\) RMSE (MeV/c) & 9.19 & 6.01 \\
+Test \(|\vec p|\) RMSE (MeV/c) & 9.84 & 5.88 \\
+\bottomrule
+\end{tabular}
 \end{center}
 
-\small
-In this synthetic setup, PDC residual histograms peak at 0 mm in the analyzed events
-(\( \langle \Delta r_{PDC1} \rangle = 0 \), \( \langle \Delta r_{PDC2} \rangle = 0 \)).
+\textbf{Conclusion}: Narrowing to qmd-window improves both usable sample rate and hold-out momentum accuracy.
+\end{frame}
+
+\begin{frame}{NEBULA Reconstruction Process (Neutron TOF)}
+\textbf{Input}
+\begin{itemize}
+\item \texttt{NEBULAPla} hit array (position, time, deposited energy).
+\item Target point from loaded geometry macro.
+\end{itemize}
+
+\textbf{Reconstruction chain}
+\begin{itemize}
+\item Time-window hit clustering (\(10\) ns) and energy threshold cut (\(1\) MeV).
+\item Pick best neutron candidate (highest reconstructed energy cluster).
+\item Flight vector:
+\[
+\vec{L}=\vec{r}_{\mathrm{hit}}-\vec{r}_{\mathrm{target}},\quad L=|\vec{L}|.
+\]
+\item TOF momentum:
+\[
+\beta=\frac{L/t}{c},\quad p=\gamma m_n \beta c,\quad \vec{p}=p\cdot\frac{\vec{L}}{L}.
+\]
+\item Validation observable:
+\[
+\Delta P_x = P_x^{\mathrm{reco}} - P_x^{\mathrm{true}}.
+\]
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Uniform-Incidence Check: PDC Acceptance}
+\begin{center}
+\includegraphics[width=0.90\textwidth]{../../../results/synthetic_reco/B115T_3deg/plots/pdc_uniform_track_efficiency.png}
+\end{center}
+
+\vspace{0.2cm}
+\scriptsize
+\begin{itemize}
+\item For \(P_x^{true}\in[-150,80]\) MeV/c, PDC track efficiency is mostly \(\sim95\%-99\%\).
+\item Efficiency drops at large positive \(P_x^{true}\), indicating acceptance-edge loss.
+\item Global PDC track efficiency: \(2597/3000 = 86.57\%\).
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Proton \( \Delta P_x \): Key Result}
@@ -98,8 +237,8 @@ In this synthetic setup, PDC residual histograms peak at 0 mm in the analyzed ev
 \toprule
 Method & Count & Mean(\(\Delta P_x\)) & RMS(\(\Delta P_x\)) \\
 \midrule
-TMinuit & 600 & +230.969 MeV/c & 54.115 MeV/c \\
-Three-point & 600 & 0.000 MeV/c & 0.000 MeV/c \\
+TMinuit & 600 & -517.086 MeV/c & 60.603 MeV/c \\
+Three-point (free) & 600 & +6.180 MeV/c & 39.540 MeV/c \\
 \bottomrule
 \end{tabular}
 \end{frame}
@@ -110,7 +249,7 @@ Three-point & 600 & 0.000 MeV/c & 0.000 MeV/c \\
 \end{center}
 
 \small
-The Minuit branch shows a clear positive \(P_x\) bias in this sample.
+With \((0,0,627)\) initialization and priors, free three-point gives near-zero mean bias and moderate spread; Minuit keeps a large negative bias.
 \end{frame}
 
 \begin{frame}{Neutron \( \Delta P_x \) and 3D Momentum}
@@ -134,16 +273,16 @@ Neutron TOF reconstruction summary (994 events):
 \begin{frame}{Conclusions and Next Actions}
 \textbf{Conclusions}
 \begin{itemize}
-\item The pipeline reconstructs proton and neutron 3D momentum from synthetic input.
-\item Neutron TOF reconstruction gives moderate \(P_x\) bias and finite spread.
-\item Proton Minuit currently shows large positive \( \Delta P_x \) bias in this sample.
+\item Uniform-incidence proton input is not reconstructed uniformly at high \(+P_x\) due to PDC acceptance edge.
+\item Neutron TOF branch remains stable: Mean(\(\Delta P_x\)) \(=+1.758\) MeV/c, RMS \(=17.152\) MeV/c (994 events).
+\item Proton target back-tracing is method-dependent: Minuit has large negative bias; free three-point reaches Mean(\(\Delta P_x\)) \(=+6.180\) MeV/c, RMS \(=39.540\) MeV/c with \(60.33\%\) convergence.
 \end{itemize}
 
 \textbf{Immediate next actions}
 \begin{itemize}
-\item Diagnose proton Minuit bias with event-level \((P_x^{true}, P_x^{reco})\) outliers.
-\item Re-check coordinate/sign conventions between beam truth and reconstruction frame.
-\item Add per-bin \(P_x^{true}\) calibration/validation before production usage.
+\item Keep three-point priors and tune convergence from \(60\%\) toward \(>90\%\).
+\item Fix two-point Minuit sign/bias issue (field/charge/direction convention check).
+\item Audit PDC acceptance edge (\(+P_x\)) with chamber-level hit occupancy.
 \end{itemize}
 \end{frame}
 

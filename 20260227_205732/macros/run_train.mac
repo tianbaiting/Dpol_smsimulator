@@ -1,0 +1,28 @@
+# =========================================================================
+# [EN] Template macro for formal NN-training simulation (B115T, target 3deg)
+# [CN] B115T/3deg正式NN训练仿真模板宏
+# Placeholders to replace:
+#   nntrain_B115T_3deg_train
+#   /home/tian/workspace/dpol/smsimulator5.5/./20260227_205732/sim_root
+#   /home/tian/workspace/dpol/smsimulator5.5/./20260227_205732/tree_input/tree_input_train.root
+#   200000
+#   /home/tian/workspace/dpol/smsimulator5.5/build/bin/configs/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227.mac
+#   -1.2488, 0.0009, -106.9458
+#   3.0
+# =========================================================================
+
+/control/getEnv SMSIMDIR
+
+/samurai/geometry/Target/Position -1.2488 0.0009 -106.9458 cm
+/samurai/geometry/Target/Angle 3.0 deg
+
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/build/bin/configs/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227.mac
+
+/action/file/OverWrite y
+/action/file/RunName nntrain_B115T_3deg_train
+/action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/./20260227_205732/sim_root
+
+/action/gun/Type Tree
+/action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/./20260227_205732/tree_input/tree_input_train.root
+/action/gun/tree/TreeName tree_input
+/action/gun/tree/beamOn 200000
