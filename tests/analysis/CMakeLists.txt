@@ -63,6 +63,28 @@ gtest_discover_tests(test_TargetReconstructor
         ENVIRONMENT "SM_TEST_VISUALIZATION=OFF"  # 默认关闭可视化
 )
 
+# ANAROOT-like PDC 动量重建测试
+add_executable(test_PDCMomentumReconstructor
+    test_PDCMomentumReconstructor.cc
+)
+
+target_link_libraries(test_PDCMomentumReconstructor
+    GTest::gtest
+    GTest::gtest_main
+    analysis
+    analysis_pdc_reco
+    ${ROOT_LIBRARIES}
+    ROOT::Geom
+    ROOT::Eve
+    ROOT::Minuit
+)
+
+gtest_discover_tests(test_PDCMomentumReconstructor
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    PROPERTIES
+        LABELS "unit;analysis;reconstruction;pdc"
+)
+
 # TargetReconstructor 真实数据测试
 add_executable(test_TargetReconstructor_RealData
     test_TargetReconstructor_RealData.cc
@@ -132,6 +154,7 @@ set_tests_properties(test_TargetReconstructor_Performance
 # 安装测试可执行文件 (可选)
 install(TARGETS 
     test_ParticleTrajectory
+    test_PDCMomentumReconstructor
     test_TargetReconstructor
     test_TargetReconstructor_RealData
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tests
@@ -165,6 +188,7 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/test_output/reconstruction_realdata_even
 
 message(STATUS "Analysis tests configured:")
 message(STATUS "  - test_ParticleTrajectory: Unit tests for trajectory calculation")
+message(STATUS "  - test_PDCMomentumReconstructor: Unit tests for ANAROOT-like PDC momentum reconstruction")
 message(STATUS "  - test_TargetReconstructor: Unit tests for reconstruction (performance mode)")
 message(STATUS "  - test_TargetReconstructor_RealData: Real data reconstruction tests")
 message(STATUS "  - test_TargetReconstructor_Visualization: With detailed plots (run manually)")

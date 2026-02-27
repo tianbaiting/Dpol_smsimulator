@@ -26,3 +26,32 @@ if(EXISTS ${QMD_GEN_SRC})
     target_link_libraries(GenInputRoot_qmdrawdata PRIVATE smdata spdlog::spdlog ${ROOT_LIBRARIES})
     install(TARGETS GenInputRoot_qmdrawdata RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
+
+# Geant4 PDC position scan summary analyzer (ROOT tree -> CSV metrics)
+set(PDC_SCAN_ANALYZER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/analyze_pdc_scan_root.cc)
+if(EXISTS ${PDC_SCAN_ANALYZER_SRC})
+    add_executable(analyze_pdc_scan_root ${PDC_SCAN_ANALYZER_SRC})
+    target_link_libraries(analyze_pdc_scan_root PRIVATE ${ROOT_LIBRARIES})
+    install(TARGETS analyze_pdc_scan_root RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
+
+# Clean NN-based reconstruction pipeline tool (g4output -> reconstruction)
+set(RECONSTRUCT_SN_NN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/reconstruct_sn_nn.cc)
+if(EXISTS ${RECONSTRUCT_SN_NN_SRC})
+    add_executable(reconstruct_sn_nn ${RECONSTRUCT_SN_NN_SRC})
+    target_link_libraries(reconstruct_sn_nn PRIVATE
+        analysis
+        analysis_pdc_reco
+        smdata
+        ${ROOT_LIBRARIES}
+    )
+    install(TARGETS reconstruct_sn_nn RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
+
+# Evaluate NN proton reconstruction accuracy from reco ROOT files
+set(EVAL_RECONSTRUCT_SN_NN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/evaluate_reconstruct_sn_nn.cc)
+if(EXISTS ${EVAL_RECONSTRUCT_SN_NN_SRC})
+    add_executable(evaluate_reconstruct_sn_nn ${EVAL_RECONSTRUCT_SN_NN_SRC})
+    target_link_libraries(evaluate_reconstruct_sn_nn PRIVATE ${ROOT_LIBRARIES})
+    install(TARGETS evaluate_reconstruct_sn_nn RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()

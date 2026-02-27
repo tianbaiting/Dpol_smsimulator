@@ -46,6 +46,7 @@ struct Options {
     fs::path input_base;
     fs::path output_base;
     Mode mode = Mode::kBoth;
+    std::string target_filter;
     bool cut_unphysical = true;
     double cut_ypol_axis_limit = 150.0;
     double cut_zpol_axis_limit = 150.0;
@@ -188,6 +189,21 @@ bool ParseBoolOption(std::string value) {
         return false;
     }
     throw std::runtime_error("Invalid boolean option value: " + value);
+}
+
+std::vector<fs::path> ApplyTargetFilter(const std::vector<fs::path>& files, const std::string& target_filter) {
+    if (target_filter.empty()) {
+        return files;
+    }
+    std::vector<fs::path> filtered;
+    filtered.reserve(files.size());
+    for (const auto& file : files) {
+        const std::string s = file.string();
+        if (s.find(target_filter) != std::string::npos) {
+            filtered.push_back(file);
+        }
+    }
+    return filtered;
 }
 
 void ConvertFile(
@@ -346,6 +362,8 @@ Options ParseArgs(int argc, char* argv[]) {
             opts.input_base = fs::path(argv[++i]);
         } else if (arg == "--output-base" && i + 1 < argc) {
             opts.output_base = fs::path(argv[++i]);
+        } else if (arg == "--target-filter" && i + 1 < argc) {
+            opts.target_filter = std::string(argv[++i]);
         } else if (arg == "--cut-unphysical" && i + 1 < argc) {
             opts.cut_unphysical = ParseBoolOption(argv[++i]);
         } else if (arg == "--cut-ypol-axis-limit" && i + 1 < argc) {
@@ -360,6 +378,7 @@ Options ParseArgs(int argc, char* argv[]) {
             spdlog::info(
                 "Usage: GenInputRoot_qmdrawdata --mode [ypol|zpol|both] "
                 "--input-base PATH --output-base PATH "
+                "[--target-filter Sn124] "
                 "[--cut-unphysical on|off] [--cut-ypol-axis-limit 150] [--cut-zpol-axis-limit 150] "
                 "[--rotate-ypol on|off] [--rotate-zpol on|off]"
             );
@@ -403,13 +422,28 @@ fs::path ResolveOutputBase(const fs::path& cli_output) {
 }
 
 void ProcessYpol(const fs::path& input_base, const fs::path& output_base, const Options& opts) {
+    // [EN] Y-polarization input is constrained to phi_random only; phi_fixed is intentionally unsupported. / [CN] Y极化输入固定为phi_random，故意不支持phi_fixed。
     const fs::path root_dir = input_base / "y_pol" / "phi_random";
-    const auto files = CollectDatFiles(root_dir);
+    const auto files_all = CollectDatFiles(root_dir);
+    const auto files = ApplyTargetFilter(files_all, opts.target_filter);
     if (files.empty()) {
         const std::string root_dir_str = root_dir.string();
-        spdlog::warn("No y_pol phi_random dbreak*.dat found under {}", root_dir_str.c_str());
+        if (opts.target_filter.empty()) {
+            spdlog::warn("No y_pol phi_random dbreak*.dat found under {}", root_dir_str.c_str());
+        } else {
+            spdlog::warn(
+                "No y_pol phi_random dbreak*.dat with target filter '{}' under {}",
+                opts.target_filter.c_str(),
+                root_dir_str.c_str()
+            );
+        }
         return;
     }
+    spdlog::info(
+        "Selected {} y_pol files from source=phi_random target_filter={}",
+        files.size(),
+        opts.target_filter.empty() ? "<none>" : opts.target_filter.c_str()
+    );
     for (const auto& file : files) {
         const auto out = MakeOutputPath(file, input_base, output_base);
         const std::string file_str = file.string();
@@ -420,12 +454,26 @@ void ProcessYpol(const fs::path& input_base, const fs::path& output_base, const 
 
 void ProcessZpol(const fs::path& input_base, const fs::path& output_base, const Options& opts) {
     const fs::path root_dir = input_base / "z_pol" / "b_discrete";
-    const auto files = CollectDatFiles(root_dir);
+    const auto files_all = CollectDatFiles(root_dir);
+    const auto files = ApplyTargetFilter(files_all, opts.target_filter);
     if (files.empty()) {
         const std::string root_dir_str = root_dir.string();
-        spdlog::warn("No z_pol b_discrete dbreak*.dat found under {}", root_dir_str.c_str());
+        if (opts.target_filter.empty()) {
+            spdlog::warn("No z_pol b_discrete dbreak*.dat found under {}", root_dir_str.c_str());
+        } else {
+            spdlog::warn(
+                "No z_pol b_discrete dbreak*.dat with target filter '{}' under {}",
+                opts.target_filter.c_str(),
+                root_dir_str.c_str()
+            );
+        }
         return;
     }
+    spdlog::info(
+        "Selected {} z_pol files with target_filter={}",
+        files.size(),
+        opts.target_filter.empty() ? "<none>" : opts.target_filter.c_str()
+    );
     if (opts.rotate_zpol) {
         const std::string output_base_str = output_base.string();
         spdlog::warn(

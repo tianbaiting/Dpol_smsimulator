@@ -13,6 +13,7 @@ add_subdirectory(sim_deuteron_core)
 # 构建分析库（可选）
 if(BUILD_ANALYSIS)
     add_subdirectory(analysis)
+    add_subdirectory(analysis_pdc_reco)
     
     # 构建几何接受度分析库（依赖analysis库）
     add_subdirectory(geo_accepentce)

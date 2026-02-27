@@ -1,0 +1,117 @@
+#ifndef ANALYSIS_PDC_MOMENTUM_RECONSTRUCTOR_HH
+#define ANALYSIS_PDC_MOMENTUM_RECONSTRUCTOR_HH
+
+#include "MagneticField.hh"
+#include "ParticleTrajectory.hh"
+#include "PDCNNMomentumReconstructor.hh"
+#include "PDCRecoTypes.hh"
+
+#include <array>
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace analysis::pdc::anaroot_like {
+
+class PDCMomentumReconstructor {
+public:
+    explicit PDCMomentumReconstructor(MagneticField* magnetic_field);
+
+    RecoResult Reconstruct(
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config
+    ) const;
+
+    RecoResult ReconstructRK(
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config
+    ) const;
+
+    RecoResult ReconstructMultiDim(
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config
+    ) const;
+
+    RecoResult ReconstructNN(
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config
+    ) const;
+
+    RecoResult ReconstructMatrix(
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config
+    ) const;
+
+private:
+    struct ParameterState {
+        double dx = 0.0;
+        double dy = 0.0;
+        double u = 0.0;
+        double v = 0.0;
+        double q = 0.0;  // q/p, where p in MeV/c
+    };
+
+    struct EvalResult {
+        bool valid = false;
+        std::array<double, 8> residuals{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        double chi2 = 0.0;
+        double min_distance_mm = 0.0;
+        double path_length_mm = 0.0;
+        double brho_tm = 0.0;
+        TLorentzVector p4_at_target{0.0, 0.0, 0.0, 0.0};
+        int idx_pdc1 = -1;
+        int idx_pdc2 = -1;
+        std::vector<ParticleTrajectory::TrajectoryPoint> trajectory;
+    };
+
+    struct MatrixModel {
+        std::array<double, 2> mat1{0.0, 0.0};
+        std::array<double, 4> inv_mat2{0.0, 0.0, 0.0, 0.0};  // row-major 2x2
+    };
+
+    static bool IsFinite(const TVector3& value);
+    static bool IsFinite(const TLorentzVector& value);
+    static double Clamp(double value, double lower, double upper);
+
+    bool ValidateInputs(
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config,
+        std::string* reason
+    ) const;
+
+    ParameterState BuildInitialState(
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config
+    ) const;
+
+    ParameterState ClampState(const ParameterState& state, const TargetConstraint& target, const RecoConfig& config) const;
+
+    TVector3 BuildMomentumVector(const ParameterState& state, double charge_e) const;
+
+    EvalResult EvaluateState(
+        const ParameterState& state,
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config
+    ) const;
+
+    static double ResidualChi2(const std::array<double, 8>& residuals);
+
+    std::optional<MatrixModel> LoadMatrixModelFromEnv(std::string* reason) const;
+
+    MagneticField* fMagneticField = nullptr;
+    mutable std::unique_ptr<PDCNNMomentumReconstructor> fNNReconstructor;
+    mutable std::string fNNModelPath;
+};
+
+}  // namespace analysis::pdc::anaroot_like
+
+#endif  // ANALYSIS_PDC_MOMENTUM_RECONSTRUCTOR_HH

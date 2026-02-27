@@ -1,0 +1,28 @@
+# =========================================================================
+# [EN] Template macro for formal NN-training simulation (B115T, target 3deg)
+# [CN] B115T/3deg正式NN训练仿真模板宏
+# Placeholders to replace:
+#   __RUN_NAME__
+#   __SAVE_DIR__
+#   __INPUT_TREE__
+#   __N_EVENTS__
+#   __GEOMETRY_MACRO__
+#   __TARGET_POS_X_CM__, __TARGET_POS_Y_CM__, __TARGET_POS_Z_CM__
+#   __TARGET_ANGLE_DEG__
+# =========================================================================
+
+/control/getEnv SMSIMDIR
+
+/samurai/geometry/Target/Position __TARGET_POS_X_CM__ __TARGET_POS_Y_CM__ __TARGET_POS_Z_CM__ cm
+/samurai/geometry/Target/Angle __TARGET_ANGLE_DEG__ deg
+
+/control/execute __GEOMETRY_MACRO__
+
+/action/file/OverWrite y
+/action/file/RunName __RUN_NAME__
+/action/file/SaveDirectory __SAVE_DIR__
+
+/action/gun/Type Tree
+/action/gun/tree/InputFileName __INPUT_TREE__
+/action/gun/tree/TreeName tree_input
+/action/gun/tree/beamOn __N_EVENTS__
