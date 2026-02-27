@@ -4,4 +4,8 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
-python3 scripts/notebooks/jupytext_sync.py --all --stage-updated
+if command -v direnv >/dev/null 2>&1 && [[ -f "$repo_root/.envrc" ]]; then
+    direnv exec "$repo_root" python3 scripts/notebooks/jupytext_sync.py --all --stage-updated
+else
+    python3 scripts/notebooks/jupytext_sync.py --all --stage-updated
+fi
