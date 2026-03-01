@@ -77,8 +77,8 @@ root -l -q "${SMSIMDIR}/scripts/analysis/analyze_synthetic_px_reco.C+(\"${SIM_RO
     > "${LOG_DIR}/analyze_synthetic_reco.log" 2>&1 || true
 
 if [[ ! -f "${ANALYSIS_CSV}" || ! -s "${ANALYSIS_CSV}" ]]; then
-    # [EN] Fallback: ROOT may crash on shutdown in this environment, so extract summary directly from output ROOT if needed. / [CN] 兜底：本环境ROOT可能在退出时崩溃，因此必要时从输出ROOT直接提取统计结果。
-    root -l -b -q -e "TFile f(\"${ANALYSIS_ROOT}\"); auto* h1=(TH1D*)f.Get(\"h_pdc_d1\"); auto* h2=(TH1D*)f.Get(\"h_pdc_d2\"); auto* hm=(TH1D*)f.Get(\"h_dpx_minuit\"); auto* ht=(TH1D*)f.Get(\"h_dpx_three\"); auto* hn=(TH1D*)f.Get(\"h_dpx_neutron\"); FILE* out=fopen(\"${ANALYSIS_CSV}\",\"w\"); if(out){fprintf(out,\"metric,count,mean,rms\\n\"); if(h1) fprintf(out,\"pdc_d1,%.0f,%.9g,%.9g\\n\",h1->GetEntries(),h1->GetMean(),h1->GetRMS()); if(h2) fprintf(out,\"pdc_d2,%.0f,%.9g,%.9g\\n\",h2->GetEntries(),h2->GetMean(),h2->GetRMS()); if(hm) fprintf(out,\"proton_dpx_minuit,%.0f,%.9g,%.9g\\n\",hm->GetEntries(),hm->GetMean(),hm->GetRMS()); if(ht) fprintf(out,\"proton_dpx_threepoint,%.0f,%.9g,%.9g\\n\",ht->GetEntries(),ht->GetMean(),ht->GetRMS()); if(hn) fprintf(out,\"neutron_dpx_tof,%.0f,%.9g,%.9g\\n\",hn->GetEntries(),hn->GetMean(),hn->GetRMS()); fclose(out);} " \
+    # [EN] Fallback: ROOT may crash on shutdown in this environment, so rebuild CSV from metrics tree if needed. / [CN] 兜底：本环境ROOT可能在退出时崩溃，因此必要时从metrics树重建CSV。
+    root -l -q "${SMSIMDIR}/scripts/analysis/extract_synthetic_reco_summary.C+(\"${ANALYSIS_ROOT}\",\"${ANALYSIS_CSV}\")" \
         > "${LOG_DIR}/extract_summary_from_root.log" 2>&1 || true
 fi
 
