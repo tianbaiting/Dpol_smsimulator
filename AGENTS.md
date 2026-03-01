@@ -9,6 +9,13 @@
 - `data/` input/output datasets; `docs/` reports; `build/` and `bin/` are generated outputs.
 
 ## Build, Test, and Development Commands
+
+Env: should use micromamba. look at the .envrc.
+
+```bash
+micromamba activate anaroot-env
+```
+
 Preferred incremental build (does not delete artifacts):
 ```bash
 mkdir -p build

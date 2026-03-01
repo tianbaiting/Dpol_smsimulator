@@ -1,0 +1,4 @@
+interface:
+  display_name: "SMSim RK Geo Filter"
+  short_description: "RK geometry filter and acceptance workflow"
+  default_prompt: "Handle SMSimulator Runge-Kutta geometry acceptance and filtering workflows in DetectorAcceptanceCalculator and QMDGeoFilter."

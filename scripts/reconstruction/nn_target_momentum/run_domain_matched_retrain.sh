@@ -45,6 +45,42 @@ run_cmd() {
     fi
 }
 
+run_root_macro_expect_outputs() {
+    local call="$1"
+    shift
+    local expected_outputs=("$@")
+
+    echo "+ ${ROOT_BIN} -l -b -q ${call}"
+    if [[ "${DRY_RUN}" -eq 1 ]]; then
+        return 0
+    fi
+
+    local rc=0
+    set +e
+    "${ROOT_BIN}" -l -b -q "${call}"
+    rc=$?
+    set -e
+
+    if [[ "${rc}" -eq 0 ]]; then
+        return 0
+    fi
+
+    local missing=0
+    for path in "${expected_outputs[@]}"; do
+        if [[ ! -s "${path}" ]]; then
+            echo "[run_domain_matched_retrain] expected output missing after ROOT exit ${rc}: ${path}" >&2
+            missing=1
+        fi
+    done
+
+    if [[ "${missing}" -eq 0 ]]; then
+        echo "[run_domain_matched_retrain] warning: ROOT exited with ${rc} but outputs exist; continuing" >&2
+        return 0
+    fi
+
+    return "${rc}"
+}
+
 require_file() {
     local path="$1"
     local label="$2"
@@ -132,7 +168,7 @@ build_split_dataset() {
         local tmp_root="${out_split_dir}/${split_name}_$(printf '%04d' "${index}").root"
         local tmp_csv="${out_split_dir}/${split_name}_$(printf '%04d' "${index}").csv"
         local call="${BUILD_DATA_MACRO}+(\"${sim_root}\",\"${GEOMETRY_MACRO}\",0,${SIGMA_U},${SIGMA_V},\"${tmp_root}\",\"${tmp_csv}\")"
-        run_cmd "${ROOT_BIN}" -l -b -q "${call}"
+        run_root_macro_expect_outputs "${call}" "${tmp_root}" "${tmp_csv}"
 
         if [[ "${DRY_RUN}" -eq 0 ]]; then
             if [[ -s "${tmp_csv}" ]]; then

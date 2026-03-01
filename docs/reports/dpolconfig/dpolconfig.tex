@@ -106,6 +106,84 @@ magnetic field: 0.8, 1.0, 1.2, 1.6, 2.0 T
 \end{figure}
 \end{frame}
 
+\section{PDC fine tuning (2026-02-27)}
+
+\begin{frame}{Goal and Fixed Conditions}
+    \textbf{Optimization target:}
+    \begin{itemize}
+        \item Keep magnetic field and target condition fixed at \textbf{B=1.15 T} and \textbf{target angle = 3 deg}.
+        \item Tune only PDC geometry \textbf{(PDC1 X, PDC2 X, PDC angle)}.
+        \item Validate proton acceptance for generated phase space:
+        \item $\left(p_x,0,627\right)$ MeV/c with $p_x \in [-150,150]$ MeV/c.
+    \end{itemize}
+    \vspace{0.3cm}
+    \textbf{Fixed geometry conditions during scan:}
+    \begin{itemize}
+        \item Target position: $(-1.2488,\ 0.0009,\ -106.9458)$ cm
+        \item PDC $z$ positions: $z_1=400$ cm, $z_2=500$ cm
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Scan Method and Metrics}
+    \textbf{Two-stage Geant4 scan workflow}
+    \begin{itemize}
+        \item Coarse scan: independent $x_1/x_2 \in [-60,60]$ cm (step 20 cm), angle $\in [60,70]$ deg (step 1 deg).
+        \item Fine scan: around top coarse seeds with local offsets
+        \item $x_{1,2}\pm 10$ cm (step 5 cm), angle $\pm 1$ deg (step 0.5 deg).
+        \item Beam sampling: $p_x=-150:10:150$ MeV/c, $p_z=627$ MeV/c.
+    \end{itemize}
+    \vspace{0.2cm}
+    \textbf{Ranking metrics (same as scan script):}
+    \begin{itemize}
+        \item Primary: edge acceptance minimum at $|p_x|\ge 130$ MeV/c (\texttt{edge\_min}, larger is better).
+        \item Secondary: acceptance uniformity CV over $p_x$ bins (\texttt{eff\_cv}, smaller is better).
+        \item Tertiary: incidence-angle RMS (\texttt{incidence\_rms\_deg}, smaller is better).
+        \item Additional monitor: total track efficiency (\texttt{track\_eff}).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Production Run Record}
+\begin{lstlisting}[language=bash]
+python3 scripts/analysis/run_pdc_geant4_position_scan.py \
+  --outdir results/pdc_scan_B115T_3deg_formal_20260227 \
+  --sim-bin build/bin/sim_deuteron \
+  --analyzer-bin build/bin/analyze_pdc_scan_root \
+  --px-min -150 --px-max 150 --px-step 10 --pz-mevc 627 \
+  --x-min -60 --x-max 60 --x-step 20 \
+  --angle-min 60 --angle-max 70 --angle-step 1 \
+  --independent-x2 --x2-min -60 --x2-max 60 --x2-step 20 \
+  --coarse-repeat-per-px 4 --full-repeat-per-px 12 \
+  --top-n 6 --fine-x-window 10 --fine-x-step 5 \
+  --fine-angle-window 1 --fine-angle-step 0.5 \
+  --max-fine-candidates 240
+\end{lstlisting}
+\vspace{-0.2cm}
+\begin{itemize}
+    \item Coarse valid candidates: 539
+    \item Fine evaluated candidates: 240
+    \item Wall time: 7768.4 s ($\sim$129.5 min)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Final PDC Parameters and Saved Macro}
+    \textbf{Best candidate from formal scan:}
+    \begin{itemize}
+        \item PDC1 position: $(70,\ 0,\ 400)$ cm
+        \item PDC2 position: $(70,\ 0,\ 500)$ cm
+        \item PDC angle: $69$ deg
+        \item track\_eff = 0.9409,\quad eff\_cv = 0.2394,\quad incidence\_rms = 16.47 deg
+        \item edge\_min ($|p_x|\ge 130$) = 0.0833
+    \end{itemize}
+    \vspace{0.2cm}
+    \textbf{Saved configuration macro:}
+    \begin{itemize}
+        \item \texttt{configs/simulation/DbeamTest/detailMag1to1.2T/}
+        \item \texttt{geometry\_B115T\_pdcOptimized\_20260227.mac}
+    \end{itemize}
+    \vspace{0.2cm}
+    This scan confirms that the current setting is the best candidate under the chosen search box and ranking rule.
+\end{frame}
+
 \section{other config}
 
 \begin{frame}

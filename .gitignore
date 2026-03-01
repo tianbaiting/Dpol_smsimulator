@@ -77,3 +77,4 @@ result/
 clangd_db/
 
 .tags
+.nvimlog

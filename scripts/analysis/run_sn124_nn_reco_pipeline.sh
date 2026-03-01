@@ -15,13 +15,15 @@ ZPOL_TARGET_FILTER="${ZPOL_TARGET_FILTER:-Sn124}"
 YPOL_TARGET_FILTER="${YPOL_TARGET_FILTER:-Pb208}"
 MAX_FILES="${MAX_FILES:-0}"
 BEAM_ON="${BEAM_ON:-0}"
+REUSE_G4INPUT="${REUSE_G4INPUT:-1}"
+ALLOW_PARTIAL_FOR_TEST="${ALLOW_PARTIAL_FOR_TEST:-0}"
 
 QMD_INPUT_BASE="${QMD_INPUT_BASE:-${REPO_DIR}/data/qmdrawdata/qmdrawdata}"
 G4INPUT_BASE="${G4INPUT_BASE:-${REPO_DIR}/data/simulation/g4input}"
 G4OUTPUT_BASE="${G4OUTPUT_BASE:-${REPO_DIR}/data/simulation/g4output/sn124_nn_B115T}"
 RECO_OUTPUT_DIR="${RECO_OUTPUT_DIR:-${REPO_DIR}/data/reconstruction/sn124_nn_B115T}"
 
-GEOMETRY_MACRO="${GEOMETRY_MACRO:-${REPO_DIR}/build/bin/configs/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227.mac}"
+GEOMETRY_MACRO="${GEOMETRY_MACRO:-${REPO_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227_target3deg.mac}"
 
 MODEL_PT="${MODEL_PT:-${REPO_DIR}/data/nn_target_momentum/formal_B115T3deg_qmdwindow/20260227_223007/model/model.pt}"
 MODEL_META="${MODEL_META:-${REPO_DIR}/data/nn_target_momentum/formal_B115T3deg_qmdwindow/20260227_223007/model/model_meta.json}"
@@ -66,13 +68,26 @@ ensure_exists() {
     fi
 }
 
-ensure_exists "${GEN_BIN}" "GenInputRoot_qmdrawdata binary"
 ensure_exists "${SIM_BIN}" "sim_deuteron binary"
 ensure_exists "${RECO_BIN}" "reconstruct_sn_nn binary"
 ensure_exists "${GEOMETRY_MACRO}" "geometry macro"
 ensure_exists "${MODEL_PT}" "model.pt"
 ensure_exists "${MODEL_META}" "model_meta.json"
 ensure_exists "${EXPORT_PY}" "export_model_for_cpp.py"
+if [[ "${REUSE_G4INPUT}" != "1" ]]; then
+    ensure_exists "${GEN_BIN}" "GenInputRoot_qmdrawdata binary"
+fi
+
+if [[ "${ALLOW_PARTIAL_FOR_TEST}" != "1" ]]; then
+    if [[ "${BEAM_ON}" != "0" ]]; then
+        echo "[run_sn124_nn_reco_pipeline] production run requires BEAM_ON=0 (all entries). Set ALLOW_PARTIAL_FOR_TEST=1 to override." >&2
+        exit 1
+    fi
+    if [[ "${MAX_FILES}" != "0" ]]; then
+        echo "[run_sn124_nn_reco_pipeline] production run requires MAX_FILES=0 (all files). Set ALLOW_PARTIAL_FOR_TEST=1 to override." >&2
+        exit 1
+    fi
+fi
 
 run_cmd mkdir -p "${G4OUTPUT_BASE}" "${RECO_OUTPUT_DIR}"
 
@@ -82,7 +97,7 @@ run_cmd "${PY_RUN[@]}" "${EXPORT_PY}" \
     --meta-path "${MODEL_META}" \
     --output-json "${MODEL_JSON}"
 
-if [[ "${MODE}" == "zpol" || "${MODE}" == "both" ]]; then
+if [[ "${REUSE_G4INPUT}" != "1" && ( "${MODE}" == "zpol" || "${MODE}" == "both" ) ]]; then
     echo "[run_sn124_nn_reco_pipeline] converting zpol rawdata -> g4input (target=${ZPOL_TARGET_FILTER})"
     run_cmd "${GEN_BIN}" \
         --mode zpol \
@@ -93,7 +108,7 @@ if [[ "${MODE}" == "zpol" || "${MODE}" == "both" ]]; then
         --rotate-zpol on
 fi
 
-if [[ "${MODE}" == "ypol" || "${MODE}" == "both" ]]; then
+if [[ "${REUSE_G4INPUT}" != "1" && ( "${MODE}" == "ypol" || "${MODE}" == "both" ) ]]; then
     echo "[run_sn124_nn_reco_pipeline] converting ypol rawdata -> g4input (source=phi_random, target=${YPOL_TARGET_FILTER})"
     run_cmd "${GEN_BIN}" \
         --mode ypol \
@@ -102,6 +117,10 @@ if [[ "${MODE}" == "ypol" || "${MODE}" == "both" ]]; then
         --target-filter "${YPOL_TARGET_FILTER}" \
         --cut-unphysical on \
         --rotate-ypol off
+fi
+
+if [[ "${REUSE_G4INPUT}" == "1" ]]; then
+    echo "[run_sn124_nn_reco_pipeline] reusing existing g4input files"
 fi
 
 declare -a INPUT_FILES=()

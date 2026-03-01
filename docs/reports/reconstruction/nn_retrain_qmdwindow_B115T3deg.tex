@@ -150,6 +150,81 @@ Test \(|\vec{p}|\) RMSE (MeV/c) & 9.84 & 5.88 \\
 \end{table}
 \end{frame}
 
+\begin{frame}{Data Flow (Target-Corrected Full-Event Campaign)}
+\textbf{Execution chain}
+\begin{enumerate}
+\item Reuse existing QMD-derived Geant4 input trees under:
+\texttt{data/simulation/g4input/y\_pol/phi\_random/...} and
+\texttt{data/simulation/g4input/z\_pol/b\_discrete/...}
+\item Run campaign script:
+\texttt{scripts/analysis/run\_sn124\_nn\_reco\_pipeline.sh}
+\item Script generates per-file Geant4 macros under:
+\texttt{data/simulation/g4output/eval\_20260227\_235751/\_macros/*.mac}
+\item Each generated macro executes:
+\texttt{configs/simulation/DbeamTest/detailMag1to1.2T/geometry\_B115T\_pdcOptimized\_20260227\_target3deg.mac}
+\item Geant4 output ROOT and NN reconstruction ROOT are written and then evaluated.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Where Artifacts Are Written}
+\textbf{Geometry and model}
+\begin{itemize}
+\item Geometry macro (target-fixed 3deg):\\
+\texttt{configs/simulation/DbeamTest/detailMag1to1.2T/geometry\_B115T\_pdcOptimized\_20260227\_target3deg.mac}
+\item NN model used (no ypol/zpol retraining):\\
+\texttt{data/nn\_target\_momentum/formal\_B115T3deg\_qmdwindow/20260227\_223007/model/}
+\end{itemize}
+
+\textbf{Campaign outputs}
+\begin{itemize}
+\item Full Geant4 outputs:\\
+\texttt{data/simulation/g4output/eval\_20260227\_235751/}
+\item Full reconstruction outputs:\\
+\texttt{data/reconstruction/eval\_20260227\_235751/}
+\item Smoke-test outputs:\\
+\texttt{data/simulation/g4output/eval\_target3deg\_smoke\_20260228\_\{ypol,zpol\}}\\
+\texttt{data/reconstruction/eval\_target3deg\_smoke\_20260228\_\{ypol,zpol\}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Final Accuracy (All Files, All Events)}
+\small
+\begin{table}
+\centering
+\begin{tabular}{lccc}
+\toprule
+Metric & Overall & Y-pol & Z-pol \\
+\midrule
+Files & 156 & 16 & 140 \\
+Events total & 5,413,747 & 5,178,328 & 235,419 \\
+Matched events & 3,632,185 & 3,463,201 & 168,984 \\
+Reco efficiency (\%) & 67.0919 & 66.8787 & 71.7801 \\
+\(p_x\) RMSE (MeV/c) & 38.7268 & 37.8827 & 53.1511 \\
+\(p_y\) RMSE (MeV/c) & 11.2901 & 11.2611 & 11.8694 \\
+\(p_z\) RMSE (MeV/c) & 11.9982 & 11.1051 & 23.8083 \\
+\(|\vec{p}|\) RMSE (MeV/c) & 8.4297 & 7.9028 & 15.7297 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{frame}
+
+\begin{frame}{Reconstruction Effect}
+\textbf{What changed after fixing target macro}
+\begin{itemize}
+\item The campaign now runs with explicit target position and target angle in geometry macro.
+\item Full-event processing is enforced in production (\texttt{beamOn=0}, all selected files).
+\item Reconstruction yields high usable statistics:
+\(3{,}632{,}185\) matched proton events from \(5{,}413{,}747\) truth proton events.
+\end{itemize}
+
+\textbf{Current performance interpretation}
+\begin{itemize}
+\item Y-pol dominates total statistics and shows stable \(|\vec{p}|\) RMSE \(\approx 7.90\) MeV/c.
+\item Z-pol remains harder (\(p_x,p_z\) errors larger) but still achieves \(71.78\%\) matching efficiency.
+\item Overall, the corrected-target full-event chain is now suitable for large-scale reconstruction studies.
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Conclusion}
 \begin{itemize}
 \item Narrowing to qmd-window significantly improves effective kept samples (\(\sim24\%\rightarrow\sim45\%\)).

@@ -1,0 +1,284 @@
+% Build:
+% cd /home/tian/workspace/dpol/smsimulator5.5/docs/reports/reconstruction
+% latexmk -pdf fdc_reconstruction_detailed.tex
+
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{siunitx}
+
+\title[FDC Reconstruction in ANAROOT]{Detailed FDC Charged-Particle Reconstruction in ANAROOT/SAMURAI}
+\subtitle{From Drift Hits to Target Momentum}
+\author{SMSimulator5.5 / ANAROOT Notes}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Scope and Goal}
+\textbf{Goal}
+\begin{itemize}
+\item Explain the FDC-based charged-track reconstruction chain implemented in ANAROOT.
+\item Clarify how target momentum is reconstructed and where fallback methods are used.
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Covered modules}
+\begin{itemize}
+\item Hit calibration and drift-length conversion
+\item Local FDC track fit (1D/3D)
+\item Global Runge-Kutta fit in field map
+\item MultiDimFit and matrix fallback branches
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Top-Level Reconstruction Branches}
+Inside \texttt{TArtRecoFragment::ReconstructData}, reconstruction uses:
+\begin{enumerate}
+\item \textbf{Runge-Kutta global fit} (preferred when field map and RK config are ready)
+\item \textbf{MultiDimFit polynomial regression} (if pre-generated fit files are ready)
+\item \textbf{0th/1st-order matrix fallback} (if above are not available)
+\end{enumerate}
+
+\vspace{0.2cm}
+The charged fragment object \texttt{TArtFragment} is filled by one of these branches.
+\end{frame}
+
+\begin{frame}{FDC Hit Input and Drift Length Conversion}
+\textbf{Input containers}
+\begin{itemize}
+\item FDC raw hits are loaded as \texttt{TArtDCHit} objects.
+\item Hits are grouped by layer and wire direction (X/U/V/Y) in buffers.
+\end{itemize}
+
+\textbf{Drift length calculation logic}
+\begin{itemize}
+\item If STC function exists: \(dl = f_{\mathrm{stc}}(\mathrm{TDC})\)
+\item Else if TDC distribution exists: lookup \(\mathrm{TDC} \to dl\) table
+\item Else fallback with constant drift velocity:
+\[
+  dl = v_{\mathrm{drift}}\,(\mathrm{TDC}_0 - \mathrm{TDC})
+\]
+\item Unphysical values are rejected (negative / too large drift length).
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Pattern Building and Left/Right Ambiguity}
+Each wire hit has left/right ambiguity around the sense wire.
+
+\vspace{0.2cm}
+For a pattern with \(n\) hits in one projection, ANAROOT scans:
+\[
+2^n \text{ sign combinations}
+\]
+where each hit position candidate is
+\[
+x_i^{\pm} = x_{\mathrm{wire},i} \pm dl_i.
+\]
+
+\vspace{0.2cm}
+A straight-line hypothesis is fitted for each pattern, and the minimum-\(\chi^2\) candidate is selected.
+\end{frame}
+
+\begin{frame}{1D Track Fit in One Projection}
+Model in one view:
+\[
+x(z) = x_0 + a z
+\]
+with least-squares solve from normal equations.
+
+\vspace{0.2cm}
+Objective for each sign pattern:
+\[
+\chi^2 = \sum_i \left(x_0 + a z_i - x_i\right)^2.
+\]
+
+\vspace{0.2cm}
+The best candidate stores:
+\begin{itemize}
+\item fitted intercept \(x_0\), slope \(a\)
+\item selected sign-resolved hit coordinates
+\item drift lengths, layer IDs, plane IDs
+\end{itemize}
+\end{frame}
+
+\begin{frame}{3D Combination of X/U/V Tracks}
+After best 1D tracks are found for X/U/V projections:
+\begin{itemize}
+\item ANAROOT solves a 4-parameter linear system for 3D track state.
+\item U/V layers are projected with detector stereo angles (typically \(\pm30^\circ\)).
+\item Combined \(\chi^2\) is accumulated from residuals in all used views.
+\end{itemize}
+
+\vspace{0.2cm}
+Output is a \texttt{TArtDCTrack} with position/angle and associated hit-level diagnostics.
+\end{frame}
+
+\begin{frame}{Track Candidate Selection in FDC1/FDC2}
+\textbf{Within each chamber}
+\begin{itemize}
+\item Candidate patterns are generated from hit combinations.
+\item Candidates with valid \(\chi^2\) and required hit-layer conditions are kept.
+\item Tracks are sorted by quality; reconstruction uses the lowest-\(\chi^2\) candidate.
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{In fragment reconstruction}
+\begin{itemize}
+\item One charged particle is assumed.
+\item The first entry in FDC1/FDC2 track arrays (best \(\chi^2\)) is taken.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Global RK Fit: Initialization}
+From FDC2 local track, ANAROOT builds an initial global state near HOD:
+\begin{itemize}
+\item Position extrapolation: \(x_{\mathrm{HOD}} = x_{\mathrm{FDC2}} + L\,a_x\), similarly for \(y\)
+\item Direction from local angles \((u,v)\)
+\item Initial momentum magnitude from configured \(B\rho\) center (scaled in code)
+\end{itemize}
+
+\vspace{0.2cm}
+Runge-Kutta propagation is then performed through the SAMURAI field map across detector planes.
+\end{frame}
+
+\begin{frame}{Global RK Fit: Objective Function}
+For each hit layer, predicted local hit position is compared with measured one.
+
+\vspace{0.2cm}
+Weighted objective:
+\[
+\chi^2 = \frac{1}{N_{\mathrm{hit}}-5}\sum_i
+\frac{\left(x_i^{\mathrm{hit}}-x_i^{\mathrm{calc}}\right)^2}{\sigma_i^2}
+\]
+where \(\sigma_i\) comes from detector resolution tables.
+
+\vspace{0.2cm}
+Five fitted parameters correspond to trajectory state components including \(q\propto 1/p\).
+\end{frame}
+
+\begin{frame}{Global RK Fit: Parameter Update Strategy}
+ANAROOT uses a Levenberg-Marquardt style step with SVD-based linear solve.
+
+\vspace{0.2cm}
+Per iteration:
+\begin{enumerate}
+\item Build derivatives/Hessian-like matrix from RK hit-point coefficients.
+\item Add damping term (LM-like regularization).
+\item Solve update vector with SVD (stable under near-singular conditions).
+\item Update state and repeat until convergence/stop conditions.
+\end{enumerate}
+
+\vspace{0.2cm}
+This is a deterministic nonlinear least-squares RK fit, not a Kalman filter.
+\end{frame}
+
+\begin{frame}{Outputs at Target and TOF Path Length}
+After convergence, \texttt{saveTrackParameters()} stores:
+\begin{itemize}
+\item Primary position at target plane
+\item Primary momentum at target plane
+\item Path length target-to-HOD and total traced length
+\end{itemize}
+
+These are copied into \texttt{TArtFragment} and later used with HOD/TZero timing to compute:
+\[
+\beta,\quad \gamma,\quad A/Q.
+\]
+\end{frame}
+
+\begin{frame}{MultiDimFit Branch (Fast Surrogate)}
+If RK branch is not used (or in configured modes), MultiDimFit can provide:
+\begin{itemize}
+\item rigidity \(B\rho\)
+\item path length
+\end{itemize}
+
+\vspace{0.2cm}
+Input vector in code is 6D:
+\[
+x = (\text{FDC1 pos/angle terms with BDC-target interpolation},\ \text{FDC2 terms}).
+\]
+
+\vspace{0.2cm}
+Prediction is a polynomial expansion generated offline by ROOT \texttt{TMultiDimFit::MakeRealCode}.
+\end{frame}
+
+\begin{frame}{0th/1st-Order Matrix Fallback}
+When neither RK nor MultiDimFit is ready:
+\begin{itemize}
+\item Code loads 0th and 1st order optics matrices from text files.
+\item FDC observables are inserted into linearized transport relation.
+\item Inverted sub-matrix is used to solve \(\delta\)-like quantity.
+\end{itemize}
+
+\vspace{0.2cm}
+This is fast and robust as a fallback, but less expressive than full RK tracing.
+\end{frame}
+
+\begin{frame}{Parameter Files and Provenance}
+\textbf{MultiDimFit files}
+\begin{itemize}
+\item Environment variables:
+  \texttt{SAMURAI\_MULTIDIM\_FILE\_RIG}, \texttt{SAMURAI\_MULTIDIM\_FILE\_LEN}
+\item Typical files: \texttt{db/samurai\_fun\_rig.C}, \texttt{db/samurai\_fun\_len.C}
+\item Generated offline by ROOT MultiDimFit from Geant4 simulation trees.
+\end{itemize}
+
+\textbf{Matrix fallback files}
+\begin{itemize}
+\item Environment variables:
+  \texttt{SAMURAI\_MATRIX0TH\_FILE}, \texttt{SAMURAI\_MATRIX1ST\_FILE}
+\item Usually provided by an external Geant4 matrix calculation workflow.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Failure Modes and Debug Checklist}
+\textbf{Typical failure causes}
+\begin{itemize}
+\item Missing FDC1/FDC2 tracks or insufficient hit layers
+\item Drift-length calibration out of range (TDC window / pitch constraints)
+\item Missing environment-variable parameter files
+\item Field-map or detector-configuration mismatch
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Fast checks}
+\begin{itemize}
+\item Track counts and \(\chi^2\) of FDC1/FDC2 best tracks
+\item RK status flag, iteration count, residual array
+\item Loaded file paths for MultiDimFit/matrix env vars
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Key Source Files (Code Reading Map)}
+\small
+\begin{itemize}
+\item \texttt{src/sources/Reconstruction/SAMURAI/src/TArtCalibFDC1Hit.cc}
+\item \texttt{src/sources/Reconstruction/SAMURAI/src/TArtCalibDCTrack.cc}
+\item \texttt{src/sources/Reconstruction/SAMURAI/src/TArtRecoFragment.cc}
+\item \texttt{src/sources/Reconstruction/SAMURAI/src/TArtCalcGlobalTrack.cc}
+\item \texttt{src/sources/Reconstruction/SAMURAI/src/RungeKuttaUtilities.cc}
+\item \texttt{src/sources/Reconstruction/SAMURAI/src/FieldMan.cc}
+\item \texttt{src/sources/Reconstruction/SAMURAI/src/SAMURAIFieldMap.cc}
+\end{itemize}
+
+\vspace{0.2cm}
+This map is sufficient to trace FDC reconstruction from raw hit to target momentum.
+\end{frame}
+
+\begin{frame}{Takeaway}
+\begin{itemize}
+\item FDC local reconstruction solves wire ambiguity + straight-line fit in projections.
+\item Global charged-particle momentum is obtained by RK field-map fit with weighted residual minimization.
+\item MultiDimFit and first-order matrix methods are practical alternatives for speed or robustness.
+\end{itemize}
+\end{frame}
+
+\end{document}

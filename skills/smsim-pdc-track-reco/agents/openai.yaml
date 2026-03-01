@@ -1,0 +1,4 @@
+interface:
+  display_name: "SMSim PDC Track Reco"
+  short_description: "PDC hit-to-track reconstruction workflow"
+  default_prompt: "Handle SMSimulator PDC hit processing and track reconstruction tasks via PDCSimAna and RecoEvent."

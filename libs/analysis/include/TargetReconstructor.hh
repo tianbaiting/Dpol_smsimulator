@@ -9,6 +9,7 @@
 #include "TMinuit.h"
 #include <utility>
 #include <vector>
+#include <limits>
 
 // 重建结果数据结构
 struct TrajectoryPoint {
@@ -30,6 +31,16 @@ struct TargetReconstructionResult {
     std::vector<double> optimizationSteps_P;      // 每步的动量值
     std::vector<double> optimizationSteps_Loss;   // 每步的loss（距离）
     int totalIterations;                          // 总迭代次数
+
+    // [EN] Extra diagnostics for free three-point fit. / [CN] 自由三点拟合的附加诊断信息。
+    TVector3 bestStartPos = TVector3(0, 0, 0);   // 最优发射位置
+    TVector3 bestInitialMomentum = TVector3(0, 0, 0); // 最优初始动量向量
+    double finalLoss = std::numeric_limits<double>::infinity();  // 归一化RMS损失
+    double minDistTarget = std::numeric_limits<double>::infinity();
+    double minDistPDC1 = std::numeric_limits<double>::infinity();
+    double minDistPDC2 = std::numeric_limits<double>::infinity();
+    int fitStatus = 0;                            // TMinuit icstat
+    double edm = std::numeric_limits<double>::infinity(); // 估计到极小值距离
 };
 
 // Reconstruct momentum at a target position by back-propagating a reconstructed track.
@@ -87,6 +98,21 @@ public:
                                                                             double pdcSigma = 0.5,
                                                                             double targetSigma = 5.0) const;
 
+    // [EN] Free three-point Minuit fit: optimize emission position and momentum vector simultaneously. / [CN] 自由三点Minuit拟合：同时优化发射位置和动量向量。
+    // [EN] Loss uses normalized RMS distance to target/PDC1/PDC2. / [CN] 损失函数采用到target/PDC1/PDC2的归一化RMS距离。
+    TargetReconstructionResult ReconstructAtTargetThreePointFreeMinuit(const RecoTrack& track,
+                                                                       const TVector3& targetPos,
+                                                                       bool saveTrajectories = false,
+                                                                       const TVector3& startPosInit = TVector3(std::numeric_limits<double>::quiet_NaN(),
+                                                                                                               std::numeric_limits<double>::quiet_NaN(),
+                                                                                                               std::numeric_limits<double>::quiet_NaN()),
+                                                                       const TVector3& momentumInit = TVector3(0, 0, 627.0),
+                                                                       double targetSigma = 5.0,
+                                                                       double pdcSigma = 0.5,
+                                                                       double tol = 1.0,
+                                                                       int maxIterations = 1000,
+                                                                       bool recordSteps = false) const;
+
     // TMinuit 优化方法：使用 ROOT 内置的 MIGRAD 算法 (拟牛顿法)
     // recordSteps: 是否记录优化步骤（仅用于调试，会影响性能）
     TargetReconstructionResult ReconstructAtTargetMinuit(const RecoTrack& track,
@@ -119,10 +145,42 @@ private:
     static double fgMass;
     static TargetReconstructionResult* fgResultPtr; // 用于记录优化步骤
     static bool fgRecordSteps; // 控制是否记录优化步骤（默认false，仅调试时启用）
+    static TVector3 fgThreePDC1;
+    static TVector3 fgThreePDC2;
+    static TVector3 fgThreeTargetPos;
+    static double fgThreePdcSigma;
+    static double fgThreeTargetSigma;
+    static double fgThreePMin;
+    static double fgThreePMax;
+    // [EN] Priors for free three-point fit regularization. / [CN] 自由三点拟合的先验正则项参数。
+    static TVector3 fgThreeVertexPrior;
+    static double fgThreeVertexSigmaXY;
+    static double fgThreeVertexSigmaZ;
+    static double fgThreeMomentumPrior;
+    static double fgThreeMomentumSigma;
+    static TVector3 fgThreeDirectionPrior;
+    static double fgThreeDirectionSigmaRad;
+    static double fgThreeVertexWeight;
+    static double fgThreeMomentumWeight;
+    static double fgThreeDirectionWeight;
 
     // TMinuit 回调函数 (必须是静态函数)
     static void MinuitFunction(Int_t& npar, Double_t* grad, Double_t& result, 
                               Double_t* parameters, Int_t flag);
+    static void MinuitFunctionThreePointFree(Int_t& npar, Double_t* grad, Double_t& result,
+                                            Double_t* parameters, Int_t flag);
+
+    double CalculateThreePointLoss(const TVector3& startPos,
+                                   const TVector3& initialMomentum,
+                                   const TVector3& targetPos,
+                                   const TVector3& pdc1,
+                                   const TVector3& pdc2,
+                                   double pdcSigma,
+                                   double targetSigma,
+                                   double* outTargetDist = nullptr,
+                                   double* outPdc1Dist = nullptr,
+                                   double* outPdc2Dist = nullptr,
+                                   std::vector<ParticleTrajectory::TrajectoryPoint>* outTrajectory = nullptr) const;
 };
 
 #endif // TARGET_RECONSTRUCTOR_H

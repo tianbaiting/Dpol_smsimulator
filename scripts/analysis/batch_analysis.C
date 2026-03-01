@@ -6,6 +6,10 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
+#include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <cstring>
 #include <cstdlib>
 #include <string>
 #include <iostream>
@@ -19,12 +23,36 @@
 #include "TBeamSimData.hh"
 #include "MagneticField.hh"
 #include "TargetReconstructor.hh"
+#include "PDCMomentumReconstructor.hh"
+#include "PDCRecoFactory.hh"
 
 // 函数声明
 void batch_analysis_single_file(const char* inputFile, const char* outputFile);
 std::vector<TString> GetROOTFilesRecursive(const TString& directory);
 TString GetParentDirName(const TString& filepath);
 TString GetBaseName(const TString& filepath);
+std::string ToLowerCopy(std::string value);
+double ReadEnvDouble(const char* key, double fallback);
+
+std::string ToLowerCopy(std::string value) {
+    for (char& c : value) {
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    }
+    return value;
+}
+
+double ReadEnvDouble(const char* key, double fallback) {
+    const char* value = std::getenv(key);
+    if (!value || value[0] == '\0') {
+        return fallback;
+    }
+    char* end_ptr = nullptr;
+    const double parsed = std::strtod(value, &end_ptr);
+    if (!end_ptr || end_ptr == value || *end_ptr != '\0' || !std::isfinite(parsed)) {
+        return fallback;
+    }
+    return parsed;
+}
 
 // 原始Geant4数据结构，用于保存原始质子和中子动量
 struct OriginalParticleData {
@@ -115,11 +143,18 @@ void batch_analysis_all() {
         return;
     }
     
+    const char* inputDirEnv = std::getenv("BATCH_ANALYSIS_INPUT_DIR");
+    const char* outputDirEnv = std::getenv("BATCH_ANALYSIS_OUTPUT_DIR");
+
     // 输入目录
-    TString inputDir = Form("%s/d_work/output_tree/ypol_slect_rotate_back", smsDir);
+    TString inputDir = inputDirEnv && inputDirEnv[0] != '\0'
+        ? TString(inputDirEnv)
+        : TString::Format("%s/data/simulation/g4output", smsDir);
     
     // 创建输出目录
-    TString outputDir = Form("%s/d_work/reconp_originnp", smsDir);
+    TString outputDir = outputDirEnv && outputDirEnv[0] != '\0'
+        ? TString(outputDirEnv)
+        : TString::Format("%s/data/reconstruction", smsDir);
     if (gSystem->mkdir(outputDir.Data(), kTRUE) != 0) {
         std::cout << "输出目录已存在或创建成功: " << outputDir << std::endl;
     }
@@ -159,8 +194,13 @@ void batch_analysis_all() {
 // 单文件处理函数（修改后的batch_analysis）
 void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     // 1. 加载库
-    if (gSystem->Load("libPDCAnalysisTools.so") < 0) {
-        std::cerr << "错误: 无法加载 libPDCAnalysisTools.so 库" << std::endl;
+    const int loadNewReco = gSystem->Load("libanalysis_pdc_reco.so");
+    int loadLegacyReco = gSystem->Load("libpdcanalysis.so");
+    if (loadLegacyReco < 0) {
+        loadLegacyReco = gSystem->Load("libPDCAnalysisTools.so");
+    }
+    if (loadNewReco < 0 && loadLegacyReco < 0) {
+        std::cerr << "错误: 无法加载重建库 (libanalysis_pdc_reco.so / libpdcanalysis.so)" << std::endl;
         return;
     }
     
@@ -171,12 +211,30 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     }
     
     std::string smsBase = smsDir ? std::string(smsDir) : std::string();
-    std::string inputPath = inputFile ? std::string(inputFile) : 
-        (smsBase + "/d_work/output_tree/ypol_5000events/Pb208_g050/ypol_np_Pb208_g0500000.root");
+    std::string inputPath = (inputFile && inputFile[0] != '\0')
+        ? std::string(inputFile)
+        : (smsBase + "/data/simulation/g4output/test/Pb208_g050/ypol_np_Pb208_g050_test0000.root");
+
+    std::string backendMode = "anaroot_like";
+    if (const char* backend = std::getenv("PDC_RECO_BACKEND")) {
+        backendMode = ToLowerCopy(std::string(backend));
+    }
+    if (backendMode != "legacy" && backendMode != "nn" && backendMode != "anaroot_like") {
+        backendMode = "anaroot_like";
+    }
+    bool useAnarootLikeReco = (backendMode != "legacy");
+    const bool forceNNBackend = (backendMode == "nn");
 
     // 2. 设置几何和重建器
     GeometryManager geo;
-    if (!geo.LoadGeometry((smsBase + "/d_work/geometry/5deg_1.2T.mac").c_str())) {
+    const char* geometryEnv = std::getenv("BATCH_ANALYSIS_GEOMETRY_MAC");
+    std::string geometryMacro = (geometryEnv && geometryEnv[0] != '\0')
+        ? std::string(geometryEnv)
+        : (smsBase + "/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227.mac");
+    if (gSystem->AccessPathName(geometryMacro.c_str()) != 0) {
+        geometryMacro = smsBase + "/configs/simulation/geometry/5deg_1.2T.mac";
+    }
+    if (!geo.LoadGeometry(geometryMacro.c_str())) {
         std::cerr << "错误: 无法加载几何配置文件" << std::endl;
         return;
     }
@@ -192,21 +250,36 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     
     // 4. 初始化磁场和质子动量重建器（使用智能加载）
     MagneticField* magField = new MagneticField();
-    TargetReconstructor* targetRecon = nullptr;
+    TargetReconstructor* targetReconLegacy = nullptr;
+    analysis::pdc::anaroot_like::PDCMomentumReconstructor* targetReconAnarootLike = nullptr;
     bool magFieldLoaded = false;
+    bool protonRecoEnabled = false;
+    std::string recoBackendLabel = backendMode;
     
     // 智能磁场文件加载逻辑：优先使用ROOT格式，没有则用table格式并转换
-    TString rootFieldFile = Form("%s/d_work/geometry/filed_map/180626-1,20T-3000.root", smsBase.c_str());
-    TString tableFieldFile = Form("%s/d_work/geometry/filed_map/180626-1,20T-3000.table", smsBase.c_str());
+    const char* rootFieldEnv = std::getenv("BATCH_ANALYSIS_MAG_ROOT");
+    const char* tableFieldEnv = std::getenv("BATCH_ANALYSIS_MAG_TABLE");
+    TString rootFieldFile = rootFieldEnv && rootFieldEnv[0] != '\0'
+        ? TString(rootFieldEnv)
+        : TString::Format("%s/configs/simulation/geometry/filed_map/180703-1,15T-3000.root", smsBase.c_str());
+    TString tableFieldFile = tableFieldEnv && tableFieldEnv[0] != '\0'
+        ? TString(tableFieldEnv)
+        : TString::Format("%s/configs/simulation/geometry/filed_map/180703-1,15T-3000.table", smsBase.c_str());
+    if (gSystem->AccessPathName(tableFieldFile.Data()) != 0) {
+        tableFieldFile = TString::Format("%s/configs/simulation/geometry/filed_map/180626-1,20T-3000.table", smsBase.c_str());
+    }
+    if (gSystem->AccessPathName(rootFieldFile.Data()) != 0) {
+        rootFieldFile = TString::Format("%s/configs/simulation/geometry/filed_map/180626-1,20T-3000.root", smsBase.c_str());
+    }
+    const double magRotationDeg = ReadEnvDouble("BATCH_ANALYSIS_MAG_ROT_DEG", 30.0);
     
     // 检查是否存在ROOT格式磁场文件
     if (gSystem->AccessPathName(rootFieldFile.Data()) == 0) {
         std::cout << "发现ROOT格式磁场文件，正在加载: " << rootFieldFile << std::endl;
         if (magField->LoadFromROOTFile(rootFieldFile.Data())) {
-            magField->SetRotationAngle(30.0);
-            targetRecon = new TargetReconstructor(magField);
+            magField->SetRotationAngle(magRotationDeg);
             magFieldLoaded = true;
-            std::cout << "ROOT格式磁场文件加载成功，将使用TMinuit进行质子动量重建" << std::endl;
+            std::cout << "ROOT格式磁场文件加载成功" << std::endl;
         } else {
             std::cout << "ROOT格式磁场文件加载失败，尝试table格式" << std::endl;
         }
@@ -216,10 +289,9 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     if (!magFieldLoaded && gSystem->AccessPathName(tableFieldFile.Data()) == 0) {
         std::cout << "加载table格式磁场文件: " << tableFieldFile << std::endl;
         if (magField->LoadFieldMap(tableFieldFile.Data())) {
-            magField->SetRotationAngle(30.0);
-            targetRecon = new TargetReconstructor(magField);
+            magField->SetRotationAngle(magRotationDeg);
             magFieldLoaded = true;
-            std::cout << "table格式磁场文件加载成功，将使用TMinuit进行质子动量重建" << std::endl;
+            std::cout << "table格式磁场文件加载成功" << std::endl;
             
             // 将table格式转换并保存为ROOT格式以便下次快速加载
             std::cout << "正在将磁场数据保存为ROOT格式: " << rootFieldFile << std::endl;
@@ -234,8 +306,48 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
         }
     }
     
-    if (!magFieldLoaded) {
-        std::cout << "磁场加载失败，跳过质子动量重建" << std::endl;
+    if (!magFieldLoaded && !forceNNBackend) {
+        std::cout << "磁场加载失败，将跳过 legacy 质子动量重建" << std::endl;
+    }
+
+    if (useAnarootLikeReco && loadNewReco < 0) {
+        if (forceNNBackend) {
+            std::cerr << "错误: NN后端请求失败，libanalysis_pdc_reco.so 未加载成功" << std::endl;
+            return;
+        }
+        std::cout << "未加载到 libanalysis_pdc_reco.so，自动回退到 legacy 后端" << std::endl;
+        useAnarootLikeReco = false;
+        recoBackendLabel = "legacy";
+    }
+
+    if (useAnarootLikeReco) {
+        // [EN] NN mode can run without field map because model directly predicts target momentum from two PDC points. / [CN] NN模式可在无磁场图时运行，因为模型直接由两个PDC点预测靶点动量。
+        targetReconAnarootLike = new analysis::pdc::anaroot_like::PDCMomentumReconstructor(magFieldLoaded ? magField : nullptr);
+        protonRecoEnabled = true;
+        if (forceNNBackend) {
+            recoBackendLabel = "nn";
+        } else {
+            recoBackendLabel = "anaroot_like";
+        }
+        std::cout << "质子动量重建后端: " << recoBackendLabel << std::endl;
+    } else if (magFieldLoaded) {
+        targetReconLegacy = new TargetReconstructor(magField);
+        protonRecoEnabled = true;
+        recoBackendLabel = "legacy";
+        std::cout << "质子动量重建后端: legacy TargetReconstructor" << std::endl;
+    } else {
+        std::cout << "未启用可用的质子重建后端（磁场加载失败且未启用NN）" << std::endl;
+    }
+
+    if (forceNNBackend && !magFieldLoaded) {
+        std::cout << "NN后端运行中：磁场文件缺失不影响NN动量解算" << std::endl;
+    }
+    if (forceNNBackend && !std::getenv("PDC_NN_MODEL_JSON")) {
+        std::cerr << "警告: PDC_NN_MODEL_JSON 未设置，NN重建将返回不可用" << std::endl;
+    }
+
+    if (!protonRecoEnabled) {
+        std::cout << "当前配置下将跳过质子动量重建" << std::endl;
     }
     
     // 5. 打开输入文件
@@ -269,6 +381,13 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     std::cout << "开始处理 " << totalEvents << " 个事件..." << std::endl;
     std::cout << "输入文件: " << inputPath << std::endl;
     std::cout << "输出文件: " << outputFile << std::endl;
+
+    const char* nnModelEnv = std::getenv("PDC_NN_MODEL_JSON");
+    const std::string nnModelJsonPath = (nnModelEnv && nnModelEnv[0] != '\0') ? std::string(nnModelEnv) : std::string();
+    const double recoPMin = ReadEnvDouble("PDC_RECO_P_MIN_MEVC", 50.0);
+    const double recoPMax = ReadEnvDouble("PDC_RECO_P_MAX_MEVC", 5000.0);
+    const double recoToleranceMM = ReadEnvDouble("PDC_RECO_TOLERANCE_MM", 5.0);
+    const double recoRKStepMM = ReadEnvDouble("PDC_RECO_RK_STEP_MM", 5.0);
     
     for (Long64_t i = 0; i < totalEvents; ++i) {
         if (i % 500 == 0) {
@@ -298,25 +417,67 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
             }
             
             // PDC质子动量重建（在靶点处）- 使用TMinuit优化算法
-            if (magFieldLoaded && targetRecon && !recoEvent->tracks.empty()) {
+            if (protonRecoEnabled && !recoEvent->tracks.empty()) {
                 TVector3 targetPos = geo.GetTargetPosition();
                 
                 for (size_t j = 0; j < recoEvent->tracks.size(); ++j) {
                     const RecoTrack& track = recoEvent->tracks[j];
-                    
-                    // 使用TMinuit方法进行质子动量重建 - 更快更精确
-                    TargetReconstructionResult result = targetRecon->ReconstructAtTargetMinuit(
-                        track, targetPos, 
-                        false,  // 不保存轨迹数据（批处理模式）
-                        1000.0, // 初始动量猜测 MeV/c
-                        1.0,    // 容差 mm
-                        500     // 最大迭代次数
-                    );
-                    
+
+                    TLorentzVector recoMomentum(0.0, 0.0, 0.0, 0.0);
+                    bool recoSuccess = false;
+
+                    if (useAnarootLikeReco && targetReconAnarootLike) {
+                        analysis::pdc::anaroot_like::PDCInputTrack pdcInput;
+                        pdcInput.pdc1 = track.start;
+                        pdcInput.pdc2 = track.end;
+
+                        analysis::pdc::anaroot_like::TargetConstraint constraint;
+                        constraint.target_position = targetPos;
+                        constraint.mass_mev = 938.2720813;
+                        constraint.charge_e = 1.0;
+                        constraint.pdc_sigma_mm = 2.0;
+                        constraint.target_sigma_xy_mm = 5.0;
+
+                        analysis::pdc::anaroot_like::RecoConfig recoConfig;
+                        recoConfig.p_min_mevc = recoPMin;
+                        recoConfig.p_max_mevc = recoPMax;
+                        recoConfig.enable_nn = forceNNBackend;
+                        recoConfig.nn_model_json_path = nnModelJsonPath;
+                        recoConfig.enable_rk = !forceNNBackend;
+                        recoConfig.enable_multi_dim = !forceNNBackend;
+                        recoConfig.enable_matrix = !forceNNBackend;
+                        recoConfig.max_iterations = 50;
+                        recoConfig.tolerance_mm = recoToleranceMM;
+                        recoConfig.rk_step_mm = recoRKStepMM;
+
+                        const analysis::pdc::anaroot_like::RecoResult recoResult =
+                            targetReconAnarootLike->Reconstruct(pdcInput, constraint, recoConfig);
+                        if ((recoResult.status == analysis::pdc::anaroot_like::SolverStatus::kSuccess ||
+                             recoResult.status == analysis::pdc::anaroot_like::SolverStatus::kNotConverged) &&
+                            recoResult.p4_at_target.P() > 0.0) {
+                            recoMomentum = recoResult.p4_at_target;
+                            recoSuccess = true;
+                        }
+                    } else if (targetReconLegacy) {
+                        // 使用TMinuit方法进行质子动量重建 - 更快更精确
+                        TargetReconstructionResult result = targetReconLegacy->ReconstructAtTargetMinuit(
+                            track, targetPos,
+                            false,  // 不保存轨迹数据（批处理模式）
+                            1000.0, // 初始动量猜测 MeV/c
+                            1.0,    // 容差 mm
+                            500     // 最大迭代次数
+                        );
+
+                        if (result.success && result.bestMomentum.Vect().Mag() > 0) {
+                            recoMomentum = result.bestMomentum;
+                            recoSuccess = true;
+                        }
+                    }
+
                     // 保存重建的质子动量
-                    if (result.success && result.bestMomentum.Vect().Mag() > 0) {
-                        originalData->reconstructedProtonMomenta.push_back(result.bestMomentum);
-                        totalReconProtons++;
+                    if (recoSuccess) {
+                        originalData->reconstructedProtonMomenta.push_back(recoMomentum);
+                        ++totalReconProtons;
                     }
                 }
                 
@@ -366,6 +527,7 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     TNamed info7("ProtonReconEvents", Form("%d", protonReconEvents));
     TNamed info8("TotalReconProtons", Form("%d", totalReconProtons));
     TNamed info9("MagFieldLoaded", magFieldLoaded ? "true" : "false");
+    TNamed info10("RecoBackend", recoBackendLabel.c_str());
     
     info1.Write();
     info2.Write();
@@ -376,6 +538,7 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     info7.Write();
     info8.Write();
     info9.Write();
+    info10.Write();
     
     // 10. 写入并关闭文件
     outFile->Write();
@@ -387,23 +550,25 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     std::cout << "输出文件: " << outputFile << std::endl;
     std::cout << "总事件数: " << totalEvents << std::endl;
     std::cout << "处理事件数: " << processedEvents << std::endl;
-    std::cout << "PDC击中事件: " << pdcHitEvents << " (" << (pdcHitEvents*100.0/processedEvents) << "%%)" << std::endl;
-    std::cout << "NEBULA击中事件: " << nebulaHitEvents << " (" << (nebulaHitEvents*100.0/processedEvents) << "%%)" << std::endl;
-    std::cout << "包含原始粒子数据的事件: " << originalDataEvents << " (" << (originalDataEvents*100.0/processedEvents) << "%%)" << std::endl;
+    const double denom = (processedEvents > 0) ? static_cast<double>(processedEvents) : 1.0;
+    std::cout << "PDC击中事件: " << pdcHitEvents << " (" << (pdcHitEvents * 100.0 / denom) << "%%)" << std::endl;
+    std::cout << "NEBULA击中事件: " << nebulaHitEvents << " (" << (nebulaHitEvents * 100.0 / denom) << "%%)" << std::endl;
+    std::cout << "包含原始粒子数据的事件: " << originalDataEvents << " (" << (originalDataEvents * 100.0 / denom) << "%%)" << std::endl;
     
-    if (magFieldLoaded) {
-        std::cout << "质子动量重建事件: " << protonReconEvents << " (" << (protonReconEvents*100.0/processedEvents) << "%%)" << std::endl;
+    if (protonRecoEnabled) {
+        std::cout << "质子动量重建事件: " << protonReconEvents << " (" << (protonReconEvents * 100.0 / denom) << "%%)" << std::endl;
         std::cout << "重建质子总数: " << totalReconProtons << std::endl;
         std::cout << "平均每事件重建质子数: " << (protonReconEvents > 0 ? totalReconProtons*1.0/protonReconEvents : 0.0) << std::endl;
     } else {
-        std::cout << "磁场未加载，跳过了质子动量重建" << std::endl;
+        std::cout << "当前配置未启用质子动量重建" << std::endl;
     }
     
     // 清理内存
     delete recoEvent;
     delete originalData;
     if (magField) delete magField;
-    if (targetRecon) delete targetRecon;
+    if (targetReconLegacy) delete targetReconLegacy;
+    if (targetReconAnarootLike) delete targetReconAnarootLike;
 }
 
 // 保持原有函数接口的兼容性

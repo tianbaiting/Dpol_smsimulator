@@ -457,8 +457,12 @@ TEST_F(TargetReconstructorTest, ComparePDCReconstructionMethods) {
     );
 
     // [EN] Three-point constrained optimization with fixed momentum (0,0,627). / [CN] 固定动量(0,0,627)的三点约束优化方法。
-    TargetReconstructionResult threePointResult = reconstructor->ReconstructAtTargetThreePointGradientDescent(
+    TargetReconstructionResult threePointLegacyResult = reconstructor->ReconstructAtTargetThreePointGradientDescent(
         track, targetPos, false, TVector3(0, 0, 627.0), 0.05, 1.0, 200, 0.5, 5.0
+    );
+    // [EN] Free three-point Minuit optimization on start position and momentum vector. / [CN] 对起点和动量向量同时优化的自由三点Minuit方法。
+    TargetReconstructionResult threePointFreeResult = reconstructor->ReconstructAtTargetThreePointFreeMinuit(
+        track, targetPos, false, targetPos, TVector3(0, 0, 627.0), 5.0, 0.5, 1.0, 500, false
     );
 
     auto relativeError = [&](const TLorentzVector& reco) {
@@ -468,27 +472,32 @@ TEST_F(TargetReconstructorTest, ComparePDCReconstructionMethods) {
     double gridErr = relativeError(gridResult.bestMomentum);
     double gdErr = relativeError(gdResult.bestMomentum);
     double minuitErr = relativeError(minuitResult.bestMomentum);
-    double threePointErr = relativeError(threePointResult.bestMomentum);
+    double threePointLegacyErr = relativeError(threePointLegacyResult.bestMomentum);
+    double threePointFreeErr = relativeError(threePointFreeResult.bestMomentum);
 
     std::cout << "Grid:   dist=" << gridResult.finalDistance << " mm, relErr=" << (gridErr * 100.0) << "%" << std::endl;
     std::cout << "GD:     dist=" << gdResult.finalDistance << " mm, relErr=" << (gdErr * 100.0) << "%" << std::endl;
     std::cout << "Minuit: dist=" << minuitResult.finalDistance << " mm, relErr=" << (minuitErr * 100.0) << "%" << std::endl;
-    std::cout << "3Point: dist=" << threePointResult.finalDistance << " mm, relErr=" << (threePointErr * 100.0) << "%" << std::endl;
+    std::cout << "3Point legacy: dist=" << threePointLegacyResult.finalDistance << " mm, relErr=" << (threePointLegacyErr * 100.0) << "%" << std::endl;
+    std::cout << "3Point free:   dist=" << threePointFreeResult.finalDistance << " mm, relErr=" << (threePointFreeErr * 100.0) << "%" << std::endl;
 
     EXPECT_TRUE(std::isfinite(gridResult.finalDistance));
     EXPECT_TRUE(std::isfinite(gdResult.finalDistance));
     EXPECT_TRUE(std::isfinite(minuitResult.finalDistance));
-    EXPECT_TRUE(std::isfinite(threePointResult.finalDistance));
+    EXPECT_TRUE(std::isfinite(threePointLegacyResult.finalDistance));
+    EXPECT_TRUE(std::isfinite(threePointFreeResult.finalDistance));
 
     EXPECT_LT(gridResult.finalDistance, 20.0);
     EXPECT_LT(gdResult.finalDistance, 20.0);
     EXPECT_LT(minuitResult.finalDistance, 20.0);
-    EXPECT_LT(threePointResult.finalDistance, 20.0);
+    EXPECT_LT(threePointLegacyResult.finalDistance, 20.0);
+    EXPECT_LT(threePointFreeResult.finalDistance, 20.0);
 
     EXPECT_LT(gridErr, 0.20);
     EXPECT_LT(gdErr, 0.20);
     EXPECT_LT(minuitErr, 0.20);
-    EXPECT_LT(threePointErr, 0.20);
+    EXPECT_LT(threePointLegacyErr, 0.20);
+    EXPECT_LT(threePointFreeErr, 0.20);
 
     std::cout << "================================================\n" << std::endl;
 }

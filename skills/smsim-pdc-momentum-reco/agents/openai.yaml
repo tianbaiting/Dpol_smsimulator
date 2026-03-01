@@ -1,0 +1,4 @@
+interface:
+  display_name: "SMSim PDC Momentum Reco"
+  short_description: "PDC momentum reconstruction workflow"
+  default_prompt: "Handle SMSimulator momentum reconstruction tasks using PDCMomentumReconstructor and TargetReconstructor."

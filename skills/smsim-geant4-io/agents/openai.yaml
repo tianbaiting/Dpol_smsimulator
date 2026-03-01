@@ -1,0 +1,4 @@
+interface:
+  display_name: "SMSim Geant4 IO"
+  short_description: "Geant4 simulation input/output workflow"
+  default_prompt: "Handle SMSimulator Geant4 simulation data input/output tasks including macros, tree input, and ROOT output."
