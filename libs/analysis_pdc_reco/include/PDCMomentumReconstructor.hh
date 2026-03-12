@@ -60,14 +60,27 @@ private:
     struct EvalResult {
         bool valid = false;
         std::array<double, 8> residuals{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-        double chi2 = 0.0;
+        double chi2_raw = 0.0;
+        double chi2_reduced = 0.0;
+        int ndf = 0;
         double min_distance_mm = 0.0;
         double path_length_mm = 0.0;
         double brho_tm = 0.0;
+        bool used_measurement_covariance = false;
         TLorentzVector p4_at_target{0.0, 0.0, 0.0, 0.0};
         int idx_pdc1 = -1;
         int idx_pdc2 = -1;
         std::vector<ParticleTrajectory::TrajectoryPoint> trajectory;
+    };
+
+    struct MeasurementModel {
+        bool use_covariance = false;
+        std::array<double, 9> pdc1_whitening{0.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0};
+        std::array<double, 9> pdc2_whitening{0.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0};
     };
 
     struct MatrixModel {
@@ -100,10 +113,13 @@ private:
         const ParameterState& state,
         const PDCInputTrack& track,
         const TargetConstraint& target,
-        const RecoConfig& config
+        const RecoConfig& config,
+        const MeasurementModel& measurement
     ) const;
 
-    static double ResidualChi2(const std::array<double, 8>& residuals);
+    static double ResidualChi2Raw(const std::array<double, 8>& residuals);
+    static double ResidualChi2Reduced(const std::array<double, 8>& residuals);
+    bool BuildMeasurementModel(const TargetConstraint& target, MeasurementModel* measurement, std::string* reason) const;
 
     std::optional<MatrixModel> LoadMatrixModelFromEnv(std::string* reason) const;
 

@@ -33,6 +33,7 @@ using analysis::pdc::anaroot_like::RecoConfig;
 using analysis::pdc::anaroot_like::RecoResult;
 using analysis::pdc::anaroot_like::SolverStatus;
 using analysis::pdc::anaroot_like::TargetConstraint;
+using analysis::pdc::anaroot_like::IntervalEstimate;
 
 struct TruthBeamInfo {
     bool hasProton = false;
@@ -67,8 +68,17 @@ struct MethodSummary {
     long long attempts = 0;
     long long success = 0;
     long long usable = 0;
+    long long uncertaintyValid = 0;
+    long long posteriorValid = 0;
+    long long coverage68Px = 0;
+    long long coverage95Px = 0;
+    long long credible68Px = 0;
+    long long credible95Px = 0;
     RunningStat dpxSuccess;
     RunningStat dpxUsable;
+    RunningStat pxSigma;
+    RunningStat pxPosteriorSigma;
+    RunningStat chi2Reduced;
     std::map<SolverStatus, long long> statusCount;
 };
 
@@ -195,6 +205,16 @@ bool IsUsableResult(const RecoResult& result) {
            result.p4_at_target.P() > 0.0;
 }
 
+bool CoversInterval(const IntervalEstimate& interval, double truth, bool use95) {
+    if (!interval.valid) {
+        return false;
+    }
+    if (use95) {
+        return interval.lower95 <= truth && truth <= interval.upper95;
+    }
+    return interval.lower68 <= truth && truth <= interval.upper68;
+}
+
 void UpdateSummary(MethodSummary& summary, const RecoResult& result, double truePx) {
     ++summary.attempts;
     ++summary.statusCount[result.status];
@@ -205,6 +225,21 @@ void UpdateSummary(MethodSummary& summary, const RecoResult& result, double true
     if (IsUsableResult(result)) {
         ++summary.usable;
         summary.dpxUsable.Fill(result.p4_at_target.Px() - truePx);
+    }
+    if (std::isfinite(result.chi2_reduced)) {
+        summary.chi2Reduced.Fill(result.chi2_reduced);
+    }
+    if (result.uncertainty_valid && result.px_interval.valid) {
+        ++summary.uncertaintyValid;
+        summary.pxSigma.Fill(result.px_interval.sigma);
+        if (CoversInterval(result.px_interval, truePx, false)) ++summary.coverage68Px;
+        if (CoversInterval(result.px_interval, truePx, true)) ++summary.coverage95Px;
+    }
+    if (result.posterior_valid && result.px_credible.valid) {
+        ++summary.posteriorValid;
+        summary.pxPosteriorSigma.Fill(result.px_credible.sigma);
+        if (CoversInterval(result.px_credible, truePx, false)) ++summary.credible68Px;
+        if (CoversInterval(result.px_credible, truePx, true)) ++summary.credible95Px;
     }
 }
 
@@ -228,6 +263,22 @@ void PrintSummaryLine(const std::string& title, const MethodSummary& summary) {
     std::cout << "  dPx(usable ): count=" << summary.dpxUsable.count
               << " mean=" << summary.dpxUsable.Mean()
               << " rms=" << summary.dpxUsable.RMS() << std::endl;
+    if (summary.uncertaintyValid > 0) {
+        std::cout << "  px interval sigma mean=" << summary.pxSigma.Mean()
+                  << " coverage68=" << (static_cast<double>(summary.coverage68Px) / summary.uncertaintyValid)
+                  << " coverage95=" << (static_cast<double>(summary.coverage95Px) / summary.uncertaintyValid)
+                  << std::endl;
+    }
+    if (summary.posteriorValid > 0) {
+        std::cout << "  px credible sigma mean=" << summary.pxPosteriorSigma.Mean()
+                  << " credible68=" << (static_cast<double>(summary.credible68Px) / summary.posteriorValid)
+                  << " credible95=" << (static_cast<double>(summary.credible95Px) / summary.posteriorValid)
+                  << std::endl;
+    }
+    if (summary.chi2Reduced.count > 0) {
+        std::cout << "  chi2_reduced mean=" << summary.chi2Reduced.Mean()
+                  << " rms=" << summary.chi2Reduced.RMS() << std::endl;
+    }
     for (const auto& [status, count] : summary.statusCount) {
         std::cout << "  status[" << StatusToString(status) << "]=" << count << std::endl;
     }
@@ -370,6 +421,24 @@ void check_pdc_reco_backend(const char* sim_root,
             << autoSummary.dpxSuccess.Mean() << "," << autoSummary.dpxSuccess.RMS() << "\n";
         csv << "auto_dpx_usable," << autoSummary.dpxUsable.count << ","
             << autoSummary.dpxUsable.Mean() << "," << autoSummary.dpxUsable.RMS() << "\n";
+        csv << "auto_chi2_reduced," << autoSummary.chi2Reduced.count << ","
+            << autoSummary.chi2Reduced.Mean() << "," << autoSummary.chi2Reduced.RMS() << "\n";
+        csv << "auto_px_sigma," << autoSummary.pxSigma.count << ","
+            << autoSummary.pxSigma.Mean() << "," << autoSummary.pxSigma.RMS() << "\n";
+        csv << "auto_px_coverage68," << autoSummary.uncertaintyValid << ","
+            << (autoSummary.uncertaintyValid > 0 ? static_cast<double>(autoSummary.coverage68Px) / autoSummary.uncertaintyValid : 0.0)
+            << ",0\n";
+        csv << "auto_px_coverage95," << autoSummary.uncertaintyValid << ","
+            << (autoSummary.uncertaintyValid > 0 ? static_cast<double>(autoSummary.coverage95Px) / autoSummary.uncertaintyValid : 0.0)
+            << ",0\n";
+        csv << "auto_px_credible_sigma," << autoSummary.pxPosteriorSigma.count << ","
+            << autoSummary.pxPosteriorSigma.Mean() << "," << autoSummary.pxPosteriorSigma.RMS() << "\n";
+        csv << "auto_px_credible68," << autoSummary.posteriorValid << ","
+            << (autoSummary.posteriorValid > 0 ? static_cast<double>(autoSummary.credible68Px) / autoSummary.posteriorValid : 0.0)
+            << ",0\n";
+        csv << "auto_px_credible95," << autoSummary.posteriorValid << ","
+            << (autoSummary.posteriorValid > 0 ? static_cast<double>(autoSummary.credible95Px) / autoSummary.posteriorValid : 0.0)
+            << ",0\n";
         csv << "rk_attempts," << rkSummary.attempts << ",0,0\n";
         csv << "rk_success_rate," << rkSummary.attempts << ","
             << (rkSummary.attempts > 0 ? static_cast<double>(rkSummary.success) / rkSummary.attempts : 0.0)
@@ -381,6 +450,24 @@ void check_pdc_reco_backend(const char* sim_root,
             << rkSummary.dpxSuccess.Mean() << "," << rkSummary.dpxSuccess.RMS() << "\n";
         csv << "rk_dpx_usable," << rkSummary.dpxUsable.count << ","
             << rkSummary.dpxUsable.Mean() << "," << rkSummary.dpxUsable.RMS() << "\n";
+        csv << "rk_chi2_reduced," << rkSummary.chi2Reduced.count << ","
+            << rkSummary.chi2Reduced.Mean() << "," << rkSummary.chi2Reduced.RMS() << "\n";
+        csv << "rk_px_sigma," << rkSummary.pxSigma.count << ","
+            << rkSummary.pxSigma.Mean() << "," << rkSummary.pxSigma.RMS() << "\n";
+        csv << "rk_px_coverage68," << rkSummary.uncertaintyValid << ","
+            << (rkSummary.uncertaintyValid > 0 ? static_cast<double>(rkSummary.coverage68Px) / rkSummary.uncertaintyValid : 0.0)
+            << ",0\n";
+        csv << "rk_px_coverage95," << rkSummary.uncertaintyValid << ","
+            << (rkSummary.uncertaintyValid > 0 ? static_cast<double>(rkSummary.coverage95Px) / rkSummary.uncertaintyValid : 0.0)
+            << ",0\n";
+        csv << "rk_px_credible_sigma," << rkSummary.pxPosteriorSigma.count << ","
+            << rkSummary.pxPosteriorSigma.Mean() << "," << rkSummary.pxPosteriorSigma.RMS() << "\n";
+        csv << "rk_px_credible68," << rkSummary.posteriorValid << ","
+            << (rkSummary.posteriorValid > 0 ? static_cast<double>(rkSummary.credible68Px) / rkSummary.posteriorValid : 0.0)
+            << ",0\n";
+        csv << "rk_px_credible95," << rkSummary.posteriorValid << ","
+            << (rkSummary.posteriorValid > 0 ? static_cast<double>(rkSummary.credible95Px) / rkSummary.posteriorValid : 0.0)
+            << ",0\n";
 
         for (const auto& [status, count] : autoSummary.statusCount) {
             csv << "auto_status_" << StatusToString(status) << "," << count << ",0,0\n";
