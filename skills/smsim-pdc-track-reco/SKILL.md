@@ -7,6 +7,8 @@ description: Workflow for SMSimulator PDC hit-to-track reconstruction. Use when 
 
 Use this skill for hit decoding and track-point reconstruction stages.
 
+If the request spans geometry assumptions, target-position rules, classical momentum solving, or NN routing, start with `skills/smsim-pdc-target-reco-overview/` first.
+
 ## Workflow
 
 1. Start with `references/workflow.md`.

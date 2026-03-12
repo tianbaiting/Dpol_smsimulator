@@ -8,6 +8,8 @@ skills=(
   "smsim-geant4-io"
   "smsim-pdc-track-reco"
   "smsim-pdc-momentum-reco"
+  "smsim-nn-target-momentum"
+  "smsim-pdc-target-reco-overview"
   "smsim-rk-geometry-filter"
 )
 

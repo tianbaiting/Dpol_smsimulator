@@ -7,6 +7,8 @@ description: Workflow for SMSimulator momentum reconstruction from PDC track poi
 
 Use this skill for track-to-momentum solving stages.
 
+If the request spans corrected-target geometry, PDC stage routing, or NN pipeline selection, start with `skills/smsim-pdc-target-reco-overview/` first.
+
 ## Workflow
 
 1. Open `references/workflow.md` first.

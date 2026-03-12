@@ -1,0 +1,4 @@
+interface:
+  display_name: "SMSim NN Target Momentum"
+  short_description: "NN train/export/forward reco workflow"
+  default_prompt: "Use $smsim-nn-target-momentum to train, export, and run forward-only NN momentum reconstruction in SMSimulator."

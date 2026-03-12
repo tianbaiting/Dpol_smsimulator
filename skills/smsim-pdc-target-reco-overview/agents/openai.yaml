@@ -1,0 +1,4 @@
+interface:
+  display_name: "PDC Target Reconstruction Overview"
+  short_description: "Map PDC geometry, classical reco, and NN pipeline"
+  default_prompt: "Use $smsim-pdc-target-reco-overview first to map target geometry, PDC reconstruction stages, and NN training/inference flow before choosing a narrower PDC or NN skill."
