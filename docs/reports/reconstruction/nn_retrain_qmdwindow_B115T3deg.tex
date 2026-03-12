@@ -150,6 +150,82 @@ Test \(|\vec{p}|\) RMSE (MeV/c) & 9.84 & 5.88 \\
 \end{table}
 \end{frame}
 
+\begin{frame}{Post-Baseline Optimisation Objective}
+\textbf{Why continue after qmd-window?}
+\begin{itemize}
+\item QMD-window already improved usable sample rate and hold-out \(|\vec{p}|\) RMSE.
+\item The next target is narrower: further reduce proton \(p_x/p_y\) reconstruction error on hold-out data.
+\item Project ranking metric for follow-up runs:
+\[
+\mathrm{pxpy\_rmse\_mean}=\frac{\mathrm{RMSE}(p_x)+\mathrm{RMSE}(p_y)}{2}.
+\]
+\end{itemize}
+
+\textbf{Search axes actually explored}
+\begin{itemize}
+\item Manual loss weighting to emphasize \(p_x,p_y\).
+\item Target \(z\)-score normalization.
+\item Wider MLP hidden dimensions.
+\end{itemize}
+
+\textbf{Important comparison rule}
+\begin{itemize}
+\item After target normalization, raw \texttt{best\_val\_loss} changes scale.
+\item Therefore cross-run ranking is based on raw hold-out RMSE metrics, not on loss value alone.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Optimisation Progress: Loss and Normalisation Sweep}
+\small
+\begin{table}
+\centering
+\begin{tabular}{lccc}
+\toprule
+Run & Val \(pxpy\) RMSE & Val \(p_z\) RMSE & Test \(|\vec p|\) RMSE \\
+\midrule
+Baseline qmd-window & 13.0186 & 5.8863 & 5.8798 \\
+\(2,2,1\) & 12.9918 & 5.9981 & 5.9780 \\
+\(1.5,1.5,1\) & 12.9977 & 6.1136 & 6.1094 \\
+\(3,3,1\) & 12.9235 & 5.9605 & 5.9649 \\
+\(3,3,1\) + zscore & 12.8254 & 5.4072 & 5.3718 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Reading of the sweep}
+\begin{itemize}
+\item Weighted loss alone helps, but gains remain modest.
+\item Target normalization produces the first clearly stronger jump in both \(pxpy\) and \(|\vec p|\) metrics.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Current Best Candidate and Interpretation}
+\textbf{Reference vs current best training candidate}
+\begin{table}
+\centering
+\begin{tabular}{lcc}
+\toprule
+Metric & Baseline qmd-window & Best current candidate \\
+\midrule
+Configuration & 128-128-64, MSE & 256-256-128, \(4,3,1\)+zscore \\
+Val \(p_x\) RMSE & 13.5973 & 13.3366 \\
+Val \(p_y\) RMSE & 12.4398 & 12.2689 \\
+Val \(p_z\) RMSE & 5.8863 & 5.3517 \\
+Val \(pxpy\) RMSE mean & 13.0186 & 12.8027 \\
+Test \(|\vec p|\) RMSE & 5.8798 & 5.2488 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Observed gain}
+\begin{itemize}
+\item \(pxpy\) RMSE mean improves by about \(1.66\%\).
+\item Test \(|\vec p|\) RMSE improves by about \(10.73\%\).
+\item Width scaling still helps a little, but gains are already small after normalization.
+\item Next likely leverage is better objective design or data-domain refinement, not unlimited width growth.
+\end{itemize}
+\end{frame}
+
 \begin{frame}{Data Flow (Target-Corrected Full-Event Campaign)}
 \textbf{Execution chain}
 \begin{enumerate}

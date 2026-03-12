@@ -182,6 +182,44 @@ Test \(|\vec p|\) RMSE (MeV/c) & 9.84 & 5.88 \\
 \textbf{Conclusion}: Narrowing to qmd-window improves both usable sample rate and hold-out momentum accuracy.
 \end{frame}
 
+\begin{frame}{NN Optimisation Progress After QMD-Window}
+\small
+\begin{table}
+\centering
+\begin{tabular}{lcc}
+\toprule
+Configuration & Val \(pxpy\) RMSE mean & Test \(|\vec p|\) RMSE \\
+\midrule
+QMD-window baseline & 13.0186 & 5.8798 \\
+Best symmetric weighted+zscore & 12.8172 & 5.3440 \\
+Best current asymmetric run & 12.8027 & 5.2488 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interpretation}
+\begin{itemize}
+\item Loss reweighting plus target normalization continues to improve hold-out metrics after the qmd-window gain.
+\item The current best result comes from asymmetric \(p_x\)-heavier weighting.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{NN Current Status}
+\textbf{Current training leader}
+\begin{itemize}
+\item Run: \texttt{asym\_20260307\_120933\_px431\_zscore\_256\_256\_128}
+\item Loss setup: manual weighting \(4,3,1\) with target \(z\)-score normalization.
+\item Network width: \(6 \rightarrow 256 \rightarrow 256 \rightarrow 128 \rightarrow 3\).
+\end{itemize}
+
+\textbf{What we learned}
+\begin{itemize}
+\item Asymmetric \(p_x\)-heavier weighting gives the best \(pxpy\) RMSE mean so far.
+\item Width increase alone gives only marginal gain after normalization is enabled.
+\item Optimisation is helping, but this is still an incremental campaign rather than a closed final model-selection step.
+\end{itemize}
+\end{frame}
+
 \begin{frame}{NEBULA Reconstruction Process (Neutron TOF)}
 \textbf{Input}
 \begin{itemize}
