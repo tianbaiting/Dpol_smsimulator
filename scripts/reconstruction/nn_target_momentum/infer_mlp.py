@@ -41,6 +41,19 @@ class MLP(nn.Module):
         return self.net(x)
 
 
+def denormalize_targets(values: np.ndarray, meta: Dict[str, object]) -> np.ndarray:
+    mode = str(meta.get("target_normalization", "none"))
+    if mode != "zscore":
+        return values
+
+    y_mean = np.asarray(meta.get("y_mean", [0.0, 0.0, 0.0]), dtype=np.float64)
+    y_std = np.asarray(meta.get("y_std", [1.0, 1.0, 1.0]), dtype=np.float64)
+    if y_mean.shape != (3,) or y_std.shape != (3,):
+        raise RuntimeError(f"y_mean/y_std shape mismatch: {y_mean.shape}, {y_std.shape}")
+    y_std = np.where(np.abs(y_std) < 1e-8, 1.0, y_std)
+    return values * y_std + y_mean
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run MLP inference for target momentum reconstruction.")
     parser.add_argument("--input-csv", required=True, help="Dataset CSV from build_dataset.C")
@@ -106,7 +119,8 @@ def main() -> None:
     x_norm = (x - x_mean) / x_std
 
     with torch.no_grad():
-        pred = model(torch.tensor(x_norm, dtype=torch.float32)).cpu().numpy().astype(np.float64)
+        pred_model = model(torch.tensor(x_norm, dtype=torch.float32)).cpu().numpy().astype(np.float64)
+    pred = denormalize_targets(pred_model, meta)
 
     reco_p = np.linalg.norm(pred, axis=1)
     truth_p = np.linalg.norm(y, axis=1)

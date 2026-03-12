@@ -67,6 +67,12 @@ def main() -> None:
     if x_mean.shape != (6,) or x_std.shape != (6,):
         raise RuntimeError(f"x_mean/x_std shape mismatch: {x_mean.shape}, {x_std.shape}")
     x_std = np.where(np.abs(x_std) < 1e-8, 1.0, x_std)
+    target_normalization = str(meta.get("target_normalization", "none"))
+    y_mean = np.asarray(meta.get("y_mean", [0.0, 0.0, 0.0]), dtype=np.float64)
+    y_std = np.asarray(meta.get("y_std", [1.0, 1.0, 1.0]), dtype=np.float64)
+    if y_mean.shape != (3,) or y_std.shape != (3,):
+        raise RuntimeError(f"y_mean/y_std shape mismatch: {y_mean.shape}, {y_std.shape}")
+    y_std = np.where(np.abs(y_std) < 1.0e-8, 1.0, y_std)
 
     checkpoint = torch.load(args.model_path, map_location="cpu")
     state_dict = checkpoint["state_dict"]
@@ -91,6 +97,9 @@ def main() -> None:
         "target_names": meta.get("target_names", []),
         "x_mean": x_mean.tolist(),
         "x_std": x_std.tolist(),
+        "target_normalization": target_normalization,
+        "y_mean": y_mean.tolist(),
+        "y_std": y_std.tolist(),
         "layers": layers,
     }
 

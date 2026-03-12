@@ -20,6 +20,13 @@ SIGMA_V="${SIGMA_V:-0.5}"
 EPOCHS="${EPOCHS:-120}"
 BATCH_SIZE="${BATCH_SIZE:-1024}"
 MAX_FILES_PER_DOMAIN="${MAX_FILES_PER_DOMAIN:-0}"
+TARGET_NORMALIZATION="${TARGET_NORMALIZATION:-none}"
+LOSS_WEIGHTING="${LOSS_WEIGHTING:-none}"
+LOSS_WEIGHTS="${LOSS_WEIGHTS:-}"
+LR_SCHEDULER="${LR_SCHEDULER:-none}"
+LR_SCHEDULER_PATIENCE="${LR_SCHEDULER_PATIENCE:-5}"
+LR_SCHEDULER_FACTOR="${LR_SCHEDULER_FACTOR:-0.5}"
+MIN_LR="${MIN_LR:-1e-5}"
 
 ROOT_BIN="${ROOT_BIN:-root}"
 RECO_BIN="${RECO_BIN:-${REPO_DIR}/build/bin/reconstruct_sn_nn}"
@@ -264,14 +271,26 @@ build_split_dataset "train" "${TRAIN_LIST}" "${DATASET_DIR}/train" "${TRAIN_CSV}
 build_split_dataset "val" "${VAL_LIST}" "${DATASET_DIR}/val" "${VAL_CSV}"
 build_split_dataset "test" "${TEST_LIST}" "${DATASET_DIR}/test" "${TEST_CSV}"
 
-run_cmd "${PY_RUN[@]}" "${TRAIN_PY}" \
-    --train-csv "${TRAIN_CSV}" \
-    --val-csv "${VAL_CSV}" \
-    --test-csv "${TEST_CSV}" \
-    --output-dir "${MODEL_DIR}" \
-    --epochs "${EPOCHS}" \
-    --batch-size "${BATCH_SIZE}" \
+TRAIN_ARGS=(
+    --train-csv "${TRAIN_CSV}"
+    --val-csv "${VAL_CSV}"
+    --test-csv "${TEST_CSV}"
+    --output-dir "${MODEL_DIR}"
+    --epochs "${EPOCHS}"
+    --batch-size "${BATCH_SIZE}"
     --seed "${SEED}"
+    --target-normalization "${TARGET_NORMALIZATION}"
+    --loss-weighting "${LOSS_WEIGHTING}"
+    --lr-scheduler "${LR_SCHEDULER}"
+    --lr-scheduler-patience "${LR_SCHEDULER_PATIENCE}"
+    --lr-scheduler-factor "${LR_SCHEDULER_FACTOR}"
+    --min-lr "${MIN_LR}"
+)
+if [[ -n "${LOSS_WEIGHTS}" ]]; then
+    TRAIN_ARGS+=(--loss-weights "${LOSS_WEIGHTS}")
+fi
+
+run_cmd "${PY_RUN[@]}" "${TRAIN_PY}" "${TRAIN_ARGS[@]}"
 
 run_cmd "${PY_RUN[@]}" "${EXPORT_PY}" \
     --model-path "${MODEL_DIR}/model.pt" \

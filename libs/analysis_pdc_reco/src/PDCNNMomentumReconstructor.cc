@@ -54,8 +54,11 @@ bool ParseFixedArray(const Json& root, const char* key, std::array<double, N>* o
 
 bool PDCNNMomentumReconstructor::LoadModel(const std::string& json_path, std::string* reason) {
     fLoaded = false;
+    fUseTargetNormalization = false;
     fLoadedPath.clear();
     fLayers.clear();
+    fYMean = {0.0, 0.0, 0.0};
+    fYStd = {1.0, 1.0, 1.0};
 
     std::ifstream fin(json_path);
     if (!fin.is_open()) {
@@ -80,6 +83,29 @@ bool PDCNNMomentumReconstructor::LoadModel(const std::string& json_path, std::st
     }
     if (!ParseFixedArray(root, "x_std", &fXStd, reason)) {
         return false;
+    }
+    const bool has_target_stats = root.contains("y_mean") || root.contains("y_std");
+    if (has_target_stats) {
+        const std::string target_normalization = root.value("target_normalization", std::string("zscore"));
+        if (target_normalization == "zscore") {
+            if (!ParseFixedArray(root, "y_mean", &fYMean, reason)) {
+                return false;
+            }
+            if (!ParseFixedArray(root, "y_std", &fYStd, reason)) {
+                return false;
+            }
+            for (std::size_t i = 0; i < fYStd.size(); ++i) {
+                if (!std::isfinite(fYStd[i]) || std::abs(fYStd[i]) < 1.0e-8) {
+                    fYStd[i] = 1.0;
+                }
+            }
+            fUseTargetNormalization = true;
+        } else if (target_normalization != "none") {
+            if (reason) {
+                *reason = "unsupported target_normalization: " + target_normalization;
+            }
+            return false;
+        }
     }
 
     for (std::size_t i = 0; i < fXStd.size(); ++i) {
@@ -280,9 +306,21 @@ bool PDCNNMomentumReconstructor::Forward(
         return false;
     }
 
-    (*momentum)[0] = activations[0];
-    (*momentum)[1] = activations[1];
-    (*momentum)[2] = activations[2];
+    for (std::size_t i = 0; i < 3; ++i) {
+        double value = activations[i];
+        if (fUseTargetNormalization) {
+            value = value * fYStd[i] + fYMean[i];
+        }
+        if (!std::isfinite(value)) {
+            if (reason) {
+                std::ostringstream oss;
+                oss << "non-finite output momentum at index " << i;
+                *reason = oss.str();
+            }
+            return false;
+        }
+        (*momentum)[i] = value;
+    }
     return true;
 }
 
@@ -294,6 +332,9 @@ RecoResult PDCNNMomentumReconstructor::Reconstruct(
     RecoResult result;
     result.method_used = SolveMethod::kNeuralNetwork;
     result.chi2 = std::numeric_limits<double>::quiet_NaN();
+    result.chi2_raw = std::numeric_limits<double>::quiet_NaN();
+    result.chi2_reduced = std::numeric_limits<double>::quiet_NaN();
+    result.ndf = 0;
     result.min_distance_mm = std::numeric_limits<double>::quiet_NaN();
     result.path_length_mm = std::numeric_limits<double>::quiet_NaN();
     result.iterations = 1;

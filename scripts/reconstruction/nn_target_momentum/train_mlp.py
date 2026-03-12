@@ -6,7 +6,7 @@ import csv
 import json
 import os
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -54,6 +54,18 @@ class SplitData:
     y_test: np.ndarray
 
 
+class WeightedMSELoss(nn.Module):
+    def __init__(self, weights: np.ndarray) -> None:
+        super().__init__()
+        if weights.shape != (3,):
+            raise ValueError(f"loss weights must have shape (3,), got {weights.shape}")
+        self.register_buffer("weights", torch.tensor(weights, dtype=torch.float32))
+
+    def forward(self, pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        err2 = (pred - target) ** 2
+        return (err2 * self.weights.view(1, -1)).mean()
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train MLP for target momentum reconstruction from PDC two-point features.")
     parser.add_argument("--input-csv", help="Single dataset CSV (used with internal random split)")
@@ -68,6 +80,32 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--weight-decay", type=float, default=1e-5)
     parser.add_argument("--patience", type=int, default=12)
     parser.add_argument("--hidden-dims", default="128,128,64", help="Comma-separated hidden layer sizes")
+    parser.add_argument(
+        "--target-normalization",
+        choices=["none", "zscore"],
+        default="none",
+        help="Normalize target momentum components using training-split statistics before training",
+    )
+    parser.add_argument(
+        "--loss-weighting",
+        choices=["none", "inv_target_std", "manual"],
+        default="none",
+        help="Per-component weighting mode for MSE in model-output space",
+    )
+    parser.add_argument(
+        "--loss-weights",
+        default="",
+        help="Comma-separated px,py,pz weights used when --loss-weighting=manual",
+    )
+    parser.add_argument(
+        "--lr-scheduler",
+        choices=["none", "plateau"],
+        default="none",
+        help="Optional learning-rate scheduler",
+    )
+    parser.add_argument("--lr-scheduler-patience", type=int, default=5)
+    parser.add_argument("--lr-scheduler-factor", type=float, default=0.5)
+    parser.add_argument("--min-lr", type=float, default=1e-5)
     return parser.parse_args()
 
 
@@ -144,6 +182,68 @@ def normalize_features(split: SplitData) -> Tuple[SplitData, np.ndarray, np.ndar
     return normalized, x_mean, x_std
 
 
+def normalize_targets(split: SplitData, mode: str) -> Tuple[SplitData, np.ndarray, np.ndarray]:
+    if mode == "none":
+        y_mean = np.zeros(split.y_train.shape[1], dtype=np.float64)
+        y_std = np.ones(split.y_train.shape[1], dtype=np.float64)
+        return split, y_mean, y_std
+
+    if mode != "zscore":
+        raise RuntimeError(f"unsupported target normalization mode: {mode}")
+
+    y_mean = split.y_train.mean(axis=0)
+    y_std = split.y_train.std(axis=0)
+    y_std = np.where(y_std < 1e-8, 1.0, y_std)
+
+    def norm(v: np.ndarray) -> np.ndarray:
+        return (v - y_mean) / y_std
+
+    normalized = SplitData(
+        x_train=split.x_train,
+        y_train=norm(split.y_train),
+        x_val=split.x_val,
+        y_val=norm(split.y_val),
+        x_test=split.x_test,
+        y_test=norm(split.y_test),
+    )
+    return normalized, y_mean, y_std
+
+
+def denormalize_targets(values: np.ndarray, y_mean: np.ndarray, y_std: np.ndarray, mode: str) -> np.ndarray:
+    if mode == "zscore":
+        return values * y_std + y_mean
+    return values
+
+
+def parse_manual_loss_weights(raw: str) -> np.ndarray:
+    parts = [part.strip() for part in raw.split(",") if part.strip()]
+    if len(parts) != 3:
+        raise RuntimeError("loss_weights must contain exactly 3 comma-separated values")
+    weights = np.asarray([float(part) for part in parts], dtype=np.float64)
+    if not np.isfinite(weights).all() or np.any(weights <= 0.0):
+        raise RuntimeError("loss_weights must be finite and strictly positive")
+    return weights
+
+
+def build_loss(args: argparse.Namespace, raw_split: SplitData) -> Tuple[nn.Module, np.ndarray]:
+    if args.loss_weighting == "none":
+        return nn.MSELoss(), np.ones(3, dtype=np.float64)
+
+    if args.loss_weighting == "inv_target_std":
+        if args.target_normalization != "none":
+            raise RuntimeError("loss-weighting=inv_target_std is redundant with target-normalization=zscore")
+        raw_std = raw_split.y_train.std(axis=0)
+        raw_std = np.where(raw_std < 1e-8, 1.0, raw_std)
+        weights = 1.0 / np.square(raw_std)
+        return WeightedMSELoss(weights), weights
+
+    if args.loss_weighting == "manual":
+        weights = parse_manual_loss_weights(args.loss_weights)
+        return WeightedMSELoss(weights), weights
+
+    raise RuntimeError(f"unsupported loss-weighting mode: {args.loss_weighting}")
+
+
 def compute_metrics(pred: np.ndarray, truth: np.ndarray) -> Dict[str, Dict[str, float]]:
     err = pred - truth
     metrics: Dict[str, Dict[str, float]] = {"components": {}, "momentum_norm": {}}
@@ -218,14 +318,15 @@ def main() -> None:
     torch.manual_seed(args.seed)
 
     split_raw, split_sources, split_mode = build_split_from_args(args)
-    split_norm, x_mean, x_std = normalize_features(split_raw)
+    split_x_norm, x_mean, x_std = normalize_features(split_raw)
+    split_model, y_mean, y_std = normalize_targets(split_x_norm, args.target_normalization)
 
-    x_train_t = torch.tensor(split_norm.x_train, dtype=torch.float32)
-    y_train_t = torch.tensor(split_norm.y_train, dtype=torch.float32)
-    x_val_t = torch.tensor(split_norm.x_val, dtype=torch.float32)
-    y_val_t = torch.tensor(split_norm.y_val, dtype=torch.float32)
-    x_test_t = torch.tensor(split_norm.x_test, dtype=torch.float32)
-    y_test_t = torch.tensor(split_norm.y_test, dtype=torch.float32)
+    x_train_t = torch.tensor(split_model.x_train, dtype=torch.float32)
+    y_train_t = torch.tensor(split_model.y_train, dtype=torch.float32)
+    x_val_t = torch.tensor(split_model.x_val, dtype=torch.float32)
+    y_val_t = torch.tensor(split_model.y_val, dtype=torch.float32)
+    x_test_t = torch.tensor(split_model.x_test, dtype=torch.float32)
+    y_test_t = torch.tensor(split_model.y_test, dtype=torch.float32)
 
     train_loader = DataLoader(
         TensorDataset(x_train_t, y_train_t),
@@ -236,12 +337,24 @@ def main() -> None:
 
     model = MLP(input_dim=6, hidden_dims=hidden_dims, output_dim=3)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    criterion = nn.MSELoss()
+    criterion, loss_weights = build_loss(args, split_raw)
+    scheduler: Optional[torch.optim.lr_scheduler.ReduceLROnPlateau]
+    if args.lr_scheduler == "plateau":
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode="min",
+            factor=args.lr_scheduler_factor,
+            patience=args.lr_scheduler_patience,
+            min_lr=args.min_lr,
+        )
+    else:
+        scheduler = None
 
     best_state = None
     best_val = float("inf")
+    best_epoch = 0
     epochs_no_improve = 0
-    history: List[Tuple[int, float, float]] = []
+    history: List[Tuple[int, float, float, float]] = []
 
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -258,15 +371,21 @@ def main() -> None:
         with torch.no_grad():
             val_pred = model(x_val_t)
             val_loss = float(criterion(val_pred, y_val_t).item())
+
+        current_lr = float(optimizer.param_groups[0]["lr"])
         train_loss = float(np.mean(train_losses)) if train_losses else float("inf")
-        history.append((epoch, train_loss, val_loss))
+        history.append((epoch, train_loss, val_loss, current_lr))
 
         if val_loss < best_val:
             best_val = val_loss
+            best_epoch = epoch
             best_state = copy.deepcopy(model.state_dict())
             epochs_no_improve = 0
         else:
             epochs_no_improve += 1
+
+        if scheduler is not None:
+            scheduler.step(val_loss)
 
         if epochs_no_improve >= args.patience:
             break
@@ -277,11 +396,14 @@ def main() -> None:
     model.load_state_dict(best_state)
     model.eval()
     with torch.no_grad():
-        pred_val = model(x_val_t).cpu().numpy()
-        pred_test = model(x_test_t).cpu().numpy()
+        pred_val_model = model(x_val_t).cpu().numpy()
+        pred_test_model = model(x_test_t).cpu().numpy()
 
-    val_metrics = compute_metrics(pred_val, split_norm.y_val)
-    test_metrics = compute_metrics(pred_test, split_norm.y_test)
+    pred_val = denormalize_targets(pred_val_model, y_mean, y_std, args.target_normalization)
+    pred_test = denormalize_targets(pred_test_model, y_mean, y_std, args.target_normalization)
+
+    val_metrics = compute_metrics(pred_val, split_raw.y_val)
+    test_metrics = compute_metrics(pred_test, split_raw.y_test)
 
     model_path = os.path.join(args.output_dir, "model.pt")
     meta_path = os.path.join(args.output_dir, "model_meta.json")
@@ -293,6 +415,7 @@ def main() -> None:
             "input_dim": 6,
             "output_dim": 3,
             "hidden_dims": hidden_dims,
+            "target_normalization": args.target_normalization,
         },
         model_path,
     )
@@ -302,22 +425,33 @@ def main() -> None:
         "target_names": TARGET_NAMES,
         "x_mean": x_mean.tolist(),
         "x_std": x_std.tolist(),
+        "y_mean": y_mean.tolist(),
+        "y_std": y_std.tolist(),
         "seed": args.seed,
         "split_mode": split_mode,
         "split_sources": split_sources,
         "epochs_requested": args.epochs,
         "best_val_loss": best_val,
+        "best_epoch": best_epoch,
+        "epochs_completed": len(history),
         "split_counts": {
-            "train": int(split_norm.x_train.shape[0]),
-            "val": int(split_norm.x_val.shape[0]),
-            "test": int(split_norm.x_test.shape[0]),
+            "train": int(split_model.x_train.shape[0]),
+            "val": int(split_model.x_val.shape[0]),
+            "test": int(split_model.x_test.shape[0]),
         },
+        "target_normalization": args.target_normalization,
         "hyper_parameters": {
             "hidden_dims": hidden_dims,
             "batch_size": args.batch_size,
             "lr": args.lr,
             "weight_decay": args.weight_decay,
             "patience": args.patience,
+            "loss_weighting": args.loss_weighting,
+            "loss_weights": loss_weights.tolist(),
+            "lr_scheduler": args.lr_scheduler,
+            "lr_scheduler_patience": args.lr_scheduler_patience,
+            "lr_scheduler_factor": args.lr_scheduler_factor,
+            "min_lr": args.min_lr,
         },
         "val_metrics": val_metrics,
         "test_metrics": test_metrics,
@@ -328,13 +462,14 @@ def main() -> None:
 
     with open(hist_path, "w", encoding="utf-8", newline="") as fout:
         writer = csv.writer(fout)
-        writer.writerow(["epoch", "train_loss", "val_loss"])
+        writer.writerow(["epoch", "train_loss", "val_loss", "lr"])
         writer.writerows(history)
 
     print("[train_mlp] Training complete")
     print(f"[train_mlp] model: {model_path}")
     print(f"[train_mlp] meta:  {meta_path}")
     print(f"[train_mlp] split_mode: {split_mode}")
+    print(f"[train_mlp] best_epoch: {best_epoch}")
     print(f"[train_mlp] best_val_loss: {best_val:.8f}")
     print("[train_mlp] val momentum-norm RMSE: " f"{val_metrics['momentum_norm']['rmse']:.4f} MeV/c")
     print("[train_mlp] test momentum-norm RMSE: " f"{test_metrics['momentum_norm']['rmse']:.4f} MeV/c")

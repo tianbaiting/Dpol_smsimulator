@@ -36,9 +36,12 @@ private:
     ) const;
 
     bool fLoaded = false;
+    bool fUseTargetNormalization = false;
     std::string fLoadedPath;
     std::array<double, 6> fXMean{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     std::array<double, 6> fXStd{1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    std::array<double, 3> fYMean{0.0, 0.0, 0.0};
+    std::array<double, 3> fYStd{1.0, 1.0, 1.0};
     std::vector<DenseLayer> fLayers;
 };
 

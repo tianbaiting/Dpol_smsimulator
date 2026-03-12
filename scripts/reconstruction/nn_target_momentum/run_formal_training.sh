@@ -17,6 +17,13 @@ TEST_EVENTS="${TEST_EVENTS:-30000}"
 TRAIN_SEED="${TRAIN_SEED:-20260301}"
 VAL_SEED="${VAL_SEED:-20260302}"
 TEST_SEED="${TEST_SEED:-20260303}"
+TARGET_NORMALIZATION="${TARGET_NORMALIZATION:-none}"
+LOSS_WEIGHTING="${LOSS_WEIGHTING:-none}"
+LOSS_WEIGHTS="${LOSS_WEIGHTS:-}"
+LR_SCHEDULER="${LR_SCHEDULER:-none}"
+LR_SCHEDULER_PATIENCE="${LR_SCHEDULER_PATIENCE:-5}"
+LR_SCHEDULER_FACTOR="${LR_SCHEDULER_FACTOR:-0.5}"
+MIN_LR="${MIN_LR:-1e-5}"
 
 R_MAX_MEVC="${R_MAX_MEVC:-150}"
 PZ_MIN_MEVC="${PZ_MIN_MEVC:-500}"
@@ -302,12 +309,24 @@ run_root_macro_expect_outputs "${BUILD_TRAIN_CALL}" "${DATASET_TRAIN_ROOT}" "${D
 run_root_macro_expect_outputs "${BUILD_VAL_CALL}" "${DATASET_VAL_ROOT}" "${DATASET_VAL_CSV}"
 run_root_macro_expect_outputs "${BUILD_TEST_CALL}" "${DATASET_TEST_ROOT}" "${DATASET_TEST_CSV}"
 
-run_cmd "${PY_RUN[@]}" "${TRAIN_PY}" \
-    --train-csv "${DATASET_TRAIN_CSV}" \
-    --val-csv "${DATASET_VAL_CSV}" \
-    --test-csv "${DATASET_TEST_CSV}" \
-    --output-dir "${MODEL_DIR}" \
+TRAIN_ARGS=(
+    --train-csv "${DATASET_TRAIN_CSV}"
+    --val-csv "${DATASET_VAL_CSV}"
+    --test-csv "${DATASET_TEST_CSV}"
+    --output-dir "${MODEL_DIR}"
     --seed 20260227
+    --target-normalization "${TARGET_NORMALIZATION}"
+    --loss-weighting "${LOSS_WEIGHTING}"
+    --lr-scheduler "${LR_SCHEDULER}"
+    --lr-scheduler-patience "${LR_SCHEDULER_PATIENCE}"
+    --lr-scheduler-factor "${LR_SCHEDULER_FACTOR}"
+    --min-lr "${MIN_LR}"
+)
+if [[ -n "${LOSS_WEIGHTS}" ]]; then
+    TRAIN_ARGS+=(--loss-weights "${LOSS_WEIGHTS}")
+fi
+
+run_cmd "${PY_RUN[@]}" "${TRAIN_PY}" "${TRAIN_ARGS[@]}"
 
 run_cmd "${PY_RUN[@]}" "${INFER_PY}" \
     --input-csv "${DATASET_VAL_CSV}" \

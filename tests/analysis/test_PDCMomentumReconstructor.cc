@@ -213,6 +213,53 @@ TEST(PDCMomentumReconstructorTest, NeuralNetworkInferenceWorksWithoutMagField) {
     EXPECT_GT(result.p4_at_target.Pz(), 500.0);
 }
 
+TEST(PDCMomentumReconstructorTest, NeuralNetworkInferenceAppliesTargetDenormalization) {
+    // [EN] Exported NN models may store normalized targets; C++ inference must denormalize them before building the 4-vector. / [CN] 导出的NN模型可能保存归一化目标量；C++推理在构建四动量前必须先做反归一化。
+    const std::string model_path = "/tmp/pdc_nn_model_test_denorm.json";
+    {
+        std::ofstream fout(model_path);
+        ASSERT_TRUE(fout.is_open());
+        fout << "{\n";
+        fout << "  \"format\": \"smsimulator_pdc_mlp_v1\",\n";
+        fout << "  \"x_mean\": [0,0,0,0,0,0],\n";
+        fout << "  \"x_std\": [1,1,1,1,1,1],\n";
+        fout << "  \"target_normalization\": \"zscore\",\n";
+        fout << "  \"y_mean\": [10,20,600],\n";
+        fout << "  \"y_std\": [2,3,4],\n";
+        fout << "  \"layers\": [\n";
+        fout << "    {\n";
+        fout << "      \"in_dim\": 6,\n";
+        fout << "      \"out_dim\": 3,\n";
+        fout << "      \"weights\": [\n";
+        fout << "        0,0,0,0,0,0,\n";
+        fout << "        0,0,0,0,0,0,\n";
+        fout << "        0,0,0,0,0,0\n";
+        fout << "      ],\n";
+        fout << "      \"bias\": [1,2,3]\n";
+        fout << "    }\n";
+        fout << "  ]\n";
+        fout << "}\n";
+    }
+
+    PDCMomentumReconstructor reconstructor(nullptr);
+
+    RecoConfig config;
+    config.enable_nn = true;
+    config.nn_model_json_path = model_path;
+    config.enable_rk = false;
+    config.enable_multi_dim = false;
+    config.enable_matrix = false;
+    config.p_min_mevc = 50.0;
+    config.p_max_mevc = 5000.0;
+
+    const auto result = reconstructor.Reconstruct(MakeSimpleTrack(), MakeConstraint(), config);
+    EXPECT_EQ(result.status, SolverStatus::kSuccess);
+    EXPECT_EQ(result.method_used, SolveMethod::kNeuralNetwork);
+    EXPECT_NEAR(result.p4_at_target.Px(), 12.0, 1.0e-9);
+    EXPECT_NEAR(result.p4_at_target.Py(), 26.0, 1.0e-9);
+    EXPECT_NEAR(result.p4_at_target.Pz(), 612.0, 1.0e-9);
+}
+
 TEST(PDCMomentumReconstructorTest, RKReportsLocalUncertaintyAndIntervals) {
     // [EN] RK solver should expose raw/reduced chi2, local covariance, and Gaussianized intervals after convergence. / [CN] RK求解器在收敛后应输出原始/约化chi2、局部协方差和高斯化区间。
     const std::string field_path = WriteConstantFieldMap("pdc_constant_field_rk_uncertainty", 0.6);
