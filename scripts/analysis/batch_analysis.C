@@ -23,8 +23,8 @@
 #include "TBeamSimData.hh"
 #include "MagneticField.hh"
 #include "TargetReconstructor.hh"
-#include "PDCMomentumReconstructor.hh"
-#include "PDCRecoFactory.hh"
+#include "../../libs/analysis_pdc_reco/include/PDCMomentumReconstructor.hh"
+#include "../../libs/analysis_pdc_reco/include/PDCRecoFactory.hh"
 
 // 函数声明
 void batch_analysis_single_file(const char* inputFile, const char* outputFile);
@@ -33,6 +33,10 @@ TString GetParentDirName(const TString& filepath);
 TString GetBaseName(const TString& filepath);
 std::string ToLowerCopy(std::string value);
 double ReadEnvDouble(const char* key, double fallback);
+analysis::pdc::anaroot_like::RkFitMode ReadEnvRkFitMode(
+    const char* key,
+    analysis::pdc::anaroot_like::RkFitMode fallback
+);
 
 std::string ToLowerCopy(std::string value) {
     for (char& c : value) {
@@ -52,6 +56,25 @@ double ReadEnvDouble(const char* key, double fallback) {
         return fallback;
     }
     return parsed;
+}
+
+analysis::pdc::anaroot_like::RkFitMode ReadEnvRkFitMode(
+    const char* key,
+    analysis::pdc::anaroot_like::RkFitMode fallback
+) {
+    const char* value = std::getenv(key);
+    if (!value || value[0] == '\0') {
+        return fallback;
+    }
+
+    const std::string mode = ToLowerCopy(std::string(value));
+    if (mode == "target_xy_prior" || mode == "targetxprior" || mode == "default") {
+        return analysis::pdc::anaroot_like::RkFitMode::kTargetXYPrior;
+    }
+    if (mode == "fixed_target_pdc_only" || mode == "fixedtargetpdconly" || mode == "pdc_only") {
+        return analysis::pdc::anaroot_like::RkFitMode::kFixedTargetPdcOnly;
+    }
+    return fallback;
 }
 
 // 原始Geant4数据结构，用于保存原始质子和中子动量
@@ -388,6 +411,8 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     const double recoPMax = ReadEnvDouble("PDC_RECO_P_MAX_MEVC", 5000.0);
     const double recoToleranceMM = ReadEnvDouble("PDC_RECO_TOLERANCE_MM", 5.0);
     const double recoRKStepMM = ReadEnvDouble("PDC_RECO_RK_STEP_MM", 5.0);
+    const analysis::pdc::anaroot_like::RkFitMode recoRKMode =
+        ReadEnvRkFitMode("PDC_RECO_RK_MODE", analysis::pdc::anaroot_like::RkFitMode::kTargetXYPrior);
     
     for (Long64_t i = 0; i < totalEvents; ++i) {
         if (i % 500 == 0) {
@@ -449,6 +474,7 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
                         recoConfig.max_iterations = 50;
                         recoConfig.tolerance_mm = recoToleranceMM;
                         recoConfig.rk_step_mm = recoRKStepMM;
+                        recoConfig.rk_fit_mode = recoRKMode;
 
                         const analysis::pdc::anaroot_like::RecoResult recoResult =
                             targetReconAnarootLike->Reconstruct(pdcInput, constraint, recoConfig);
@@ -528,6 +554,10 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     TNamed info8("TotalReconProtons", Form("%d", totalReconProtons));
     TNamed info9("MagFieldLoaded", magFieldLoaded ? "true" : "false");
     TNamed info10("RecoBackend", recoBackendLabel.c_str());
+    TNamed info11("RecoRKMode",
+                  recoRKMode == analysis::pdc::anaroot_like::RkFitMode::kFixedTargetPdcOnly
+                      ? "fixed_target_pdc_only"
+                      : "target_xy_prior");
     
     info1.Write();
     info2.Write();
@@ -539,6 +569,7 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     info8.Write();
     info9.Write();
     info10.Write();
+    info11.Write();
     
     // 10. 写入并关闭文件
     outFile->Write();

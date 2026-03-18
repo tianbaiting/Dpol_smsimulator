@@ -60,6 +60,7 @@ private:
     struct EvalResult {
         bool valid = false;
         std::array<double, 8> residuals{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        int residual_count = 0;
         double chi2_raw = 0.0;
         double chi2_reduced = 0.0;
         int ndf = 0;
@@ -81,6 +82,14 @@ private:
         std::array<double, 9> pdc2_whitening{0.0, 0.0, 0.0,
                                              0.0, 0.0, 0.0,
                                              0.0, 0.0, 0.0};
+    };
+
+    struct RkFitLayout {
+        std::array<int, 5> active_parameter_indices{0, 1, 2, 3, 4};
+        int parameter_count = 5;
+        int residual_count = 8;
+        bool include_target_xy_prior = true;
+        bool fixed_target_position = false;
     };
 
     struct MatrixModel {
@@ -114,11 +123,13 @@ private:
         const PDCInputTrack& track,
         const TargetConstraint& target,
         const RecoConfig& config,
-        const MeasurementModel& measurement
+        const MeasurementModel& measurement,
+        const RkFitLayout& layout
     ) const;
 
-    static double ResidualChi2Raw(const std::array<double, 8>& residuals);
-    static double ResidualChi2Reduced(const std::array<double, 8>& residuals);
+    static RkFitLayout BuildRkFitLayout(const RecoConfig& config);
+    static double ResidualChi2Raw(const std::array<double, 8>& residuals, int residual_count);
+    static double ResidualChi2Reduced(const std::array<double, 8>& residuals, int residual_count, int ndf);
     bool BuildMeasurementModel(const TargetConstraint& target, MeasurementModel* measurement, std::string* reason) const;
 
     std::optional<MatrixModel> LoadMatrixModelFromEnv(std::string* reason) const;

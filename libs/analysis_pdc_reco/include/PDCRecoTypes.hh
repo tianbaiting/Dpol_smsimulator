@@ -25,6 +25,11 @@ enum class SolveMethod {
     kMatrixFallback
 };
 
+enum class RkFitMode {
+    kTargetXYPrior,
+    kFixedTargetPdcOnly
+};
+
 struct PDCInputTrack {
     TVector3 pdc1{0.0, 0.0, 0.0};
     TVector3 pdc2{0.0, 0.0, 0.0};
@@ -69,6 +74,7 @@ struct RecoConfig {
     bool enable_nn = false;
     bool enable_multi_dim = true;
     bool enable_matrix = true;
+    RkFitMode rk_fit_mode = RkFitMode::kTargetXYPrior;
 
     double center_brho_tm = 7.2751;
     std::string nn_model_json_path;

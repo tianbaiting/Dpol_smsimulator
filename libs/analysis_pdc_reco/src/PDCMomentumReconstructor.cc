@@ -77,17 +77,6 @@ void MatrixToArray(const TMatrixD& matrix, std::array<double, 9>* out) {
     }
 }
 
-void MatrixToArray(const TMatrixD& matrix, std::array<double, 25>* out) {
-    if (!out || matrix.GetNrows() != static_cast<int>(kParameterCount) || matrix.GetNcols() != static_cast<int>(kParameterCount)) {
-        return;
-    }
-    for (int row = 0; row < static_cast<int>(kParameterCount); ++row) {
-        for (int col = 0; col < static_cast<int>(kParameterCount); ++col) {
-            (*out)[static_cast<std::size_t>(row * static_cast<int>(kParameterCount) + col)] = matrix(row, col);
-        }
-    }
-}
-
 bool IsFiniteSymmetricCovariance(const std::array<double, 9>& values) {
     for (double value : values) {
         if (!std::isfinite(value)) {
@@ -386,17 +375,32 @@ TVector3 PDCMomentumReconstructor::BuildMomentumVector(const ParameterState& sta
     return TVector3(state.u * pz, state.v * pz, pz);
 }
 
-double PDCMomentumReconstructor::ResidualChi2Raw(const std::array<double, 8>& residuals) {
+PDCMomentumReconstructor::RkFitLayout PDCMomentumReconstructor::BuildRkFitLayout(const RecoConfig& config) {
+    RkFitLayout layout;
+    if (config.rk_fit_mode == RkFitMode::kFixedTargetPdcOnly) {
+        layout.active_parameter_indices = {2, 3, 4, 0, 0};
+        layout.parameter_count = 3;
+        layout.residual_count = 6;
+        layout.include_target_xy_prior = false;
+        layout.fixed_target_position = true;
+    }
+    return layout;
+}
+
+double PDCMomentumReconstructor::ResidualChi2Raw(const std::array<double, 8>& residuals, int residual_count) {
     double sum = 0.0;
-    for (const double value : residuals) {
-        sum += value * value;
+    const int count = std::max(0, std::min<int>(residual_count, static_cast<int>(residuals.size())));
+    for (int i = 0; i < count; ++i) {
+        sum += residuals[static_cast<std::size_t>(i)] * residuals[static_cast<std::size_t>(i)];
     }
     return sum;
 }
 
-double PDCMomentumReconstructor::ResidualChi2Reduced(const std::array<double, 8>& residuals) {
-    const double raw = ResidualChi2Raw(residuals);
-    return ReducedChi2(raw, static_cast<int>(kResidualCount) - static_cast<int>(kParameterCount));
+double PDCMomentumReconstructor::ResidualChi2Reduced(const std::array<double, 8>& residuals,
+                                                     int residual_count,
+                                                     int ndf) {
+    const double raw = ResidualChi2Raw(residuals, residual_count);
+    return ReducedChi2(raw, ndf);
 }
 
 PDCMomentumReconstructor::EvalResult PDCMomentumReconstructor::EvaluateState(
@@ -404,10 +408,13 @@ PDCMomentumReconstructor::EvalResult PDCMomentumReconstructor::EvaluateState(
     const PDCInputTrack& track,
     const TargetConstraint& target,
     const RecoConfig& config,
-    const MeasurementModel& measurement
+    const MeasurementModel& measurement,
+    const RkFitLayout& layout
 ) const {
     EvalResult eval;
-    const TVector3 start_pos(target.target_position.X() + state.dx, target.target_position.Y() + state.dy, target.target_position.Z());
+    const TVector3 start_pos = layout.fixed_target_position
+        ? target.target_position
+        : TVector3(target.target_position.X() + state.dx, target.target_position.Y() + state.dy, target.target_position.Z());
     const TVector3 momentum = BuildMomentumVector(state, target.charge_e);
     if (!IsFinite(start_pos) || momentum.Mag2() < 1.0e-12 || !IsFinite(momentum)) {
         return eval;
@@ -483,13 +490,16 @@ PDCMomentumReconstructor::EvalResult PDCMomentumReconstructor::EvaluateState(
         eval.residuals[5] = diff2.Z() / pdc_sigma;
         eval.used_measurement_covariance = false;
     }
-    // [EN] Anchor target offsets to avoid drifting into unconstrained solutions in 5D fit. / [CN] 给靶点偏移加约束，避免5维拟合漂移到欠约束解。
-    eval.residuals[6] = state.dx / target_sigma;
-    eval.residuals[7] = state.dy / target_sigma;
+    if (layout.include_target_xy_prior) {
+        // [EN] Anchor target offsets to avoid drifting into unconstrained solutions in 5D fit. / [CN] 给靶点偏移加约束，避免5维拟合漂移到欠约束解。
+        eval.residuals[6] = state.dx / target_sigma;
+        eval.residuals[7] = state.dy / target_sigma;
+    }
 
-    eval.ndf = static_cast<int>(kResidualCount) - static_cast<int>(kParameterCount);
-    eval.chi2_raw = ResidualChi2Raw(eval.residuals);
-    eval.chi2_reduced = ReducedChi2(eval.chi2_raw, eval.ndf);
+    eval.residual_count = layout.residual_count;
+    eval.ndf = layout.residual_count - layout.parameter_count;
+    eval.chi2_raw = ResidualChi2Raw(eval.residuals, eval.residual_count);
+    eval.chi2_reduced = ResidualChi2Reduced(eval.residuals, eval.residual_count, eval.ndf);
     eval.min_distance_mm = std::max(std::sqrt(best1), std::sqrt(best2));
 
     const double d_target_1 = SafeNorm(track.pdc1 - target.target_position);
@@ -633,35 +643,48 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
         return result;
     }
 
+    const RkFitLayout layout = BuildRkFitLayout(config);
+    if (layout.parameter_count <= 0 || layout.parameter_count > static_cast<int>(kParameterCount) ||
+        layout.residual_count <= 0 || layout.residual_count > static_cast<int>(kResidualCount)) {
+        result.status = SolverStatus::kInvalidInput;
+        result.message = "invalid RK fit layout";
+        return result;
+    }
+
     const ParameterState initial_state = BuildInitialState(track, target, config);
     ParameterState state = initial_state;
 
-    auto get_parameter = [](const ParameterState& parameters, std::size_t index) {
-        if (index == 0) return parameters.dx;
-        if (index == 1) return parameters.dy;
-        if (index == 2) return parameters.u;
-        if (index == 3) return parameters.v;
+    auto get_parameter = [](const ParameterState& parameters, int full_index) {
+        if (full_index == 0) return parameters.dx;
+        if (full_index == 1) return parameters.dy;
+        if (full_index == 2) return parameters.u;
+        if (full_index == 3) return parameters.v;
         return parameters.q;
     };
 
-    auto add_delta = [](const ParameterState& parameters, std::size_t index, double delta) {
+    auto add_delta = [](const ParameterState& parameters, int full_index, double delta) {
         ParameterState shifted = parameters;
-        if (index == 0) shifted.dx += delta;
-        if (index == 1) shifted.dy += delta;
-        if (index == 2) shifted.u += delta;
-        if (index == 3) shifted.v += delta;
-        if (index == 4) shifted.q += delta;
+        if (full_index == 0) shifted.dx += delta;
+        if (full_index == 1) shifted.dy += delta;
+        if (full_index == 2) shifted.u += delta;
+        if (full_index == 3) shifted.v += delta;
+        if (full_index == 4) shifted.q += delta;
         return shifted;
     };
 
-    auto parameter_steps = [](const ParameterState& parameters) {
-        return std::array<double, kParameterCount>{
-            0.2,
-            0.2,
-            1.0e-3,
-            1.0e-3,
-            std::max(1.0e-6, std::abs(parameters.q) * 2.0e-3)
-        };
+    auto parameter_step = [](const ParameterState& parameters, int full_index) {
+        if (full_index == 0 || full_index == 1) return 0.2;
+        if (full_index == 2 || full_index == 3) return 1.0e-3;
+        return std::max(1.0e-6, std::abs(parameters.q) * 2.0e-3);
+    };
+
+    auto find_local_parameter = [&](int full_index) {
+        for (int local = 0; local < layout.parameter_count; ++local) {
+            if (layout.active_parameter_indices[static_cast<std::size_t>(local)] == full_index) {
+                return local;
+            }
+        }
+        return -1;
     };
 
     auto build_residual_jacobian =
@@ -669,28 +692,30 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
             if (!jacobian) {
                 return false;
             }
-            jacobian->ResizeTo(static_cast<int>(kResidualCount), static_cast<int>(kParameterCount));
+            jacobian->ResizeTo(layout.residual_count, layout.parameter_count);
             jacobian->Zero();
-            const std::array<double, kParameterCount> steps = parameter_steps(reference_state);
-            for (std::size_t j = 0; j < kParameterCount; ++j) {
-                ParameterState plus = add_delta(reference_state, j, steps[j]);
-                ParameterState minus = add_delta(reference_state, j, -steps[j]);
+            for (int local_j = 0; local_j < layout.parameter_count; ++local_j) {
+                const int full_j = layout.active_parameter_indices[static_cast<std::size_t>(local_j)];
+                const double step = parameter_step(reference_state, full_j);
+                ParameterState plus = add_delta(reference_state, full_j, step);
+                ParameterState minus = add_delta(reference_state, full_j, -step);
                 plus = ClampState(plus, target, config);
                 minus = ClampState(minus, target, config);
 
-                const double plus_value = get_parameter(plus, j);
-                const double minus_value = get_parameter(minus, j);
+                const double plus_value = get_parameter(plus, full_j);
+                const double minus_value = get_parameter(minus, full_j);
                 const double denominator = plus_value - minus_value;
                 if (!std::isfinite(denominator) || std::abs(denominator) < 1.0e-12) {
                     continue;
                 }
 
-                const EvalResult eval_plus = EvaluateState(plus, track, target, config, measurement);
-                const EvalResult eval_minus = EvaluateState(minus, track, target, config, measurement);
+                const EvalResult eval_plus = EvaluateState(plus, track, target, config, measurement, layout);
+                const EvalResult eval_minus = EvaluateState(minus, track, target, config, measurement, layout);
                 if (eval_plus.valid && eval_minus.valid) {
-                    for (std::size_t i = 0; i < kResidualCount; ++i) {
-                        (*jacobian)(static_cast<int>(i), static_cast<int>(j)) =
-                            (eval_plus.residuals[i] - eval_minus.residuals[i]) / denominator;
+                    for (int i = 0; i < reference_eval.residual_count; ++i) {
+                        (*jacobian)(i, local_j) =
+                            (eval_plus.residuals[static_cast<std::size_t>(i)] -
+                             eval_minus.residuals[static_cast<std::size_t>(i)]) / denominator;
                     }
                     continue;
                 }
@@ -699,24 +724,25 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
                     continue;
                 }
 
-                const double forward_denominator = plus_value - get_parameter(reference_state, j);
+                const double forward_denominator = plus_value - get_parameter(reference_state, full_j);
                 if (!std::isfinite(forward_denominator) || std::abs(forward_denominator) < 1.0e-12) {
                     continue;
                 }
-                for (std::size_t i = 0; i < kResidualCount; ++i) {
-                    (*jacobian)(static_cast<int>(i), static_cast<int>(j)) =
-                        (eval_plus.residuals[i] - reference_eval.residuals[i]) / forward_denominator;
+                for (int i = 0; i < reference_eval.residual_count; ++i) {
+                    (*jacobian)(i, local_j) =
+                        (eval_plus.residuals[static_cast<std::size_t>(i)] -
+                         reference_eval.residuals[static_cast<std::size_t>(i)]) / forward_denominator;
                 }
             }
             return true;
         };
 
-    auto build_normal_matrix = [](const TMatrixD& jacobian) {
-        TMatrixD normal(static_cast<int>(kParameterCount), static_cast<int>(kParameterCount));
+    auto build_normal_matrix = [&](const TMatrixD& jacobian) {
+        TMatrixD normal(layout.parameter_count, layout.parameter_count);
         normal.Zero();
-        for (int i = 0; i < static_cast<int>(kResidualCount); ++i) {
-            for (int j = 0; j < static_cast<int>(kParameterCount); ++j) {
-                for (int k = 0; k < static_cast<int>(kParameterCount); ++k) {
+        for (int i = 0; i < jacobian.GetNrows(); ++i) {
+            for (int j = 0; j < jacobian.GetNcols(); ++j) {
+                for (int k = 0; k < jacobian.GetNcols(); ++k) {
                     normal(j, k) += jacobian(i, j) * jacobian(i, k);
                 }
             }
@@ -724,11 +750,11 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
         return normal;
     };
 
-    auto build_gradient = [](const TMatrixD& jacobian, const EvalResult& eval) {
-        TVectorD gradient(static_cast<int>(kParameterCount));
+    auto build_gradient = [&](const TMatrixD& jacobian, const EvalResult& eval) {
+        TVectorD gradient(layout.parameter_count);
         gradient.Zero();
-        for (int i = 0; i < static_cast<int>(kResidualCount); ++i) {
-            for (int j = 0; j < static_cast<int>(kParameterCount); ++j) {
+        for (int i = 0; i < eval.residual_count; ++i) {
+            for (int j = 0; j < layout.parameter_count; ++j) {
                 gradient(j) += jacobian(i, j) * eval.residuals[static_cast<std::size_t>(i)];
             }
         }
@@ -736,18 +762,19 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
     };
 
     auto build_momentum_jacobian = [&](const ParameterState& reference_state) {
-        TMatrixD jacobian(static_cast<int>(kMomentumDim), static_cast<int>(kParameterCount));
+        TMatrixD jacobian(static_cast<int>(kMomentumDim), layout.parameter_count);
         jacobian.Zero();
-        const std::array<double, kParameterCount> steps = parameter_steps(reference_state);
         const TVector3 base_momentum = BuildMomentumVector(reference_state, target.charge_e);
-        for (std::size_t j = 0; j < kParameterCount; ++j) {
-            ParameterState plus = add_delta(reference_state, j, steps[j]);
-            ParameterState minus = add_delta(reference_state, j, -steps[j]);
+        for (int local_j = 0; local_j < layout.parameter_count; ++local_j) {
+            const int full_j = layout.active_parameter_indices[static_cast<std::size_t>(local_j)];
+            const double step = parameter_step(reference_state, full_j);
+            ParameterState plus = add_delta(reference_state, full_j, step);
+            ParameterState minus = add_delta(reference_state, full_j, -step);
             plus = ClampState(plus, target, config);
             minus = ClampState(minus, target, config);
 
-            const double plus_value = get_parameter(plus, j);
-            const double minus_value = get_parameter(minus, j);
+            const double plus_value = get_parameter(plus, full_j);
+            const double minus_value = get_parameter(minus, full_j);
             double denominator = plus_value - minus_value;
             TVector3 delta_momentum(0.0, 0.0, 0.0);
 
@@ -757,38 +784,56 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
                 delta_momentum = plus_momentum - minus_momentum;
             } else {
                 const TVector3 plus_momentum = BuildMomentumVector(plus, target.charge_e);
-                denominator = plus_value - get_parameter(reference_state, j);
+                denominator = plus_value - get_parameter(reference_state, full_j);
                 if (!std::isfinite(denominator) || std::abs(denominator) < 1.0e-12) {
                     continue;
                 }
                 delta_momentum = plus_momentum - base_momentum;
             }
 
-            jacobian(0, static_cast<int>(j)) = delta_momentum.X() / denominator;
-            jacobian(1, static_cast<int>(j)) = delta_momentum.Y() / denominator;
-            jacobian(2, static_cast<int>(j)) = delta_momentum.Z() / denominator;
+            jacobian(0, local_j) = delta_momentum.X() / denominator;
+            jacobian(1, local_j) = delta_momentum.Y() / denominator;
+            jacobian(2, local_j) = delta_momentum.Z() / denominator;
         }
         return jacobian;
     };
 
     auto build_prior_precision = [&]() {
-        TMatrixD precision(static_cast<int>(kParameterCount), static_cast<int>(kParameterCount));
+        TMatrixD precision(layout.parameter_count, layout.parameter_count);
         precision.Zero();
         const double sigma_u = SafeSigma(config.posterior_u_sigma, 0.25);
         const double sigma_v = SafeSigma(config.posterior_v_sigma, 0.25);
         const double q_sigma =
             std::max(std::abs(initial_state.q) * std::max(config.posterior_q_rel_sigma, 1.0e-3),
                      std::abs(target.charge_e) / std::max(config.p_max_mevc, config.p_min_mevc));
-        if (sigma_u > 0.0) {
-            precision(2, 2) = 1.0 / (sigma_u * sigma_u);
+        const int u_local = find_local_parameter(2);
+        const int v_local = find_local_parameter(3);
+        const int q_local = find_local_parameter(4);
+        if (u_local >= 0 && sigma_u > 0.0) {
+            precision(u_local, u_local) = 1.0 / (sigma_u * sigma_u);
         }
-        if (sigma_v > 0.0) {
-            precision(3, 3) = 1.0 / (sigma_v * sigma_v);
+        if (v_local >= 0 && sigma_v > 0.0) {
+            precision(v_local, v_local) = 1.0 / (sigma_v * sigma_v);
         }
-        if (q_sigma > 0.0) {
-            precision(4, 4) = 1.0 / (q_sigma * q_sigma);
+        if (q_local >= 0 && q_sigma > 0.0) {
+            precision(q_local, q_local) = 1.0 / (q_sigma * q_sigma);
         }
         return precision;
+    };
+
+    auto store_state_covariance = [&](const TMatrixD& state_covariance, std::array<double, 25>* out) {
+        if (!out) {
+            return;
+        }
+        out->fill(0.0);
+        for (int local_row = 0; local_row < layout.parameter_count; ++local_row) {
+            const int full_row = layout.active_parameter_indices[static_cast<std::size_t>(local_row)];
+            for (int local_col = 0; local_col < layout.parameter_count; ++local_col) {
+                const int full_col = layout.active_parameter_indices[static_cast<std::size_t>(local_col)];
+                (*out)[static_cast<std::size_t>(full_row * static_cast<int>(kParameterCount) + full_col)] =
+                    state_covariance(local_row, local_col);
+            }
+        }
     };
 
     auto fill_momentum_uncertainty =
@@ -830,7 +875,7 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
             }
         };
 
-    EvalResult current = EvaluateState(state, track, target, config, measurement);
+    EvalResult current = EvaluateState(state, track, target, config, measurement, layout);
     if (!current.valid) {
         result.status = SolverStatus::kNotConverged;
         result.message = "initial RK evaluation failed";
@@ -841,16 +886,16 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
     int accepted_iterations = 0;
 
     for (int iter = 0; iter < config.max_iterations; ++iter) {
-        TMatrixD jacobian(static_cast<int>(kResidualCount), static_cast<int>(kParameterCount));
+        TMatrixD jacobian(layout.residual_count, layout.parameter_count);
         build_residual_jacobian(state, current, &jacobian);
         TMatrixD normal = build_normal_matrix(jacobian);
         TVectorD gradient = build_gradient(jacobian, current);
-        for (int j = 0; j < static_cast<int>(kParameterCount); ++j) {
+        for (int j = 0; j < layout.parameter_count; ++j) {
             normal(j, j) += lambda * std::max(1.0, normal(j, j));
         }
 
-        TVectorD rhs(static_cast<int>(kParameterCount));
-        for (int j = 0; j < static_cast<int>(kParameterCount); ++j) {
+        TVectorD rhs(layout.parameter_count);
+        for (int j = 0; j < layout.parameter_count; ++j) {
             rhs(j) = -gradient(j);
         }
 
@@ -863,22 +908,28 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
         }
 
         ParameterState candidate = state;
-        candidate.dx += delta(0);
-        candidate.dy += delta(1);
-        candidate.u += delta(2);
-        candidate.v += delta(3);
-        candidate.q += delta(4);
+        for (int local_j = 0; local_j < layout.parameter_count; ++local_j) {
+            const int full_j = layout.active_parameter_indices[static_cast<std::size_t>(local_j)];
+            if (full_j == 0) candidate.dx += delta(local_j);
+            if (full_j == 1) candidate.dy += delta(local_j);
+            if (full_j == 2) candidate.u += delta(local_j);
+            if (full_j == 3) candidate.v += delta(local_j);
+            if (full_j == 4) candidate.q += delta(local_j);
+        }
         candidate = ClampState(candidate, target, config);
 
-        const EvalResult candidate_eval = EvaluateState(candidate, track, target, config, measurement);
+        const EvalResult candidate_eval = EvaluateState(candidate, track, target, config, measurement, layout);
         if (candidate_eval.valid && candidate_eval.chi2_raw < current.chi2_raw) {
             const double improvement = current.chi2_raw - candidate_eval.chi2_raw;
             state = candidate;
             current = candidate_eval;
             lambda = std::max(config.lm_lambda_min, lambda / 3.0);
             ++accepted_iterations;
-            const double delta_norm =
-                std::sqrt(delta(0) * delta(0) + delta(1) * delta(1) + delta(2) * delta(2) + delta(3) * delta(3) + delta(4) * delta(4));
+            double delta_norm_sq = 0.0;
+            for (int local_j = 0; local_j < layout.parameter_count; ++local_j) {
+                delta_norm_sq += delta(local_j) * delta(local_j);
+            }
+            const double delta_norm = std::sqrt(delta_norm_sq);
             if (improvement < 1.0e-8 || delta_norm < 1.0e-5) {
                 break;
             }
@@ -900,9 +951,11 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
     result.path_length_mm = current.path_length_mm;
     result.brho_tm = current.brho_tm;
     result.p4_at_target = current.p4_at_target;
-    result.fit_start_position.SetXYZ(target.target_position.X() + state.dx,
-                                     target.target_position.Y() + state.dy,
-                                     target.target_position.Z());
+    result.fit_start_position = layout.fixed_target_position
+        ? target.target_position
+        : TVector3(target.target_position.X() + state.dx,
+                   target.target_position.Y() + state.dy,
+                   target.target_position.Z());
 
     if (!current.valid || !IsFinite(result.p4_at_target)) {
         result.status = SolverStatus::kNotConverged;
@@ -911,14 +964,14 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
     }
 
     if (config.compute_uncertainty) {
-        TMatrixD jacobian(static_cast<int>(kResidualCount), static_cast<int>(kParameterCount));
+        TMatrixD jacobian(layout.residual_count, layout.parameter_count);
         if (build_residual_jacobian(state, current, &jacobian)) {
             const TMatrixD normal = build_normal_matrix(jacobian);
-            TMatrixD state_covariance(static_cast<int>(kParameterCount), static_cast<int>(kParameterCount));
+            TMatrixD state_covariance(layout.parameter_count, layout.parameter_count);
             double condition_number = std::numeric_limits<double>::quiet_NaN();
             if (InvertWithSVD(normal, &state_covariance, &condition_number)) {
                 result.normal_condition_number = condition_number;
-                MatrixToArray(state_covariance, &result.state_covariance);
+                store_state_covariance(state_covariance, &result.state_covariance);
                 fill_momentum_uncertainty(state,
                                           state_covariance,
                                           &result.momentum_covariance,
@@ -932,7 +985,7 @@ RecoResult PDCMomentumReconstructor::ReconstructRK(
                 if (config.compute_posterior_laplace) {
                     TMatrixD posterior_normal = normal;
                     posterior_normal += build_prior_precision();
-                    TMatrixD posterior_state_covariance(static_cast<int>(kParameterCount), static_cast<int>(kParameterCount));
+                    TMatrixD posterior_state_covariance(layout.parameter_count, layout.parameter_count);
                     double posterior_condition_number = std::numeric_limits<double>::quiet_NaN();
                     if (InvertWithSVD(posterior_normal, &posterior_state_covariance, &posterior_condition_number)) {
                         fill_momentum_uncertainty(state,

@@ -31,6 +31,7 @@ using analysis::pdc::anaroot_like::PDCInputTrack;
 using analysis::pdc::anaroot_like::PDCMomentumReconstructor;
 using analysis::pdc::anaroot_like::RecoConfig;
 using analysis::pdc::anaroot_like::RecoResult;
+using analysis::pdc::anaroot_like::RkFitMode;
 using analysis::pdc::anaroot_like::SolverStatus;
 using analysis::pdc::anaroot_like::TargetConstraint;
 using analysis::pdc::anaroot_like::IntervalEstimate;
@@ -337,6 +338,9 @@ void check_pdc_reco_backend(const char* sim_root,
     cfgRK.enable_multi_dim = false;
     cfgRK.enable_matrix = false;
 
+    RecoConfig cfgRKFixedTarget = cfgRK;
+    cfgRKFixedTarget.rk_fit_mode = RkFitMode::kFixedTargetPdcOnly;
+
     TFile inFile(sim_root, "READ");
     if (inFile.IsZombie()) {
         std::cerr << "[check_pdc_reco_backend] Failed to open input: " << sim_root << std::endl;
@@ -358,6 +362,7 @@ void check_pdc_reco_backend(const char* sim_root,
 
     MethodSummary autoSummary;
     MethodSummary rkSummary;
+    MethodSummary rkFixedTargetSummary;
 
     long long truthProtonCount = 0;
     long long truthAndTrackCount = 0;
@@ -391,15 +396,18 @@ void check_pdc_reco_backend(const char* sim_root,
 
         const RecoResult autoResult = reconstructor.Reconstruct(inputTrack, constraint, cfgAuto);
         const RecoResult rkResult = reconstructor.ReconstructRK(inputTrack, constraint, cfgRK);
+        const RecoResult rkFixedTargetResult = reconstructor.ReconstructRK(inputTrack, constraint, cfgRKFixedTarget);
 
         UpdateSummary(autoSummary, autoResult, truth.protonMomentum.X());
         UpdateSummary(rkSummary, rkResult, truth.protonMomentum.X());
+        UpdateSummary(rkFixedTargetSummary, rkFixedTargetResult, truth.protonMomentum.X());
     }
 
     std::cout << "[check_pdc_reco_backend] Truth proton events: " << truthProtonCount << std::endl;
     std::cout << "[check_pdc_reco_backend] Truth+PDC-track events: " << truthAndTrackCount << std::endl;
     PrintSummaryLine("ANAROOT-like AutoChain", autoSummary);
     PrintSummaryLine("ANAROOT-like RK only", rkSummary);
+    PrintSummaryLine("ANAROOT-like RK fixed target", rkFixedTargetSummary);
 
     if (out_csv && out_csv[0] != '\0') {
         std::ofstream csv(out_csv);
@@ -468,12 +476,44 @@ void check_pdc_reco_backend(const char* sim_root,
         csv << "rk_px_credible95," << rkSummary.posteriorValid << ","
             << (rkSummary.posteriorValid > 0 ? static_cast<double>(rkSummary.credible95Px) / rkSummary.posteriorValid : 0.0)
             << ",0\n";
+        csv << "rk_fixed_target_attempts," << rkFixedTargetSummary.attempts << ",0,0\n";
+        csv << "rk_fixed_target_success_rate," << rkFixedTargetSummary.attempts << ","
+            << (rkFixedTargetSummary.attempts > 0 ? static_cast<double>(rkFixedTargetSummary.success) / rkFixedTargetSummary.attempts : 0.0)
+            << ",0\n";
+        csv << "rk_fixed_target_usable_rate," << rkFixedTargetSummary.attempts << ","
+            << (rkFixedTargetSummary.attempts > 0 ? static_cast<double>(rkFixedTargetSummary.usable) / rkFixedTargetSummary.attempts : 0.0)
+            << ",0\n";
+        csv << "rk_fixed_target_dpx_success," << rkFixedTargetSummary.dpxSuccess.count << ","
+            << rkFixedTargetSummary.dpxSuccess.Mean() << "," << rkFixedTargetSummary.dpxSuccess.RMS() << "\n";
+        csv << "rk_fixed_target_dpx_usable," << rkFixedTargetSummary.dpxUsable.count << ","
+            << rkFixedTargetSummary.dpxUsable.Mean() << "," << rkFixedTargetSummary.dpxUsable.RMS() << "\n";
+        csv << "rk_fixed_target_chi2_reduced," << rkFixedTargetSummary.chi2Reduced.count << ","
+            << rkFixedTargetSummary.chi2Reduced.Mean() << "," << rkFixedTargetSummary.chi2Reduced.RMS() << "\n";
+        csv << "rk_fixed_target_px_sigma," << rkFixedTargetSummary.pxSigma.count << ","
+            << rkFixedTargetSummary.pxSigma.Mean() << "," << rkFixedTargetSummary.pxSigma.RMS() << "\n";
+        csv << "rk_fixed_target_px_coverage68," << rkFixedTargetSummary.uncertaintyValid << ","
+            << (rkFixedTargetSummary.uncertaintyValid > 0 ? static_cast<double>(rkFixedTargetSummary.coverage68Px) / rkFixedTargetSummary.uncertaintyValid : 0.0)
+            << ",0\n";
+        csv << "rk_fixed_target_px_coverage95," << rkFixedTargetSummary.uncertaintyValid << ","
+            << (rkFixedTargetSummary.uncertaintyValid > 0 ? static_cast<double>(rkFixedTargetSummary.coverage95Px) / rkFixedTargetSummary.uncertaintyValid : 0.0)
+            << ",0\n";
+        csv << "rk_fixed_target_px_credible_sigma," << rkFixedTargetSummary.pxPosteriorSigma.count << ","
+            << rkFixedTargetSummary.pxPosteriorSigma.Mean() << "," << rkFixedTargetSummary.pxPosteriorSigma.RMS() << "\n";
+        csv << "rk_fixed_target_px_credible68," << rkFixedTargetSummary.posteriorValid << ","
+            << (rkFixedTargetSummary.posteriorValid > 0 ? static_cast<double>(rkFixedTargetSummary.credible68Px) / rkFixedTargetSummary.posteriorValid : 0.0)
+            << ",0\n";
+        csv << "rk_fixed_target_px_credible95," << rkFixedTargetSummary.posteriorValid << ","
+            << (rkFixedTargetSummary.posteriorValid > 0 ? static_cast<double>(rkFixedTargetSummary.credible95Px) / rkFixedTargetSummary.posteriorValid : 0.0)
+            << ",0\n";
 
         for (const auto& [status, count] : autoSummary.statusCount) {
             csv << "auto_status_" << StatusToString(status) << "," << count << ",0,0\n";
         }
         for (const auto& [status, count] : rkSummary.statusCount) {
             csv << "rk_status_" << StatusToString(status) << "," << count << ",0,0\n";
+        }
+        for (const auto& [status, count] : rkFixedTargetSummary.statusCount) {
+            csv << "rk_fixed_target_status_" << StatusToString(status) << "," << count << ",0,0\n";
         }
         csv.close();
         std::cout << "[check_pdc_reco_backend] Wrote CSV: " << out_csv << std::endl;

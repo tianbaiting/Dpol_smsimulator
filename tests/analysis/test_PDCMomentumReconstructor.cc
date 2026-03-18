@@ -13,6 +13,7 @@
 using analysis::pdc::anaroot_like::PDCInputTrack;
 using analysis::pdc::anaroot_like::PDCMomentumReconstructor;
 using analysis::pdc::anaroot_like::RecoConfig;
+using analysis::pdc::anaroot_like::RkFitMode;
 using analysis::pdc::anaroot_like::SolveMethod;
 using analysis::pdc::anaroot_like::SolverStatus;
 using analysis::pdc::anaroot_like::TargetConstraint;
@@ -319,6 +320,54 @@ TEST(PDCMomentumReconstructorTest, RKReportsLocalUncertaintyAndIntervals) {
               TraceFromArray(result.momentum_covariance) + 1.0e-9);
 }
 
+TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlyUsesTwoPointLossWithFixedVertex) {
+    // [EN] Fixed-target two-point RK mode should keep the start vertex pinned at target and fit momentum only from PDC residuals. / [CN] 固定靶点两点RK模式应将起点钉在靶点，只通过PDC残差拟合动量。
+    const std::string field_path = WriteConstantFieldMap("pdc_constant_field_rk_fixed_target", 0.58);
+
+    MagneticField mag_field;
+    ASSERT_TRUE(mag_field.LoadFieldMap(field_path));
+    mag_field.SetRotationAngle(0.0);
+
+    const TVector3 target_pos(0.0, 0.0, 0.0);
+    const TVector3 truth_momentum(110.0, 20.0, 690.0);
+    const PDCInputTrack track = MakeSyntheticCurvedTrack(&mag_field, target_pos, truth_momentum);
+
+    TargetConstraint target = MakeConstraint();
+    target.pdc_sigma_mm = 2.0;
+    target.target_sigma_xy_mm = 5.0;
+
+    RecoConfig config;
+    config.enable_rk = true;
+    config.enable_multi_dim = false;
+    config.enable_matrix = false;
+    config.enable_nn = false;
+    config.rk_fit_mode = RkFitMode::kFixedTargetPdcOnly;
+    config.initial_p_mevc = truth_momentum.Mag();
+    config.max_iterations = 80;
+    config.rk_step_mm = 5.0;
+    config.tolerance_mm = 3.0;
+    config.compute_uncertainty = true;
+    config.compute_posterior_laplace = true;
+
+    PDCMomentumReconstructor reconstructor(&mag_field);
+    const auto result = reconstructor.ReconstructRK(track, target, config);
+
+    EXPECT_EQ(result.status, SolverStatus::kSuccess);
+    EXPECT_TRUE(std::isfinite(result.chi2_raw));
+    EXPECT_TRUE(std::isfinite(result.chi2_reduced));
+    EXPECT_EQ(result.ndf, 3);
+    EXPECT_TRUE(result.uncertainty_valid);
+    EXPECT_TRUE(result.posterior_valid);
+    EXPECT_NEAR(result.fit_start_position.X(), target_pos.X(), 1.0e-9);
+    EXPECT_NEAR(result.fit_start_position.Y(), target_pos.Y(), 1.0e-9);
+    EXPECT_NEAR(result.fit_start_position.Z(), target_pos.Z(), 1.0e-9);
+    EXPECT_NEAR(result.p4_at_target.Px(), truth_momentum.X(), 40.0);
+    EXPECT_NEAR(result.p4_at_target.Py(), truth_momentum.Y(), 25.0);
+    EXPECT_NEAR(result.p4_at_target.Pz(), truth_momentum.Z(), 60.0);
+    EXPECT_GT(result.px_interval.sigma, 0.0);
+    EXPECT_GT(result.px_credible.sigma, 0.0);
+}
+
 TEST(PDCMomentumReconstructorTest, RKUsesPerPlaneMeasurementCovariance) {
     // [EN] Full 3x3 PDC covariance inputs should activate whitened residuals and still return usable intervals. / [CN] 完整3x3的PDC协方差输入应启用白化残差，并仍能返回可用区间。
     const std::string field_path = WriteConstantFieldMap("pdc_constant_field_rk_covariance", 0.55);
@@ -366,4 +415,55 @@ TEST(PDCMomentumReconstructorTest, RKUsesPerPlaneMeasurementCovariance) {
     EXPECT_GT(result.px_credible.sigma, 0.0);
     EXPECT_LE(TraceFromArray(result.posterior_momentum_covariance),
               TraceFromArray(result.momentum_covariance) + 1.0e-9);
+}
+
+TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlySupportsPerPlaneCovariance) {
+    // [EN] Fixed-target two-point mode should keep covariance whitening and posterior intervals available. / [CN] 固定靶点两点模式应继续支持协方差白化与后验区间输出。
+    const std::string field_path = WriteConstantFieldMap("pdc_constant_field_rk_fixed_target_covariance", 0.54);
+
+    MagneticField mag_field;
+    ASSERT_TRUE(mag_field.LoadFieldMap(field_path));
+    mag_field.SetRotationAngle(0.0);
+
+    const TVector3 target_pos(0.0, 0.0, 0.0);
+    const TVector3 truth_momentum(85.0, -12.0, 675.0);
+    const PDCInputTrack track = MakeSyntheticCurvedTrack(&mag_field, target_pos, truth_momentum);
+
+    TargetConstraint target = MakeConstraint();
+    target.use_pdc_covariance = true;
+    target.pdc1_cov_mm2 = {4.0, 0.4, 0.2,
+                           0.4, 2.25, 0.1,
+                           0.2, 0.1, 5.0};
+    target.pdc2_cov_mm2 = {3.5, 0.3, 0.15,
+                           0.3, 2.0, 0.05,
+                           0.15, 0.05, 4.5};
+
+    RecoConfig config;
+    config.enable_rk = true;
+    config.enable_multi_dim = false;
+    config.enable_matrix = false;
+    config.enable_nn = false;
+    config.rk_fit_mode = RkFitMode::kFixedTargetPdcOnly;
+    config.initial_p_mevc = truth_momentum.Mag();
+    config.max_iterations = 80;
+    config.rk_step_mm = 5.0;
+    config.tolerance_mm = 3.5;
+    config.compute_uncertainty = true;
+    config.compute_posterior_laplace = true;
+
+    PDCMomentumReconstructor reconstructor(&mag_field);
+    const auto result = reconstructor.ReconstructRK(track, target, config);
+
+    EXPECT_EQ(result.status, SolverStatus::kSuccess);
+    EXPECT_EQ(result.ndf, 3);
+    EXPECT_TRUE(result.used_measurement_covariance);
+    EXPECT_TRUE(result.uncertainty_valid);
+    EXPECT_TRUE(result.posterior_valid);
+    EXPECT_TRUE(result.px_interval.valid);
+    EXPECT_TRUE(result.px_credible.valid);
+    EXPECT_GT(result.px_interval.sigma, 0.0);
+    EXPECT_GT(result.px_credible.sigma, 0.0);
+    EXPECT_NEAR(result.fit_start_position.X(), target_pos.X(), 1.0e-9);
+    EXPECT_NEAR(result.fit_start_position.Y(), target_pos.Y(), 1.0e-9);
+    EXPECT_NEAR(result.fit_start_position.Z(), target_pos.Z(), 1.0e-9);
 }
