@@ -14,13 +14,18 @@
 - `libs/analysis/src/PDCSimAna.cc`
 - `skills/smsim-pdc-track-reco/`
 
-### Classical Momentum Reconstruction
+### Primary Runtime Reconstruction Framework
 
 - `libs/analysis_pdc_reco/include/PDCMomentumReconstructor.hh`
+- `libs/analysis_pdc_reco/include/PDCRecoTypes.hh`
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructor.cc`
+- `libs/analysis_pdc_reco/src/PDCMomentumReconstructorRK.cc`
+- `libs/analysis_pdc_reco/src/PDCMomentumReconstructorMatrix.cc`
+- `libs/analysis_pdc_reco/src/PDCMomentumReconstructorMultiDim.cc`
+- `libs/analysis_pdc_reco/src/PDCMomentumReconstructorNN.cc`
 - `skills/smsim-pdc-momentum-reco/`
 
-### NN Dataset / Training / Export / Runtime
+### NN Backend Lifecycle
 
 - `scripts/reconstruction/nn_target_momentum/`
 - `apps/tools/reconstruct_sn_nn.cc`
@@ -28,6 +33,11 @@
 - `libs/analysis_pdc_reco/include/PDCNNMomentumReconstructor.hh`
 - `libs/analysis_pdc_reco/src/PDCNNMomentumReconstructor.cc`
 - `skills/smsim-nn-target-momentum/`
+
+### Legacy Compatibility
+
+- `libs/analysis/include/TargetReconstructor.hh`
+- `tests/analysis/test_TargetReconstructor.cc`
 
 ### Production Pipeline
 

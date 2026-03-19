@@ -8,6 +8,13 @@
 - `scripts/` Python analysis, batch, and visualization utilities.
 - `data/` input/output datasets; `docs/` reports; `build/` and `bin/` are generated outputs.
 
+## Reconstruction Architecture
+- `libs/analysis_pdc_reco/` is the primary runtime framework for PDC-to-target momentum reconstruction. Put new runtime reconstruction features there.
+- Treat `scripts/reconstruction/nn_target_momentum/` as the NN backend lifecycle for the main reconstruction framework, not as a separate reconstruction architecture.
+- `libs/analysis/include/TargetReconstructor.hh` is compatibility-only legacy code. Do not add new features there unless required for regression fixes or migration support.
+- Reuse the existing geometry and target-position sources of truth. Do not introduce another private PDC placement convention or ad hoc target-position calculation in new code.
+- When moving reconstruction ownership, entrypoints, or file layout, update the corresponding `skills/*/references/path-map.md` and `scripts/check_sync.sh` in the same change.
+
 ## Build, Test, and Development Commands
 
 Env: should use micromamba. look at the .envrc.

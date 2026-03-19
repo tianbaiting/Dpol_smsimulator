@@ -1,11 +1,11 @@
 ---
 name: smsim-nn-target-momentum
-description: Workflow for SMSimulator NN-based proton target-momentum reconstruction. Use when building datasets from Geant4 ROOT, training/exporting MLP models, wiring C++ forward inference (JSON model), running reconstruct_sn_nn pipelines, or evaluating NN reconstruction accuracy.
+description: Workflow for the NN backend lifecycle of SMSimulator target-momentum reconstruction. Use when building datasets from Geant4 ROOT, training/exporting MLP models, wiring C++ forward inference for the analysis_pdc_reco NN backend, running reconstruct_sn_nn pipelines, or evaluating NN reconstruction accuracy.
 ---
 
 # SMSimulator NN Target Momentum
 
-Use this skill for end-to-end NN target-momentum work only.
+Use this skill for the end-to-end lifecycle of the NN backend only.
 
 If the task also depends on target-geometry correction, cross-stage routing, or choosing among PDC sub-skills, start with `skills/smsim-pdc-target-reco-overview/` first.
 

@@ -11,6 +11,25 @@ Priority order:
 3. coordinate-frame interpretation for truth momentum
 4. only then model or solver details
 
+## One Runtime Framework
+
+Treat `libs/analysis_pdc_reco/` as the primary runtime framework for target-momentum reconstruction from PDC track points.
+
+Runtime backends may differ, but the stable contract should remain:
+
+- `PDCInputTrack`
+- `TargetConstraint`
+- `RecoConfig`
+- `RecoResult`
+
+Do not create a new parallel runtime architecture when a backend or wrapper can be added to the existing framework.
+
+## Legacy Is Compatibility Only
+
+`TargetReconstructor` remains in the repo for compatibility and regression coverage.
+
+It is not the preferred target for new runtime features. New target-momentum work should default to `analysis_pdc_reco` unless the task is explicitly about legacy migration or compatibility.
+
 ## Target Position Must Follow Project Sources Of Truth
 
 Do not silently replace project target-position logic with a private calculation.
@@ -28,6 +47,8 @@ It does not:
 - infer geometry on its own
 
 Therefore, NN accuracy is strongly coupled to the geometry and feature distribution used during dataset generation.
+
+The NN scripts, export tools, and wrapper executables should be interpreted as the lifecycle for one backend of the main runtime framework, not as a second top-level reconstruction architecture.
 
 ## Geometry Domain Match Matters
 
@@ -48,3 +69,13 @@ Repository notes also warn that fixed PDC positions may be defined differently a
 ## Prefer Existing Production Anchors
 
 When the user asks for "the current NN chain" or "the corrected-target setup", prefer the existing production script and corrected-target geometry macro instead of assembling a new path from scratch.
+
+## Do Not Add Another Geometry Convention
+
+The repo already has multiple places that parse or reinterpret PDC geometry.
+
+New work should reduce that drift, not introduce another private convention for:
+
+- PDC position meaning
+- PDC rotation direction
+- target-position sourcing

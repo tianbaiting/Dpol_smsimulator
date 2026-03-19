@@ -18,6 +18,7 @@ required_paths=(
     "libs/analysis_pdc_reco/include/PDCNNMomentumReconstructor.hh"
     "libs/analysis_pdc_reco/src/PDCNNMomentumReconstructor.cc"
     "libs/analysis_pdc_reco/src/PDCMomentumReconstructor.cc"
+    "libs/analysis_pdc_reco/src/PDCMomentumReconstructorNN.cc"
     "apps/tools/reconstruct_sn_nn.cc"
     "apps/tools/evaluate_reconstruct_sn_nn.cc"
     "tests/analysis/test_PDCMomentumReconstructor.cc"

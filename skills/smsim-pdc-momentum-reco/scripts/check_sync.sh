@@ -9,10 +9,15 @@ BASE_REF="${1:-HEAD~1}"
 required_paths=(
     "libs/analysis_pdc_reco/include/PDCMomentumReconstructor.hh"
     "libs/analysis_pdc_reco/src/PDCMomentumReconstructor.cc"
+    "libs/analysis_pdc_reco/src/PDCMomentumReconstructorRK.cc"
+    "libs/analysis_pdc_reco/src/PDCMomentumReconstructorMatrix.cc"
+    "libs/analysis_pdc_reco/src/PDCMomentumReconstructorMultiDim.cc"
+    "libs/analysis_pdc_reco/src/PDCMomentumReconstructorNN.cc"
     "libs/analysis_pdc_reco/include/PDCRecoTypes.hh"
     "libs/analysis_pdc_reco/src/PDCRecoFactory.cc"
     "libs/analysis/include/TargetReconstructor.hh"
     "tests/analysis/test_PDCMomentumReconstructor.cc"
+    "tests/analysis/test_TargetReconstructor.cc"
 )
 
 missing=0
