@@ -1,6 +1,6 @@
 ---
 name: smsim-pdc-momentum-reco
-description: Workflow for SMSimulator momentum reconstruction from PDC track points. Use when modifying the primary analysis_pdc_reco runtime framework, solver dispatch/backends (RK, matrix fallback, NN hook points, multidim placeholder), reconstruction configuration, or compatibility boundaries with TargetReconstructor.
+description: Workflow for SMSimulator momentum reconstruction from PDC track points. Use when modifying the primary analysis_pdc_reco runtime framework, solver dispatch/backends (RK modes, NN hook points, multidim placeholder), reconstruction configuration, or compatibility boundaries with TargetReconstructor.
 ---
 
 # SMSimulator PDC Momentum Reconstruction

@@ -74,6 +74,9 @@ result/
 *.d
 *.so
 *.pcm
+
+# Script outputs / 脚本产物
+scripts/analysis/output.txt
 clangd_db/
 
 .tags

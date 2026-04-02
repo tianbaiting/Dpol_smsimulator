@@ -8,6 +8,7 @@
 #include "GeometryManager.hh"
 #include "PDCSimAna.hh"
 #include "TBeamSimData.hh"
+#include "../../../libs/analysis_pdc_reco/include/PDCRecoRuntime.hh"
 
 #include <algorithm>
 #include <cctype>
@@ -17,12 +18,12 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 
 namespace {
+
+namespace reco = analysis::pdc::anaroot_like;
 
 struct SampleRow {
     long long event_id = -1;
@@ -40,86 +41,6 @@ std::string ToLower(std::string value) {
         return static_cast<char>(std::tolower(c));
     });
     return value;
-}
-
-std::string Trim(const std::string& input) {
-    const auto begin = input.find_first_not_of(" \t\r\n");
-    if (begin == std::string::npos) return "";
-    const auto end = input.find_last_not_of(" \t\r\n");
-    return input.substr(begin, end - begin + 1);
-}
-
-std::string ExpandPathToken(std::string token) {
-    const char* sms_dir = std::getenv("SMSIMDIR");
-    const std::string sms = sms_dir ? std::string(sms_dir) : std::string();
-
-    const std::string key1 = "{SMSIMDIR}";
-    const std::string key2 = "$SMSIMDIR";
-
-    std::size_t pos = token.find(key1);
-    while (pos != std::string::npos) {
-        token.replace(pos, key1.size(), sms);
-        pos = token.find(key1, pos + sms.size());
-    }
-
-    pos = token.find(key2);
-    while (pos != std::string::npos) {
-        token.replace(pos, key2.size(), sms);
-        pos = token.find(key2, pos + sms.size());
-    }
-    return token;
-}
-
-bool ResolveMacroPath(const std::string& raw_path, const std::filesystem::path& base_dir, std::filesystem::path* out_path) {
-    if (!out_path) return false;
-    std::filesystem::path path = ExpandPathToken(raw_path);
-    if (!path.is_absolute()) {
-        path = base_dir / path;
-    }
-
-    std::error_code ec;
-    const std::filesystem::path canonical = std::filesystem::weakly_canonical(path, ec);
-    if (!ec) {
-        *out_path = canonical;
-        return true;
-    }
-
-    *out_path = path.lexically_normal();
-    return std::filesystem::exists(*out_path);
-}
-
-bool LoadGeometryRecursive(GeometryManager& geo, const std::filesystem::path& macro_path, std::set<std::string>& visited) {
-    const std::string key = macro_path.lexically_normal().string();
-    if (visited.count(key)) return true;
-
-    std::ifstream fin(macro_path);
-    if (!fin.is_open()) {
-        std::cerr << "[build_dataset] Cannot open geometry macro: " << macro_path << std::endl;
-        return false;
-    }
-    visited.insert(key);
-
-    std::string line;
-    while (std::getline(fin, line)) {
-        const std::string clean = Trim(line);
-        if (clean.empty() || clean[0] == '#') continue;
-        if (clean.rfind("/control/execute", 0) == 0) {
-            std::stringstream ss(clean);
-            std::string cmd;
-            std::string include_path_raw;
-            ss >> cmd >> include_path_raw;
-            if (include_path_raw.empty()) continue;
-
-            std::filesystem::path include_path;
-            if (!ResolveMacroPath(include_path_raw, macro_path.parent_path(), &include_path)) {
-                std::cerr << "[build_dataset] Warning: unresolved include macro: " << include_path_raw << std::endl;
-                continue;
-            }
-            if (!LoadGeometryRecursive(geo, include_path, visited)) return false;
-        }
-    }
-
-    return geo.LoadGeometry(macro_path.string());
 }
 
 bool IsFinite(const TVector3& value) {
@@ -165,13 +86,7 @@ void build_dataset(const char* sim_root = nullptr,
     }
 
     GeometryManager geo;
-    std::filesystem::path geom_path;
-    std::set<std::string> visited;
-    if (!ResolveMacroPath(geom_macro, std::filesystem::current_path(), &geom_path)) {
-        std::cerr << "[build_dataset] Failed to resolve geometry macro: " << geom_macro << std::endl;
-        return;
-    }
-    if (!LoadGeometryRecursive(geo, geom_path, visited)) {
+    if (!reco::LoadGeometryFromMacro(geo, geom_macro)) {
         std::cerr << "[build_dataset] Failed to load geometry macro: " << geom_macro << std::endl;
         return;
     }

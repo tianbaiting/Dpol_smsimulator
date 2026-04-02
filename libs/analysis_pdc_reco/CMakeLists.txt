@@ -5,8 +5,8 @@ set(PDC_RECO_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PDCMomentumReconstructor.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PDCMomentumReconstructorNN.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PDCMomentumReconstructorRK.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/PDCMomentumReconstructorMatrix.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PDCMomentumReconstructorMultiDim.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PDCRecoRuntime.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/PDCRecoFactory.cc
 )
 

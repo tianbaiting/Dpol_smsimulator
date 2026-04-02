@@ -4,6 +4,7 @@
 #include "NEBULAReconstructor.hh"
 #include "PDCSimAna.hh"
 #include "PDCMomentumReconstructor.hh"
+#include "PDCRecoRuntime.hh"
 #include "RecoEvent.hh"
 #include "SMLogger.hh"
 #include "TBeamSimData.hh"
@@ -18,13 +19,33 @@
 #include <filesystem>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace fs = std::filesystem;
+namespace reco = analysis::pdc::anaroot_like;
 
 namespace {
+
+#if defined(SMSIM_RECON_FORCE_BACKEND)
+constexpr const char* kForcedBackend = SMSIM_RECON_FORCE_BACKEND;
+#else
+constexpr const char* kForcedBackend = nullptr;
+#endif
+
+#if defined(SMSIM_RECON_LOG_TAG)
+constexpr const char* kLogTag = SMSIM_RECON_LOG_TAG;
+#else
+constexpr const char* kLogTag = "reconstruct_target_momentum";
+#endif
+
+#if defined(SMSIM_RECON_LEGACY_DEFAULTS)
+constexpr bool kUseLegacyDefaults = true;
+#else
+constexpr bool kUseLegacyDefaults = false;
+#endif
 
 struct CliOptions {
     std::string input_file;
@@ -33,11 +54,19 @@ struct CliOptions {
     std::string output_dir;
     std::string geometry_macro;
     std::string nn_model_json;
+    std::string magnetic_field_map;
+    reco::RuntimeBackend backend = reco::RuntimeBackend::kAuto;
     int max_files = 0;
+    int max_iterations = 40;
     double pdc_sigma_mm = 2.0;
     double target_sigma_xy_mm = 5.0;
     double p_min_mevc = 50.0;
     double p_max_mevc = 5000.0;
+    double tolerance_mm = 5.0;
+    double rk_step_mm = 5.0;
+    double center_brho_tm = 7.2751;
+    double magnet_rotation_deg = 30.0;
+    reco::RkFitMode rk_fit_mode = reco::RkFitMode::kThreePointFree;
 };
 
 struct FileStats {
@@ -60,22 +89,9 @@ struct RunStats {
     long long reco_proton_count = 0;
 };
 
-void PrintUsage(const char* argv0) {
-    std::cout
-        << "Usage(single-file): " << argv0
-        << " --input-file FILE --output-file FILE --geometry-macro FILE --nn-model-json FILE\n"
-        << "                   [--pdc-sigma-mm V] [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
-        << "\n"
-        << "Usage: " << argv0 << " --input-dir DIR --output-dir DIR --geometry-macro FILE --nn-model-json FILE\n"
-        << "       [--max-files N] [--pdc-sigma-mm V] [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n";
-}
-
 std::string GetEnv(const char* key) {
     const char* value = std::getenv(key);
-    if (!value) {
-        return std::string();
-    }
-    return std::string(value);
+    return value ? std::string(value) : std::string();
 }
 
 double ParseDouble(const std::string& text, const char* key) {
@@ -94,14 +110,35 @@ int ParseInt(const std::string& text, const char* key) {
     }
 }
 
+void PrintUsage(const char* argv0) {
+    std::cout
+        << "Usage(single-file): " << argv0
+        << " --input-file FILE --output-file FILE --geometry-macro FILE [--backend auto|nn|rk|multidim]\n"
+        << "                   [--nn-model-json FILE] [--magnetic-field-map FILE] [--magnet-rotation-deg DEG]\n"
+        << "                   [--pdc-sigma-mm V] [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
+        << "                   [--rk-step-mm V] [--max-iterations N] [--tolerance-mm V]\n"
+        << "                   [--center-brho-tm V] [--rk-fit-mode two-point-backprop|fixed-target-pdc-only|three-point-free]\n"
+        << "\n"
+        << "Usage(directory): " << argv0
+        << " --input-dir DIR --output-dir DIR --geometry-macro FILE [--backend auto|nn|rk|multidim]\n"
+        << "                   [--nn-model-json FILE] [--magnetic-field-map FILE] [--magnet-rotation-deg DEG]\n"
+        << "                   [--max-files N] [--pdc-sigma-mm V] [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n";
+}
+
 CliOptions ParseArgs(int argc, char* argv[]) {
     CliOptions opts;
-    const std::string smsimdir = GetEnv("SMSIMDIR");
-    if (!smsimdir.empty()) {
-        opts.input_dir = smsimdir + "/data/simulation/g4output/sn124_nn_B115T";
-        opts.output_dir = smsimdir + "/data/reconstruction/sn124_nn_B115T";
-        opts.geometry_macro =
-            smsimdir + "/build/bin/configs/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227.mac";
+    if (kForcedBackend) {
+        opts.backend = reco::ParseRuntimeBackend(kForcedBackend);
+    }
+
+    if (kUseLegacyDefaults) {
+        const std::string smsimdir = GetEnv("SMSIMDIR");
+        if (!smsimdir.empty()) {
+            opts.input_dir = smsimdir + "/data/simulation/g4output/sn124_nn_B115T";
+            opts.output_dir = smsimdir + "/data/reconstruction/sn124_nn_B115T";
+            opts.geometry_macro =
+                smsimdir + "/build/bin/configs/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227.mac";
+        }
     }
     opts.nn_model_json = GetEnv("PDC_NN_MODEL_JSON");
 
@@ -119,8 +156,20 @@ CliOptions ParseArgs(int argc, char* argv[]) {
             opts.geometry_macro = argv[++i];
         } else if (arg == "--nn-model-json" && i + 1 < argc) {
             opts.nn_model_json = argv[++i];
+        } else if (arg == "--magnetic-field-map" && i + 1 < argc) {
+            opts.magnetic_field_map = argv[++i];
+        } else if (arg == "--backend" && i + 1 < argc) {
+            const reco::RuntimeBackend parsed = reco::ParseRuntimeBackend(argv[++i]);
+            if (kForcedBackend && parsed != opts.backend) {
+                throw std::runtime_error(
+                    "this compatibility wrapper only supports --backend " + reco::RuntimeBackendName(opts.backend)
+                );
+            }
+            opts.backend = parsed;
         } else if (arg == "--max-files" && i + 1 < argc) {
             opts.max_files = ParseInt(argv[++i], "--max-files");
+        } else if (arg == "--max-iterations" && i + 1 < argc) {
+            opts.max_iterations = ParseInt(argv[++i], "--max-iterations");
         } else if (arg == "--pdc-sigma-mm" && i + 1 < argc) {
             opts.pdc_sigma_mm = ParseDouble(argv[++i], "--pdc-sigma-mm");
         } else if (arg == "--target-sigma-mm" && i + 1 < argc) {
@@ -129,6 +178,16 @@ CliOptions ParseArgs(int argc, char* argv[]) {
             opts.p_min_mevc = ParseDouble(argv[++i], "--p-min-mevc");
         } else if (arg == "--p-max-mevc" && i + 1 < argc) {
             opts.p_max_mevc = ParseDouble(argv[++i], "--p-max-mevc");
+        } else if (arg == "--tolerance-mm" && i + 1 < argc) {
+            opts.tolerance_mm = ParseDouble(argv[++i], "--tolerance-mm");
+        } else if (arg == "--rk-step-mm" && i + 1 < argc) {
+            opts.rk_step_mm = ParseDouble(argv[++i], "--rk-step-mm");
+        } else if (arg == "--center-brho-tm" && i + 1 < argc) {
+            opts.center_brho_tm = ParseDouble(argv[++i], "--center-brho-tm");
+        } else if (arg == "--magnet-rotation-deg" && i + 1 < argc) {
+            opts.magnet_rotation_deg = ParseDouble(argv[++i], "--magnet-rotation-deg");
+        } else if (arg == "--rk-fit-mode" && i + 1 < argc) {
+            opts.rk_fit_mode = reco::ParseRkFitMode(argv[++i]);
         } else if (arg == "--help" || arg == "-h") {
             PrintUsage(argv[0]);
             std::exit(0);
@@ -142,22 +201,36 @@ CliOptions ParseArgs(int argc, char* argv[]) {
         if (opts.input_file.empty() || opts.output_file.empty()) {
             throw std::runtime_error("single-file mode requires both --input-file and --output-file");
         }
-    } else {
-        if (opts.input_dir.empty() || opts.output_dir.empty()) {
-            throw std::runtime_error("directory mode requires --input-dir and --output-dir");
-        }
+    } else if (opts.input_dir.empty() || opts.output_dir.empty()) {
+        throw std::runtime_error("directory mode requires --input-dir and --output-dir");
     }
-    if (opts.geometry_macro.empty() || opts.nn_model_json.empty()) {
-        throw std::runtime_error("missing required arguments; use --help");
+
+    if (opts.geometry_macro.empty()) {
+        throw std::runtime_error("missing required argument --geometry-macro");
+    }
+    if (reco::RuntimeBackendNeedsNnModel(opts.backend) && opts.nn_model_json.empty()) {
+        throw std::runtime_error("backend nn requires --nn-model-json or PDC_NN_MODEL_JSON");
+    }
+    if (reco::RuntimeBackendNeedsFieldMap(opts.backend) && opts.magnetic_field_map.empty()) {
+        throw std::runtime_error("selected backend requires --magnetic-field-map");
     }
     if (opts.max_files < 0) {
         throw std::runtime_error("--max-files must be >= 0");
+    }
+    if (opts.max_iterations <= 0) {
+        throw std::runtime_error("--max-iterations must be > 0");
     }
     if (opts.pdc_sigma_mm <= 0.0 || opts.target_sigma_xy_mm <= 0.0) {
         throw std::runtime_error("sigma parameters must be positive");
     }
     if (opts.p_min_mevc <= 0.0 || opts.p_max_mevc <= opts.p_min_mevc) {
         throw std::runtime_error("invalid momentum range");
+    }
+    if (opts.rk_step_mm <= 0.0) {
+        throw std::runtime_error("--rk-step-mm must be > 0");
+    }
+    if (opts.tolerance_mm <= 0.0) {
+        throw std::runtime_error("--tolerance-mm must be > 0");
     }
     return opts;
 }
@@ -195,39 +268,38 @@ fs::path BuildOutputPath(const fs::path& input_file, const fs::path& input_dir, 
         return output_dir / (input_file.stem().string() + "_reco.root");
     }
     fs::path out = output_dir / rel;
-    const std::string stem = out.stem().string();
-    out.replace_filename(stem + "_reco.root");
+    out.replace_filename(out.stem().string() + "_reco.root");
     return out;
 }
 
-bool ProcessSingleFile(
-    const fs::path& input_file,
-    const fs::path& output_file,
-    PDCSimAna& pdc_ana,
-    NEBULAReconstructor& nebula_reco,
-    analysis::pdc::anaroot_like::PDCMomentumReconstructor& proton_nn_reco,
-    const analysis::pdc::anaroot_like::RecoConfig& proton_config,
-    const analysis::pdc::anaroot_like::TargetConstraint& target_constraint,
-    FileStats* stats
-) {
+bool ProcessSingleFile(const fs::path& input_file,
+                       const fs::path& output_file,
+                       const std::string& log_tag,
+                       const std::string& backend_name,
+                       PDCSimAna& pdc_ana,
+                       NEBULAReconstructor& nebula_reco,
+                       reco::PDCMomentumReconstructor& proton_reco,
+                       const reco::RecoConfig& proton_config,
+                       const reco::TargetConstraint& target_constraint,
+                       FileStats* stats) {
     if (!stats) {
         return false;
     }
 
     EventDataReader reader(input_file.c_str());
     if (!reader.IsOpen()) {
-        std::cerr << "[reconstruct_sn_nn] failed to open input file: " << input_file << std::endl;
+        std::cerr << "[" << log_tag << "] failed to open input file: " << input_file << std::endl;
         return false;
     }
 
     fs::create_directories(output_file.parent_path());
     TFile out(output_file.c_str(), "RECREATE");
     if (out.IsZombie()) {
-        std::cerr << "[reconstruct_sn_nn] failed to create output file: " << output_file << std::endl;
+        std::cerr << "[" << log_tag << "] failed to create output file: " << output_file << std::endl;
         return false;
     }
 
-    TTree reco_tree("recoTree", "Reconstruction tree with NN proton and NEBULA neutron");
+    TTree reco_tree("recoTree", "Reconstruction tree with proton and NEBULA neutron");
 
     RecoEvent reco_event;
     RecoEvent* reco_event_ptr = &reco_event;
@@ -291,21 +363,21 @@ bool ProcessSingleFile(
         bool event_has_reco_proton = false;
         for (const auto& track : reco_event.tracks) {
             if (track.pdgCode == 2112) {
-                // [EN] Keep neutron reconstruction path unchanged but exclude neutron pseudo-tracks from proton NN solve. / [CN] 保持中子重建链路不变，但在质子NN求解时排除中子伪轨迹。
+                // [EN] Keep neutron reconstruction unchanged while restricting momentum inversion to charged proton tracks. / [CN] 保持中子重建链不变，同时只对带电质子轨迹执行动量反演。
                 continue;
             }
-            analysis::pdc::anaroot_like::PDCInputTrack pdc_track;
+            reco::PDCInputTrack pdc_track;
             pdc_track.pdc1 = track.start;
             pdc_track.pdc2 = track.end;
 
-            const auto reco = proton_nn_reco.Reconstruct(pdc_track, target_constraint, proton_config);
-            if ((reco.status == analysis::pdc::anaroot_like::SolverStatus::kSuccess ||
-                 reco.status == analysis::pdc::anaroot_like::SolverStatus::kNotConverged) &&
-                reco.p4_at_target.P() > 0.0) {
-                reco_proton_px.push_back(reco.p4_at_target.Px());
-                reco_proton_py.push_back(reco.p4_at_target.Py());
-                reco_proton_pz.push_back(reco.p4_at_target.Pz());
-                reco_proton_e.push_back(reco.p4_at_target.E());
+            const reco::RecoResult reco_result = proton_reco.Reconstruct(pdc_track, target_constraint, proton_config);
+            if ((reco_result.status == reco::SolverStatus::kSuccess ||
+                 reco_result.status == reco::SolverStatus::kNotConverged) &&
+                reco_result.p4_at_target.P() > 0.0) {
+                reco_proton_px.push_back(reco_result.p4_at_target.Px());
+                reco_proton_py.push_back(reco_result.p4_at_target.Py());
+                reco_proton_pz.push_back(reco_result.p4_at_target.Pz());
+                reco_proton_e.push_back(reco_result.p4_at_target.E());
                 ++stats->reco_proton_count;
                 event_has_reco_proton = true;
             }
@@ -334,9 +406,10 @@ bool ProcessSingleFile(
         reco_tree.Fill();
     }
 
+    const std::string processed_events_text = std::to_string(stats->processed_events);
     TNamed info_input("InputFile", input_file.c_str());
-    TNamed info_backend("ProtonRecoBackend", "nn");
-    TNamed info_events("ProcessedEvents", std::to_string(stats->processed_events).c_str());
+    TNamed info_backend("ProtonRecoBackend", backend_name.c_str());
+    TNamed info_events("ProcessedEvents", processed_events_text.c_str());
     info_input.Write();
     info_backend.Write();
     info_events.Write();
@@ -366,21 +439,25 @@ int main(int argc, char* argv[]) {
         const fs::path output_file_single(opts.output_file);
         const fs::path geometry_macro(opts.geometry_macro);
         const fs::path nn_model_json(opts.nn_model_json);
+        const fs::path magnetic_field_map(opts.magnetic_field_map);
+        const std::string backend_name = reco::RuntimeBackendName(opts.backend);
 
         if (single_file_mode) {
             if (!fs::exists(input_file_single)) {
                 throw std::runtime_error("input-file does not exist: " + input_file_single.string());
             }
-        } else {
-            if (!fs::exists(input_dir)) {
-                throw std::runtime_error("input-dir does not exist: " + input_dir.string());
-            }
+        } else if (!fs::exists(input_dir)) {
+            throw std::runtime_error("input-dir does not exist: " + input_dir.string());
         }
+
         if (!fs::exists(geometry_macro)) {
             throw std::runtime_error("geometry-macro does not exist: " + geometry_macro.string());
         }
-        if (!fs::exists(nn_model_json)) {
+        if (!opts.nn_model_json.empty() && !fs::exists(nn_model_json)) {
             throw std::runtime_error("nn-model-json does not exist: " + nn_model_json.string());
+        }
+        if (!opts.magnetic_field_map.empty() && !fs::exists(magnetic_field_map)) {
+            throw std::runtime_error("magnetic-field-map does not exist: " + magnetic_field_map.string());
         }
         if (single_file_mode) {
             fs::create_directories(output_file_single.parent_path());
@@ -389,8 +466,16 @@ int main(int argc, char* argv[]) {
         }
 
         GeometryManager geometry;
-        if (!geometry.LoadGeometry(geometry_macro.c_str())) {
+        if (!reco::LoadGeometryFromMacro(geometry, geometry_macro.string())) {
             throw std::runtime_error("failed to load geometry macro: " + geometry_macro.string());
+        }
+
+        std::unique_ptr<MagneticField> magnetic_field;
+        if (!opts.magnetic_field_map.empty()) {
+            magnetic_field = std::make_unique<MagneticField>();
+            if (!reco::LoadMagneticField(*magnetic_field, magnetic_field_map.string(), opts.magnet_rotation_deg)) {
+                throw std::runtime_error("failed to load magnetic field map: " + magnetic_field_map.string());
+            }
         }
 
         PDCSimAna pdc_ana(geometry);
@@ -401,25 +486,22 @@ int main(int argc, char* argv[]) {
         nebula_reco.SetTimeWindow(10.0);
         nebula_reco.SetEnergyThreshold(1.0);
 
-        analysis::pdc::anaroot_like::PDCMomentumReconstructor proton_nn_reco(nullptr);
+        reco::PDCMomentumReconstructor proton_reco(magnetic_field.get());
+        reco::RuntimeOptions runtime_options;
+        runtime_options.backend = opts.backend;
+        runtime_options.pdc_sigma_mm = opts.pdc_sigma_mm;
+        runtime_options.target_sigma_xy_mm = opts.target_sigma_xy_mm;
+        runtime_options.p_min_mevc = opts.p_min_mevc;
+        runtime_options.p_max_mevc = opts.p_max_mevc;
+        runtime_options.tolerance_mm = opts.tolerance_mm;
+        runtime_options.max_iterations = opts.max_iterations;
+        runtime_options.rk_step_mm = opts.rk_step_mm;
+        runtime_options.center_brho_tm = opts.center_brho_tm;
+        runtime_options.nn_model_json_path = opts.nn_model_json;
+        runtime_options.rk_fit_mode = opts.rk_fit_mode;
 
-        analysis::pdc::anaroot_like::RecoConfig proton_config;
-        proton_config.enable_nn = true;
-        proton_config.enable_rk = false;
-        proton_config.enable_multi_dim = false;
-        proton_config.enable_matrix = false;
-        proton_config.nn_model_json_path = nn_model_json.string();
-        proton_config.p_min_mevc = opts.p_min_mevc;
-        proton_config.p_max_mevc = opts.p_max_mevc;
-        proton_config.tolerance_mm = 5.0;
-        proton_config.max_iterations = 1;
-
-        analysis::pdc::anaroot_like::TargetConstraint target_constraint;
-        target_constraint.target_position = geometry.GetTargetPosition();
-        target_constraint.mass_mev = 938.2720813;
-        target_constraint.charge_e = 1.0;
-        target_constraint.pdc_sigma_mm = opts.pdc_sigma_mm;
-        target_constraint.target_sigma_xy_mm = opts.target_sigma_xy_mm;
+        const reco::RecoConfig proton_config = reco::BuildRecoConfig(runtime_options, magnetic_field != nullptr);
+        const reco::TargetConstraint target_constraint = reco::BuildTargetConstraint(geometry, runtime_options);
 
         std::vector<fs::path> files;
         if (single_file_mode) {
@@ -438,20 +520,21 @@ int main(int argc, char* argv[]) {
             const fs::path output_file = single_file_mode
                 ? output_file_single
                 : BuildOutputPath(input_file, input_dir, output_dir);
-            std::cout << "[reconstruct_sn_nn] input:  " << input_file << std::endl;
-            std::cout << "[reconstruct_sn_nn] output: " << output_file << std::endl;
+            std::cout << "[" << kLogTag << "] input:  " << input_file << std::endl;
+            std::cout << "[" << kLogTag << "] output: " << output_file << std::endl;
+            std::cout << "[" << kLogTag << "] backend: " << backend_name << std::endl;
 
             FileStats file_stats;
-            const bool ok = ProcessSingleFile(
-                input_file,
-                output_file,
-                pdc_ana,
-                nebula_reco,
-                proton_nn_reco,
-                proton_config,
-                target_constraint,
-                &file_stats
-            );
+            const bool ok = ProcessSingleFile(input_file,
+                                              output_file,
+                                              kLogTag,
+                                              backend_name,
+                                              pdc_ana,
+                                              nebula_reco,
+                                              proton_reco,
+                                              proton_config,
+                                              target_constraint,
+                                              &file_stats);
             if (!ok) {
                 continue;
             }
@@ -465,16 +548,16 @@ int main(int argc, char* argv[]) {
         }
 
         const double denom = run_stats.processed_events > 0 ? static_cast<double>(run_stats.processed_events) : 1.0;
-        std::cout << "[reconstruct_sn_nn] files: " << run_stats.files_succeeded << "/" << run_stats.files_total << std::endl;
-        std::cout << "[reconstruct_sn_nn] events processed: " << run_stats.processed_events << "/" << run_stats.total_events << std::endl;
-        std::cout << "[reconstruct_sn_nn] pdc-hit ratio: " << (run_stats.pdc_hit_events * 100.0 / denom) << "%" << std::endl;
-        std::cout << "[reconstruct_sn_nn] nebula-hit ratio: " << (run_stats.nebula_hit_events * 100.0 / denom) << "%" << std::endl;
-        std::cout << "[reconstruct_sn_nn] proton-reco ratio: " << (run_stats.proton_reco_events * 100.0 / denom) << "%" << std::endl;
-        std::cout << "[reconstruct_sn_nn] reco proton count: " << run_stats.reco_proton_count << std::endl;
+        std::cout << "[" << kLogTag << "] files: " << run_stats.files_succeeded << "/" << run_stats.files_total << std::endl;
+        std::cout << "[" << kLogTag << "] events processed: " << run_stats.processed_events << "/" << run_stats.total_events << std::endl;
+        std::cout << "[" << kLogTag << "] pdc-hit ratio: " << (run_stats.pdc_hit_events * 100.0 / denom) << "%" << std::endl;
+        std::cout << "[" << kLogTag << "] nebula-hit ratio: " << (run_stats.nebula_hit_events * 100.0 / denom) << "%" << std::endl;
+        std::cout << "[" << kLogTag << "] proton-reco ratio: " << (run_stats.proton_reco_events * 100.0 / denom) << "%" << std::endl;
+        std::cout << "[" << kLogTag << "] reco proton count: " << run_stats.reco_proton_count << std::endl;
         SMLogger::Logger::Instance().Shutdown();
         return 0;
     } catch (const std::exception& ex) {
-        std::cerr << "[reconstruct_sn_nn] failed: " << ex.what() << std::endl;
+        std::cerr << "[" << kLogTag << "] failed: " << ex.what() << std::endl;
         SMLogger::Logger::Instance().Shutdown();
         return 1;
     }

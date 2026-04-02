@@ -11,8 +11,10 @@
 #include <cmath>
 #include <cstring>
 #include <cstdlib>
-#include <string>
+#include <exception>
 #include <iostream>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "GeometryManager.hh"
@@ -24,26 +26,20 @@
 #include "MagneticField.hh"
 #include "TargetReconstructor.hh"
 #include "../../libs/analysis_pdc_reco/include/PDCMomentumReconstructor.hh"
-#include "../../libs/analysis_pdc_reco/include/PDCRecoFactory.hh"
+#include "../../libs/analysis_pdc_reco/include/PDCRecoRuntime.hh"
+
+namespace reco = analysis::pdc::anaroot_like;
 
 // 函数声明
 void batch_analysis_single_file(const char* inputFile, const char* outputFile);
 std::vector<TString> GetROOTFilesRecursive(const TString& directory);
 TString GetParentDirName(const TString& filepath);
 TString GetBaseName(const TString& filepath);
-std::string ToLowerCopy(std::string value);
 double ReadEnvDouble(const char* key, double fallback);
-analysis::pdc::anaroot_like::RkFitMode ReadEnvRkFitMode(
+reco::RkFitMode ReadEnvRkFitMode(
     const char* key,
-    analysis::pdc::anaroot_like::RkFitMode fallback
+    reco::RkFitMode fallback
 );
-
-std::string ToLowerCopy(std::string value) {
-    for (char& c : value) {
-        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    }
-    return value;
-}
 
 double ReadEnvDouble(const char* key, double fallback) {
     const char* value = std::getenv(key);
@@ -58,23 +54,15 @@ double ReadEnvDouble(const char* key, double fallback) {
     return parsed;
 }
 
-analysis::pdc::anaroot_like::RkFitMode ReadEnvRkFitMode(
+reco::RkFitMode ReadEnvRkFitMode(
     const char* key,
-    analysis::pdc::anaroot_like::RkFitMode fallback
+    reco::RkFitMode fallback
 ) {
     const char* value = std::getenv(key);
     if (!value || value[0] == '\0') {
         return fallback;
     }
-
-    const std::string mode = ToLowerCopy(std::string(value));
-    if (mode == "target_xy_prior" || mode == "targetxprior" || mode == "default") {
-        return analysis::pdc::anaroot_like::RkFitMode::kTargetXYPrior;
-    }
-    if (mode == "fixed_target_pdc_only" || mode == "fixedtargetpdconly" || mode == "pdc_only") {
-        return analysis::pdc::anaroot_like::RkFitMode::kFixedTargetPdcOnly;
-    }
-    return fallback;
+    return reco::ParseRkFitModeOrFallback(std::string(value), fallback);
 }
 
 // 原始Geant4数据结构，用于保存原始质子和中子动量
@@ -238,15 +226,23 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
         ? std::string(inputFile)
         : (smsBase + "/data/simulation/g4output/test/Pb208_g050/ypol_np_Pb208_g050_test0000.root");
 
-    std::string backendMode = "anaroot_like";
+    std::string backendMode = "auto";
     if (const char* backend = std::getenv("PDC_RECO_BACKEND")) {
-        backendMode = ToLowerCopy(std::string(backend));
+        backendMode = reco::ToLowerCopy(std::string(backend));
+        if (backendMode == "anaroot_like") {
+            backendMode = "auto";
+        }
     }
-    if (backendMode != "legacy" && backendMode != "nn" && backendMode != "anaroot_like") {
-        backendMode = "anaroot_like";
+    reco::RuntimeBackend runtimeBackend = reco::RuntimeBackend::kAuto;
+    try {
+        runtimeBackend = reco::ParseRuntimeBackend(backendMode);
+    } catch (const std::exception& ex) {
+        std::cerr << "错误: 无效的 PDC_RECO_BACKEND='" << backendMode
+                  << "' (" << ex.what() << ")" << std::endl;
+        return;
     }
-    bool useAnarootLikeReco = (backendMode != "legacy");
-    const bool forceNNBackend = (backendMode == "nn");
+    bool useAnarootLikeReco = reco::RuntimeBackendUsesNewFramework(runtimeBackend);
+    const bool forceNNBackend = (runtimeBackend == reco::RuntimeBackend::kNeuralNetwork);
 
     // 2. 设置几何和重建器
     GeometryManager geo;
@@ -257,7 +253,7 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     if (gSystem->AccessPathName(geometryMacro.c_str()) != 0) {
         geometryMacro = smsBase + "/configs/simulation/geometry/5deg_1.2T.mac";
     }
-    if (!geo.LoadGeometry(geometryMacro.c_str())) {
+    if (!reco::LoadGeometryFromMacro(geo, geometryMacro)) {
         std::cerr << "错误: 无法加载几何配置文件" << std::endl;
         return;
     }
@@ -272,12 +268,14 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     nebulaRecon.SetEnergyThreshold(1.0); // 1 MeV能量阈值
     
     // 4. 初始化磁场和质子动量重建器（使用智能加载）
-    MagneticField* magField = new MagneticField();
-    TargetReconstructor* targetReconLegacy = nullptr;
-    analysis::pdc::anaroot_like::PDCMomentumReconstructor* targetReconAnarootLike = nullptr;
+    auto magField = std::make_unique<MagneticField>();
+    std::unique_ptr<TargetReconstructor> targetReconLegacy;
+    std::unique_ptr<reco::PDCMomentumReconstructor> targetReconAnarootLike;
     bool magFieldLoaded = false;
     bool protonRecoEnabled = false;
-    std::string recoBackendLabel = backendMode;
+    std::string recoBackendLabel = (runtimeBackend == reco::RuntimeBackend::kAuto)
+        ? "anaroot_like"
+        : reco::RuntimeBackendName(runtimeBackend);
     
     // 智能磁场文件加载逻辑：优先使用ROOT格式，没有则用table格式并转换
     const char* rootFieldEnv = std::getenv("BATCH_ANALYSIS_MAG_ROOT");
@@ -296,37 +294,20 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     }
     const double magRotationDeg = ReadEnvDouble("BATCH_ANALYSIS_MAG_ROT_DEG", 30.0);
     
-    // 检查是否存在ROOT格式磁场文件
-    if (gSystem->AccessPathName(rootFieldFile.Data()) == 0) {
-        std::cout << "发现ROOT格式磁场文件，正在加载: " << rootFieldFile << std::endl;
-        if (magField->LoadFromROOTFile(rootFieldFile.Data())) {
-            magField->SetRotationAngle(magRotationDeg);
-            magFieldLoaded = true;
-            std::cout << "ROOT格式磁场文件加载成功" << std::endl;
-        } else {
-            std::cout << "ROOT格式磁场文件加载失败，尝试table格式" << std::endl;
-        }
-    }
-    
-    // 如果ROOT格式加载失败或不存在，尝试table格式
-    if (!magFieldLoaded && gSystem->AccessPathName(tableFieldFile.Data()) == 0) {
-        std::cout << "加载table格式磁场文件: " << tableFieldFile << std::endl;
-        if (magField->LoadFieldMap(tableFieldFile.Data())) {
-            magField->SetRotationAngle(magRotationDeg);
-            magFieldLoaded = true;
-            std::cout << "table格式磁场文件加载成功" << std::endl;
-            
-            // 将table格式转换并保存为ROOT格式以便下次快速加载
-            std::cout << "正在将磁场数据保存为ROOT格式: " << rootFieldFile << std::endl;
-            try {
-                magField->SaveAsROOTFile(rootFieldFile.Data());
-                std::cout << "磁场数据已成功保存为ROOT格式，下次将直接使用" << std::endl;
-            } catch (...) {
-                std::cout << "保存ROOT格式磁场文件失败，但不影响当前使用" << std::endl;
-            }
-        } else {
-            std::cout << "table格式磁场文件加载失败" << std::endl;
-        }
+    const reco::MagneticFieldLoadResult fieldLoad = reco::LoadMagneticFieldWithFallback(
+        *magField,
+        rootFieldFile.Data(),
+        tableFieldFile.Data(),
+        magRotationDeg,
+        true
+    );
+    magFieldLoaded = fieldLoad.success;
+    if (fieldLoad.loaded_from_root) {
+        std::cout << "发现ROOT格式磁场文件，正在加载: " << fieldLoad.loaded_path << std::endl;
+        std::cout << "ROOT格式磁场文件加载成功" << std::endl;
+    } else if (fieldLoad.loaded_from_table) {
+        std::cout << "加载table格式磁场文件: " << fieldLoad.loaded_path << std::endl;
+        std::cout << "table格式磁场文件加载成功" << std::endl;
     }
     
     if (!magFieldLoaded && !forceNNBackend) {
@@ -345,16 +326,18 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
 
     if (useAnarootLikeReco) {
         // [EN] NN mode can run without field map because model directly predicts target momentum from two PDC points. / [CN] NN模式可在无磁场图时运行，因为模型直接由两个PDC点预测靶点动量。
-        targetReconAnarootLike = new analysis::pdc::anaroot_like::PDCMomentumReconstructor(magFieldLoaded ? magField : nullptr);
+        targetReconAnarootLike = std::make_unique<reco::PDCMomentumReconstructor>(magFieldLoaded ? magField.get() : nullptr);
         protonRecoEnabled = true;
         if (forceNNBackend) {
             recoBackendLabel = "nn";
         } else {
-            recoBackendLabel = "anaroot_like";
+            recoBackendLabel = (runtimeBackend == reco::RuntimeBackend::kAuto)
+                ? "anaroot_like"
+                : reco::RuntimeBackendName(runtimeBackend);
         }
         std::cout << "质子动量重建后端: " << recoBackendLabel << std::endl;
     } else if (magFieldLoaded) {
-        targetReconLegacy = new TargetReconstructor(magField);
+        targetReconLegacy = std::make_unique<TargetReconstructor>(magField.get());
         protonRecoEnabled = true;
         recoBackendLabel = "legacy";
         std::cout << "质子动量重建后端: legacy TargetReconstructor" << std::endl;
@@ -411,8 +394,21 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     const double recoPMax = ReadEnvDouble("PDC_RECO_P_MAX_MEVC", 5000.0);
     const double recoToleranceMM = ReadEnvDouble("PDC_RECO_TOLERANCE_MM", 5.0);
     const double recoRKStepMM = ReadEnvDouble("PDC_RECO_RK_STEP_MM", 5.0);
-    const analysis::pdc::anaroot_like::RkFitMode recoRKMode =
-        ReadEnvRkFitMode("PDC_RECO_RK_MODE", analysis::pdc::anaroot_like::RkFitMode::kTargetXYPrior);
+    const reco::RkFitMode recoRKMode =
+        ReadEnvRkFitMode("PDC_RECO_RK_MODE", reco::RkFitMode::kThreePointFree);
+    reco::RuntimeOptions runtimeOptions;
+    runtimeOptions.backend = runtimeBackend;
+    runtimeOptions.p_min_mevc = recoPMin;
+    runtimeOptions.p_max_mevc = recoPMax;
+    runtimeOptions.tolerance_mm = recoToleranceMM;
+    runtimeOptions.max_iterations = 50;
+    runtimeOptions.rk_step_mm = recoRKStepMM;
+    runtimeOptions.pdc_sigma_mm = 2.0;
+    runtimeOptions.target_sigma_xy_mm = 5.0;
+    runtimeOptions.nn_model_json_path = nnModelJsonPath;
+    runtimeOptions.rk_fit_mode = recoRKMode;
+    const reco::RecoConfig recoConfig = reco::BuildRecoConfig(runtimeOptions, magFieldLoaded);
+    const reco::TargetConstraint targetConstraint = reco::BuildTargetConstraint(geo, runtimeOptions);
     
     for (Long64_t i = 0; i < totalEvents; ++i) {
         if (i % 500 == 0) {
@@ -452,34 +448,14 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
                     bool recoSuccess = false;
 
                     if (useAnarootLikeReco && targetReconAnarootLike) {
-                        analysis::pdc::anaroot_like::PDCInputTrack pdcInput;
+                        reco::PDCInputTrack pdcInput;
                         pdcInput.pdc1 = track.start;
                         pdcInput.pdc2 = track.end;
 
-                        analysis::pdc::anaroot_like::TargetConstraint constraint;
-                        constraint.target_position = targetPos;
-                        constraint.mass_mev = 938.2720813;
-                        constraint.charge_e = 1.0;
-                        constraint.pdc_sigma_mm = 2.0;
-                        constraint.target_sigma_xy_mm = 5.0;
-
-                        analysis::pdc::anaroot_like::RecoConfig recoConfig;
-                        recoConfig.p_min_mevc = recoPMin;
-                        recoConfig.p_max_mevc = recoPMax;
-                        recoConfig.enable_nn = forceNNBackend;
-                        recoConfig.nn_model_json_path = nnModelJsonPath;
-                        recoConfig.enable_rk = !forceNNBackend;
-                        recoConfig.enable_multi_dim = !forceNNBackend;
-                        recoConfig.enable_matrix = !forceNNBackend;
-                        recoConfig.max_iterations = 50;
-                        recoConfig.tolerance_mm = recoToleranceMM;
-                        recoConfig.rk_step_mm = recoRKStepMM;
-                        recoConfig.rk_fit_mode = recoRKMode;
-
-                        const analysis::pdc::anaroot_like::RecoResult recoResult =
-                            targetReconAnarootLike->Reconstruct(pdcInput, constraint, recoConfig);
-                        if ((recoResult.status == analysis::pdc::anaroot_like::SolverStatus::kSuccess ||
-                             recoResult.status == analysis::pdc::anaroot_like::SolverStatus::kNotConverged) &&
+                        const reco::RecoResult recoResult =
+                            targetReconAnarootLike->Reconstruct(pdcInput, targetConstraint, recoConfig);
+                        if ((recoResult.status == reco::SolverStatus::kSuccess ||
+                             recoResult.status == reco::SolverStatus::kNotConverged) &&
                             recoResult.p4_at_target.P() > 0.0) {
                             recoMomentum = recoResult.p4_at_target;
                             recoSuccess = true;
@@ -554,10 +530,13 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     TNamed info8("TotalReconProtons", Form("%d", totalReconProtons));
     TNamed info9("MagFieldLoaded", magFieldLoaded ? "true" : "false");
     TNamed info10("RecoBackend", recoBackendLabel.c_str());
-    TNamed info11("RecoRKMode",
-                  recoRKMode == analysis::pdc::anaroot_like::RkFitMode::kFixedTargetPdcOnly
-                      ? "fixed_target_pdc_only"
-                      : "target_xy_prior");
+    const char* recoRKModeLabel = "three_point_free";
+    if (recoRKMode == reco::RkFitMode::kTwoPointBackprop) {
+        recoRKModeLabel = "two_point_backprop";
+    } else if (recoRKMode == reco::RkFitMode::kFixedTargetPdcOnly) {
+        recoRKModeLabel = "fixed_target_pdc_only";
+    }
+    TNamed info11("RecoRKMode", recoRKModeLabel);
     
     info1.Write();
     info2.Write();
@@ -597,9 +576,6 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     // 清理内存
     delete recoEvent;
     delete originalData;
-    if (magField) delete magField;
-    if (targetReconLegacy) delete targetReconLegacy;
-    if (targetReconAnarootLike) delete targetReconAnarootLike;
 }
 
 // 保持原有函数接口的兼容性

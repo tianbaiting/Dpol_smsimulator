@@ -21,13 +21,13 @@ enum class SolveMethod {
     kAutoChain,
     kNeuralNetwork,
     kRungeKutta,
-    kMultiDimFit,
-    kMatrixFallback
+    kMultiDimFit
 };
 
 enum class RkFitMode {
-    kTargetXYPrior,
-    kFixedTargetPdcOnly
+    kTwoPointBackprop,
+    kFixedTargetPdcOnly,
+    kThreePointFree
 };
 
 struct PDCInputTrack {
@@ -73,8 +73,7 @@ struct RecoConfig {
     bool enable_rk = true;
     bool enable_nn = false;
     bool enable_multi_dim = true;
-    bool enable_matrix = true;
-    RkFitMode rk_fit_mode = RkFitMode::kTargetXYPrior;
+    RkFitMode rk_fit_mode = RkFitMode::kThreePointFree;
 
     double center_brho_tm = 7.2751;
     std::string nn_model_json_path;

@@ -1,6 +1,6 @@
 ---
 name: smsim-nn-target-momentum
-description: Workflow for the NN backend lifecycle of SMSimulator target-momentum reconstruction. Use when building datasets from Geant4 ROOT, training/exporting MLP models, wiring C++ forward inference for the analysis_pdc_reco NN backend, running reconstruct_sn_nn pipelines, or evaluating NN reconstruction accuracy.
+description: Workflow for the NN backend lifecycle of SMSimulator target-momentum reconstruction. Use when building datasets from Geant4 ROOT, training/exporting MLP models, wiring C++ forward inference for the analysis_pdc_reco NN backend, running reconstruct_target_momentum in NN mode or its reconstruct_sn_nn compatibility wrapper, or evaluating reconstruction accuracy with the canonical evaluator and its compatibility wrapper.
 ---
 
 # SMSimulator NN Target Momentum

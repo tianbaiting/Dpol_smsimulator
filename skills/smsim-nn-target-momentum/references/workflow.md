@@ -6,7 +6,7 @@
 - Train PyTorch MLP for target proton momentum `(px, py, pz)`.
 - Export PyTorch checkpoint to C++ runtime JSON format.
 - Support the NN backend of `analysis_pdc_reco`.
-- Run forward-only NN reconstruction in C++ (`reconstruct_sn_nn`) while keeping neutron logic unchanged.
+- Run forward-only NN reconstruction in C++ through the canonical runtime entrypoint while keeping neutron logic unchanged.
 - Evaluate reconstruction efficiency and momentum error metrics.
 
 This skill does not define a separate reconstruction architecture. It supplies the model lifecycle for the NN backend of the main runtime framework.
@@ -18,8 +18,10 @@ This skill does not define a separate reconstruction architecture. It supplies t
 3. dataset CSV -> `train_mlp.py` -> `model.pt` + `model_meta.json`
 4. `model.pt` + `model_meta.json` -> `export_model_for_cpp.py` -> `model_cpp.json`
 5. `g4output/*.root` + geometry + `model_cpp.json` -> `PDCMomentumReconstructor(enable_nn)` -> target-momentum solve
-6. `reconstruct_sn_nn` is a backend-specific wrapper around that NN-only runtime path
-7. reconstructed ROOT dir -> `evaluate_reconstruct_sn_nn` -> accuracy/efficiency summary
+6. `reconstruct_target_momentum --backend nn` is the canonical runtime entrypoint for that path
+7. `reconstruct_sn_nn` remains a compatibility wrapper that forces `--backend nn`
+8. reconstructed ROOT dir -> `evaluate_target_momentum_reco` -> accuracy/efficiency summary
+9. `evaluate_reconstruct_sn_nn` remains a compatibility wrapper around the canonical evaluator
 
 ## Entry Points
 
@@ -38,18 +40,25 @@ This skill does not define a separate reconstruction architecture. It supplies t
   - `libs/analysis_pdc_reco/src/PDCNNMomentumReconstructor.cc`
   - `libs/analysis_pdc_reco/src/PDCMomentumReconstructor.cc`
   - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorNN.cc`
-  - `apps/tools/reconstruct_sn_nn.cc`
-  - `apps/tools/evaluate_reconstruct_sn_nn.cc`
+  - `libs/analysis_pdc_reco/include/PDCRecoRuntime.hh`
+  - `libs/analysis_pdc_reco/src/PDCRecoRuntime.cc`
+  - `apps/run_reconstruction/main.cc`
+  - `build/bin/reconstruct_target_momentum`
+  - `build/bin/reconstruct_sn_nn`
+  - `build/bin/evaluate_target_momentum_reco`
+  - `build/bin/evaluate_reconstruct_sn_nn`
+  - `apps/tools/evaluate_target_momentum_reco.cc`
 - End-to-end production pipeline:
+  - `scripts/analysis/run_target_momentum_reco_pipeline.sh`
   - `scripts/analysis/run_sn124_nn_reco_pipeline.sh`
 
 ## Focused Validation
 
 ```bash
-cd build && make -j$(nproc) reconstruct_sn_nn evaluate_reconstruct_sn_nn
+cd build && make -j$(nproc) reconstruct_target_momentum reconstruct_sn_nn evaluate_target_momentum_reco evaluate_reconstruct_sn_nn
 python3 scripts/reconstruction/nn_target_momentum/train_mlp.py --help
 python3 scripts/reconstruction/nn_target_momentum/export_model_for_cpp.py --help
-scripts/analysis/run_sn124_nn_reco_pipeline.sh --dry-run
+scripts/analysis/run_target_momentum_reco_pipeline.sh --dry-run
 ```
 
 If `anaroot-env` exists, prefer:
@@ -64,4 +73,5 @@ micromamba run -n anaroot-env python scripts/reconstruction/nn_target_momentum/t
 - Exported JSON must remain `format: smsimulator_pdc_mlp_v1` with `x_mean/x_std/layers`.
 - `PDCNNMomentumReconstructor::Forward` must apply hidden-layer ReLU exactly like training.
 - Runtime model path can come from `RecoConfig::nn_model_json_path` or `PDC_NN_MODEL_JSON`.
-- `reconstruct_sn_nn` should remain a wrapper tool, not the project’s only reconstruction entrypoint.
+- `reconstruct_target_momentum` is the canonical runtime entrypoint; `reconstruct_sn_nn` remains only a compatibility wrapper.
+- `evaluate_target_momentum_reco` is the canonical evaluator; `evaluate_reconstruct_sn_nn` remains only a compatibility wrapper.

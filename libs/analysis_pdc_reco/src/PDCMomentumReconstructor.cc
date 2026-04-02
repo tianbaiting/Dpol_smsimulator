@@ -73,14 +73,6 @@ RecoResult PDCMomentumReconstructor::Reconstruct(
         prefer_result(multidim);
     }
 
-    if (config.enable_matrix) {
-        const RecoResult matrix = ReconstructMatrix(track, target, config);
-        if (matrix.status == SolverStatus::kSuccess) {
-            return matrix;
-        }
-        prefer_result(matrix);
-    }
-
     return best;
 }
 }  // namespace analysis::pdc::anaroot_like

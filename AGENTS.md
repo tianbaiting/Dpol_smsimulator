@@ -10,6 +10,8 @@
 
 ## Reconstruction Architecture
 - `libs/analysis_pdc_reco/` is the primary runtime framework for PDC-to-target momentum reconstruction. Put new runtime reconstruction features there.
+- `build/bin/reconstruct_target_momentum` is the canonical reconstruction CLI. Treat `build/bin/reconstruct_sn_nn` as an NN-only compatibility wrapper around that entrypoint.
+- `build/bin/evaluate_target_momentum_reco` is the canonical evaluator for reconstructed `*_reco.root` outputs. Treat `build/bin/evaluate_reconstruct_sn_nn` as a compatibility wrapper around that evaluator.
 - Treat `scripts/reconstruction/nn_target_momentum/` as the NN backend lifecycle for the main reconstruction framework, not as a separate reconstruction architecture.
 - `libs/analysis/include/TargetReconstructor.hh` is compatibility-only legacy code. Do not add new features there unless required for regression fixes or migration support.
 - Reuse the existing geometry and target-position sources of truth. Do not introduce another private PDC placement convention or ad hoc target-position calculation in new code.

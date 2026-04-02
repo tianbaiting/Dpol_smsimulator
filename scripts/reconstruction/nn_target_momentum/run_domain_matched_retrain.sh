@@ -28,9 +28,18 @@ LR_SCHEDULER_PATIENCE="${LR_SCHEDULER_PATIENCE:-5}"
 LR_SCHEDULER_FACTOR="${LR_SCHEDULER_FACTOR:-0.5}"
 MIN_LR="${MIN_LR:-1e-5}"
 
-ROOT_BIN="${ROOT_BIN:-root}"
-RECO_BIN="${RECO_BIN:-${REPO_DIR}/build/bin/reconstruct_sn_nn}"
-EVAL_BIN="${EVAL_BIN:-${REPO_DIR}/build/bin/evaluate_reconstruct_sn_nn}"
+ROOT_BIN="${ROOT_BIN:-}"
+if [[ -z "${ROOT_BIN}" ]]; then
+    if [[ -x "/home/tian/micromamba/envs/anaroot-env/bin/root" ]]; then
+        ROOT_BIN="/home/tian/micromamba/envs/anaroot-env/bin/root"
+    elif command -v root >/dev/null 2>&1; then
+        ROOT_BIN="$(command -v root)"
+    else
+        ROOT_BIN="root"
+    fi
+fi
+RECO_BIN="${RECO_BIN:-${REPO_DIR}/build/bin/reconstruct_target_momentum}"
+EVAL_BIN="${EVAL_BIN:-${REPO_DIR}/build/bin/evaluate_target_momentum_reco}"
 TRAIN_PY="${REPO_DIR}/scripts/reconstruction/nn_target_momentum/train_mlp.py"
 EXPORT_PY="${REPO_DIR}/scripts/reconstruction/nn_target_momentum/export_model_for_cpp.py"
 BUILD_DATA_MACRO="${REPO_DIR}/scripts/reconstruction/nn_target_momentum/build_dataset.C"
@@ -49,6 +58,15 @@ run_cmd() {
     echo "+ $*"
     if [[ "${DRY_RUN}" -eq 0 ]]; then
         "$@"
+    fi
+}
+
+run_cmd_with_tee() {
+    local output_file="$1"
+    shift
+    echo "+ $* | tee ${output_file}"
+    if [[ "${DRY_RUN}" -eq 0 ]]; then
+        "$@" | tee "${output_file}"
     fi
 }
 
@@ -164,6 +182,10 @@ build_split_dataset() {
     local out_csv="$4"
 
     run_cmd mkdir -p "${out_split_dir}"
+    if [[ "${DRY_RUN}" -eq 1 ]]; then
+        echo "+ build dataset split ${split_name} from ${files_txt} -> ${out_csv}"
+        return 0
+    fi
     if [[ "${DRY_RUN}" -eq 0 ]]; then
         : > "${out_csv}"
     fi
@@ -194,8 +216,8 @@ build_split_dataset() {
 require_file "${INPUT_G4OUTPUT_DIR}" "input g4output dir"
 require_file "${GEOMETRY_MACRO}" "geometry macro"
 require_file "${ROOT_BIN}" "root executable"
-require_file "${RECO_BIN}" "reconstruct_sn_nn"
-require_file "${EVAL_BIN}" "evaluate_reconstruct_sn_nn"
+require_file "${RECO_BIN}" "reconstruct_target_momentum"
+require_file "${EVAL_BIN}" "evaluate_target_momentum_reco"
 require_file "${TRAIN_PY}" "train_mlp.py"
 require_file "${EXPORT_PY}" "export_model_for_cpp.py"
 require_file "${BUILD_DATA_MACRO}" "build_dataset.C"
@@ -308,6 +330,7 @@ if [[ "${DRY_RUN}" -eq 0 ]]; then
         reco_out="${RECO_DIR}/${rel%.root}_reco.root"
         mkdir -p "$(dirname "${reco_out}")"
         run_cmd "${RECO_BIN}" \
+            --backend nn \
             --input-file "${sim_root}" \
             --output-file "${reco_out}" \
             --geometry-macro "${GEOMETRY_MACRO}" \
@@ -315,10 +338,10 @@ if [[ "${DRY_RUN}" -eq 0 ]]; then
     done < "${OUT_BASE}/all_sim_files.txt"
 fi
 
-run_cmd "${EVAL_BIN}" --input-dir "${BASELINE_RECO_DIR}" | tee "${REPORT_DIR}/baseline_eval.txt"
-run_cmd "${EVAL_BIN}" --input-dir "${RECO_DIR}" | tee "${REPORT_DIR}/retrained_eval.txt"
-run_cmd "${EVAL_BIN}" --input-dir "${RECO_DIR}/y_pol" | tee "${REPORT_DIR}/retrained_eval_ypol.txt"
-run_cmd "${EVAL_BIN}" --input-dir "${RECO_DIR}/z_pol" | tee "${REPORT_DIR}/retrained_eval_zpol.txt"
+run_cmd_with_tee "${REPORT_DIR}/baseline_eval.txt" "${EVAL_BIN}" --input-dir "${BASELINE_RECO_DIR}"
+run_cmd_with_tee "${REPORT_DIR}/retrained_eval.txt" "${EVAL_BIN}" --input-dir "${RECO_DIR}"
+run_cmd_with_tee "${REPORT_DIR}/retrained_eval_ypol.txt" "${EVAL_BIN}" --input-dir "${RECO_DIR}/y_pol"
+run_cmd_with_tee "${REPORT_DIR}/retrained_eval_zpol.txt" "${EVAL_BIN}" --input-dir "${RECO_DIR}/z_pol"
 
 echo "[run_domain_matched_retrain] done"
 echo "[run_domain_matched_retrain] output base: ${OUT_BASE}"

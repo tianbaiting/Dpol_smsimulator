@@ -20,7 +20,6 @@
 - `libs/analysis_pdc_reco/include/PDCRecoTypes.hh`
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructor.cc`
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorRK.cc`
-- `libs/analysis_pdc_reco/src/PDCMomentumReconstructorMatrix.cc`
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorMultiDim.cc`
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorNN.cc`
 - `skills/smsim-pdc-momentum-reco/`
@@ -28,8 +27,12 @@
 ### NN Backend Lifecycle
 
 - `scripts/reconstruction/nn_target_momentum/`
-- `apps/tools/reconstruct_sn_nn.cc`
-- `apps/tools/evaluate_reconstruct_sn_nn.cc`
+- `apps/run_reconstruction/main.cc`
+- `apps/run_reconstruction/CMakeLists.txt`
+- `apps/tools/CMakeLists.txt`
+- `apps/tools/evaluate_target_momentum_reco.cc`
+- `libs/analysis_pdc_reco/include/PDCRecoRuntime.hh`
+- `libs/analysis_pdc_reco/src/PDCRecoRuntime.cc`
 - `libs/analysis_pdc_reco/include/PDCNNMomentumReconstructor.hh`
 - `libs/analysis_pdc_reco/src/PDCNNMomentumReconstructor.cc`
 - `skills/smsim-nn-target-momentum/`
@@ -38,9 +41,11 @@
 
 - `libs/analysis/include/TargetReconstructor.hh`
 - `tests/analysis/test_TargetReconstructor.cc`
+- `scripts/analysis/legacy_target_reco/`
 
 ### Production Pipeline
 
+- `scripts/analysis/run_target_momentum_reco_pipeline.sh`
 - `scripts/analysis/run_sn124_nn_reco_pipeline.sh`
 
 ## Update Rule

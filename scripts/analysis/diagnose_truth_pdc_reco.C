@@ -23,6 +23,7 @@
 #include "TSimData.hh"
 #include "TargetReconstructor.hh"
 #include "../../libs/analysis_pdc_reco/include/PDCMomentumReconstructor.hh"
+#include "../../libs/analysis_pdc_reco/include/PDCRecoRuntime.hh"
 
 #include <algorithm>
 #include <array>
@@ -33,8 +34,6 @@
 #include <iostream>
 #include <limits>
 #include <map>
-#include <set>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -49,12 +48,14 @@ public:
 
 namespace {
 
-using analysis::pdc::anaroot_like::PDCInputTrack;
-using analysis::pdc::anaroot_like::PDCMomentumReconstructor;
-using analysis::pdc::anaroot_like::RecoConfig;
-using analysis::pdc::anaroot_like::RecoResult;
-using analysis::pdc::anaroot_like::SolverStatus;
-using analysis::pdc::anaroot_like::TargetConstraint;
+namespace reco = analysis::pdc::anaroot_like;
+
+using reco::PDCInputTrack;
+using reco::PDCMomentumReconstructor;
+using reco::RecoConfig;
+using reco::RecoResult;
+using reco::SolverStatus;
+using reco::TargetConstraint;
 
 constexpr double kProtonMassMeV = 938.2720813;
 constexpr double kSqrt2 = 1.4142135623730951;
@@ -162,92 +163,6 @@ std::string ToLower(std::string value) {
         return static_cast<char>(std::tolower(c));
     });
     return value;
-}
-
-std::string Trim(const std::string& input) {
-    const auto begin = input.find_first_not_of(" \t\r\n");
-    if (begin == std::string::npos) return "";
-    const auto end = input.find_last_not_of(" \t\r\n");
-    return input.substr(begin, end - begin + 1);
-}
-
-std::string ExpandPathToken(std::string token) {
-    const char* smsDir = std::getenv("SMSIMDIR");
-    const std::string sms = smsDir ? std::string(smsDir) : std::string();
-
-    const std::string key1 = "{SMSIMDIR}";
-    const std::string key2 = "$SMSIMDIR";
-
-    std::size_t pos = token.find(key1);
-    while (pos != std::string::npos) {
-        token.replace(pos, key1.size(), sms);
-        pos = token.find(key1, pos + sms.size());
-    }
-
-    pos = token.find(key2);
-    while (pos != std::string::npos) {
-        token.replace(pos, key2.size(), sms);
-        pos = token.find(key2, pos + sms.size());
-    }
-    return token;
-}
-
-bool ResolveMacroPath(const std::string& rawPath,
-                      const std::filesystem::path& baseDir,
-                      std::filesystem::path* outPath) {
-    if (!outPath) return false;
-    std::filesystem::path path = ExpandPathToken(rawPath);
-    if (!path.is_absolute()) {
-        path = baseDir / path;
-    }
-    std::error_code ec;
-    const std::filesystem::path canonical = std::filesystem::weakly_canonical(path, ec);
-    if (!ec) {
-        *outPath = canonical;
-        return true;
-    }
-    *outPath = path.lexically_normal();
-    return std::filesystem::exists(*outPath);
-}
-
-bool LoadGeometryRecursive(GeometryManager& geo,
-                           const std::filesystem::path& macroPath,
-                           std::set<std::string>& visited) {
-    const std::string key = macroPath.lexically_normal().string();
-    if (visited.count(key)) return true;
-
-    std::ifstream fin(macroPath);
-    if (!fin.is_open()) {
-        std::cerr << "[diagnose_truth_pdc_reco] Cannot open geometry macro: " << macroPath << std::endl;
-        return false;
-    }
-
-    visited.insert(key);
-
-    std::string line;
-    while (std::getline(fin, line)) {
-        const std::string clean = Trim(line);
-        if (clean.empty() || clean[0] == '#') continue;
-        if (clean.rfind("/control/execute", 0) == 0) {
-            std::stringstream ss(clean);
-            std::string cmd;
-            std::string includePathRaw;
-            ss >> cmd >> includePathRaw;
-            if (includePathRaw.empty()) continue;
-
-            std::filesystem::path includePath;
-            if (!ResolveMacroPath(includePathRaw, macroPath.parent_path(), &includePath)) {
-                std::cerr << "[diagnose_truth_pdc_reco] Warning: unresolved include macro: "
-                          << includePathRaw << std::endl;
-                continue;
-            }
-            if (!LoadGeometryRecursive(geo, includePath, visited)) {
-                return false;
-            }
-        }
-    }
-
-    return geo.LoadGeometry(macroPath.string());
 }
 
 bool IsFinite(const TVector3& value) {
@@ -529,23 +444,16 @@ void diagnose_truth_pdc_reco(const char* sim_root,
     gSystem->Load("libanalysis_pdc_reco.so");
 
     GeometryManager geo;
-    std::set<std::string> visitedMacros;
-    std::filesystem::path geomPath;
-    if (!ResolveMacroPath(geom_macro, std::filesystem::current_path(), &geomPath)) {
-        std::cerr << "[diagnose_truth_pdc_reco] Failed to resolve geometry macro: " << geom_macro << std::endl;
-        return;
-    }
-    if (!LoadGeometryRecursive(geo, geomPath, visitedMacros)) {
+    if (!reco::LoadGeometryFromMacro(geo, geom_macro)) {
         std::cerr << "[diagnose_truth_pdc_reco] Failed to load geometry macro: " << geom_macro << std::endl;
         return;
     }
 
     MagneticField magField;
-    if (!magField.LoadFieldMap(field_table)) {
+    if (!reco::LoadMagneticField(magField, field_table, field_rotation_deg)) {
         std::cerr << "[diagnose_truth_pdc_reco] Failed to load field table: " << field_table << std::endl;
         return;
     }
-    magField.SetRotationAngle(field_rotation_deg);
 
     const TVector3 targetPos = geo.GetTargetPosition();
     const double targetAngleRad = geo.GetTargetAngleRad();
@@ -554,24 +462,19 @@ void diagnose_truth_pdc_reco(const char* sim_root,
     TargetReconstructor threeReconstructor(&magField);
     threeReconstructor.SetTrajectoryStepSize(rk_step_mm);
 
-    RecoConfig rkConfig;
-    rkConfig.enable_rk = true;
-    rkConfig.enable_nn = false;
-    rkConfig.enable_multi_dim = false;
-    rkConfig.enable_matrix = false;
-    rkConfig.initial_p_mevc = initial_p_mevc;
-    rkConfig.max_iterations = 80;
-    rkConfig.tolerance_mm = 5.0;
-    rkConfig.rk_step_mm = rk_step_mm;
-    rkConfig.compute_uncertainty = false;
-    rkConfig.compute_posterior_laplace = false;
-
-    TargetConstraint constraint;
-    constraint.target_position = targetPos;
-    constraint.mass_mev = kProtonMassMeV;
-    constraint.charge_e = 1.0;
-    constraint.pdc_sigma_mm = 0.5;
-    constraint.target_sigma_xy_mm = 5.0;
+    reco::RuntimeOptions runtimeOptions;
+    runtimeOptions.backend = reco::RuntimeBackend::kRungeKutta;
+    runtimeOptions.initial_p_mevc = initial_p_mevc;
+    runtimeOptions.max_iterations = 80;
+    runtimeOptions.tolerance_mm = 5.0;
+    runtimeOptions.rk_step_mm = rk_step_mm;
+    runtimeOptions.pdc_sigma_mm = 0.5;
+    runtimeOptions.target_sigma_xy_mm = 5.0;
+    runtimeOptions.mass_mev = kProtonMassMeV;
+    runtimeOptions.compute_uncertainty = false;
+    runtimeOptions.compute_posterior_laplace = false;
+    const RecoConfig rkConfig = reco::BuildRecoConfig(runtimeOptions, true);
+    const TargetConstraint constraint = reco::BuildTargetConstraint(geo, runtimeOptions);
 
     TFile inFile(sim_root, "READ");
     if (inFile.IsZombie()) {

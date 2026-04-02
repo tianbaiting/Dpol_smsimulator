@@ -16,7 +16,7 @@ This is a routing and principles skill. It should reduce wrong assumptions befor
 3. Use `references/path-map.md` to find the current source-of-truth files.
 4. Route to the owning sub-skill once the task type is clear:
    - `skills/smsim-pdc-track-reco/` for `FragSimData -> PDC1/PDC2 track points`
-   - `skills/smsim-pdc-momentum-reco/` for the primary runtime framework in `analysis_pdc_reco` (dispatcher, RK, matrix fallback, solver contracts, legacy-interop boundaries)
+   - `skills/smsim-pdc-momentum-reco/` for the primary runtime framework in `analysis_pdc_reco` (dispatcher, RK modes, solver contracts, legacy-interop boundaries)
    - `skills/smsim-nn-target-momentum/` for the NN backend lifecycle (dataset build, PyTorch training, export, C++ forward inference, and NN evaluation)
 5. Run `scripts/check_sync.sh` before finishing when this overview skill changes.
 

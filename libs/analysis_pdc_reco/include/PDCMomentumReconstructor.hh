@@ -8,7 +8,6 @@
 
 #include <array>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -42,7 +41,19 @@ public:
         const RecoConfig& config
     ) const;
 
-    RecoResult ReconstructMatrix(
+    RecoResult ReconstructRKTwoPointBackprop(
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config
+    ) const;
+
+    RecoResult ReconstructRKFixedTargetPdcOnly(
+        const PDCInputTrack& track,
+        const TargetConstraint& target,
+        const RecoConfig& config
+    ) const;
+
+    RecoResult ReconstructRKThreePointFree(
         const PDCInputTrack& track,
         const TargetConstraint& target,
         const RecoConfig& config
@@ -88,13 +99,8 @@ private:
         std::array<int, 5> active_parameter_indices{0, 1, 2, 3, 4};
         int parameter_count = 5;
         int residual_count = 8;
-        bool include_target_xy_prior = true;
+        bool include_start_xy_constraint = true;
         bool fixed_target_position = false;
-    };
-
-    struct MatrixModel {
-        std::array<double, 2> mat1{0.0, 0.0};
-        std::array<double, 4> inv_mat2{0.0, 0.0, 0.0, 0.0};  // row-major 2x2
     };
 
     static bool IsFinite(const TVector3& value);
@@ -131,8 +137,6 @@ private:
     static double ResidualChi2Raw(const std::array<double, 8>& residuals, int residual_count);
     static double ResidualChi2Reduced(const std::array<double, 8>& residuals, int residual_count, int ndf);
     bool BuildMeasurementModel(const TargetConstraint& target, MeasurementModel* measurement, std::string* reason) const;
-
-    std::optional<MatrixModel> LoadMatrixModelFromEnv(std::string* reason) const;
 
     MagneticField* fMagneticField = nullptr;
     mutable std::unique_ptr<PDCNNMomentumReconstructor> fNNReconstructor;

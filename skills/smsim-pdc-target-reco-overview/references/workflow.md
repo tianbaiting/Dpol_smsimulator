@@ -22,7 +22,6 @@ The intended architecture in this repo is:
 2. `analysis_pdc_reco::PDCMomentumReconstructor` is the primary runtime façade for `PDC1/PDC2 -> target momentum`
 3. runtime backends live under that framework:
    - RK
-   - matrix fallback
    - reserved multidim interface
    - NN backend
 4. the NN scripts and pipelines exist to train, export, and evaluate that NN backend
@@ -55,13 +54,14 @@ Treat requests accordingly. If the user says "target reconstruction", confirm wh
    - NN
    - RK
    - multidim placeholder
-   - matrix fallback
 5. the NN backend lifecycle uses the same 3D PDC points:
    - `build_dataset.C` extracts feature rows
    - `train_mlp.py` trains the MLP
    - `export_model_for_cpp.py` writes `model_cpp.json`
-   - `reconstruct_sn_nn` is a backend-specific wrapper that runs the main framework in NN-only mode
-6. `evaluate_reconstruct_sn_nn` computes reconstruction efficiency and momentum errors from `*_reco.root`
+   - `reconstruct_target_momentum` is the canonical runtime entrypoint for the main framework
+   - `reconstruct_sn_nn` remains a backend-specific compatibility wrapper that runs the canonical entrypoint in NN-only mode
+6. `evaluate_target_momentum_reco` computes reconstruction efficiency and momentum errors from `*_reco.root`
+7. `evaluate_reconstruct_sn_nn` remains a compatibility wrapper around the canonical evaluator
 
 NN dataset details:
 
@@ -73,6 +73,7 @@ The NN pipeline is not a separate reconstruction architecture. It is the model l
 Legacy compatibility path:
 
 - old scripts and tests may still call `TargetReconstructor`
+- legacy study scripts now live under `scripts/analysis/legacy_target_reco/`
 - do not interpret that as a second preferred architecture
 
 ## Default Anchors For Current Corrected-Target Flow
@@ -84,7 +85,8 @@ Use these as the current project anchors unless the user points to a different c
 - primary runtime framework:
   - `libs/analysis_pdc_reco/`
 - NN production pipeline:
-  - `scripts/analysis/run_sn124_nn_reco_pipeline.sh`
+  - `scripts/analysis/run_target_momentum_reco_pipeline.sh`
+  - `scripts/analysis/run_sn124_nn_reco_pipeline.sh` (compatibility wrapper)
 - corrected-target run note:
   - `docs/reports/reconstruction/nn_retrain_qmdwindow_B115T3deg_notes.zh.md`
 
@@ -105,8 +107,7 @@ Use when the issue is about:
 Use when the issue is about:
 
 - the primary runtime framework in `analysis_pdc_reco`
-- RK back-propagation
-- matrix fallback contracts
+- RK back-propagation or RK mode selection
 - solver dispatch order or `RecoConfig`
 - `PDCMomentumReconstructor` behavior
 - compatibility boundaries with `TargetReconstructor`
@@ -119,6 +120,7 @@ Use when the issue is about:
 - training split / hyper-parameters / metrics
 - `model.pt`, `model_meta.json`, `model_cpp.json`
 - `PDCNNMomentumReconstructor` runtime behavior
+- the canonical reconstruction CLI `reconstruct_target_momentum`
 - backend-specific wrapper tools like `reconstruct_sn_nn`
 - NN batch evaluation and corrected-target production runs
 
@@ -127,7 +129,7 @@ Use when the issue is about:
 ```bash
 python3 scripts/reconstruction/nn_target_momentum/train_mlp.py --help
 python3 scripts/reconstruction/nn_target_momentum/export_model_for_cpp.py --help
-scripts/analysis/run_sn124_nn_reco_pipeline.sh --dry-run
+scripts/analysis/run_target_momentum_reco_pipeline.sh --dry-run
 ```
 
 If the environment exists, prefer:

@@ -27,6 +27,20 @@ if(EXISTS ${QMD_GEN_SRC})
     install(TARGETS GenInputRoot_qmdrawdata RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
+set(IPS_SCAN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/scan_ips_position.cc)
+if(EXISTS ${IPS_SCAN_SRC})
+    add_executable(scan_ips_position ${IPS_SCAN_SRC})
+    target_link_libraries(scan_ips_position PRIVATE smdata ${ROOT_LIBRARIES})
+    install(TARGETS scan_ips_position RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
+
+set(IPS_WRL_PREP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/prepare_ips_wrl_examples.cc)
+if(EXISTS ${IPS_WRL_PREP_SRC})
+    add_executable(prepare_ips_wrl_examples ${IPS_WRL_PREP_SRC})
+    target_link_libraries(prepare_ips_wrl_examples PRIVATE smdata spdlog::spdlog ${ROOT_LIBRARIES})
+    install(TARGETS prepare_ips_wrl_examples RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
+
 # Geant4 PDC position scan summary analyzer (ROOT tree -> CSV metrics)
 set(PDC_SCAN_ANALYZER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/analyze_pdc_scan_root.cc)
 if(EXISTS ${PDC_SCAN_ANALYZER_SRC})
@@ -35,10 +49,15 @@ if(EXISTS ${PDC_SCAN_ANALYZER_SRC})
     install(TARGETS analyze_pdc_scan_root RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
-# Clean NN-based reconstruction pipeline tool (g4output -> reconstruction)
-set(RECONSTRUCT_SN_NN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/reconstruct_sn_nn.cc)
+# Legacy NN-only compatibility wrapper for the canonical reconstruction CLI
+set(RECONSTRUCT_SN_NN_SRC ${CMAKE_SOURCE_DIR}/apps/run_reconstruction/main.cc)
 if(EXISTS ${RECONSTRUCT_SN_NN_SRC})
     add_executable(reconstruct_sn_nn ${RECONSTRUCT_SN_NN_SRC})
+    target_compile_definitions(reconstruct_sn_nn PRIVATE
+        SMSIM_RECON_FORCE_BACKEND="nn"
+        SMSIM_RECON_LOG_TAG="reconstruct_sn_nn"
+        SMSIM_RECON_LEGACY_DEFAULTS=1
+    )
     target_link_libraries(reconstruct_sn_nn PRIVATE
         analysis
         analysis_pdc_reco
@@ -48,10 +67,20 @@ if(EXISTS ${RECONSTRUCT_SN_NN_SRC})
     install(TARGETS reconstruct_sn_nn RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
-# Evaluate NN proton reconstruction accuracy from reco ROOT files
-set(EVAL_RECONSTRUCT_SN_NN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/evaluate_reconstruct_sn_nn.cc)
-if(EXISTS ${EVAL_RECONSTRUCT_SN_NN_SRC})
-    add_executable(evaluate_reconstruct_sn_nn ${EVAL_RECONSTRUCT_SN_NN_SRC})
+# Evaluate proton reconstruction accuracy from reco ROOT files
+set(EVAL_TARGET_MOMENTUM_RECO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/evaluate_target_momentum_reco.cc)
+if(EXISTS ${EVAL_TARGET_MOMENTUM_RECO_SRC})
+    add_executable(evaluate_target_momentum_reco ${EVAL_TARGET_MOMENTUM_RECO_SRC})
+    target_compile_definitions(evaluate_target_momentum_reco PRIVATE
+        SMSIM_EVAL_LOG_TAG="evaluate_target_momentum_reco"
+    )
+    target_link_libraries(evaluate_target_momentum_reco PRIVATE ${ROOT_LIBRARIES})
+    install(TARGETS evaluate_target_momentum_reco RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+    add_executable(evaluate_reconstruct_sn_nn ${EVAL_TARGET_MOMENTUM_RECO_SRC})
+    target_compile_definitions(evaluate_reconstruct_sn_nn PRIVATE
+        SMSIM_EVAL_LOG_TAG="evaluate_reconstruct_sn_nn"
+    )
     target_link_libraries(evaluate_reconstruct_sn_nn PRIVATE ${ROOT_LIBRARIES})
     install(TARGETS evaluate_reconstruct_sn_nn RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()

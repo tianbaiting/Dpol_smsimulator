@@ -62,7 +62,7 @@ def plot_metric(rows, out_path, metric, ylabel):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--csv", required=True, help="CSV from compare_reco_step_sizes.C")
+    parser.add_argument("--csv", required=True, help="CSV from scripts/analysis/legacy_target_reco/compare_reco_step_sizes.C")
     parser.add_argument("--out", default="results/reco_step_scan/B115T_3deg/plots", help="Output directory")
     args = parser.parse_args()
 

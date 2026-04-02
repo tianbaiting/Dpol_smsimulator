@@ -1,4 +1,5 @@
 #include "PDCMomentumReconstructor.hh"
+#include "TargetReconstructor.hh"
 
 #include "TDecompSVD.h"
 #include "TMatrixD.h"
@@ -10,7 +11,6 @@
 #include <array>
 #include <cmath>
 #include <limits>
-#include <sstream>
 #include <string>
 
 namespace analysis::pdc::anaroot_like {
@@ -32,6 +32,41 @@ double SafeSigma(double sigma, double fallback) {
 
 double SafeNorm(const TVector3& value) {
     return std::sqrt(std::max(0.0, value.Mag2()));
+}
+
+RecoTrack BuildLegacyTrack(const PDCInputTrack& track) {
+    RecoTrack legacy_track(track.pdc1, track.pdc2);
+    legacy_track.pdgCode = 2212;
+    return legacy_track;
+}
+
+TVector3 SelectFartherPdcPoint(const PDCInputTrack& track, const TVector3& target_position) {
+    const double dist1 = SafeNorm(track.pdc1 - target_position);
+    const double dist2 = SafeNorm(track.pdc2 - target_position);
+    return (dist1 > dist2) ? track.pdc1 : track.pdc2;
+}
+
+double ComputeBrhoTm(const TLorentzVector& p4, double charge_e) {
+    if (!std::isfinite(p4.P()) || p4.P() <= 0.0 || std::abs(charge_e) <= 1.0e-12) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    return (p4.P() / 1000.0) / (kBrhoGeVOverCPerTm * std::abs(charge_e));
+}
+
+void FillCommonRecoKinematics(const TLorentzVector& p4,
+                              double charge_e,
+                              const TVector3& fit_start_position,
+                              double min_distance_mm,
+                              int iterations,
+                              RecoResult* result) {
+    if (!result) {
+        return;
+    }
+    result->p4_at_target = p4;
+    result->fit_start_position = fit_start_position;
+    result->min_distance_mm = min_distance_mm;
+    result->iterations = iterations;
+    result->brho_tm = ComputeBrhoTm(p4, charge_e);
 }
 
 double SegmentLengthToIndex(const std::vector<ParticleTrajectory::TrajectoryPoint>& traj, int index) {
@@ -343,10 +378,151 @@ PDCMomentumReconstructor::RkFitLayout PDCMomentumReconstructor::BuildRkFitLayout
         layout.active_parameter_indices = {2, 3, 4, 0, 0};
         layout.parameter_count = 3;
         layout.residual_count = 6;
-        layout.include_target_xy_prior = false;
+        layout.include_start_xy_constraint = false;
         layout.fixed_target_position = true;
     }
     return layout;
+}
+
+RecoResult PDCMomentumReconstructor::ReconstructRK(
+    const PDCInputTrack& track,
+    const TargetConstraint& target,
+    const RecoConfig& config
+) const {
+    switch (config.rk_fit_mode) {
+        case RkFitMode::kTwoPointBackprop:
+            return ReconstructRKTwoPointBackprop(track, target, config);
+        case RkFitMode::kFixedTargetPdcOnly:
+            return ReconstructRKFixedTargetPdcOnly(track, target, config);
+        case RkFitMode::kThreePointFree:
+            return ReconstructRKThreePointFree(track, target, config);
+    }
+
+    RecoResult result;
+    result.method_used = SolveMethod::kRungeKutta;
+    result.status = SolverStatus::kInvalidInput;
+    result.message = "unknown RK fit mode";
+    return result;
+}
+
+RecoResult PDCMomentumReconstructor::ReconstructRKTwoPointBackprop(
+    const PDCInputTrack& track,
+    const TargetConstraint& target,
+    const RecoConfig& config
+) const {
+    RecoResult result;
+    result.method_used = SolveMethod::kRungeKutta;
+
+    std::string reason;
+    if (!ValidateInputs(track, target, config, &reason)) {
+        result.status = SolverStatus::kInvalidInput;
+        result.message = reason;
+        return result;
+    }
+
+    // [EN] Reuse the legacy two-point back-tracing logic as a bounded compatibility mode while the new framework owns the mode selection and outputs. / [CN] 在新框架负责模式选择和输出契约的前提下，复用legacy两点反推逻辑作为受控兼容模式。
+    TargetReconstructor legacy_reconstructor(fMagneticField);
+    legacy_reconstructor.SetTrajectoryStepSize(config.rk_step_mm);
+    const RecoTrack legacy_track = BuildLegacyTrack(track);
+    const int search_rounds = std::max(1, std::min(8, config.max_iterations / 10));
+
+    const TargetReconstructionResult legacy_result = legacy_reconstructor.ReconstructAtTargetWithDetails(
+        legacy_track,
+        target.target_position,
+        false,
+        config.p_min_mevc,
+        config.p_max_mevc,
+        config.tolerance_mm,
+        search_rounds
+    );
+
+    if (!IsFinite(legacy_result.bestMomentum) || legacy_result.bestMomentum.P() <= 0.0) {
+        result.status = SolverStatus::kNotConverged;
+        result.message = "RK two-point backprop produced invalid momentum";
+        return result;
+    }
+
+    FillCommonRecoKinematics(legacy_result.bestMomentum,
+                             target.charge_e,
+                             SelectFartherPdcPoint(track, target.target_position),
+                             legacy_result.finalDistance,
+                             search_rounds,
+                             &result);
+    result.status =
+        (legacy_result.success || legacy_result.finalDistance <= config.tolerance_mm)
+            ? SolverStatus::kSuccess
+            : SolverStatus::kNotConverged;
+    result.message = (result.status == SolverStatus::kSuccess)
+        ? "RK two-point backprop converged"
+        : "RK two-point backprop did not reach tolerance";
+    return result;
+}
+
+RecoResult PDCMomentumReconstructor::ReconstructRKThreePointFree(
+    const PDCInputTrack& track,
+    const TargetConstraint& target,
+    const RecoConfig& config
+) const {
+    RecoResult result;
+    result.method_used = SolveMethod::kRungeKutta;
+
+    std::string reason;
+    if (!ValidateInputs(track, target, config, &reason)) {
+        result.status = SolverStatus::kInvalidInput;
+        result.message = reason;
+        return result;
+    }
+
+    // [EN] Start the free 6D fit from the measured PDC line direction so Minuit does not waste iterations on a flipped branch. / [CN] 用测得的PDC连线方向初始化自由6维拟合，避免Minuit在错误分支上浪费迭代。
+    TVector3 line_direction = track.pdc2 - track.pdc1;
+    if (line_direction.Mag2() < 1.0e-12) {
+        line_direction = TVector3(0.0, 0.0, 1.0);
+    }
+    line_direction = line_direction.Unit();
+    const double p_init = Clamp(config.initial_p_mevc, config.p_min_mevc, config.p_max_mevc);
+    const TVector3 momentum_init = line_direction * p_init;
+
+    TargetReconstructor legacy_reconstructor(fMagneticField);
+    legacy_reconstructor.SetTrajectoryStepSize(config.rk_step_mm);
+    const RecoTrack legacy_track = BuildLegacyTrack(track);
+
+    const TargetReconstructionResult legacy_result = legacy_reconstructor.ReconstructAtTargetThreePointFreeMinuit(
+        legacy_track,
+        target.target_position,
+        false,
+        target.target_position,
+        momentum_init,
+        target.target_sigma_xy_mm,
+        target.pdc_sigma_mm,
+        config.tolerance_mm,
+        config.max_iterations,
+        false
+    );
+
+    if (!IsFinite(legacy_result.bestMomentum) || legacy_result.bestMomentum.P() <= 0.0) {
+        result.status = SolverStatus::kNotConverged;
+        result.message = "RK three-point free fit produced invalid momentum";
+        return result;
+    }
+
+    FillCommonRecoKinematics(legacy_result.bestMomentum,
+                             target.charge_e,
+                             legacy_result.bestStartPos,
+                             legacy_result.finalDistance,
+                             legacy_result.totalIterations,
+                             &result);
+    result.chi2 = legacy_result.finalLoss;
+    result.chi2_raw = legacy_result.finalLoss;
+    result.chi2_reduced = legacy_result.finalLoss;
+    result.ndf = 3;
+    result.status =
+        (legacy_result.success || legacy_result.finalDistance <= config.tolerance_mm)
+            ? SolverStatus::kSuccess
+            : SolverStatus::kNotConverged;
+    result.message = (result.status == SolverStatus::kSuccess)
+        ? "RK three-point free fit converged"
+        : "RK three-point free fit did not reach tolerance";
+    return result;
 }
 
 double PDCMomentumReconstructor::ResidualChi2Raw(const std::array<double, 8>& residuals, int residual_count) {
@@ -452,8 +628,8 @@ PDCMomentumReconstructor::EvalResult PDCMomentumReconstructor::EvaluateState(
         eval.residuals[5] = diff2.Z() / pdc_sigma;
         eval.used_measurement_covariance = false;
     }
-    if (layout.include_target_xy_prior) {
-        // [EN] Anchor target offsets to avoid drifting into unconstrained solutions in 5D fit. / [CN] 给靶点偏移加约束，避免5维拟合漂移到欠约束解。
+    if (layout.include_start_xy_constraint) {
+        // [EN] Anchor the fitted emission point in x/y so the 5D problem does not drift into an under-constrained branch. / [CN] 对拟合发射点的x/y加入约束，避免5维问题漂移到欠约束分支。
         eval.residuals[6] = state.dx / target_sigma;
         eval.residuals[7] = state.dy / target_sigma;
     }
@@ -479,7 +655,7 @@ PDCMomentumReconstructor::EvalResult PDCMomentumReconstructor::EvaluateState(
     return eval;
 }
 
-RecoResult PDCMomentumReconstructor::ReconstructRK(
+RecoResult PDCMomentumReconstructor::ReconstructRKFixedTargetPdcOnly(
     const PDCInputTrack& track,
     const TargetConstraint& target,
     const RecoConfig& config

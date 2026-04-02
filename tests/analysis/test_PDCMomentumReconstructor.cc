@@ -2,52 +2,26 @@
 
 #include "ParticleTrajectory.hh"
 #include "PDCMomentumReconstructor.hh"
+#include "PDCRecoRuntime.hh"
+#include "TargetReconstructor.hh"
 
 #include <array>
 #include <cmath>
-#include <cstdlib>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 using analysis::pdc::anaroot_like::PDCInputTrack;
 using analysis::pdc::anaroot_like::PDCMomentumReconstructor;
 using analysis::pdc::anaroot_like::RecoConfig;
+using analysis::pdc::anaroot_like::RecoResult;
 using analysis::pdc::anaroot_like::RkFitMode;
 using analysis::pdc::anaroot_like::SolveMethod;
 using analysis::pdc::anaroot_like::SolverStatus;
 using analysis::pdc::anaroot_like::TargetConstraint;
 
 namespace {
-
-class ScopedEnvValue {
-public:
-    ScopedEnvValue(const char* name, const char* value) : fName(name) {
-        const char* old = std::getenv(name);
-        if (old) {
-            fHadValue = true;
-            fOldValue = old;
-        }
-        if (value) {
-            setenv(name, value, 1);
-        } else {
-            unsetenv(name);
-        }
-    }
-
-    ~ScopedEnvValue() {
-        if (fHadValue) {
-            setenv(fName.c_str(), fOldValue.c_str(), 1);
-        } else {
-            unsetenv(fName.c_str());
-        }
-    }
-
-private:
-    std::string fName;
-    std::string fOldValue;
-    bool fHadValue = false;
-};
 
 PDCInputTrack MakeSimpleTrack() {
     PDCInputTrack track;
@@ -113,61 +87,42 @@ PDCInputTrack MakeSyntheticCurvedTrack(MagneticField* mag_field,
     return track;
 }
 
-double TraceFromArray(const std::array<double, 9>& values) {
-    return values[0] + values[4] + values[8];
+RecoConfig MakeNnOnlyConfig(const std::string& model_path) {
+    RecoConfig config;
+    config.enable_nn = true;
+    config.enable_rk = false;
+    config.enable_multi_dim = false;
+    config.nn_model_json_path = model_path;
+    config.p_min_mevc = 50.0;
+    config.p_max_mevc = 5000.0;
+    return config;
+}
+
+RecoConfig MakeRkOnlyConfig(double initial_p_mevc, RkFitMode mode = RkFitMode::kThreePointFree) {
+    RecoConfig config;
+    config.enable_rk = true;
+    config.enable_multi_dim = false;
+    config.enable_nn = false;
+    config.rk_fit_mode = mode;
+    config.initial_p_mevc = initial_p_mevc;
+    config.max_iterations = 80;
+    config.rk_step_mm = 5.0;
+    config.tolerance_mm = 3.0;
+    config.compute_uncertainty = true;
+    config.compute_posterior_laplace = true;
+    return config;
 }
 
 }  // namespace
 
-TEST(PDCMomentumReconstructorTest, MatrixReportsNotAvailableWhenEnvMissing) {
-    // [EN] Matrix fallback should explicitly report unavailable when ANAROOT matrix env vars are missing. / [CN] 当ANAROOT矩阵环境变量缺失时，矩阵回退应明确返回不可用状态。
-    const ScopedEnvValue env0("SAMURAI_MATRIX0TH_FILE", nullptr);
-    const ScopedEnvValue env1("SAMURAI_MATRIX1ST_FILE", nullptr);
-
-    auto* fakeField = reinterpret_cast<MagneticField*>(0x1);
-    PDCMomentumReconstructor reconstructor(fakeField);
-
-    RecoConfig config;
-    config.enable_rk = false;
-    config.enable_multi_dim = false;
-    config.enable_matrix = true;
-
-    const auto result = reconstructor.ReconstructMatrix(MakeSimpleTrack(), MakeConstraint(), config);
-    EXPECT_EQ(result.status, SolverStatus::kNotAvailable);
-}
-
-TEST(PDCMomentumReconstructorTest, MatrixParsesSamuraiStyleFiles) {
-    // [EN] Use ANAROOT-compatible 0th/1st matrix text format to validate fallback solver plumbing. / [CN] 使用ANAROOT兼容的0阶/1阶矩阵文本格式验证回退求解链路。
-    const std::string mat0_path = "/tmp/pdc_matrix0th_test.txt";
-    const std::string mat1_path = "/tmp/pdc_matrix1st_test.txt";
-    {
-        std::ofstream mat0(mat0_path);
-        std::ofstream mat1(mat1_path);
-        ASSERT_TRUE(mat0.is_open());
-        ASSERT_TRUE(mat1.is_open());
-        mat0 << "0 0\n";
-        mat1 << "0 1 0\n";
-        mat1 << "0 0 1\n";
-        mat1 << "0 0 0\n";
-    }
-
-    const ScopedEnvValue env0("SAMURAI_MATRIX0TH_FILE", mat0_path.c_str());
-    const ScopedEnvValue env1("SAMURAI_MATRIX1ST_FILE", mat1_path.c_str());
-
-    auto* fakeField = reinterpret_cast<MagneticField*>(0x1);
-    PDCMomentumReconstructor reconstructor(fakeField);
-
-    RecoConfig config;
-    config.enable_rk = false;
-    config.enable_multi_dim = false;
-    config.enable_matrix = true;
-    config.center_brho_tm = 7.2751;
-
-    const auto result = reconstructor.ReconstructMatrix(MakeSimpleTrack(), MakeConstraint(), config);
-    EXPECT_EQ(result.status, SolverStatus::kSuccess);
-    EXPECT_TRUE(std::isfinite(result.p4_at_target.P()));
-    EXPECT_GT(result.p4_at_target.P(), 0.0);
-    EXPECT_TRUE(std::isfinite(result.brho_tm));
+TEST(PDCMomentumReconstructorTest, RuntimeParsesRkModesAndRejectsRemovedMatrixBackend) {
+    // [EN] Keep RK mode spellings centralized and fail fast when an operator still requests the removed matrix backend. / [CN] 将RK模式字符串统一到共享解析器，并在操作员仍请求已删除的matrix后端时快速报错。
+    EXPECT_EQ(analysis::pdc::anaroot_like::ParseRkFitMode("two-point-backprop"), RkFitMode::kTwoPointBackprop);
+    EXPECT_EQ(analysis::pdc::anaroot_like::ParseRkFitMode("target-xy-prior"), RkFitMode::kThreePointFree);
+    EXPECT_EQ(analysis::pdc::anaroot_like::ParseRkFitMode("three-point-free"), RkFitMode::kThreePointFree);
+    EXPECT_EQ(analysis::pdc::anaroot_like::ParseRkFitMode("fixed-target-pdc-only"), RkFitMode::kFixedTargetPdcOnly);
+    EXPECT_EQ(analysis::pdc::anaroot_like::ParseRkFitMode("pdc_only"), RkFitMode::kFixedTargetPdcOnly);
+    EXPECT_THROW(analysis::pdc::anaroot_like::ParseRuntimeBackend("matrix"), std::runtime_error);
 }
 
 TEST(PDCMomentumReconstructorTest, NeuralNetworkInferenceWorksWithoutMagField) {
@@ -197,14 +152,7 @@ TEST(PDCMomentumReconstructorTest, NeuralNetworkInferenceWorksWithoutMagField) {
 
     PDCMomentumReconstructor reconstructor(nullptr);
 
-    RecoConfig config;
-    config.enable_nn = true;
-    config.nn_model_json_path = model_path;
-    config.enable_rk = false;
-    config.enable_multi_dim = false;
-    config.enable_matrix = false;
-    config.p_min_mevc = 50.0;
-    config.p_max_mevc = 5000.0;
+    const RecoConfig config = MakeNnOnlyConfig(model_path);
 
     const auto result = reconstructor.Reconstruct(MakeSimpleTrack(), MakeConstraint(), config);
     EXPECT_EQ(result.status, SolverStatus::kSuccess);
@@ -244,14 +192,7 @@ TEST(PDCMomentumReconstructorTest, NeuralNetworkInferenceAppliesTargetDenormaliz
 
     PDCMomentumReconstructor reconstructor(nullptr);
 
-    RecoConfig config;
-    config.enable_nn = true;
-    config.nn_model_json_path = model_path;
-    config.enable_rk = false;
-    config.enable_multi_dim = false;
-    config.enable_matrix = false;
-    config.p_min_mevc = 50.0;
-    config.p_max_mevc = 5000.0;
+    const RecoConfig config = MakeNnOnlyConfig(model_path);
 
     const auto result = reconstructor.Reconstruct(MakeSimpleTrack(), MakeConstraint(), config);
     EXPECT_EQ(result.status, SolverStatus::kSuccess);
@@ -261,8 +202,8 @@ TEST(PDCMomentumReconstructorTest, NeuralNetworkInferenceAppliesTargetDenormaliz
     EXPECT_NEAR(result.p4_at_target.Pz(), 612.0, 1.0e-9);
 }
 
-TEST(PDCMomentumReconstructorTest, RKReportsLocalUncertaintyAndIntervals) {
-    // [EN] RK solver should expose raw/reduced chi2, local covariance, and Gaussianized intervals after convergence. / [CN] RK求解器在收敛后应输出原始/约化chi2、局部协方差和高斯化区间。
+TEST(PDCMomentumReconstructorTest, RKTwoPointBackpropMatchesLegacyCompatibilitySolver) {
+    // [EN] Two-point backprop is a compatibility mode, so the new runtime should reproduce the legacy solver result instead of inventing a second behavior. / [CN] 两点反推属于兼容模式，因此新运行时应复现legacy求解结果，而不是再发明第二套行为。
     const std::string field_path = WriteConstantFieldMap("pdc_constant_field_rk_uncertainty", 0.6);
 
     MagneticField mag_field;
@@ -277,47 +218,49 @@ TEST(PDCMomentumReconstructorTest, RKReportsLocalUncertaintyAndIntervals) {
     target.pdc_sigma_mm = 2.0;
     target.target_sigma_xy_mm = 5.0;
 
-    RecoConfig config;
-    config.enable_rk = true;
-    config.enable_multi_dim = false;
-    config.enable_matrix = false;
-    config.enable_nn = false;
-    config.initial_p_mevc = truth_momentum.Mag() * 0.95;
-    config.max_iterations = 80;
-    config.rk_step_mm = 5.0;
-    config.tolerance_mm = 3.0;
-    config.compute_uncertainty = true;
-    config.compute_posterior_laplace = true;
+    RecoConfig config = MakeRkOnlyConfig(truth_momentum.Mag() * 0.95, RkFitMode::kTwoPointBackprop);
+    config.tolerance_mm = 8.0;
 
     PDCMomentumReconstructor reconstructor(&mag_field);
-    const auto result = reconstructor.ReconstructRK(track, target, config);
+    const RecoResult result = reconstructor.ReconstructRK(track, target, config);
 
-    EXPECT_EQ(result.status, SolverStatus::kSuccess);
-    EXPECT_TRUE(std::isfinite(result.chi2_raw));
-    EXPECT_TRUE(std::isfinite(result.chi2_reduced));
-    EXPECT_GT(result.ndf, 0);
-    EXPECT_TRUE(result.uncertainty_valid);
-    EXPECT_TRUE(result.posterior_valid);
-    EXPECT_TRUE(std::isfinite(result.normal_condition_number));
-    EXPECT_FALSE(result.used_measurement_covariance);
+    TargetReconstructor legacy_reconstructor(&mag_field);
+    legacy_reconstructor.SetTrajectoryStepSize(config.rk_step_mm);
+    RecoTrack legacy_track(track.pdc1, track.pdc2);
+    legacy_track.pdgCode = 2212;
+    const int search_rounds = std::max(1, std::min(8, config.max_iterations / 10));
+    const TargetReconstructionResult legacy_result = legacy_reconstructor.ReconstructAtTargetWithDetails(
+        legacy_track,
+        target.target_position,
+        false,
+        config.p_min_mevc,
+        config.p_max_mevc,
+        config.tolerance_mm,
+        search_rounds
+    );
+
+    EXPECT_TRUE(result.status == SolverStatus::kSuccess || result.status == SolverStatus::kNotConverged);
+    EXPECT_EQ(result.method_used, SolveMethod::kRungeKutta);
+    EXPECT_TRUE(std::isfinite(result.p4_at_target.P()));
+    EXPECT_GT(result.p4_at_target.P(), 0.0);
+    EXPECT_TRUE(std::isfinite(result.min_distance_mm));
     EXPECT_TRUE(std::isfinite(result.fit_start_position.X()));
     EXPECT_TRUE(std::isfinite(result.fit_start_position.Y()));
     EXPECT_TRUE(std::isfinite(result.fit_start_position.Z()));
-    EXPECT_TRUE(result.px_interval.valid);
-    EXPECT_TRUE(result.py_interval.valid);
-    EXPECT_TRUE(result.pz_interval.valid);
-    EXPECT_TRUE(result.p_interval.valid);
-    EXPECT_LE(result.px_interval.lower95, truth_momentum.X());
-    EXPECT_GE(result.px_interval.upper95, truth_momentum.X());
-    EXPECT_LE(result.py_interval.lower95, truth_momentum.Y());
-    EXPECT_GE(result.py_interval.upper95, truth_momentum.Y());
-    EXPECT_LE(result.pz_interval.lower95, truth_momentum.Z());
-    EXPECT_GE(result.pz_interval.upper95, truth_momentum.Z());
-    EXPECT_NEAR(result.p4_at_target.Px(), truth_momentum.X(), 40.0);
-    EXPECT_NEAR(result.p4_at_target.Py(), truth_momentum.Y(), 25.0);
-    EXPECT_NEAR(result.p4_at_target.Pz(), truth_momentum.Z(), 60.0);
-    EXPECT_LE(TraceFromArray(result.posterior_momentum_covariance),
-              TraceFromArray(result.momentum_covariance) + 1.0e-9);
+    EXPECT_TRUE(std::isfinite(legacy_result.bestMomentum.P()));
+    EXPECT_GT(legacy_result.bestMomentum.P(), 0.0);
+    EXPECT_NEAR(result.p4_at_target.Px(), legacy_result.bestMomentum.Px(), 1.0e-9);
+    EXPECT_NEAR(result.p4_at_target.Py(), legacy_result.bestMomentum.Py(), 1.0e-9);
+    EXPECT_NEAR(result.p4_at_target.Pz(), legacy_result.bestMomentum.Pz(), 1.0e-9);
+    EXPECT_NEAR(result.min_distance_mm, legacy_result.finalDistance, 1.0e-9);
+    EXPECT_EQ(result.iterations, search_rounds);
+    const SolverStatus expected_status =
+        (legacy_result.success || legacy_result.finalDistance <= config.tolerance_mm)
+            ? SolverStatus::kSuccess
+            : SolverStatus::kNotConverged;
+    EXPECT_EQ(result.status, expected_status);
+    EXPECT_TRUE((result.fit_start_position - track.pdc1).Mag() < 1.0e-9 ||
+                (result.fit_start_position - track.pdc2).Mag() < 1.0e-9);
 }
 
 TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlyUsesTwoPointLossWithFixedVertex) {
@@ -336,18 +279,7 @@ TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlyUsesTwoPointLossWithFixed
     target.pdc_sigma_mm = 2.0;
     target.target_sigma_xy_mm = 5.0;
 
-    RecoConfig config;
-    config.enable_rk = true;
-    config.enable_multi_dim = false;
-    config.enable_matrix = false;
-    config.enable_nn = false;
-    config.rk_fit_mode = RkFitMode::kFixedTargetPdcOnly;
-    config.initial_p_mevc = truth_momentum.Mag();
-    config.max_iterations = 80;
-    config.rk_step_mm = 5.0;
-    config.tolerance_mm = 3.0;
-    config.compute_uncertainty = true;
-    config.compute_posterior_laplace = true;
+    RecoConfig config = MakeRkOnlyConfig(truth_momentum.Mag(), RkFitMode::kFixedTargetPdcOnly);
 
     PDCMomentumReconstructor reconstructor(&mag_field);
     const auto result = reconstructor.ReconstructRK(track, target, config);
@@ -366,55 +298,6 @@ TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlyUsesTwoPointLossWithFixed
     EXPECT_NEAR(result.p4_at_target.Pz(), truth_momentum.Z(), 60.0);
     EXPECT_GT(result.px_interval.sigma, 0.0);
     EXPECT_GT(result.px_credible.sigma, 0.0);
-}
-
-TEST(PDCMomentumReconstructorTest, RKUsesPerPlaneMeasurementCovariance) {
-    // [EN] Full 3x3 PDC covariance inputs should activate whitened residuals and still return usable intervals. / [CN] 完整3x3的PDC协方差输入应启用白化残差，并仍能返回可用区间。
-    const std::string field_path = WriteConstantFieldMap("pdc_constant_field_rk_covariance", 0.55);
-
-    MagneticField mag_field;
-    ASSERT_TRUE(mag_field.LoadFieldMap(field_path));
-    mag_field.SetRotationAngle(0.0);
-
-    const TVector3 target_pos(0.0, 0.0, 0.0);
-    const TVector3 truth_momentum(90.0, -15.0, 680.0);
-    const PDCInputTrack track = MakeSyntheticCurvedTrack(&mag_field, target_pos, truth_momentum);
-
-    TargetConstraint target = MakeConstraint();
-    target.use_pdc_covariance = true;
-    target.pdc1_cov_mm2 = {4.0, 0.4, 0.2,
-                           0.4, 2.25, 0.1,
-                           0.2, 0.1, 5.0};
-    target.pdc2_cov_mm2 = {3.5, 0.3, 0.15,
-                           0.3, 2.0, 0.05,
-                           0.15, 0.05, 4.5};
-
-    RecoConfig config;
-    config.enable_rk = true;
-    config.enable_multi_dim = false;
-    config.enable_matrix = false;
-    config.enable_nn = false;
-    config.initial_p_mevc = truth_momentum.Mag();
-    config.max_iterations = 80;
-    config.rk_step_mm = 5.0;
-    config.tolerance_mm = 3.5;
-    config.compute_uncertainty = true;
-    config.compute_posterior_laplace = true;
-
-    PDCMomentumReconstructor reconstructor(&mag_field);
-    const auto result = reconstructor.ReconstructRK(track, target, config);
-
-    EXPECT_EQ(result.status, SolverStatus::kSuccess);
-    EXPECT_TRUE(result.used_measurement_covariance);
-    EXPECT_TRUE(std::isfinite(result.chi2_raw));
-    EXPECT_TRUE(result.uncertainty_valid);
-    EXPECT_TRUE(result.posterior_valid);
-    EXPECT_TRUE(result.px_credible.valid);
-    EXPECT_TRUE(result.p_interval.valid);
-    EXPECT_GT(result.px_interval.sigma, 0.0);
-    EXPECT_GT(result.px_credible.sigma, 0.0);
-    EXPECT_LE(TraceFromArray(result.posterior_momentum_covariance),
-              TraceFromArray(result.momentum_covariance) + 1.0e-9);
 }
 
 TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlySupportsPerPlaneCovariance) {
@@ -438,18 +321,8 @@ TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlySupportsPerPlaneCovarianc
                            0.3, 2.0, 0.05,
                            0.15, 0.05, 4.5};
 
-    RecoConfig config;
-    config.enable_rk = true;
-    config.enable_multi_dim = false;
-    config.enable_matrix = false;
-    config.enable_nn = false;
-    config.rk_fit_mode = RkFitMode::kFixedTargetPdcOnly;
-    config.initial_p_mevc = truth_momentum.Mag();
-    config.max_iterations = 80;
-    config.rk_step_mm = 5.0;
+    RecoConfig config = MakeRkOnlyConfig(truth_momentum.Mag(), RkFitMode::kFixedTargetPdcOnly);
     config.tolerance_mm = 3.5;
-    config.compute_uncertainty = true;
-    config.compute_posterior_laplace = true;
 
     PDCMomentumReconstructor reconstructor(&mag_field);
     const auto result = reconstructor.ReconstructRK(track, target, config);

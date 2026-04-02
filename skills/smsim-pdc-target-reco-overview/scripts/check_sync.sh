@@ -16,7 +16,6 @@ required_paths=(
     "libs/analysis_pdc_reco/include/PDCMomentumReconstructor.hh"
     "libs/analysis_pdc_reco/src/PDCMomentumReconstructor.cc"
     "libs/analysis_pdc_reco/src/PDCMomentumReconstructorRK.cc"
-    "libs/analysis_pdc_reco/src/PDCMomentumReconstructorMatrix.cc"
     "libs/analysis_pdc_reco/src/PDCMomentumReconstructorMultiDim.cc"
     "libs/analysis_pdc_reco/src/PDCMomentumReconstructorNN.cc"
     "libs/analysis_pdc_reco/include/PDCNNMomentumReconstructor.hh"
@@ -24,11 +23,17 @@ required_paths=(
     "scripts/reconstruction/nn_target_momentum/build_dataset.C"
     "scripts/reconstruction/nn_target_momentum/train_mlp.py"
     "scripts/reconstruction/nn_target_momentum/export_model_for_cpp.py"
+    "scripts/analysis/run_target_momentum_reco_pipeline.sh"
     "scripts/analysis/run_sn124_nn_reco_pipeline.sh"
-    "apps/tools/reconstruct_sn_nn.cc"
-    "apps/tools/evaluate_reconstruct_sn_nn.cc"
+    "apps/run_reconstruction/main.cc"
+    "apps/run_reconstruction/CMakeLists.txt"
+    "apps/tools/CMakeLists.txt"
+    "apps/tools/evaluate_target_momentum_reco.cc"
+    "libs/analysis_pdc_reco/include/PDCRecoRuntime.hh"
+    "libs/analysis_pdc_reco/src/PDCRecoRuntime.cc"
     "libs/analysis/include/TargetReconstructor.hh"
     "tests/analysis/test_TargetReconstructor.cc"
+    "scripts/analysis/legacy_target_reco"
     "skills/smsim-pdc-track-reco/SKILL.md"
     "skills/smsim-pdc-momentum-reco/SKILL.md"
     "skills/smsim-nn-target-momentum/SKILL.md"
@@ -55,7 +60,7 @@ fi
 
 for f in "${changed_files[@]}"; do
     case "${f}" in
-        configs/simulation/DbeamTest/detailMag1to1.2T/*|docs/reports/reconstruction/nn_retrain_qmdwindow_B115T3deg_notes.zh.md|docs/note_log/task.md|scripts/reconstruction/nn_target_momentum/*|scripts/analysis/run_sn124_nn_reco_pipeline.sh|apps/tools/reconstruct_sn_nn.cc|apps/tools/evaluate_reconstruct_sn_nn.cc|libs/analysis/src/PDCSimAna.cc|libs/analysis/include/PDCSimAna.hh|libs/analysis_pdc_reco/*|skills/smsim-pdc-track-reco/*|skills/smsim-pdc-momentum-reco/*|skills/smsim-nn-target-momentum/*)
+        configs/simulation/DbeamTest/detailMag1to1.2T/*|docs/reports/reconstruction/nn_retrain_qmdwindow_B115T3deg_notes.zh.md|docs/note_log/task.md|scripts/reconstruction/nn_target_momentum/*|scripts/analysis/run_target_momentum_reco_pipeline.sh|scripts/analysis/run_sn124_nn_reco_pipeline.sh|scripts/analysis/legacy_target_reco/*|apps/run_reconstruction/*|apps/tools/CMakeLists.txt|apps/tools/evaluate_target_momentum_reco.cc|libs/analysis/src/PDCSimAna.cc|libs/analysis/include/PDCSimAna.hh|libs/analysis_pdc_reco/*|skills/smsim-pdc-track-reco/*|skills/smsim-pdc-momentum-reco/*|skills/smsim-nn-target-momentum/*)
             echo "[SYNC] PDC target-reconstruction overview anchors changed: ${f}"
             echo "       Update references/workflow.md, references/principles.md, or references/path-map.md if the project map changed."
             break
