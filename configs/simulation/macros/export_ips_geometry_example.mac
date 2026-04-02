@@ -1,0 +1,40 @@
+/control/getEnv SMSIMDIR
+
+/vis/open VRML2FILE
+
+/action/file/OverWrite y
+/action/file/RunName ips_geometry_3deg_B115T_offset0
+/action/file/SaveDirectory {SMSIMDIR}/data/simulation/g4output
+
+/samurai/geometry/Dipole/Angle 30 deg
+/samurai/geometry/Dipole/FieldFile {SMSIMDIR}/configs/simulation/geometry/filed_map/180703-1,15T-3000.table
+/samurai/geometry/Dipole/FieldFactor 1
+
+/samurai/geometry/Target/SetTarget false
+/samurai/geometry/Target/Material Sn
+/samurai/geometry/Target/Size 80 80 30 mm
+/samurai/geometry/Target/Position -1.2488 0.0009 -106.9458 cm
+/samurai/geometry/Target/Angle 3.00 deg
+
+/samurai/geometry/PDC/Angle 69 deg
+/samurai/geometry/PDC/Position1 70 0 400 cm
+/samurai/geometry/PDC/Position2 70 0 500 cm
+
+/samurai/geometry/Dump/SetDump false
+/samurai/geometry/Dump/Angle 36.67 deg
+/samurai/geometry/Dump/Position -0.93 -25.00 0.00 cm
+
+/samurai/geometry/NEBULA/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Dayone.csv
+/samurai/geometry/NEBULA/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
+/samurai/geometry/FillAir true
+/samurai/geometry/IPS/SetIPS true
+/samurai/geometry/IPS/AxisOffset 0 mm
+/samurai/geometry/Update
+
+/vis/viewer/set/upVector 1 0 0
+/vis/viewer/set/viewpointThetaPhi 90. 90.
+/vis/drawVolume
+/vis/scene/add/axes 0 0 0 6000 mm
+/vis/viewer/flush
+
+exit

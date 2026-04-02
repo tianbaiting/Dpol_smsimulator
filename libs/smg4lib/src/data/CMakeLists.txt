@@ -6,27 +6,20 @@ project(smdata)
 file(GLOB_RECURSE DATA_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE DATA_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hh")
 file(GLOB TINC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/T*.hh")
+set(SMDATA_LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/smdata_linkdef.hh)
 
 # 生成 ROOT 字典
 message(STATUS "Making dictionary smrootdata for ROOT")
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh "#if defined(__CINT__) || defined(__CLING__)\n")
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh "#pragma link off all globals;\n")
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh "#pragma link off all classes;\n")
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh "#pragma link off all functions;\n")
-
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh "#pragma link C++ class vector<TBeamSimData>;\n")
 foreach(loop_var IN LISTS TINC_FILES)
   get_filename_component(loop_var_filename "${loop_var}" NAME_WE)
-  file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh "#pragma link C++ class ${loop_var_filename}+;\n")
   message(STATUS "  Adding to dictionary: ${loop_var_filename}")
 endforeach()
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh "#endif\n")
 
 # 使用 MODULE 关键字生成字典，确保 ROOT 内部类型(TVector3, TLorentzVector等)能被正确解析
 ROOT_GENERATE_DICTIONARY(G__smrootdata
   ${TINC_FILES}
   MODULE smdata
-  LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/smdata_linkdef.hh
+  LINKDEF ${SMDATA_LINKDEF}
   OPTIONS -I${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 

@@ -7,6 +7,7 @@ class DeutDetectorConstructionMessenger;
 class DipoleConstruction;
 class PDCConstruction;
 class NEBULAConstruction;
+class IPSConstruction;
 class ExitWindowNConstruction;
 class ExitWindowC2Construction;
 class VacuumDownstreamConstruction;  // 添加前向声明
@@ -33,6 +34,8 @@ public:
   void SetDumpPos(G4ThreeVector pos);
   void SetTargetAngle(G4double angle);
   void SetTargetPos(G4ThreeVector pos);
+  void SetIPS(G4bool tf);
+  void SetIPSAxisOffset(G4double offset);
   void UpdateGeometry();
   void AutoConfigGeometry(G4String outputMacroFile);
 
@@ -56,17 +59,20 @@ private:
   G4bool fFillAir;
   G4bool fSetTarget;
   G4bool fSetDump;
+  G4bool fSetIPS;
 
   DeutDetectorConstructionMessenger *fDetectorConstructionMessenger;
 
   DipoleConstruction *fDipoleConstruction;
   PDCConstruction    *fPDCConstruction;
   NEBULAConstruction *fNEBULAConstruction;
+  IPSConstruction    *fIPSConstruction;
 
   G4String      fTargetMat;
   G4ThreeVector fTargetPos;   // position at laboratory coordinate in mm
   G4ThreeVector fTargetSize;
   G4double      fTargetAngle; // angle (clockwise) in rad
+  G4double      fIPSAxisOffset; // signed offset along the local beam axis in mm
 
   G4double      fPDCAngle;    // angle (clockwise) in rad
   G4ThreeVector fPDC1Pos;     // position at rotated coordinate in mm
@@ -80,6 +86,7 @@ private:
   G4VSensitiveDetector* fPDCSD_X = 0;
   G4VSensitiveDetector* fPDCSD_V = 0;
   G4VSensitiveDetector* fNEBULASD = 0;
+  G4VSensitiveDetector* fIPSSD = 0;
 
   ExitWindowNConstruction *fExitWindowNConstruction;  
   G4VSensitiveDetector* fNeutronWinSD;
@@ -98,4 +105,3 @@ private:
 };
 
 #endif
-

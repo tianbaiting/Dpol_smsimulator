@@ -39,6 +39,10 @@ protected:
   G4UIcmdWith3VectorAndUnit* fPDC1PosCmd;
   G4UIcmdWith3VectorAndUnit* fPDC2PosCmd;
 
+  G4UIdirectory* fIPSDirectory;
+  G4UIcmdWithABool* fSetIPSCmd;
+  G4UIcmdWithADoubleAndUnit* fIPSAxisOffsetCmd;
+
   G4UIdirectory* fDumpDirectory;
   G4UIcmdWithABool* fSetDumpCmd;
   G4UIcmdWithADoubleAndUnit* fDumpAngleCmd;

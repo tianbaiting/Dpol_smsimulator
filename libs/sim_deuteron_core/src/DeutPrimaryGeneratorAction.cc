@@ -9,6 +9,8 @@
 #include "G4ParticleGun.hh"
 #include "G4SystemOfUnits.hh"
 
+#include <cmath>
+
 //____________________________________________________________________
 DeutPrimaryGeneratorAction::DeutPrimaryGeneratorAction(G4int seed)
   : PrimaryGeneratorActionBasic(seed),
@@ -39,10 +41,14 @@ void DeutPrimaryGeneratorAction::SetPrimaryVertex(G4Event* anEvent)
       SM_ERROR("Cannot find particle: {}", beam.fParticleName.Data());
     }
     fParticleGun->SetParticleDefinition(particle);
-    fParticleGun->SetParticleEnergy((beam.fMomentum.E()-beam.fMomentum.M())*MeV);
     G4ThreeVector dir(beam.fMomentum.Px(),
 		      beam.fMomentum.Py(),
 		      beam.fMomentum.Pz() );
+    const G4double mass_mev = particle->GetPDGMass()/MeV;
+    const G4double momentum2 = dir.mag2();
+    const G4double kinetic_mev = std::sqrt(momentum2 + mass_mev * mass_mev) - mass_mev;
+    // [EN] Derive kinetic energy from the Geant4 particle mass so ion primaries remain consistent even when the text input carries approximate rest masses. / [CN] 由Geant4粒子质量反推动能，使文本输入只给出近似静质量时重离子初级粒子仍保持一致。
+    fParticleGun->SetParticleEnergy(kinetic_mev*MeV);
     G4ThreeVector pos_lab(beam.fPosition.x()*mm,
 			  beam.fPosition.y()*mm,
 			  beam.fPosition.z()*mm );

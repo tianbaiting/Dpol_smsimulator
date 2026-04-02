@@ -19,6 +19,7 @@
 #include "DipoleConstruction.hh"
 #include "PDCConstruction.hh"
 #include "NEBULAConstruction.hh"
+#include "IPSConstruction.hh"
 #include "ExitWindowNConstruction.hh"
 #include "ExitWindowC2Construction.hh"  
 
@@ -53,8 +54,8 @@
 //______________________________________________________________________________
 DeutDetectorConstruction::DeutDetectorConstruction() 
   :
-  fFillAir{false}, fSetTarget{true}, fSetDump{true}, fTargetMat{"Sn"},
-  fTargetPos{0,0,0}, fTargetSize{50,50,5}, fTargetAngle{0}
+  fFillAir{false}, fSetTarget{true}, fSetDump{true}, fSetIPS{false}, fTargetMat{"Sn"},
+  fTargetPos{0,0,0}, fTargetSize{50,50,5}, fTargetAngle{0}, fIPSAxisOffset{0}
   // Otherwise they'd be initialized randomly
 {
   SM_INFO("Constructor of DeutDetectorConstruction");
@@ -63,6 +64,7 @@ DeutDetectorConstruction::DeutDetectorConstruction()
   fDipoleConstruction = new DipoleConstruction();
   fPDCConstruction    = new PDCConstruction();
   fNEBULAConstruction = new NEBULAConstruction();
+  fIPSConstruction    = new IPSConstruction();
   fExitWindowNConstruction = new ExitWindowNConstruction();
   fNeutronWinSD = 0;
   fExitWindowC2Construction = new ExitWindowC2Construction();
@@ -76,6 +78,7 @@ DeutDetectorConstruction::~DeutDetectorConstruction()
   delete fDipoleConstruction;
   delete fPDCConstruction;
   delete fNEBULAConstruction;
+  delete fIPSConstruction;
   delete fExitWindowNConstruction;
   delete fExitWindowC2Construction;
   delete fVacuumDownstreamConstruction;  
@@ -239,6 +242,23 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
   frag_prm->fTargetAngle = fTargetAngle;
   frag_prm->fTargetThickness = fTargetSize.z();
 
+  if (fSetIPS) {
+    fIPSConstruction->ConstructSub();
+    G4RotationMatrix ips_rm;
+    ips_rm.rotateY(-fTargetAngle);
+    G4ThreeVector ips_axis(0.0, 0.0, 1.0);
+    ips_axis.rotateY(-fTargetAngle);
+    const G4ThreeVector ips_center = fTargetPos + fIPSAxisOffset * ips_axis;
+    // [EN] Keep the IPS barrel axis on the local beam line so the target remains on the detector symmetry axis while scanning signed axial offsets. / [CN] 保持IPS桶轴落在局部束流线上，使扫描带符号轴向偏移时靶点始终位于探测器对称轴上。
+    fIPSConstruction->PlaceModules(expHall_log, G4Transform3D(ips_rm, ips_center));
+
+    if (fIPSSD == 0) {
+      fIPSSD = new FragmentSD("/IPS");
+      SDMan->AddNewDetector(fIPSSD);
+    }
+    fIPSConstruction->GetActiveLogicalVolume()->SetSensitiveDetector(fIPSSD);
+  }
+
   //------------------------------ NEBULA
   fNEBULAConstruction->ConstructSub();
   fNEBULAConstruction->PutNEBULA(expHall_log);
@@ -348,6 +368,18 @@ void DeutDetectorConstruction::SetTargetAngle(G4double angle)
 {
   fTargetAngle = angle;
   SM_INFO("DeutDetectorConstruction: Set target angle at {:.2f} deg", fTargetAngle/deg);
+}
+//______________________________________________________________________________
+void DeutDetectorConstruction::SetIPS(G4bool tf)
+{
+  fSetIPS = tf;
+  SM_INFO("DeutDetectorConstruction: Set IPS {}", fSetIPS ? "enabled" : "disabled");
+}
+//______________________________________________________________________________
+void DeutDetectorConstruction::SetIPSAxisOffset(G4double offset)
+{
+  fIPSAxisOffset = offset;
+  SM_INFO("DeutDetectorConstruction: Set IPS axis offset at {:.2f} cm", fIPSAxisOffset/cm);
 }
 
 //______________________________________________________________________________

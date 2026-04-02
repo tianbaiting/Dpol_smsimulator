@@ -10,9 +10,10 @@ Use this skill for simulation input/output pipeline issues only.
 ## Workflow
 
 1. Read `references/workflow.md` to locate the current IO entry point.
-2. Edit only the owning files listed in `references/path-map.md`.
-3. Run focused command(s) in `references/workflow.md`.
-4. Run `scripts/check_sync.sh` before finishing.
+2. If the task involves QMD raw text datasets, read `references/qmdrawdata-columns.md` before changing parsers or converters.
+3. Edit only the owning files listed in `references/path-map.md`.
+4. Run focused command(s) in `references/workflow.md`.
+5. Run `scripts/check_sync.sh` before finishing.
 
 ## When Structure Changes
 
@@ -25,5 +26,6 @@ If files are moved/renamed and this skill becomes stale:
 ## Resources
 
 - `references/workflow.md`
+- `references/qmdrawdata-columns.md`
 - `references/path-map.md`
 - `scripts/check_sync.sh`

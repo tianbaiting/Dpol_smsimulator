@@ -93,6 +93,21 @@ DeutDetectorConstructionMessenger::DeutDetectorConstructionMessenger(DeutDetecto
   fPDC2PosCmd->SetDefaultValue(G4ThreeVector(400,0,5100*mm));
   fPDC2PosCmd->AvailableForStates(G4State_Idle);
 
+  fIPSDirectory = new G4UIdirectory("/samurai/geometry/IPS/");
+  fIPSDirectory->SetGuidance("Modification Commands for IPS veto barrel");
+
+  fSetIPSCmd = new G4UIcmdWithABool("/samurai/geometry/IPS/SetIPS", this);
+  fSetIPSCmd->SetGuidance("Enable or disable IPS barrel");
+  fSetIPSCmd->SetParameterName("SetIPS", true);
+  fSetIPSCmd->SetDefaultValue(false);
+
+  fIPSAxisOffsetCmd = new G4UIcmdWithADoubleAndUnit("/samurai/geometry/IPS/AxisOffset", this);
+  fIPSAxisOffsetCmd->SetGuidance("Set signed IPS offset along the local beam axis");
+  fIPSAxisOffsetCmd->SetParameterName("AxisOffset", true);
+  fIPSAxisOffsetCmd->SetUnitCategory("Length");
+  fIPSAxisOffsetCmd->SetDefaultValue(0.0 * mm);
+  fIPSAxisOffsetCmd->AvailableForStates(G4State_Idle);
+
   fDumpDirectory = new G4UIdirectory("/samurai/geometry/Dump/");
   fDumpDirectory->SetGuidance("Modification Commands for the Dump");
 
@@ -137,6 +152,10 @@ DeutDetectorConstructionMessenger::~DeutDetectorConstructionMessenger()
   delete fPDC1PosCmd;
   delete fPDC2PosCmd;
 
+  delete fIPSDirectory;
+  delete fSetIPSCmd;
+  delete fIPSAxisOffsetCmd;
+
   delete fDumpDirectory;
   delete fDumpAngleCmd;
   delete fDumpPosCmd;
@@ -177,6 +196,12 @@ void DeutDetectorConstructionMessenger::SetNewValue(G4UIcommand* command,
 
   }else if ( command == fPDC2PosCmd ){
     fDetectorConstruction->SetPDC2Pos(fPDC2PosCmd->GetNew3VectorValue(newValue));
+
+  }else if ( command == fSetIPSCmd ){
+    fDetectorConstruction->SetIPS(fSetIPSCmd->GetNewBoolValue(newValue));
+
+  }else if ( command == fIPSAxisOffsetCmd ){
+    fDetectorConstruction->SetIPSAxisOffset(fIPSAxisOffsetCmd->GetNewDoubleValue(newValue));
 
   }else if ( command == fSetDumpCmd ){
     fDetectorConstruction->SetDump(fSetDumpCmd->GetNewBoolValue(newValue));
