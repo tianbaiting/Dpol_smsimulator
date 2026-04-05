@@ -59,6 +59,18 @@ struct Candidate {
     bool feasible = false;
 };
 
+struct EvaluatedCandidate {
+    Candidate candidate;
+    bool cache_hit = false;
+};
+
+struct SummaryRow {
+    std::string phase;
+    std::string stage;
+    int rank = 0;
+    Candidate candidate;
+};
+
 struct Options {
     fs::path sim_bin;
     fs::path geometry_macro;
@@ -437,6 +449,27 @@ long long OffsetKey(double offset_mm) {
     return static_cast<long long>(std::llround(offset_mm * 1000.0));
 }
 
+std::string MergeStageTag(const std::string& current, const std::string& incoming) {
+    if (current.empty()) {
+        return incoming;
+    }
+    if (incoming.empty() || current == incoming) {
+        return current;
+    }
+    if ((current == "coarse" && incoming == "refine") || (current == "refine" && incoming == "coarse")) {
+        return "coarse+refine";
+    }
+    if (current == "coarse+refine" || incoming == "coarse+refine") {
+        return "coarse+refine";
+    }
+    return incoming;
+}
+
+void UpdateStageTag(std::map<long long, std::string>& stage_by_offset, double offset_mm, const std::string& stage) {
+    const long long key = OffsetKey(offset_mm);
+    stage_by_offset[key] = MergeStageTag(stage_by_offset[key], stage);
+}
+
 double ElasticLeakage(const Metrics& metrics) {
     if (metrics.elastic_selected_total <= 0) {
         return 0.0;
@@ -456,6 +489,44 @@ double SmallBRawRate(const Metrics& metrics) {
         return 0.0;
     }
     return static_cast<double>(metrics.smallb_raw_ips) / static_cast<double>(metrics.smallb_raw_total);
+}
+
+std::vector<Candidate> CollectCachedCandidates(const std::map<long long, Candidate>& cache) {
+    std::vector<Candidate> candidates;
+    candidates.reserve(cache.size());
+    for (const auto& entry : cache) {
+        candidates.push_back(entry.second);
+    }
+    return candidates;
+}
+
+void LogCandidateProgress(
+    std::ostream& console,
+    std::ofstream& progress_log,
+    const std::string& phase,
+    const std::string& stage,
+    const Candidate& candidate,
+    bool cache_hit
+) {
+    std::ostringstream line;
+    line << "[scan_ips_position]"
+         << " phase=" << phase
+         << " stage=" << stage
+         << " cache_hit=" << (cache_hit ? 1 : 0)
+         << " offset_mm=" << std::fixed << std::setprecision(3) << candidate.metrics.offset_mm
+         << " feasible=" << (candidate.feasible ? 1 : 0)
+         << " elastic_selected_ips=" << candidate.metrics.elastic_selected_ips
+         << " elastic_selected_total=" << candidate.metrics.elastic_selected_total
+         << " elastic_leakage=" << std::setprecision(6) << ElasticLeakage(candidate.metrics)
+         << " smallb_selected_ips=" << candidate.metrics.smallb_selected_ips
+         << " smallb_selected_total=" << candidate.metrics.smallb_selected_total
+         << " smallb_selected_rate=" << SmallBSelectedRate(candidate.metrics)
+         << " smallb_raw_ips=" << candidate.metrics.smallb_raw_ips
+         << " smallb_raw_total=" << candidate.metrics.smallb_raw_total
+         << " smallb_raw_rate=" << SmallBRawRate(candidate.metrics);
+    console << line.str() << "\n";
+    progress_log << line.str() << "\n";
+    progress_log.flush();
 }
 
 Candidate EvaluateOffset(
@@ -561,7 +632,7 @@ std::vector<double> BuildRefineGrid(const std::vector<Candidate>& coarse_ranked,
     return refine_offsets;
 }
 
-Candidate EvaluateWithCache(
+EvaluatedCandidate EvaluateWithCache(
     double offset_mm,
     const DatasetSet& datasets,
     const Options& opts,
@@ -572,22 +643,22 @@ Candidate EvaluateWithCache(
     const long long key = OffsetKey(offset_mm);
     const auto it = cache.find(key);
     if (it != cache.end() && !keep_outputs) {
-        return it->second;
+        return EvaluatedCandidate{it->second, true};
     }
     const Candidate candidate = EvaluateOffset(offset_mm, datasets, opts, run_root_dir, keep_outputs);
     if (!keep_outputs) {
         cache[key] = candidate;
     }
-    return candidate;
+    return EvaluatedCandidate{candidate, false};
 }
 
 void WriteSummaryCsv(
     const fs::path& csv_path,
-    const std::vector<Candidate>& scan_ranked,
-    const std::vector<Candidate>& validation_ranked
+    const std::vector<SummaryRow>& scan_rows,
+    const std::vector<SummaryRow>& validation_rows
 ) {
     std::ofstream out(csv_path);
-    out << "phase,rank,offset_mm,feasible,elastic_selected_total,elastic_selected_ips,elastic_leakage,"
+    out << "phase,stage,rank,offset_mm,feasible,elastic_selected_total,elastic_selected_ips,elastic_leakage,"
         << "smallb_selected_total,smallb_selected_ips,smallb_selected_rate,"
         << "smallb_raw_total,smallb_raw_ips,smallb_raw_rate";
     for (int i = 1; i <= kBMax; ++i) {
@@ -595,15 +666,17 @@ void WriteSummaryCsv(
     }
     out << "\n";
 
-    auto write_rows = [&](const std::vector<Candidate>& rows, const std::string& phase) {
-        for (std::size_t i = 0; i < rows.size(); ++i) {
-            const auto& metrics = rows[i].metrics;
-            out << phase << "," << (i + 1) << ","
+    auto write_rows = [&](const std::vector<SummaryRow>& rows) {
+        for (const auto& row : rows) {
+            const auto& metrics = row.candidate.metrics;
+            out << row.phase << ","
+                << row.stage << ","
+                << row.rank << ","
                 << std::fixed << std::setprecision(3) << metrics.offset_mm << ","
-                << (rows[i].feasible ? 1 : 0) << ","
+                << (row.candidate.feasible ? 1 : 0) << ","
                 << metrics.elastic_selected_total << ","
                 << metrics.elastic_selected_ips << ","
-                << ElasticLeakage(metrics) << ","
+                << std::setprecision(6) << ElasticLeakage(metrics) << ","
                 << metrics.smallb_selected_total << ","
                 << metrics.smallb_selected_ips << ","
                 << SmallBSelectedRate(metrics) << ","
@@ -618,19 +691,20 @@ void WriteSummaryCsv(
         }
     };
 
-    write_rows(scan_ranked, "scan");
-    write_rows(validation_ranked, "validation");
+    write_rows(scan_rows);
+    write_rows(validation_rows);
 }
 
 void WriteSummaryRoot(
     const fs::path& root_path,
-    const std::vector<Candidate>& scan_ranked,
-    const std::vector<Candidate>& validation_ranked
+    const std::vector<SummaryRow>& scan_rows,
+    const std::vector<SummaryRow>& validation_rows
 ) {
     TFile out(root_path.c_str(), "RECREATE");
     TTree tree("ips_scan", "IPS position scan summary");
 
     TString phase;
+    TString stage;
     int rank = 0;
     double offset_mm = 0.0;
     int feasible = 0;
@@ -647,6 +721,7 @@ void WriteSummaryRoot(
     int b_selected_ips[kBMax] = {0};
 
     tree.Branch("phase", &phase);
+    tree.Branch("stage", &stage);
     tree.Branch("rank", &rank, "rank/I");
     tree.Branch("offset_mm", &offset_mm, "offset_mm/D");
     tree.Branch("feasible", &feasible, "feasible/I");
@@ -662,13 +737,14 @@ void WriteSummaryRoot(
     tree.Branch("b_selected_total", b_selected_total, "b_selected_total[10]/I");
     tree.Branch("b_selected_ips", b_selected_ips, "b_selected_ips[10]/I");
 
-    auto fill_rows = [&](const std::vector<Candidate>& rows, const char* row_phase) {
-        for (std::size_t i = 0; i < rows.size(); ++i) {
-            const auto& metrics = rows[i].metrics;
-            phase = row_phase;
-            rank = static_cast<int>(i + 1);
+    auto fill_rows = [&](const std::vector<SummaryRow>& rows) {
+        for (const auto& row : rows) {
+            const auto& metrics = row.candidate.metrics;
+            phase = row.phase.c_str();
+            stage = row.stage.c_str();
+            rank = row.rank;
             offset_mm = metrics.offset_mm;
-            feasible = rows[i].feasible ? 1 : 0;
+            feasible = row.candidate.feasible ? 1 : 0;
             elastic_selected_total = metrics.elastic_selected_total;
             elastic_selected_ips = metrics.elastic_selected_ips;
             elastic_leakage = ElasticLeakage(metrics);
@@ -686,9 +762,57 @@ void WriteSummaryRoot(
         }
     };
 
-    fill_rows(scan_ranked, "scan");
-    fill_rows(validation_ranked, "validation");
+    fill_rows(scan_rows);
+    fill_rows(validation_rows);
     tree.Write();
+}
+
+std::vector<SummaryRow> BuildScanSummaryRows(
+    const std::vector<Candidate>& ranked,
+    const std::map<long long, std::string>& stage_by_offset
+) {
+    std::vector<SummaryRow> rows;
+    rows.reserve(ranked.size());
+    for (std::size_t i = 0; i < ranked.size(); ++i) {
+        const long long key = OffsetKey(ranked[i].metrics.offset_mm);
+        std::string stage = "scan";
+        const auto it = stage_by_offset.find(key);
+        if (it != stage_by_offset.end() && !it->second.empty()) {
+            stage = it->second;
+        }
+        rows.push_back(SummaryRow{"scan", stage, static_cast<int>(i + 1), ranked[i]});
+    }
+    return rows;
+}
+
+std::map<long long, int> BuildRankByOffset(const std::vector<SummaryRow>& rows) {
+    std::map<long long, int> rank_by_offset;
+    for (const auto& row : rows) {
+        rank_by_offset[OffsetKey(row.candidate.metrics.offset_mm)] = row.rank;
+    }
+    return rank_by_offset;
+}
+
+std::vector<SummaryRow> BuildValidationSummaryRows(
+    const std::vector<Candidate>& validation_candidates,
+    const std::map<long long, int>& scan_rank_by_offset
+) {
+    std::vector<SummaryRow> rows;
+    rows.reserve(validation_candidates.size());
+    for (const auto& candidate : validation_candidates) {
+        const auto it = scan_rank_by_offset.find(OffsetKey(candidate.metrics.offset_mm));
+        const int rank = (it != scan_rank_by_offset.end()) ? it->second : 0;
+        rows.push_back(SummaryRow{"validation", "validation", rank, candidate});
+    }
+    std::sort(rows.begin(), rows.end(), [](const SummaryRow& lhs, const SummaryRow& rhs) {
+        const int lhs_rank = (lhs.rank > 0) ? lhs.rank : std::numeric_limits<int>::max();
+        const int rhs_rank = (rhs.rank > 0) ? rhs.rank : std::numeric_limits<int>::max();
+        if (lhs_rank != rhs_rank) {
+            return lhs_rank < rhs_rank;
+        }
+        return lhs.candidate.metrics.offset_mm < rhs.candidate.metrics.offset_mm;
+    });
+    return rows;
 }
 
 void WriteBestPositions(const fs::path& txt_path, const std::vector<Candidate>& ranked, const Options& opts) {
@@ -720,6 +844,11 @@ int main(int argc, char** argv) {
     try {
         const Options opts = ParseArgs(argc, argv);
         fs::create_directories(opts.output_dir);
+        const fs::path progress_log_path = opts.output_dir / "scan_progress.log";
+        std::ofstream progress_log(progress_log_path);
+        if (!progress_log.is_open()) {
+            throw std::runtime_error("Cannot create progress log: " + progress_log_path.string());
+        }
 
         DatasetSet scan_dataset{
             opts.scan_elastic_inputs,
@@ -734,11 +863,15 @@ int main(int argc, char** argv) {
 
         const std::vector<double> coarse_offsets = BuildGrid(opts.coarse_min_mm, opts.coarse_max_mm, opts.coarse_step_mm);
         std::map<long long, Candidate> scan_cache;
+        std::map<long long, std::string> scan_stage_by_offset;
         std::vector<Candidate> coarse_candidates;
         coarse_candidates.reserve(coarse_offsets.size());
         for (double offset : coarse_offsets) {
-            std::cout << "[scan_ips_position] coarse offset_mm=" << offset << "\n";
-            coarse_candidates.push_back(EvaluateWithCache(offset, scan_dataset, opts, opts.output_dir / "scan_runs", scan_cache));
+            const EvaluatedCandidate evaluated =
+                EvaluateWithCache(offset, scan_dataset, opts, opts.output_dir / "scan_runs", scan_cache);
+            UpdateStageTag(scan_stage_by_offset, offset, "coarse");
+            LogCandidateProgress(std::cout, progress_log, "scan", "coarse", evaluated.candidate, evaluated.cache_hit);
+            coarse_candidates.push_back(evaluated.candidate);
         }
 
         const std::vector<Candidate> coarse_ranked = RankCandidates(coarse_candidates, opts);
@@ -746,10 +879,13 @@ int main(int argc, char** argv) {
         std::vector<Candidate> refine_candidates;
         refine_candidates.reserve(refine_offsets.size());
         for (double offset : refine_offsets) {
-            std::cout << "[scan_ips_position] refine offset_mm=" << offset << "\n";
-            refine_candidates.push_back(EvaluateWithCache(offset, scan_dataset, opts, opts.output_dir / "scan_runs", scan_cache));
+            const EvaluatedCandidate evaluated =
+                EvaluateWithCache(offset, scan_dataset, opts, opts.output_dir / "scan_runs", scan_cache);
+            UpdateStageTag(scan_stage_by_offset, offset, "refine");
+            LogCandidateProgress(std::cout, progress_log, "scan", "refine", evaluated.candidate, evaluated.cache_hit);
+            refine_candidates.push_back(evaluated.candidate);
         }
-        std::vector<Candidate> final_ranked = RankCandidates(refine_candidates, opts);
+        std::vector<Candidate> final_ranked = RankCandidates(CollectCachedCandidates(scan_cache), opts);
         if (final_ranked.empty()) {
             throw std::runtime_error("No scan candidates were evaluated");
         }
@@ -760,9 +896,8 @@ int main(int argc, char** argv) {
         // [EN] Re-run the recommended scan point and validation points so the retained Geant4 outputs correspond only to the final shortlist. / [CN] 重新运行推荐扫描点和验证点，使最终保留的Geant4输出只对应最后 shortlist。
         EvaluateOffset(top_scan.front().metrics.offset_mm, scan_dataset, opts, opts.output_dir / "kept_runs" / "recommended", true);
 
-        std::vector<Candidate> validation_ranked;
+        std::vector<Candidate> validation_results;
         if (!validation_dataset.elastic_inputs.empty() || !validation_dataset.allevent_inputs.empty()) {
-            std::vector<Candidate> validation_results;
             for (int i = 0; i < keep_count; ++i) {
                 Candidate validation = EvaluateOffset(
                     top_scan[i].metrics.offset_mm,
@@ -772,13 +907,17 @@ int main(int argc, char** argv) {
                     true
                 );
                 validation.metrics.offset_mm = top_scan[i].metrics.offset_mm;
+                LogCandidateProgress(std::cout, progress_log, "validation", "validation", validation, false);
                 validation_results.push_back(validation);
             }
-            validation_ranked = RankCandidates(validation_results, opts);
         }
 
-        WriteSummaryCsv(opts.output_dir / "ips_scan_summary.csv", top_scan, validation_ranked);
-        WriteSummaryRoot(opts.output_dir / "ips_scan_summary.root", top_scan, validation_ranked);
+        const std::vector<SummaryRow> scan_rows = BuildScanSummaryRows(final_ranked, scan_stage_by_offset);
+        const std::map<long long, int> scan_rank_by_offset = BuildRankByOffset(scan_rows);
+        const std::vector<SummaryRow> validation_rows = BuildValidationSummaryRows(validation_results, scan_rank_by_offset);
+
+        WriteSummaryCsv(opts.output_dir / "ips_scan_summary.csv", scan_rows, validation_rows);
+        WriteSummaryRoot(opts.output_dir / "ips_scan_summary.root", scan_rows, validation_rows);
         WriteBestPositions(opts.output_dir / "best_ips_positions.txt", top_scan, opts);
 
         std::cout << "[scan_ips_position] recommended_offset_mm=" << top_scan.front().metrics.offset_mm
@@ -786,6 +925,7 @@ int main(int argc, char** argv) {
                   << " smallb_selected_rate=" << SmallBSelectedRate(top_scan.front().metrics)
                   << " selection_mode=" << (opts.require_forward ? "forward_selected" : "all_events")
                   << "\n";
+        std::cout << "[scan_ips_position] progress_log=" << progress_log_path << "\n";
         std::cout << "[scan_ips_position] summary_csv=" << (opts.output_dir / "ips_scan_summary.csv") << "\n";
         std::cout << "[scan_ips_position] summary_root=" << (opts.output_dir / "ips_scan_summary.root") << "\n";
         std::cout << "[scan_ips_position] best_txt=" << (opts.output_dir / "best_ips_positions.txt") << "\n";

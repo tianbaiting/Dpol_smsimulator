@@ -24,9 +24,11 @@ printf "geometry_macro=%s\n" "${GEOM_MACRO}" >> "${MANIFEST_PATH}"
 printf "input_base=%s\n" "${INPUT_BASE}" >> "${MANIFEST_PATH}"
 printf "input_dir=%s\n" "${INPUT_DIR}" >> "${MANIFEST_PATH}"
 printf "result_dir=%s\n" "${RESULT_DIR}" >> "${MANIFEST_PATH}"
+printf "progress_log=%s\n" "${RESULT_DIR}/scan_progress.log" >> "${MANIFEST_PATH}"
 printf "geometry_wrl=%s\n" "${GEOMETRY_WRL}" >> "${MANIFEST_PATH}"
 printf "scan_mode=representative_g050_ypol\n" >> "${MANIFEST_PATH}"
 printf "scan_extra_args=%s\n" "--beam-on 300 --coarse-min-mm -200 --coarse-max-mm 200 --coarse-step-mm 20 --refine-half-window-mm 20 --refine-step-mm 5 --topk 3" >> "${MANIFEST_PATH}"
+printf "summary_shape=%s\n" "all_candidates" >> "${MANIFEST_PATH}"
 
 # [EN] Export one geometry snapshot next to the scan outputs so the IPS placement can be inspected with the same field and beam-angle setup. / [CN] 在扫描结果旁边导出一份几何快照，便于用同一套磁场和束流角配置检查IPS位置。
 "${EXPORT_SCRIPT}" "${GEOMETRY_WRL}" >> "${MANIFEST_PATH}"

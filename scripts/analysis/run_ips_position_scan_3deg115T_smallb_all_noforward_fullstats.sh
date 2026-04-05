@@ -5,7 +5,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BASE_DIR="${BASE_DIR:-${REPO_DIR}/data/simulation/ips_scan/sn124_3deg_1.15T}"
 SOURCE_INPUT_DIR="${SOURCE_INPUT_DIR:-${BASE_DIR}/input/representative}"
 BALANCED_INPUT_DIR="${BALANCED_INPUT_DIR:-${BASE_DIR}/input/balanced}"
-RESULT_DIR="${RESULT_DIR:-${BASE_DIR}/results/balanced_beamOn300}"
+RESULT_DIR="${RESULT_DIR:-${BASE_DIR}/results/smallb_all_noForward_fullstats}"
 MANIFEST_PATH="${MANIFEST_PATH:-${RESULT_DIR}/scan_manifest.txt}"
 
 SCAN_BIN="${SCAN_BIN:-${REPO_DIR}/build/bin/scan_ips_position}"
@@ -33,23 +33,30 @@ printf "source_input_dir=%s\n" "${SOURCE_INPUT_DIR}" >> "${MANIFEST_PATH}"
 printf "balanced_input_dir=%s\n" "${BALANCED_INPUT_DIR}" >> "${MANIFEST_PATH}"
 printf "result_dir=%s\n" "${RESULT_DIR}" >> "${MANIFEST_PATH}"
 printf "progress_log=%s\n" "${RESULT_DIR}/scan_progress.log" >> "${MANIFEST_PATH}"
+printf "selection_mode=%s\n" "all_events" >> "${MANIFEST_PATH}"
+printf "small_b_definition=%s\n" "bimp<=7 from all-event inputs" >> "${MANIFEST_PATH}"
+printf "elastic_background=%s\n" "cleaned dbreak inputs without forward requirement" >> "${MANIFEST_PATH}"
 printf "coarse_grid=%s\n" "-200:200:40 mm" >> "${MANIFEST_PATH}"
 printf "refine_grid=%s\n" "top2 +-20 mm step 5 mm" >> "${MANIFEST_PATH}"
-printf "beam_on=%s\n" "300 per merged root" >> "${MANIFEST_PATH}"
+printf "beam_on=%s\n" "0 per merged root" >> "${MANIFEST_PATH}"
+printf "run_type=%s\n" "full_statistics" >> "${MANIFEST_PATH}"
+printf "comparison_baseline=%s\n" "${BASE_DIR}/results/smallb_all_noForward_beamOn300" >> "${MANIFEST_PATH}"
 printf "summary_shape=%s\n" "all_candidates" >> "${MANIFEST_PATH}"
 
-# [EN] Merge ypn and ynp inside each b bucket so every offset reuses fewer Geant4 startups while still sampling the small-b dependence explicitly. / [CN] 在每个b桶内先合并 ypn 和 ynp，使每个offset需要更少的Geant4启动次数，同时仍显式保留小b依赖。
+# [EN] Reuse the official merged small-b dataset definition, but set beamOn=0 so every merged ROOT is processed completely. / [CN] 复用当前官方 small-b 合并输入定义，但把 beamOn 设为 0，使每个合并后的 ROOT 都完整跑完。
 "${SCAN_BIN}" \
     --sim-bin "${SIM_BIN}" \
     --geometry-macro "${GEOM_MACRO}" \
     --output-dir "${RESULT_DIR}" \
-    --beam-on 300 \
+    --beam-on 0 \
     --coarse-min-mm -200 \
     --coarse-max-mm 200 \
     --coarse-step-mm 40 \
     --refine-half-window-mm 20 \
     --refine-step-mm 5 \
     --topk 2 \
+    --small-b-max 7 \
+    --require-forward false \
     --scan-elastic "${BALANCED_INPUT_DIR}/elastic_b01.root" \
     --scan-elastic "${BALANCED_INPUT_DIR}/elastic_b02.root" \
     --scan-elastic "${BALANCED_INPUT_DIR}/elastic_b03.root" \

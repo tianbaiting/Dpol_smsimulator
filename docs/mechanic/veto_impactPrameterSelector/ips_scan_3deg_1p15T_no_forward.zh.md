@@ -22,6 +22,14 @@
 
 - `data/simulation/ips_scan/sn124_3deg_1.15T/results/smallb_all_noForward_beamOn300`
 
+对应的 full-statistics 重跑入口为：
+
+- `scripts/analysis/run_ips_position_scan_3deg115T_smallb_all_noforward_fullstats.sh`
+
+full-statistics 结果目录约定为：
+
+- `data/simulation/ips_scan/sn124_3deg_1.15T/results/smallb_all_noForward_fullstats`
+
 ---
 
 ## 2. 本轮扫描的最新结果
@@ -39,6 +47,16 @@
 - 每个合并后的 `elastic_bXX.root` 最多只送前 `300` 个 tree entry 进 Geant4
 - 每个合并后的 `allevent_bXX.root` 最多只送前 `300` 个 tree entry 进 Geant4
 - 所以本轮推荐位置是“采样优化”的结果，而不是“所有事件都跑完后的最终物理结论”
+
+如果需要 full-statistics 结果，应改用：
+
+- `scripts/analysis/run_ips_position_scan_3deg115T_smallb_all_noforward_fullstats.sh`
+
+该脚本会把：
+
+- `beamOn` 设为 `0`
+- 让每个 merged ROOT 跑完整棵树
+- 结果单独写到 `smallb_all_noForward_fullstats`，不覆盖当前 beamOn300 结果
 
 ### 2.2 当前推荐位置
 
@@ -107,7 +125,7 @@ coarse 扫描先跑：
 - 两个 refine 窗 `[-100,-60]` 和 `[-60,-20]` 正好连成一段
 - 所以后面的细扫看起来几乎都在负 offset 一侧
 
-这不是“超出预设范围”，而是自动围绕 coarse 最优候选做精扫的正常行为。
+
 
 ---
 
@@ -139,6 +157,8 @@ coarse 扫描先跑：
 - 数值汇总：
   - `data/simulation/ips_scan/sn124_3deg_1.15T/results/smallb_all_noForward_beamOn300/ips_scan_summary.csv`
   - `data/simulation/ips_scan/sn124_3deg_1.15T/results/smallb_all_noForward_beamOn300/ips_scan_summary.root`
+- 运行进度日志：
+  - `data/simulation/ips_scan/sn124_3deg_1.15T/results/smallb_all_noForward_beamOn300/scan_progress.log`
 - 运行清单：
   - `data/simulation/ips_scan/sn124_3deg_1.15T/results/smallb_all_noForward_beamOn300/scan_manifest.txt`
 - 保留下来的推荐点 Geant4 输出：
@@ -146,9 +166,10 @@ coarse 扫描先跑：
 
 需要特别注意：
 
-- 当前 `ips_scan_summary.csv` 只保留最终 top 2 候选
-- 它不是“所有 coarse / refine 采样点的完整表”
-- 这不是没计算，而是当前扫描器的输出策略就是只写 shortlist
+- 当前 `ips_scan_summary.csv` / `ips_scan_summary.root` 记录所有已评估的 offset，而不是只写 shortlist
+- `best_ips_positions.txt` 仍然只保留推荐点和 top 候选，适合人工快速查看
+- `scan_progress.log` 会按运行顺序追加每个 coarse / refine / validation offset 的聚合指标
+- 若某个 refine offset 命中缓存，日志里会显示 `cache_hit=1`，表示这个参数点没有重复跑 Geant4，只是复用了已算出的指标
 
 ---
 
@@ -799,8 +820,11 @@ data/simulation/ips_scan/sn124_3deg_1.15T/results/smallb_all_noForward_beamOn300
 其中：
 
 - `best_ips_positions.txt`：推荐位置和 top 候选
-- `ips_scan_summary.csv`：当前只保留 top 2 候选
-- `ips_scan_summary.root`：ROOT 汇总
+- `ips_scan_summary.csv`：所有已评估 offset 的全量参数表
+- `ips_scan_summary.root`：与 CSV 对应的 ROOT 全量汇总
+- `scan_progress.log`：按运行顺序记录每个 offset 的 `elastic_leakage`、`smallb_selected_rate`、`smallb_raw_rate`
+- `ips_scan_summary.csv/root` 新增 `stage` 字段，用于区分 `coarse`、`refine`、`coarse+refine`、`validation`
+- `scan_progress.log` 新增 `cache_hit` 字段；若为 `1`，表示该 stage 复用了已有指标，没有重复跑 Geant4
 - `scan_manifest.txt`：运行参数与时间
 - `kept_runs/recommended/`：推荐点保留的 Geant4 输出
 
@@ -927,4 +951,4 @@ allevent 图固定取：
 
 > 在"no forward"、`target` 只作位置与方向参考、并且每个 merged ROOT 只取前 `300` 个事件”的当前采样扫描定义下，IPS 的最佳位置是沿局部束流负方向相对靶中心移动 `-40 mm`。
 
-如果要做最终物理定点，下一步应改成 full-statistics 扫描，也就是把当前的 `beamOn = 300` 放开到整棵树。
+

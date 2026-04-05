@@ -32,12 +32,14 @@ printf "geometry_macro=%s\n" "${GEOM_MACRO}" >> "${MANIFEST_PATH}"
 printf "source_input_dir=%s\n" "${SOURCE_INPUT_DIR}" >> "${MANIFEST_PATH}"
 printf "balanced_input_dir=%s\n" "${BALANCED_INPUT_DIR}" >> "${MANIFEST_PATH}"
 printf "result_dir=%s\n" "${RESULT_DIR}" >> "${MANIFEST_PATH}"
+printf "progress_log=%s\n" "${RESULT_DIR}/scan_progress.log" >> "${MANIFEST_PATH}"
 printf "selection_mode=%s\n" "all_events" >> "${MANIFEST_PATH}"
 printf "small_b_definition=%s\n" "bimp<=7 from all-event inputs" >> "${MANIFEST_PATH}"
 printf "elastic_background=%s\n" "cleaned dbreak inputs without forward requirement" >> "${MANIFEST_PATH}"
 printf "coarse_grid=%s\n" "-200:200:40 mm" >> "${MANIFEST_PATH}"
 printf "refine_grid=%s\n" "top2 +-20 mm step 5 mm" >> "${MANIFEST_PATH}"
 printf "beam_on=%s\n" "300 per merged root" >> "${MANIFEST_PATH}"
+printf "summary_shape=%s\n" "all_candidates" >> "${MANIFEST_PATH}"
 
 # [EN] Merge ypn and ynp within each impact-parameter bucket so the scan preserves the small-b structure while reducing repeated Geant4 startups. / [CN] 在每个碰撞参数桶内合并 ypn 和 ynp，使扫描保留 small-b 结构的同时减少重复的 Geant4 启动。
 "${SCAN_BIN}" \

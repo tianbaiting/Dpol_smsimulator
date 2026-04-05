@@ -23,6 +23,7 @@
 - `scripts/analysis/run_ips_position_scan_3deg115T_balanced.sh`
 - `scripts/analysis/run_ips_position_scan_3deg115T_representative.sh`
 - `scripts/analysis/run_ips_position_scan_3deg115T_smallb_all_noforward.sh`
+- `scripts/analysis/run_ips_position_scan_3deg115T_smallb_all_noforward_fullstats.sh`
 - `scripts/analysis/export_ips_geometry_wrl.sh`
 - `scripts/analysis/export_ips_wrl_examples_3deg115T_offset0.sh`
 - `configs/simulation/macros/export_ips_geometry_example.mac`
