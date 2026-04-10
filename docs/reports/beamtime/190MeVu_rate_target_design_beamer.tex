@@ -1,0 +1,314 @@
+\documentclass[aspectratio=169]{ctexbeamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{footline}[frame number]
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{array}
+
+\title[190 MeV/u d on Sn/Pb]{190 MeV/u 极化氘核束实验\\当前计数率、束团结构与靶厚度规划}
+\subtitle{基于本地 ImQMD, Geant4 与 beamtime planning 结果}
+\author{Tian / Codex}
+\date{2026-04-10}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{本报告回答什么问题}
+\begin{itemize}
+  \item 当前 beamtime planning 下，\textbf{反应率}、\textbf{detected coincidence rate} 与 \textbf{16 h 总计数} 分别是多少。
+  \item 在 SRC 当前束团结构下，不同靶厚对应的 \textbf{每束团占有率} 有多大。
+  \item 在每种 Sn 靶库存各 1.2 g 的约束下，\textbf{12 / 15 / 20 mm} 圆盘分别对应多厚、多大 rate。
+  \item 当前各种靶的口径边界是什么：
+  \begin{itemize}
+    \item \textbf{Sn124}: 目前唯一可直接写 planning 主表的 target anchor。
+    \item \textbf{Sn112}: 目前只有 atom-density scaling placeholder。
+    \item \textbf{Pb208}: 目前只有 ImQMD breakup 概率与公开总反应截面对照，尚无同口径 detector rate anchor。
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{数据来源与当前口径}
+\small
+\begin{itemize}
+  \item 本地主 planning 文档：
+  \begin{itemize}
+    \item \texttt{results/rate\_target\_design\_190MeVu/rates.csv}
+    \item \texttt{results/rate\_target\_design\_190MeVu/target\_design.csv}
+    \item \texttt{results/rate\_target\_design\_190MeVu/rate\_validation\_comparison.csv}
+  \end{itemize}
+  \item 本地 full-chain validation：
+  \begin{itemize}
+    \item \texttt{results/rate\_target\_design\_190MeVu/polarization\_validation/validation\_summary.json}
+    \item \texttt{results/rate\_target\_design\_190MeVu/polarization\_validation/imqmd\_breakup\_probability\_and\_cumulative\_sigma.png}
+  \end{itemize}
+  \item 当前 planning 主输入：
+  \begin{itemize}
+    \item beam intensity: $I = 1.0\times 10^7$ pps
+    \item beam energy: $T_u = 190$ MeV/u
+    \item SRC extraction radius: $R_{\mathrm{ext}} = 5.36$ m, harmonic number $h = 6$
+    \item planning breakup cross section: $\sigma = 550$ mb
+    \item planning coincidence efficiency: $\eta_{\mathrm{coin}} = 4.65\%$
+    \item Sn124 number density: $n = 3.5501\times 10^{22}\,\mathrm{cm}^{-3}$
+  \end{itemize}
+  \item 注意：
+  \begin{itemize}
+    \item \textbf{4.65\%} 是 current manuscript anchor。
+    \item 束团间隔已按 $190$ MeV/u 和 $R_{\mathrm{ext}} = 5.36$ m 修正为 \textbf{33.62 ns}。
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{计数率与束团的定义}
+\small
+\begin{align*}
+R_{\mathrm{reaction}} &= n d I \sigma, \\
+R_{\mathrm{coin}} &= R_{\mathrm{reaction}} \eta_{\mathrm{coin}}, \\
+N_{\mathrm{coin}} &= R_{\mathrm{coin}} t.
+\end{align*}
+
+\vspace{0.1cm}
+\textbf{SRC 束团时间结构推导：}
+\begin{align*}
+\gamma &= 1 + \frac{190}{931.494} = 1.20397, \\
+\beta &= \sqrt{1-\gamma^{-2}} = 0.55689, \\
+v &= \beta c = 1.6695\times 10^8~\mathrm{m/s}, \\
+C &= 2\pi R_{\mathrm{ext}} = 2\pi \times 5.36 = 33.678~\mathrm{m}, \\
+f_{\mathrm{rev}} &= \frac{v}{C} = 4.9573~\mathrm{MHz}, \\
+f_{\mathrm{bucket}} &= h f_{\mathrm{rev}} = 29.7441~\mathrm{MHz}, \\
+\Delta t &= \frac{1}{f_{\mathrm{bucket}}} = 33.62~\mathrm{ns}.
+\end{align*}
+
+\[
+\mu_{\mathrm{beam/bucket}} = \frac{I}{f_{\mathrm{bucket}}} \approx 0.3362.
+\]
+\end{frame}
+
+\begin{frame}{束团结构与 pile-up 量级}
+\small
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.0cm}cccc}
+\toprule
+厚度 & $R_{\mathrm{reaction}}$ & $R_{\mathrm{coin}}$ & $\mu_{\mathrm{reaction/bucket}}$ & $\mu_{\mathrm{coin/bucket}}$ \\
+(mm) & (kHz) & (kHz) &  &  \\
+\midrule
+0.5 & 9.76 & 0.454 & $3.28\times 10^{-4}$ & $1.53\times 10^{-5}$ \\
+1.0 & 19.53 & 0.908 & $6.56\times 10^{-4}$ & $3.05\times 10^{-5}$ \\
+1.5 & 29.29 & 1.362 & $9.85\times 10^{-4}$ & $4.58\times 10^{-5}$ \\
+2.0 & 39.05 & 1.816 & $1.31\times 10^{-3}$ & $6.10\times 10^{-5}$ \\
+3.0 & 58.58 & 2.724 & $1.97\times 10^{-3}$ & $9.16\times 10^{-5}$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.35cm}
+\begin{itemize}
+  \item 这里的 coincidence rate 全部使用 planning anchor：$\sigma = 550$ mb, $\eta_{\mathrm{coin}} = 4.65\%$。
+  \item 即使在 3 mm 时，当前 planning coincidence 也只有 $\mu_{\mathrm{coin/bucket}} \approx 9.16\times 10^{-5}$。
+  \item 3 mm 时 reaction 本身也只有 $\mu_{\mathrm{reaction/bucket}} \approx 1.97\times 10^{-3}$。
+  \item 因此按 SRC 的 33.6 ns micro-bunch 结构看，\textbf{single-bucket pile-up 可以忽略}。
+  \item 真正需要额外检查的是电子学积分窗是否跨越多个 bucket。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Sn124 主 planning anchor: 厚度扫描}
+\small
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.4cm}cccc}
+\toprule
+厚度 & $R_{\mathrm{reaction}}$ & $R_{\mathrm{coin}}$ & 16 h 总数 & $P(\ge 1~\mathrm{coin/bucket})$ \\
+(mm) & (kHz) & (kHz) &  &  \\
+\midrule
+0.5 & 9.76 & 0.454 & $2.61\times 10^7$ & $1.53\times 10^{-5}$ \\
+1.0 & 19.53 & 0.908 & $5.23\times 10^7$ & $3.05\times 10^{-5}$ \\
+1.5 & 29.29 & 1.362 & $7.84\times 10^7$ & $4.58\times 10^{-5}$ \\
+2.0 & 39.05 & 1.816 & $1.05\times 10^8$ & $6.10\times 10^{-5}$ \\
+3.0 & 58.58 & 2.724 & $1.57\times 10^8$ & $9.16\times 10^{-5}$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.35cm}
+\begin{itemize}
+  \item 如果 proposal 需要一个最直接的 headline number，当前最稳的是：
+  \begin{itemize}
+    \item \textbf{3 mm}: $R_{\mathrm{coin}} \approx 2.72$ kHz
+    \item \textbf{16 h}: $N_{\mathrm{coin}} \approx 1.57\times 10^8$
+  \end{itemize}
+  \item 但这只是 \textbf{planning reference thickness}，不是库存约束下最现实的制造方案。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{库存约束下的 Sn 圆盘方案}
+\small
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.7cm}cccc}
+\toprule
+圆盘直径 & 面密度 & 体密度换算厚度 & Sn124 $R_{\mathrm{coin}}$ & 16 h 总数 \\
+(mm) & (mg/cm$^2$) & (mm) & (kHz) &  \\
+\midrule
+12 & 1061 & 1.451 & 1.318 & $7.59\times 10^7$ \\
+15 & 679 & 0.929 & 0.843 & $4.86\times 10^7$ \\
+20 & 382 & 0.523 & 0.474 & $2.73\times 10^7$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.35cm}
+\begin{itemize}
+  \item 三个圆盘都对应每种 Sn 靶 \textbf{1.2 g} 的库存约束。
+  \item 当前默认推荐仍然是 \textbf{15 mm} 直径：
+  \begin{itemize}
+    \item 对中容差比 12 mm 更宽
+    \item 统计量又明显高于 20 mm 方案
+  \end{itemize}
+  \item 这页数字对 Sn112 和 Sn124 的几何换算都成立，但 coincidence rate 主列仍然锚定 Sn124。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{当前各种靶子的 rate 口径边界}
+\small
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.5cm}p{2.3cm}p{2.3cm}p{4.6cm}}
+\toprule
+靶子 & 当前可写的 rate & 当前不能直接写的 rate & 说明 \\
+\midrule
+Sn124 & 厚度扫描、库存约束、束团占有率 & 无 & 当前唯一完整的 planning anchor。 \\
+Sn112 & 同厚度下的 atom-density scaling placeholder & target-specific $\sigma$ 与 $\eta$ & 若暂假设 $\sigma(\mathrm{Sn112})=\sigma(\mathrm{Sn124})$，rate 约比 Sn124 高 10.7\%。 \\
+Pb208 & ImQMD breakup 概率趋势、公开 $\sigma_R$ 对照 & full-chain detector rate & 尚未抽出与 3 deg, 1.15 T 同口径的 Geant4 acceptance。 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3cm}
+\begin{itemize}
+  \item 因此当前这份 beamtime beamer 必须诚实地区分：
+  \begin{itemize}
+    \item \textbf{可直接放 proposal 主表} 的是 Sn124。
+    \item \textbf{只能作为趋势或 placeholder} 的是 Sn112 / Pb208。
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{ImQMD breakup 概率与累计截面}
+\begin{columns}[T]
+\column{0.64\textwidth}
+\centering
+\includegraphics[width=\textwidth]{../../../results/rate_target_design_190MeVu/polarization_validation/imqmd_breakup_probability_and_cumulative_sigma.png}
+
+\column{0.36\textwidth}
+\small
+\textbf{当前图对应：}
+\begin{itemize}
+  \item target: Sn124
+  \item energy: 190 MeV/u
+  \item gamma: 0.60
+  \item zpol: znp + zpn
+\end{itemize}
+
+\textbf{定义：}
+\[
+P(b_i)=\frac{N_{\mathrm{breakup}}(b_i)}{N_{\mathrm{incident}}(b_i)}
+\]
+\[
+\sigma_{\mathrm{bu}} \approx \sum_i 2\pi b_i \Delta b \, P(b_i)
+\]
+
+\textbf{读图结论：}
+\begin{itemize}
+  \item breakup 主要来自外周区间
+  \item $b=7-8$ fm 一带最强
+  \item 积分到 9 fm 还不能说完全收敛
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{不同靶子上 $P(b)$ 随 gamma 的变化}
+\begin{columns}[T]
+\column{0.33\textwidth}
+\centering
+\includegraphics[width=\textwidth]{../../../results/imqmd_pb_scan/overlays/d_Sn112_E190_pb_by_gamma.png}\\
+\tiny Sn112, 190 MeV/u
+
+\column{0.33\textwidth}
+\centering
+\includegraphics[width=\textwidth]{../../../results/imqmd_pb_scan/overlays/d_Sn124_E190_pb_by_gamma.png}\\
+\tiny Sn124, 190 MeV/u
+
+\column{0.33\textwidth}
+\centering
+\includegraphics[width=\textwidth]{../../../results/imqmd_pb_scan/overlays/d_Pb208_E190_pb_by_gamma.png}\\
+\tiny Pb208, 190 MeV/u
+\end{columns}
+
+\vspace{0.25cm}
+\small
+\begin{itemize}
+  \item 所有图都已批量生成在 \texttt{results/imqmd\_pb\_scan/}。
+  \item 当前能直接看清的是：
+  \begin{itemize}
+    \item 不同靶子上 breakup 主要发生在哪一段 $b$
+    \item 不同 $\gamma$ 是否改变峰值位置与尾部形状
+  \end{itemize}
+  \item 这些图目前用于 \textbf{ImQMD 趋势判断}，还不是 detector-rate 主表。
+\end{itemize}
+\end{frame}
+
+\begin{frame}{manuscript anchor 与本地 validation 的差别}
+\small
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.0cm}ccc}
+\toprule
+口径 & $\eta_{\mathrm{coin}}$ & 3 mm $R_{\mathrm{coin}}$ & 16 h 总数 \\
+\midrule
+manuscript anchor & 4.65\% & 2.724 kHz & $1.57\times 10^8$ \\
+manuscript $\sigma$ + local $\eta$ & 37.92\% & 22.21 kHz & $1.28\times 10^9$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.35cm}
+\begin{itemize}
+  \item 这页不是说当前 detector rate 真的是 22.21 kHz。
+  \item 它要强调的是：\textbf{效率口径一旦混了，rate 会整体偏掉一个大因子。}
+  \item 因此 beamtime 报告里必须明确写：
+  \begin{itemize}
+    \item 当前主表使用的是哪一个 $\eta_{\mathrm{coin}}$
+    \item 它对应的是哪一类事件样本
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{当前建议写法}
+\begin{itemize}
+  \item beamtime 主表先用 \textbf{Sn124 planning anchor}：
+  \begin{itemize}
+    \item $I = 10^7$ pps
+    \item $\sigma = 550$ mb
+    \item $\eta_{\mathrm{coin}} = 4.65\%$
+  \end{itemize}
+  \item headline number 可写：
+  \begin{itemize}
+    \item 3 mm reference: $R_{\mathrm{coin}} \approx 2.72$ kHz
+    \item 15 mm disk, 1.2 g inventory: $R_{\mathrm{coin}} \approx 0.843$ kHz
+    \item bunch spacing: $33.62$ ns
+  \end{itemize}
+  \item 当前默认制造方案建议：
+  \begin{itemize}
+    \item \textbf{15 mm} 直径
+    \item \textbf{0.93 mm} 厚度
+    \item \textbf{679 mg/cm$^2$} 面密度
+  \end{itemize}
+  \item 后续最该补的不是再改公式，而是：
+  \begin{itemize}
+    \item Sn112 dedicated ImQMD + Geant4 rate
+    \item Pb208 dedicated full-chain rate
+    \item manuscript 中 $\sigma = 550$ mb 的原始归一化说明
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\end{document}
