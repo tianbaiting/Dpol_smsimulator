@@ -1,0 +1,281 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{footline}[frame number]
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+
+\title[190 MeV/u d on Sn124]{190 MeV/u Polarized Deuteron on $^{124}$Sn\\Local Full-Chain Rate Estimate}
+\subtitle{Only locally reproducible ImQMD + Geant4 results are retained}
+\author{Tian}
+\date{2026-04-12}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Scope}
+\small
+\begin{itemize}
+  \item This English report keeps only \textbf{locally reproducible} results.
+  \item All headline numbers come from the current local chain:
+  \begin{itemize}
+    \item ImQMD raw breakup sample in \texttt{z\_pol/b\_discrete},
+    \item fresh Geant4 rerun in the current detector geometry,
+    \item rate conversion using the recomputed $^{124}$Sn number density.
+  \end{itemize}
+  \item Results quoted from \texttt{polarization.tex} are intentionally removed from the main result tables.
+  \item The present quantitative scope is:
+  \begin{itemize}
+    \item target: $^{124}$Sn,
+    \item beam energy: 190 MeV/u,
+    \item sample: z polarization, $\gamma = 0.60$,
+    \item impact-parameter range used in the shell sum: $b = 1 \ldots 9$ fm.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Inputs Used in the Local Calculation}
+\small
+\begin{itemize}
+  \item Beam intensity: $I = 1.0\times 10^7$ pps
+  \item Beam time for the headline yield: $t = 16$ h
+  \item Beam energy per nucleon: $T_u = 190$ MeV/u
+  \item SRC harmonic number: $h = 6$
+  \item SRC extraction radius: $R_{\mathrm{ext}} = 5.36$ m
+  \item Tin density used for target conversion: $\rho = 7.31~\mathrm{g/cm^3}$
+  \item Enriched-$^{124}$Sn number density:
+  \[
+  n = \frac{N_A \rho}{M_{124}} =
+  \frac{(6.022\times 10^{23})(7.31)}{124}
+  = 3.5501\times 10^{22}~\mathrm{cm^{-3}}
+  \]
+\end{itemize}
+
+\vspace{0.1cm}
+\small
+The local full-chain quantities taken from \texttt{validation\_summary.json} are:
+\begin{itemize}
+  \item selected-input cross section: $\sigma_{\mathrm{sel}} = 516.5$ mb
+  \item detected-coincidence cross section: $\sigma_{\mathrm{coin}} = 204.2$ mb
+\end{itemize}
+\end{frame}
+
+\begin{frame}{How the Bunch Interval Is Calculated}
+\small
+\begin{align*}
+\gamma &= 1 + \frac{T_u}{m_u c^2}
+       = 1 + \frac{190}{931.494}
+       = 1.20397, \\
+\beta &= \sqrt{1-\gamma^{-2}}
+      = 0.55689, \\
+v &= \beta c
+  = 1.6695\times 10^8~\mathrm{m/s}, \\
+C &= 2\pi R_{\mathrm{ext}}
+  = 2\pi \times 5.36
+  = 33.678~\mathrm{m}, \\
+f_{\mathrm{rev}} &= \frac{v}{C}
+                 = 4.9573~\mathrm{MHz}, \\
+f_{\mathrm{bucket}} &= h f_{\mathrm{rev}}
+                    = 29.7441~\mathrm{MHz}, \\
+\Delta t &= \frac{1}{f_{\mathrm{bucket}}}
+         = 33.62~\mathrm{ns}.
+\end{align*}
+
+\[
+\mu_{\mathrm{beam/bucket}} = \frac{I}{f_{\mathrm{bucket}}} \approx 0.3362
+\]
+
+\small
+So the bunch interval is obtained from beam kinematics and SRC machine parameters, not from an assumed timing constant.
+\end{frame}
+
+\begin{frame}{How the Production and Coincidence Cross Sections Are Calculated}
+\tiny
+\textbf{Step 1: ImQMD breakup probability in each shell}
+\[
+P_{\mathrm{bu}}(b_i)=\frac{N_{\mathrm{breakup}}(b_i)}{N_{\mathrm{incident}}(b_i)}
+\]
+
+\textbf{Step 2: shell-sum cross section for the current \texttt{b\_discrete} dataset}
+\[
+\sigma \approx \sum_i 2\pi b_i \Delta b\, P(b_i)
+\]
+
+\textbf{Step 3: propagate the selected events through Geant4}
+\[
+P_{\mathrm{sel}}(b_i)=\frac{N_{\mathrm{G4}}(b_i)}{N_{\mathrm{incident}}(b_i)},\qquad
+P_{\mathrm{coin}}(b_i)=\frac{N_{\mathrm{coin}}(b_i)}{N_{\mathrm{incident}}(b_i)}
+\]
+
+\[
+\sigma_{\mathrm{sel}} \approx \sum_i 2\pi b_i \Delta b\, P_{\mathrm{sel}}(b_i),\qquad
+\sigma_{\mathrm{coin}} \approx \sum_i 2\pi b_i \Delta b\, P_{\mathrm{coin}}(b_i)
+\]
+
+\vspace{0.1cm}
+\textbf{Important interpretation}
+\begin{itemize}
+  \item The main coincidence rate in this report is \textbf{not} obtained from a geometry-only solid-angle factor.
+  \item The detector geometry is defined by the current Geant4 macro, but the quoted coincidence rate comes from \textbf{Geant4 hit counting} in that geometry.
+  \item In the current validation script, a coincidence event means the same event has both:
+  \begin{itemize}
+    \item at least one PDC fragment hit,
+    \item at least one NEBULA hit.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Current Local Full-Chain Statistics}
+\small
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.4cm}cc}
+\toprule
+Quantity & Value & Comment \\
+\midrule
+Raw-file header incident events & 180000 & 18 files, 10000 events each \\
+Stored breakup rows before cut & 28611 & breakup events present in raw files \\
+Events propagated through Geant4 & 22174 & after generator selection and cut \\
+Fresh coincidence hits & 8408 & Geant4 rerun result \\
+Fresh coincidence efficiency on propagated sample & 37.92\% & $8408 / 22174$ \\
+Archive coincidence efficiency & 37.95\% & archived rerun for comparison \\
+Fresh minus archive & $-0.027$ points & reproducibility check \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.2cm}
+\small
+The Geant4 coincidence efficiency is stable at the level of $\sim 0.03$ percentage points between the fresh rerun and the archived output.
+\end{frame}
+
+\begin{frame}{Cross Sections Obtained from the Local Chain}
+\small
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.8cm}cc}
+\toprule
+Quantity & Value & Meaning \\
+\midrule
+Raw breakup cross section & 678.2 mb & ImQMD breakup shell sum \\
+Selected-input cross section & 516.5 mb & events that enter the current Geant4 chain \\
+Detected-coincidence cross section & 204.2 mb & events counted as PDC+NEBULA coincidence \\
+Naive $\pi b_{\max}^2 (N/N_0)$ estimate & 404.5 mb & shown only as a comparison \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.25cm}
+\begin{itemize}
+  \item The recommended result for the present \texttt{b\_discrete} data structure is the shell-sum estimate, not the naive area formula.
+  \item For rate conversion in this report:
+  \[
+  R_{\mathrm{sel}} = n d I \sigma_{\mathrm{sel}},\qquad
+  R_{\mathrm{coin}} = n d I \sigma_{\mathrm{coin}}
+  \]
+  \item Here $\sigma_{\mathrm{coin}}$ already includes the current Geant4 detector acceptance and coincidence definition.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Thickness Scan: Local Full-Chain Results for $^{124}$Sn}
+\small
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.55cm}cccc}
+\toprule
+Thickness & $R_{\mathrm{sel}}$ & $R_{\mathrm{coin}}$ & 16 h coincidence yield & $\mu_{\mathrm{coin/bucket}}$ \\
+(mm) & (kHz) & (kHz) &  &  \\
+\midrule
+0.5 & 9.169 & 3.625 & $2.09\times 10^8$ & $1.22\times 10^{-4}$ \\
+1.0 & 18.338 & 7.250 & $4.18\times 10^8$ & $2.44\times 10^{-4}$ \\
+1.5 & 27.506 & 10.875 & $6.26\times 10^8$ & $3.66\times 10^{-4}$ \\
+2.0 & 36.675 & 14.500 & $8.35\times 10^8$ & $4.87\times 10^{-4}$ \\
+3.0 & 55.013 & 21.750 & $1.25\times 10^9$ & $7.31\times 10^{-4}$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3cm}
+\begin{itemize}
+  \item Even with the local full-chain coincidence cross section, the single-bucket coincidence occupancy remains well below $10^{-3}$.
+  \item Under the current local chain, the 3 mm reference gives:
+  \begin{itemize}
+    \item $R_{\mathrm{coin}} \approx 21.75$ kHz
+    \item $N_{\mathrm{coin}}(16~\mathrm{h}) \approx 1.25\times 10^9$
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Inventory-Constrained Disk Designs}
+\small
+\centering
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.8cm}cccc}
+\toprule
+Disk diameter & Areal density & Bulk thickness & $R_{\mathrm{coin}}$ & 16 h coincidence yield \\
+(mm) & (mg/cm$^2$) & (mm) & (kHz) &  \\
+\midrule
+12 & 1061 & 1.451 & 10.523 & $6.06\times 10^8$ \\
+15 & 679 & 0.929 & 6.735 & $3.88\times 10^8$ \\
+20 & 382 & 0.523 & 3.788 & $2.18\times 10^8$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3cm}
+\begin{itemize}
+  \item All three options assume the same inventory constraint: 1.2 g of tin per isotope.
+  \item The 15 mm disk remains a practical compromise:
+  \begin{itemize}
+    \item wider alignment tolerance than 12 mm,
+    \item still much higher rate than 20 mm.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Where the Coincidence Rate Comes From}
+\small
+\begin{itemize}
+  \item The coincidence rate quoted in this report comes from the \textbf{full chain}:
+  \[
+  \mathrm{ImQMD} \rightarrow \mathrm{event~selection} \rightarrow \mathrm{Geant4} \rightarrow \mathrm{PDC+NEBULA~coincidence~counting}
+  \]
+  \item Therefore:
+  \begin{itemize}
+    \item the breakup production part comes from ImQMD shell-by-shell probabilities,
+    \item the detector part comes from Geant4 transport through the current detector geometry,
+    \item the final coincidence rate uses the detected-coincidence cross section $\sigma_{\mathrm{coin}} = 204.2$ mb.
+  \end{itemize}
+  \item What is \textbf{not} used as a headline result here:
+  \begin{itemize}
+    \item \texttt{polarization.tex} rate coefficients,
+    \item geometry-only acceptance proxies,
+    \item target placeholders without a same-chain extraction.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Headline Numbers from the Current Local Chain}
+\small
+\begin{itemize}
+  \item Bunch spacing at 190 MeV/u in the current SRC setting:
+  \[
+  \Delta t = 33.62~\mathrm{ns}
+  \]
+  \item For a 3 mm $^{124}$Sn reference target:
+  \[
+  R_{\mathrm{coin}} \approx 21.75~\mathrm{kHz},\qquad
+  N_{\mathrm{coin}}(16~\mathrm{h}) \approx 1.25\times 10^9
+  \]
+  \item For the 15 mm diameter, 1.2 g inventory-constrained disk:
+  \[
+  d \approx 0.929~\mathrm{mm},\qquad
+  R_{\mathrm{coin}} \approx 6.735~\mathrm{kHz},\qquad
+  N_{\mathrm{coin}}(16~\mathrm{h}) \approx 3.88\times 10^8
+  \]
+  \item These numbers are local full-chain results for the current $^{124}$Sn zpol $\gamma=0.60$ sample only.
+\end{itemize}
+\end{frame}
+
+\end{document}
