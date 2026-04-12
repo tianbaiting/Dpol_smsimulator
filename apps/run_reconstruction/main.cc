@@ -67,6 +67,8 @@ struct CliOptions {
     double center_brho_tm = 7.2751;
     double magnet_rotation_deg = 30.0;
     reco::RkFitMode rk_fit_mode = reco::RkFitMode::kThreePointFree;
+    bool rk_write_errors = true;
+    bool rk_write_laplace = true;
 };
 
 struct FileStats {
@@ -110,6 +112,17 @@ int ParseInt(const std::string& text, const char* key) {
     }
 }
 
+bool ParseBoolOption(const std::string& text, const char* key) {
+    const std::string lowered = reco::ToLowerCopy(text);
+    if (lowered == "1" || lowered == "true" || lowered == "on" || lowered == "yes") {
+        return true;
+    }
+    if (lowered == "0" || lowered == "false" || lowered == "off" || lowered == "no") {
+        return false;
+    }
+    throw std::runtime_error(std::string("invalid boolean value for ") + key + ": " + text);
+}
+
 void PrintUsage(const char* argv0) {
     std::cout
         << "Usage(single-file): " << argv0
@@ -118,11 +131,13 @@ void PrintUsage(const char* argv0) {
         << "                   [--pdc-sigma-mm V] [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
         << "                   [--rk-step-mm V] [--max-iterations N] [--tolerance-mm V]\n"
         << "                   [--center-brho-tm V] [--rk-fit-mode two-point-backprop|fixed-target-pdc-only|three-point-free]\n"
+        << "                   [--rk-write-errors on|off] [--rk-write-laplace on|off]\n"
         << "\n"
         << "Usage(directory): " << argv0
         << " --input-dir DIR --output-dir DIR --geometry-macro FILE [--backend auto|nn|rk|multidim]\n"
         << "                   [--nn-model-json FILE] [--magnetic-field-map FILE] [--magnet-rotation-deg DEG]\n"
-        << "                   [--max-files N] [--pdc-sigma-mm V] [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n";
+        << "                   [--max-files N] [--pdc-sigma-mm V] [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
+        << "                   [--rk-write-errors on|off] [--rk-write-laplace on|off]\n";
 }
 
 CliOptions ParseArgs(int argc, char* argv[]) {
@@ -188,6 +203,10 @@ CliOptions ParseArgs(int argc, char* argv[]) {
             opts.magnet_rotation_deg = ParseDouble(argv[++i], "--magnet-rotation-deg");
         } else if (arg == "--rk-fit-mode" && i + 1 < argc) {
             opts.rk_fit_mode = reco::ParseRkFitMode(argv[++i]);
+        } else if (arg == "--rk-write-errors" && i + 1 < argc) {
+            opts.rk_write_errors = ParseBoolOption(argv[++i], "--rk-write-errors");
+        } else if (arg == "--rk-write-laplace" && i + 1 < argc) {
+            opts.rk_write_laplace = ParseBoolOption(argv[++i], "--rk-write-laplace");
         } else if (arg == "--help" || arg == "-h") {
             PrintUsage(argv[0]);
             std::exit(0);
@@ -276,6 +295,8 @@ bool ProcessSingleFile(const fs::path& input_file,
                        const fs::path& output_file,
                        const std::string& log_tag,
                        const std::string& backend_name,
+                       bool write_rk_errors,
+                       bool write_rk_laplace,
                        PDCSimAna& pdc_ana,
                        NEBULAReconstructor& nebula_reco,
                        reco::PDCMomentumReconstructor& proton_reco,
@@ -315,6 +336,35 @@ bool ProcessSingleFile(const fs::path& input_file,
     std::vector<double> reco_proton_py;
     std::vector<double> reco_proton_pz;
     std::vector<double> reco_proton_e;
+    std::vector<double> reco_proton_p;
+    std::vector<int> reco_proton_status;
+    std::vector<int> reco_proton_method;
+    std::vector<int> reco_proton_ndf;
+    std::vector<int> reco_proton_iterations;
+    std::vector<int> reco_proton_uncertainty_valid;
+    std::vector<int> reco_proton_posterior_valid;
+    std::vector<double> reco_proton_chi2_raw;
+    std::vector<double> reco_proton_chi2_reduced;
+    std::vector<double> reco_proton_px_sigma;
+    std::vector<double> reco_proton_py_sigma;
+    std::vector<double> reco_proton_pz_sigma;
+    std::vector<double> reco_proton_p_sigma;
+    std::vector<double> reco_proton_px_lower68;
+    std::vector<double> reco_proton_px_upper68;
+    std::vector<double> reco_proton_px_lower95;
+    std::vector<double> reco_proton_px_upper95;
+    std::vector<double> reco_proton_py_lower68;
+    std::vector<double> reco_proton_py_upper68;
+    std::vector<double> reco_proton_py_lower95;
+    std::vector<double> reco_proton_py_upper95;
+    std::vector<double> reco_proton_pz_lower68;
+    std::vector<double> reco_proton_pz_upper68;
+    std::vector<double> reco_proton_pz_lower95;
+    std::vector<double> reco_proton_pz_upper95;
+    std::vector<double> reco_proton_p_lower68;
+    std::vector<double> reco_proton_p_upper68;
+    std::vector<double> reco_proton_p_lower95;
+    std::vector<double> reco_proton_p_upper95;
 
     reco_tree.Branch("recoEvent", &reco_event_ptr);
     reco_tree.Branch("truth_has_proton", &truth_has_proton);
@@ -327,6 +377,39 @@ bool ProcessSingleFile(const fs::path& input_file,
     reco_tree.Branch("reco_proton_py", &reco_proton_py);
     reco_tree.Branch("reco_proton_pz", &reco_proton_pz);
     reco_tree.Branch("reco_proton_e", &reco_proton_e);
+    if (write_rk_errors) {
+        reco_tree.Branch("reco_proton_p", &reco_proton_p);
+        reco_tree.Branch("reco_proton_status", &reco_proton_status);
+        reco_tree.Branch("reco_proton_method", &reco_proton_method);
+        reco_tree.Branch("reco_proton_ndf", &reco_proton_ndf);
+        reco_tree.Branch("reco_proton_iterations", &reco_proton_iterations);
+        reco_tree.Branch("reco_proton_uncertainty_valid", &reco_proton_uncertainty_valid);
+        reco_tree.Branch("reco_proton_posterior_valid", &reco_proton_posterior_valid);
+        reco_tree.Branch("reco_proton_chi2_raw", &reco_proton_chi2_raw);
+        reco_tree.Branch("reco_proton_chi2_reduced", &reco_proton_chi2_reduced);
+        reco_tree.Branch("reco_proton_px_sigma", &reco_proton_px_sigma);
+        reco_tree.Branch("reco_proton_py_sigma", &reco_proton_py_sigma);
+        reco_tree.Branch("reco_proton_pz_sigma", &reco_proton_pz_sigma);
+        reco_tree.Branch("reco_proton_p_sigma", &reco_proton_p_sigma);
+        if (write_rk_laplace) {
+            reco_tree.Branch("reco_proton_px_lower68", &reco_proton_px_lower68);
+            reco_tree.Branch("reco_proton_px_upper68", &reco_proton_px_upper68);
+            reco_tree.Branch("reco_proton_px_lower95", &reco_proton_px_lower95);
+            reco_tree.Branch("reco_proton_px_upper95", &reco_proton_px_upper95);
+            reco_tree.Branch("reco_proton_py_lower68", &reco_proton_py_lower68);
+            reco_tree.Branch("reco_proton_py_upper68", &reco_proton_py_upper68);
+            reco_tree.Branch("reco_proton_py_lower95", &reco_proton_py_lower95);
+            reco_tree.Branch("reco_proton_py_upper95", &reco_proton_py_upper95);
+            reco_tree.Branch("reco_proton_pz_lower68", &reco_proton_pz_lower68);
+            reco_tree.Branch("reco_proton_pz_upper68", &reco_proton_pz_upper68);
+            reco_tree.Branch("reco_proton_pz_lower95", &reco_proton_pz_lower95);
+            reco_tree.Branch("reco_proton_pz_upper95", &reco_proton_pz_upper95);
+            reco_tree.Branch("reco_proton_p_lower68", &reco_proton_p_lower68);
+            reco_tree.Branch("reco_proton_p_upper68", &reco_proton_p_upper68);
+            reco_tree.Branch("reco_proton_p_lower95", &reco_proton_p_lower95);
+            reco_tree.Branch("reco_proton_p_upper95", &reco_proton_p_upper95);
+        }
+    }
 
     stats->total_events = reader.GetTotalEvents();
 
@@ -341,6 +424,35 @@ bool ProcessSingleFile(const fs::path& input_file,
         reco_proton_py.clear();
         reco_proton_pz.clear();
         reco_proton_e.clear();
+        reco_proton_p.clear();
+        reco_proton_status.clear();
+        reco_proton_method.clear();
+        reco_proton_ndf.clear();
+        reco_proton_iterations.clear();
+        reco_proton_uncertainty_valid.clear();
+        reco_proton_posterior_valid.clear();
+        reco_proton_chi2_raw.clear();
+        reco_proton_chi2_reduced.clear();
+        reco_proton_px_sigma.clear();
+        reco_proton_py_sigma.clear();
+        reco_proton_pz_sigma.clear();
+        reco_proton_p_sigma.clear();
+        reco_proton_px_lower68.clear();
+        reco_proton_px_upper68.clear();
+        reco_proton_px_lower95.clear();
+        reco_proton_px_upper95.clear();
+        reco_proton_py_lower68.clear();
+        reco_proton_py_upper68.clear();
+        reco_proton_py_lower95.clear();
+        reco_proton_py_upper95.clear();
+        reco_proton_pz_lower68.clear();
+        reco_proton_pz_upper68.clear();
+        reco_proton_pz_lower95.clear();
+        reco_proton_pz_upper95.clear();
+        reco_proton_p_lower68.clear();
+        reco_proton_p_upper68.clear();
+        reco_proton_p_lower95.clear();
+        reco_proton_p_upper95.clear();
         truth_has_proton = false;
         truth_has_neutron = false;
         truth_proton_p4.SetPxPyPzE(0.0, 0.0, 0.0, 0.0);
@@ -374,10 +486,62 @@ bool ProcessSingleFile(const fs::path& input_file,
             if ((reco_result.status == reco::SolverStatus::kSuccess ||
                  reco_result.status == reco::SolverStatus::kNotConverged) &&
                 reco_result.p4_at_target.P() > 0.0) {
+                const double nan = std::numeric_limits<double>::quiet_NaN();
+                auto append_interval = [](const reco::IntervalEstimate& interval,
+                                          std::vector<double>* lower68,
+                                          std::vector<double>* upper68,
+                                          std::vector<double>* lower95,
+                                          std::vector<double>* upper95) {
+                    lower68->push_back(interval.valid ? interval.lower68
+                                                      : std::numeric_limits<double>::quiet_NaN());
+                    upper68->push_back(interval.valid ? interval.upper68
+                                                      : std::numeric_limits<double>::quiet_NaN());
+                    lower95->push_back(interval.valid ? interval.lower95
+                                                      : std::numeric_limits<double>::quiet_NaN());
+                    upper95->push_back(interval.valid ? interval.upper95
+                                                      : std::numeric_limits<double>::quiet_NaN());
+                };
                 reco_proton_px.push_back(reco_result.p4_at_target.Px());
                 reco_proton_py.push_back(reco_result.p4_at_target.Py());
                 reco_proton_pz.push_back(reco_result.p4_at_target.Pz());
                 reco_proton_e.push_back(reco_result.p4_at_target.E());
+                if (write_rk_errors) {
+                    reco_proton_p.push_back(reco_result.p4_at_target.P());
+                    reco_proton_status.push_back(static_cast<int>(reco_result.status));
+                    reco_proton_method.push_back(static_cast<int>(reco_result.method_used));
+                    reco_proton_ndf.push_back(reco_result.ndf);
+                    reco_proton_iterations.push_back(reco_result.iterations);
+                    reco_proton_uncertainty_valid.push_back(reco_result.uncertainty_valid ? 1 : 0);
+                    reco_proton_posterior_valid.push_back(reco_result.posterior_valid ? 1 : 0);
+                    reco_proton_chi2_raw.push_back(reco_result.chi2_raw);
+                    reco_proton_chi2_reduced.push_back(reco_result.chi2_reduced);
+                    reco_proton_px_sigma.push_back(reco_result.px_interval.valid ? reco_result.px_interval.sigma : nan);
+                    reco_proton_py_sigma.push_back(reco_result.py_interval.valid ? reco_result.py_interval.sigma : nan);
+                    reco_proton_pz_sigma.push_back(reco_result.pz_interval.valid ? reco_result.pz_interval.sigma : nan);
+                    reco_proton_p_sigma.push_back(reco_result.p_interval.valid ? reco_result.p_interval.sigma : nan);
+                    if (write_rk_laplace) {
+                        append_interval(reco_result.px_credible,
+                                        &reco_proton_px_lower68,
+                                        &reco_proton_px_upper68,
+                                        &reco_proton_px_lower95,
+                                        &reco_proton_px_upper95);
+                        append_interval(reco_result.py_credible,
+                                        &reco_proton_py_lower68,
+                                        &reco_proton_py_upper68,
+                                        &reco_proton_py_lower95,
+                                        &reco_proton_py_upper95);
+                        append_interval(reco_result.pz_credible,
+                                        &reco_proton_pz_lower68,
+                                        &reco_proton_pz_upper68,
+                                        &reco_proton_pz_lower95,
+                                        &reco_proton_pz_upper95);
+                        append_interval(reco_result.p_credible,
+                                        &reco_proton_p_lower68,
+                                        &reco_proton_p_upper68,
+                                        &reco_proton_p_lower95,
+                                        &reco_proton_p_upper95);
+                    }
+                }
                 ++stats->reco_proton_count;
                 event_has_reco_proton = true;
             }
@@ -410,9 +574,14 @@ bool ProcessSingleFile(const fs::path& input_file,
     TNamed info_input("InputFile", input_file.c_str());
     TNamed info_backend("ProtonRecoBackend", backend_name.c_str());
     TNamed info_events("ProcessedEvents", processed_events_text.c_str());
+    TNamed info_rk_errors("RkErrorBranches", write_rk_errors ? "true" : "false");
+    TNamed info_rk_laplace("RkLaplaceBranches",
+                           (write_rk_errors && write_rk_laplace) ? "true" : "false");
     info_input.Write();
     info_backend.Write();
     info_events.Write();
+    info_rk_errors.Write();
+    info_rk_laplace.Write();
 
     out.cd();
     reco_tree.Write();
@@ -499,6 +668,8 @@ int main(int argc, char* argv[]) {
         runtime_options.center_brho_tm = opts.center_brho_tm;
         runtime_options.nn_model_json_path = opts.nn_model_json;
         runtime_options.rk_fit_mode = opts.rk_fit_mode;
+        runtime_options.compute_uncertainty = opts.rk_write_errors;
+        runtime_options.compute_posterior_laplace = opts.rk_write_errors && opts.rk_write_laplace;
 
         const reco::RecoConfig proton_config = reco::BuildRecoConfig(runtime_options, magnetic_field != nullptr);
         const reco::TargetConstraint target_constraint = reco::BuildTargetConstraint(geometry, runtime_options);
@@ -529,6 +700,8 @@ int main(int argc, char* argv[]) {
                                               output_file,
                                               kLogTag,
                                               backend_name,
+                                              opts.rk_write_errors,
+                                              opts.rk_write_laplace,
                                               pdc_ana,
                                               nebula_reco,
                                               proton_reco,
