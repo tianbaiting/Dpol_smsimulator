@@ -1,0 +1,320 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{xcolor}
+
+\title[PDC Reconstruction and Uncertainty]{Detailed PDC Target-Momentum Reconstruction and Uncertainty Analysis}
+\subtitle{Methods, Error Models, and Confidence/Credible Intervals}
+\author{SMSimulator5.5 Analysis}
+\date{\today}
+
+\newcommand{\LargeRunRoot}{../../../results/pdc_rk_error_after_pdcana_20260411}
+\newcommand{\SmokeRunRoot}{../../../results/pdc_rk_error_after_pdcana_smoke3}
+\newcommand{\PlotOrFallback}[3]{%
+  \IfFileExists{#1}{\includegraphics[width=#3\textwidth]{#1}}{%
+    \IfFileExists{#2}{\includegraphics[width=#3\textwidth]{#2}}{%
+      \fbox{\parbox[c][0.45\textheight][c]{0.80\textwidth}{\centering Plot not available yet}}}}}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Study Scope}
+\textbf{Physics question}
+\begin{itemize}
+\item Reconstruct proton target momentum from a two-point PDC track in the SAMURAI field.
+\item Quantify not only the central estimate, but also the uncertainty attached to that estimate.
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{This report focuses on}
+\begin{itemize}
+\item Runtime reconstruction backends now exposed by \texttt{reconstruct\_target\_momentum}
+\item RK-based uncertainty analysis implemented in \texttt{analysis\_pdc\_reco}
+\item Diagnostic comparison between RK, NN, and multidimensional regression branches
+\item Confidence and credible intervals for \(p_x\), \(p_y\), \(p_z\), and \(|\vec p|\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Top-Level Reconstruction Methods}
+\small
+\begin{table}
+\centering
+\begin{tabular}{p{0.20\textwidth}p{0.28\textwidth}p{0.22\textwidth}p{0.20\textwidth}}
+\toprule
+Method & Input / model & Current strength & Current limitation \\
+\midrule
+RK fit & Field-map back-tracing from target to PDC constraints & Physics-based, interpretable, supports uncertainty propagation & Slowest branch; quality depends on initialization and fit mode \\
+NN regressor & Direct map from PDC coordinates to \((p_x,p_y,p_z)\) & Best point-estimate accuracy on current truth grid & No interval output in runtime yet \\
+MultiDim surrogate & Polynomial surrogate from offline regression & Fast when calibrated & Current truth-grid sample has no matched events; no interval support \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.1cm}
+The current uncertainty study is therefore centered on the RK branch, because it is the only branch that now exposes Fisher, profile-likelihood, Laplace, and MCMC interval estimates.
+\end{frame}
+
+\begin{frame}{RK Reconstruction Modes}
+\small
+\textbf{The RK backend currently supports three fit modes}
+\begin{enumerate}
+\item \textbf{two-point-backprop}: infer momentum by back-propagating the PDC line to the target in the field map.
+\item \textbf{fixed-target-pdc-only}: keep the target anchor fixed and fit the momentum state against the two PDC points.
+\item \textbf{three-point-free}: fit both target point and momentum state as free parameters under target and PDC constraints.
+\end{enumerate}
+
+\vspace{0.2cm}
+\textbf{Why this matters for uncertainty}
+\begin{itemize}
+\item The parameterization determines the Hessian conditioning and therefore the Fisher covariance.
+\item The fit mode also changes the profile-likelihood geometry and the posterior shape.
+\item In the present implementation, the enlarged legacy-run analysis uses \texttt{fixed-target-pdc-only}, because it is the most stable mode for real-style reconstructed input.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{What Is Written by the RK Error Analysis}
+\small
+\textbf{Runtime ROOT branches now available}
+\begin{itemize}
+\item Central fit diagnostics: status, method, iterations, raw and reduced \(\chi^2\), \(N_{\mathrm{dof}}\)
+\item Fisher widths: \(\sigma_{p_x}\), \(\sigma_{p_y}\), \(\sigma_{p_z}\), \(\sigma_{|\vec p|}\)
+\item Optional Laplace intervals: 68\% and 95\% lower/upper bounds for \(p_x\), \(p_y\), \(p_z\), and \(|\vec p|\)
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Offline diagnostic tool}
+\begin{itemize}
+\item \texttt{build/bin/analyze\_pdc\_rk\_error}
+\item Outputs: \texttt{track\_summary.csv}, \texttt{profile\_samples.csv}, \texttt{bayesian\_samples.csv}, \texttt{summary.csv}, \texttt{validation\_summary.csv}, and summary plots
+\item This tool re-runs the RK fit on reconstructed PDC tracks and computes frequentist and Bayesian intervals on sampled candidates
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Interval Definitions}
+\small
+\begin{table}
+\centering
+\begin{tabular}{p{0.17\textwidth}p{0.31\textwidth}p{0.22\textwidth}p{0.20\textwidth}}
+\toprule
+Estimate & Construction & Statistical meaning & Current use \\
+\midrule
+Fisher & Inverse local Hessian around the RK optimum & Local Gaussian approximation to the likelihood & Fast width estimate for all successful tracks \\
+Profile likelihood & Scan one fit parameter, minimize others, use \(\Delta\chi^2=1,4\) crossings & Frequentist confidence interval & Asymmetry and nonlinearity diagnosis on sampled tracks \\
+Laplace posterior & Gaussian posterior near the mode using posterior covariance & Bayesian credible interval & Fast Bayesian interval for all tracks if posterior is valid \\
+MCMC posterior & Random-walk samples from the posterior & Bayesian credible interval with shape diagnostics & Validation on sampled tracks, not on every event \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.1cm}
+\textbf{Important distinction}: Fisher and Laplace are local approximations; profile likelihood and MCMC are more robust to non-Gaussian structure but much slower.
+\end{frame}
+
+\begin{frame}{Synthetic Truth-Grid Method Comparison}
+\small
+\textbf{Diagnostic dataset}
+\begin{itemize}
+\item Existing five-point truth grid around \(p_z = 627\) MeV/c
+\item One matched event per truth point in the current regression fixture
+\item Use this only as a backend sanity check, not as a final performance benchmark
+\end{itemize}
+
+\begin{table}
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Backend & Matched events & Mean \(|\mathrm{bias}_{p_x}|\) & Mean \(|\mathrm{bias}_{p_y}|\) & Mean \(|\mathrm{bias}_{p_z}|\) \\
+\midrule
+NN & 5 & 21.04 & 15.56 & 3.10 \\
+RK fixed-target & 5 & 178.35 & 11.46 & 234.39 \\
+RK three-point & 5 & 651.35 & 15.77 & 190.31 \\
+RK two-point & 5 & 67.99 & 1.40 & 604.92 \\
+MultiDim & 0 & n/a & n/a & n/a \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.1cm}
+On this fixture, the NN branch is currently the strongest point estimator, while the RK modes still need calibration or configuration tuning for this truth-grid operating point.
+\end{frame}
+
+\begin{frame}{How to Read the Truth-Grid Result}
+\small
+\textbf{Interpretation}
+\begin{itemize}
+\item The truth-grid test is very small, so the table is dominated by pointwise behaviour rather than stable statistics.
+\item Even so, the pattern is useful: each RK mode fails differently.
+\item \texttt{two-point-backprop} keeps transverse components relatively close, but collapses \(p_z\).
+\item \texttt{fixed-target-pdc-only} is more balanced and therefore chosen as the first uncertainty-analysis mode for legacy reconstructed samples.
+\item \texttt{three-point-free} is the most flexible and also the least stable on the current small truth-grid fixture.
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Practical conclusion}
+\begin{itemize}
+\item Use the NN branch when the immediate goal is best point prediction.
+\item Use the RK branch when the goal is uncertainty-aware reconstruction and physically interpretable interval estimates.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Expanded Legacy Reconstruction Sample}
+\scriptsize
+\textbf{Input class}
+\begin{itemize}
+\item Legacy reconstructed \texttt{after\_pdcana} ROOT files
+\item Geometry macro: \texttt{geometry\_B115T\_pdcOptimized\_20260227.mac}
+\item Magnetic field map: \texttt{180703-1,15T-3000.table}, dipole rotation \(30^\circ\)
+\item RK mode: \texttt{fixed-target-pdc-only}
+\end{itemize}
+
+\vspace{0.1cm}
+\textbf{Expanded run configuration}
+\begin{itemize}
+\item Up to 500 events per file
+\item Profile scan: 11 points per parameter, 4 sampled tracks per momentum quartile
+\item Bayesian validation: 2 sampled tracks per quartile, 120 kept MCMC samples after burn-in/thinning
+\item Current completed output: 815 successful RK tracks, 32 profile samples, 16 Bayesian samples
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Reconstructed Momentum Spectrum}
+\begin{center}
+\IfFileExists{\LargeRunRoot/plots/reco_p_distribution.png}
+  {\includegraphics[height=0.60\textheight]{\LargeRunRoot/plots/reco_p_distribution.png}}
+  {\PlotOrFallback{\LargeRunRoot/plots/reco_p_distribution.png}{\SmokeRunRoot/plots/reco_p_distribution.png}{0.68}}
+\end{center}
+
+\vspace{0.1cm}
+\small
+The enlarged legacy sample covers a broad reconstructed proton momentum range. The median \(|\vec p|\) is \(1370.4\) MeV/c with interquartile range \(970.8\) to \(2920.8\) MeV/c.
+\end{frame}
+
+\begin{frame}{Fisher and Profile-Likelihood Widths}
+\begin{columns}[T]
+\column{0.50\textwidth}
+\begin{center}
+\PlotOrFallback{\LargeRunRoot/plots/fisher_p_width68.png}{\SmokeRunRoot/plots/fisher_p_width68.png}{0.95}
+\end{center}
+
+\column{0.50\textwidth}
+\begin{center}
+\PlotOrFallback{\LargeRunRoot/plots/profile_p_width68.png}{\SmokeRunRoot/plots/profile_p_width68.png}{0.95}
+\end{center}
+\end{columns}
+
+\vspace{0.1cm}
+\small
+In the enlarged run, the median 68\% width in \(|\vec p|\) is \(48.20\) MeV/c from the Fisher estimate and \(76.91\) MeV/c from profile likelihood. The profile interval remains substantially broader, so the likelihood is still not well described by a purely local Gaussian approximation.
+\end{frame}
+
+\begin{frame}{Laplace Versus MCMC}
+\begin{columns}[T]
+\column{0.54\textwidth}
+\begin{center}
+\PlotOrFallback{\LargeRunRoot/plots/laplace_vs_mcmc_p_width68.png}{\SmokeRunRoot/plots/laplace_vs_mcmc_p_width68.png}{0.84}
+\end{center}
+
+\column{0.44\textwidth}
+\scriptsize
+\textbf{Enlarged run}
+\begin{itemize}
+\item Median Laplace 68\% width in \(|\vec p|\): \(48.14\) MeV/c
+\item Median MCMC 68\% width in \(|\vec p|\): \(109.32\) MeV/c
+\item Median MCMC acceptance rate: \(0.593\)
+\item Median effective sample size: \(9.23\)
+\end{itemize}
+
+\vspace{0.1cm}
+\textbf{Reading}
+\begin{itemize}
+\item Laplace tracks Fisher closely, as expected for two local Gaussian approximations.
+\item MCMC is much broader on sampled tracks, which again suggests non-Gaussian posterior structure.
+\end{itemize}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Representative Profile Curves}
+\begin{center}
+\PlotOrFallback{\LargeRunRoot/plots/representative_profile_curves.png}{\SmokeRunRoot/plots/representative_profile_curves.png}{0.66}
+\end{center}
+
+\vspace{0.1cm}
+\scriptsize
+This is the clearest frequentist diagnostic. Symmetric parabolic curves would support Fisher-like treatment. Asymmetry, flat directions, or clipped crossings explain why profile-likelihood intervals can be wider than Hessian-based widths.
+\end{frame}
+
+\begin{frame}{Confidence and Credible Interval Summary}
+\small
+\begin{table}
+\centering
+\begin{tabular}{p{0.18\textwidth}p{0.23\textwidth}p{0.22\textwidth}p{0.24\textwidth}}
+\toprule
+Method & Tracks covered now & 68\% interval type & Main message \\
+\midrule
+Fisher & All successful RK tracks & Local confidence width & Good for speed, optimistic when the likelihood is curved or asymmetric \\
+Laplace & All successful RK tracks with valid posterior covariance & Local Bayesian credible interval & Similar to Fisher in the current smoke study \\
+Profile likelihood & Sampled RK tracks & Frequentist confidence interval & Captures asymmetry and broader nonlocal structure \\
+MCMC & Sampled RK tracks & Bayesian credible interval & Best shape information, but highest runtime cost \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.1cm}
+For current PDC legacy reco data, the safest interpretation is: Fisher/Laplace for fast per-track monitoring, profile/MCMC for method validation and interval realism checks.
+\end{frame}
+
+\begin{frame}{Current Limitation on Coverage Validation}
+\small
+\textbf{What is missing}
+\begin{itemize}
+\item The legacy \texttt{after\_pdcana} files contain an \texttt{OriginalParticleData} branch without a safe dictionary in this workflow.
+\item Direct truth binding from those files caused the earlier memory-corruption crash and has been disabled in the analysis tool.
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Consequence}
+\begin{itemize}
+\item We can compute interval sizes and compare methods on reconstructed tracks.
+\item We cannot yet claim empirical 68\% or 95\% coverage on the legacy sample.
+\item Coverage validation must be done on simulation files with a safe truth interface or by adding a reliable dictionary-backed legacy reader.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Implementation Status}
+\small
+\textbf{Completed}
+\begin{itemize}
+\item RK runtime branches for central fit diagnostics and interval outputs
+\item Offline tool for Fisher, profile-likelihood, Laplace, and MCMC comparison
+\item Synthetic backend comparison CSV summaries
+\item Stability fix for the legacy-file crash path caused by unsafe truth-branch binding
+\end{itemize}
+
+\vspace{0.2cm}
+\textbf{Still needed}
+\begin{itemize}
+\item Calibrate RK modes against larger truth-labeled samples
+\item Add interval support for the NN branch, for example heteroscedastic regression or quantile targets
+\item Restore truth-based coverage validation for legacy-style files through a safe reader path
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Takeaway}
+\small
+\begin{itemize}
+\item The PDC reconstruction framework now supports several central-estimate methods, but only the RK branch currently supports rigorous uncertainty analysis.
+\item On the available legacy reconstructed sample, local Gaussian intervals are much narrower than profile-likelihood and MCMC intervals, so Gaussian-only error bars are not sufficient.
+\item The NN branch remains the strongest point predictor on the current truth-grid diagnostic, but it is not yet uncertainty-aware.
+\item The next technically important step is not another point-estimate tweak; it is truth-backed interval validation on a larger, stable dataset.
+\end{itemize}
+\end{frame}
+
+\end{document}

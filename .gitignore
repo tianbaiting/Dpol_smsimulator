@@ -58,6 +58,7 @@ result/
 *.nav
 *.snm
 *.toc
+*.vrb
 *.out
 *.fls
 *.fdb_latexmk
