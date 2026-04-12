@@ -84,3 +84,14 @@ if(EXISTS ${EVAL_TARGET_MOMENTUM_RECO_SRC})
     target_link_libraries(evaluate_reconstruct_sn_nn PRIVATE ${ROOT_LIBRARIES})
     install(TARGETS evaluate_reconstruct_sn_nn RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
+
+set(ANALYZE_PDC_RK_ERROR_SRC ${CMAKE_CURRENT_SOURCE_DIR}/analyze_pdc_rk_error.cc)
+if(EXISTS ${ANALYZE_PDC_RK_ERROR_SRC})
+    add_executable(analyze_pdc_rk_error ${ANALYZE_PDC_RK_ERROR_SRC})
+    target_link_libraries(analyze_pdc_rk_error PRIVATE
+        analysis
+        analysis_pdc_reco
+        ${ROOT_LIBRARIES}
+    )
+    install(TARGETS analyze_pdc_rk_error RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
