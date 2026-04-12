@@ -1,0 +1,23 @@
+{
+  "reference_name": "ips_target_mount_position_3deg_B115T_offset_m40",
+  "coordinate_unit": "mm",
+  "target_center_mm": {
+    "x": -12.488,
+    "y": 0.009,
+    "z": -1069.458
+  },
+  "target_angle_deg": 3.0,
+  "ips_axis_offset_mm": -40.0,
+  "ips_axis_unit": {
+    "x": -0.052335956242943835,
+    "y": 0.0,
+    "z": 0.9986295347545738
+  },
+  "ips_center_mm": {
+    "x": -10.394561750282246,
+    "y": 0.009,
+    "z": -1109.4031813901831
+  },
+  "ips_barrel_radius_mm": 135.0,
+  "ips_module_length_mm": 200.0
+}
