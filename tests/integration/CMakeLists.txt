@@ -152,6 +152,58 @@ add_pdc_target_momentum_e2e_test(PdcTargetMomentumE2E.NN nn nn "" 0 0)
 
 message(STATUS "PDC target-momentum E2E tests configured")
 
+##############################################################################
+# 测试4: PDC 误差分析端到端验证
+# [EN] Run analyze_pdc_rk_error on E2E reco output and validate CSV results.
+# [CN] 在E2E重建输出上运行误差分析工具并验证CSV结果。
+##############################################################################
+
+if(TARGET analyze_pdc_rk_error)
+    set(ERROR_ANALYSIS_TEST_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/test_pdc_error_analysis_e2e.sh)
+    if(EXISTS ${ERROR_ANALYSIS_TEST_SCRIPT})
+
+        # [EN] Error analysis on RK fixed-target-pdc-only reco output / [CN] 对RK固定靶点模式重建结果运行误差分析
+        add_test(
+            NAME PdcErrorAnalysisE2E.RK.FixedTargetPdcOnly
+            COMMAND bash ${ERROR_ANALYSIS_TEST_SCRIPT}
+                $<TARGET_FILE:analyze_pdc_rk_error>
+                ${PDC_TARGET_GEOMETRY_MACRO}
+                ${PDC_TARGET_FIELD_MAP}
+                ${CMAKE_BINARY_DIR}/test_output/pdc_target_momentum_scan/rk_fixed_target_pdc_only/reco/pdc_truth_grid_rk_fixed_target_pdc_only_reco.root
+                ${CMAKE_BINARY_DIR}/test_output/error_analysis_rk
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        )
+        set_tests_properties(PdcErrorAnalysisE2E.RK.FixedTargetPdcOnly PROPERTIES
+            LABELS "integration;analysis;reconstruction;pdc;error_analysis"
+            TIMEOUT 120
+            DEPENDS PdcTargetMomentumE2E.RK.FixedTargetPdcOnly
+        )
+
+        # [EN] Error analysis on NN reco output (uses same RK fitter internally) / [CN] 对NN重建结果运行误差分析（内部使用相同的RK拟合器）
+        add_test(
+            NAME PdcErrorAnalysisE2E.NN
+            COMMAND bash ${ERROR_ANALYSIS_TEST_SCRIPT}
+                $<TARGET_FILE:analyze_pdc_rk_error>
+                ${PDC_TARGET_GEOMETRY_MACRO}
+                ${PDC_TARGET_FIELD_MAP}
+                ${CMAKE_BINARY_DIR}/test_output/pdc_target_momentum_scan/nn/reco/pdc_truth_grid_nn_reco.root
+                ${CMAKE_BINARY_DIR}/test_output/error_analysis_nn
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        )
+        set_tests_properties(PdcErrorAnalysisE2E.NN PROPERTIES
+            LABELS "integration;analysis;reconstruction;pdc;error_analysis"
+            TIMEOUT 120
+            DEPENDS PdcTargetMomentumE2E.NN
+        )
+
+        message(STATUS "PDC error analysis E2E tests configured")
+    else()
+        message(WARNING "Error analysis test script not found: ${ERROR_ANALYSIS_TEST_SCRIPT}")
+    endif()
+else()
+    message(WARNING "analyze_pdc_rk_error target not found, skipping error analysis E2E tests")
+endif()
+
 else()
 message(WARNING "PDC target-momentum E2E assets missing, skipping Geant4 reconstruction regression tests")
 endif()

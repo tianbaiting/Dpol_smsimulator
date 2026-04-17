@@ -29,7 +29,20 @@ namespace {
 
 constexpr double kProtonMassMeV = 938.2720813;
 constexpr std::array<double, 5> kTruthPxGridMeV{-100.0, -50.0, 0.0, 50.0, 100.0};
+// [EN] For single-point regression runs (ensemble_size=1) only py=0 is used to
+// preserve the historic 5-point grid byte-for-byte. Ensemble runs (>1) enable
+// the full 3x5 grid so the coverage statistics sample multiple directions.
+// [CN] 单点回归 (ensemble_size=1) 仅用 py=0 保持历史 5 点网格不变；
+// ensemble 模式 (>1) 启用完整 3x5 网格以让覆盖率统计覆盖多个方向。
 constexpr double kTruthPyMeV = 0.0;
+// [EN] py=+/-50 MeV/c deflects the proton by ~310 mm at PDC2 after the magnet;
+// with the Sn target disabled there is no MS to smear events back into the
+// tracker's y-acceptance and the reconstruction fails 100% of those points.
+// Reduced to +/-20 MeV/c (~145 mm deflection at PDC2) for clean py coverage.
+// [CN] py=+/-50 MeV/c 在磁场后让质子在 PDC2 上偏移 ~310 mm，去掉 Sn 靶后没
+// 有多次散射把事件散回径迹探测器的 y 接收度，重建 100% 失败。改为 +/-20
+// MeV/c（约 145 mm 偏移），在无靶条件下能稳定命中 PDC 做 py 方向扫描。
+constexpr std::array<double, 3> kTruthPyEnsembleGridMeV{-20.0, 0.0, 20.0};
 constexpr double kTruthPzMeV = 627.0;
 
 struct CliOptions {
@@ -50,6 +63,11 @@ struct CliOptions {
     long long seed_b = 20260327;
     bool require_gate_pass = true;
     long long require_min_matched = 0;
+    // [EN] When > 1, every (px, py) truth point is replicated this many times in
+    // tree_input so Geant4 generates N independent stochastic realizations per
+    // point. Used for ensemble coverage analysis. / [CN] 大于 1 时在 tree_input
+    // 中复制每个 (px, py) 真值点 N 次，让 Geant4 生成 N 个独立抽样。
+    long long ensemble_size = 1;
 };
 
 struct SummaryRow {
@@ -118,7 +136,8 @@ void PrintUsage(const char* argv0) {
         << " --geometry-macro FILE [--field-map FILE] [--nn-model-json FILE]"
         << " [--rk-fit-mode NAME]"
         << " [--threshold-px V] [--threshold-py V] [--threshold-pz V]"
-        << " [--seed-a N] [--seed-b N] [--require-gate-pass 0|1] [--require-min-matched N]\n";
+        << " [--seed-a N] [--seed-b N] [--require-gate-pass 0|1] [--require-min-matched N]"
+        << " [--ensemble-size N]\n";
 }
 
 CliOptions ParseArgs(int argc, char* argv[]) {
@@ -159,6 +178,11 @@ CliOptions ParseArgs(int argc, char* argv[]) {
             opts.require_gate_pass = ParseBoolFlag(argv[++i], "--require-gate-pass");
         } else if (arg == "--require-min-matched" && i + 1 < argc) {
             opts.require_min_matched = ParseInteger(argv[++i], "--require-min-matched");
+        } else if (arg == "--ensemble-size" && i + 1 < argc) {
+            opts.ensemble_size = ParseInteger(argv[++i], "--ensemble-size");
+            if (opts.ensemble_size < 1) {
+                throw std::runtime_error("--ensemble-size must be >= 1");
+            }
         } else if (arg == "--help" || arg == "-h") {
             PrintUsage(argv[0]);
             std::exit(0);
@@ -203,7 +227,14 @@ void SetSmsimEnvironment(const std::string& smsimdir) {
     }
 }
 
-void WriteFixedTruthInputTree(const fs::path& output_root) {
+std::vector<double> ResolvePyGrid(long long ensemble_size) {
+    if (ensemble_size <= 1) {
+        return {kTruthPyMeV};
+    }
+    return std::vector<double>(kTruthPyEnsembleGridMeV.begin(), kTruthPyEnsembleGridMeV.end());
+}
+
+void WriteFixedTruthInputTree(const fs::path& output_root, long long ensemble_size) {
     fs::create_directories(output_root.parent_path());
 
     TFile out_file(output_root.c_str(), "RECREATE");
@@ -217,19 +248,24 @@ void WriteFixedTruthInputTree(const fs::path& output_root) {
     tree.Branch("TBeamSimData", &gBeamSimDataArray);
 
     const TVector3 origin_mm(0.0, 0.0, 0.0);
-    for (std::size_t i = 0; i < kTruthPxGridMeV.size(); ++i) {
-        beam_array->clear();
-        const double px = kTruthPxGridMeV[i];
-        const double energy = std::sqrt(px * px + kTruthPyMeV * kTruthPyMeV + kTruthPzMeV * kTruthPzMeV +
-                                        kProtonMassMeV * kProtonMassMeV);
-        TLorentzVector momentum(px, kTruthPyMeV, kTruthPzMeV, energy);
-        TBeamSimData proton(1, 1, momentum, origin_mm);
-        proton.fParticleName = "proton";
-        proton.fPrimaryParticleID = 0;
-        proton.fTime = 0.0;
-        proton.fIsAccepted = true;
-        beam_array->push_back(proton);
-        tree.Fill();
+    const std::vector<double> py_grid = ResolvePyGrid(ensemble_size);
+    for (long long replica = 0; replica < ensemble_size; ++replica) {
+        for (std::size_t i = 0; i < kTruthPxGridMeV.size(); ++i) {
+            for (double py : py_grid) {
+                beam_array->clear();
+                const double px = kTruthPxGridMeV[i];
+                const double energy = std::sqrt(px * px + py * py + kTruthPzMeV * kTruthPzMeV +
+                                                kProtonMassMeV * kProtonMassMeV);
+                TLorentzVector momentum(px, py, kTruthPzMeV, energy);
+                TBeamSimData proton(1, 1, momentum, origin_mm);
+                proton.fParticleName = "proton";
+                proton.fPrimaryParticleID = 0;
+                proton.fTime = 0.0;
+                proton.fIsAccepted = true;
+                beam_array->push_back(proton);
+                tree.Fill();
+            }
+        }
     }
 
     tree.Write();
@@ -397,27 +433,38 @@ std::vector<SummaryRow> ReadSummaryRows(const fs::path& csv_path) {
 }
 
 void ValidateRows(const std::vector<SummaryRow>& rows, const CliOptions& opts) {
-    if (rows.size() != kTruthPxGridMeV.size()) {
+    const std::vector<double> py_grid = ResolvePyGrid(opts.ensemble_size);
+    const std::size_t expected_rows = kTruthPxGridMeV.size() * py_grid.size();
+    if (rows.size() != expected_rows) {
         throw std::runtime_error(
-            "unexpected number of summary rows: expected " + std::to_string(kTruthPxGridMeV.size()) +
+            "unexpected number of summary rows: expected " + std::to_string(expected_rows) +
             ", got " + std::to_string(rows.size())
         );
     }
 
     long long matched_total = 0;
-    for (std::size_t i = 0; i < rows.size(); ++i) {
-        const SummaryRow& row = rows[i];
-        const double expected_px = kTruthPxGridMeV[i];
+    for (const SummaryRow& row : rows) {
         if (row.backend != opts.backend) {
             throw std::runtime_error("summary backend mismatch: expected " + opts.backend + ", got " + row.backend);
         }
-        if (std::abs(row.truth_px - expected_px) > 1.0e-6 ||
-            std::abs(row.truth_py - kTruthPyMeV) > 1.0e-6 ||
-            std::abs(row.truth_pz - kTruthPzMeV) > 1.0e-6) {
+        // [EN] Accept any (px, py) combination from the known grid (rows are sorted by truth_px
+        // only, so the py ordering is not strict). / [CN] 接受已知网格中的任意 (px, py) 组合。
+        bool px_match = false;
+        for (double px : kTruthPxGridMeV) {
+            if (std::abs(row.truth_px - px) < 1.0e-6) { px_match = true; break; }
+        }
+        bool py_match = false;
+        for (double py : py_grid) {
+            if (std::abs(row.truth_py - py) < 1.0e-6) { py_match = true; break; }
+        }
+        if (!px_match || !py_match || std::abs(row.truth_pz - kTruthPzMeV) > 1.0e-6) {
             throw std::runtime_error("truth grid mismatch in summary csv");
         }
-        if (row.truth_events != 1) {
-            throw std::runtime_error("expected exactly one truth event per grid point");
+        if (row.truth_events != opts.ensemble_size) {
+            throw std::runtime_error(
+                "expected " + std::to_string(opts.ensemble_size) +
+                " truth events per grid point, got " + std::to_string(row.truth_events)
+            );
         }
         matched_total += row.matched_events;
 
@@ -426,7 +473,8 @@ void ValidateRows(const std::vector<SummaryRow>& rows, const CliOptions& opts) {
             std::cout << " rk_mode=" << opts.rk_fit_mode;
         }
         std::cout << " truth_px=" << row.truth_px
-                  << " matched=" << row.matched_events
+                  << " truth_py=" << row.truth_py
+                  << " matched=" << row.matched_events << "/" << row.truth_events
                   << " dpx=" << row.bias_px
                   << " dpy=" << row.bias_py
                   << " dpz=" << row.bias_pz
@@ -437,8 +485,8 @@ void ValidateRows(const std::vector<SummaryRow>& rows, const CliOptions& opts) {
             continue;
         }
 
-        if (row.matched_events != 1) {
-            throw std::runtime_error("gate backend did not reconstruct the truth point");
+        if (row.matched_events != opts.ensemble_size) {
+            throw std::runtime_error("gate backend did not reconstruct every truth event");
         }
         if (row.pass_px != 1 || row.pass_py != 1 || row.pass_pz != 1 || row.gate_pass != 1) {
             throw std::runtime_error("gate backend exceeded configured momentum-error thresholds");
@@ -498,7 +546,7 @@ int main(int argc, char* argv[]) {
         const fs::path summary_csv = eval_dir / ("summary_" + run_tag + ".csv");
         const fs::path event_csv = eval_dir / ("events_" + run_tag + ".csv");
 
-        WriteFixedTruthInputTree(input_root);
+        WriteFixedTruthInputTree(input_root, opts.ensemble_size);
         WriteGeant4Macro(opts, run_tag, input_root, macro_path, sim_dir);
 
         RunCommand({sim_bin.string(), macro_path.string()}, output_dir, log_dir / ("sim_" + run_tag + ".log"));

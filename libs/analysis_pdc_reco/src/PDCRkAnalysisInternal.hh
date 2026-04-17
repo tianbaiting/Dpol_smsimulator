@@ -17,24 +17,27 @@
 
 namespace analysis::pdc::anaroot_like::detail {
 
-inline constexpr std::size_t kResidualCount = 8;
+inline constexpr std::size_t kResidualCount = 6;
 inline constexpr std::size_t kParameterCount = 5;
 inline constexpr std::size_t kMomentumDim = 3;
 inline constexpr double kBrhoGeVOverCPerTm = 0.299792458;
 inline constexpr double kDefaultMassMeV = 938.2720813;
 inline constexpr double kSigma95 = 1.959963984540054;
 
+// [EN] Parameter state vector. Parameterization uses |p| (MeV/c) directly
+// rather than q = charge/p, so priors and clamps live on the physical quantity.
+// [CN] 参数向量直接使用|p|(MeV/c)，而非q=charge/p，先验与clamp都作用在物理量上。
 struct RkParameterState {
     double dx = 0.0;
     double dy = 0.0;
     double u = 0.0;
     double v = 0.0;
-    double q = 0.0;
+    double p = 0.0;  // |momentum| in MeV/c, always >= 0
 };
 
 struct RkEvalResult {
     bool valid = false;
-    std::array<double, 8> residuals{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    std::array<double, 6> residuals{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     int residual_count = 0;
     double chi2_raw = 0.0;
     double chi2_reduced = 0.0;
@@ -49,20 +52,23 @@ struct RkEvalResult {
     std::vector<ParticleTrajectory::TrajectoryPoint> trajectory;
 };
 
+// [EN] Per-plane 2D whitening in the (u, v) wire frame. The analyzer computes
+// u/v components of the trajectory miss at the nearest trajectory point, then
+// applies a 2x2 Cholesky whitening to form two independent residuals per plane.
+// [CN] 每个平面的二维白化，丝坐标(u, v)上两个独立残差。
 struct RkMeasurementModel {
-    bool use_covariance = false;
-    std::array<double, 9> pdc1_whitening{0.0, 0.0, 0.0,
-                                         0.0, 0.0, 0.0,
-                                         0.0, 0.0, 0.0};
-    std::array<double, 9> pdc2_whitening{0.0, 0.0, 0.0,
-                                         0.0, 0.0, 0.0,
-                                         0.0, 0.0, 0.0};
+    TVector3 u_dir{1.0, 0.0, 0.0};
+    TVector3 v_dir{0.0, 1.0, 0.0};
+    std::array<double, 4> whitening{1.0, 0.0, 0.0, 1.0};  // row-major 2x2
+    double sigma_u_mm = 2.0;
+    double sigma_v_mm = 2.0;
+    double uv_correlation = 0.0;
 };
 
 struct RkFitLayout {
     std::array<int, 5> active_parameter_indices{0, 1, 2, 3, 4};
     int parameter_count = 5;
-    int residual_count = 8;
+    int residual_count = 6;
     bool include_start_xy_constraint = true;
     bool fixed_target_position = false;
 };
@@ -123,6 +129,7 @@ public:
                            const RkEvalResult& eval) const;
     TMatrixD BuildMomentumJacobian(const RkParameterState& state) const;
     TMatrixD BuildPriorPrecision() const;
+    TVectorD BuildPriorGradient(const RkParameterState& state) const;
     int FindLocalParameter(int full_index) const;
     bool HasActiveParameter(int full_index) const;
     double ParameterStep(const RkParameterState& state, int full_index) const;
@@ -142,9 +149,7 @@ public:
                                  IntervalEstimate* pz_interval,
                                  IntervalEstimate* p_interval) const;
     double EvaluateChi2Raw(const RkParameterState& state) const;
-    double EvaluateLogPrior(const RkParameterState& state,
-                            const BayesianConfig& bayesian_config,
-                            const RkParameterState& prior_center) const;
+    double EvaluateLogPrior(const RkParameterState& state) const;
 
     bool Solve(const RkParameterState& initial_state,
                bool compute_uncertainty,
@@ -166,7 +171,7 @@ private:
     bool ValidateInputs(std::string* reason) const;
     bool BuildMeasurementModel(std::string* reason);
     RkFitLayout BuildRkFitLayout() const;
-    RkParameterState BuildInitialState() const;
+    RkParameterState BuildInitialState();
     RkParameterState AddDelta(const RkParameterState& state,
                               int full_index,
                               double delta) const;
@@ -185,6 +190,7 @@ private:
     RkMeasurementModel fMeasurement;
     RkFitLayout fLayout;
     RkParameterState fInitialState;
+    std::vector<RkParameterState> fInitialCandidates;
     bool fInitialized = false;
 };
 

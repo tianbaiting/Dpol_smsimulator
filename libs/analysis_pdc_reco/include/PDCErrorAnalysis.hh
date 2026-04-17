@@ -68,7 +68,7 @@ public:
     // [EN] Expose chi2 evaluation for external profiling
     // [CN] 暴露chi2评估用于外部profiling
     double EvaluateChi2(
-        double dx, double dy, double u, double v, double q,
+        double dx, double dy, double u, double v, double p,
         const PDCInputTrack& track,
         const TargetConstraint& target,
         const RecoConfig& config

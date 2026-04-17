@@ -3,7 +3,6 @@
 #include "ParticleTrajectory.hh"
 #include "PDCMomentumReconstructor.hh"
 #include "PDCRecoRuntime.hh"
-#include "TargetReconstructor.hh"
 
 #include <array>
 #include <cmath>
@@ -202,8 +201,11 @@ TEST(PDCMomentumReconstructorTest, NeuralNetworkInferenceAppliesTargetDenormaliz
     EXPECT_NEAR(result.p4_at_target.Pz(), 612.0, 1.0e-9);
 }
 
-TEST(PDCMomentumReconstructorTest, RKTwoPointBackpropMatchesLegacyCompatibilitySolver) {
-    // [EN] Two-point backprop is a compatibility mode, so the new runtime should reproduce the legacy solver result instead of inventing a second behavior. / [CN] 两点反推属于兼容模式，因此新运行时应复现legacy求解结果，而不是再发明第二套行为。
+TEST(PDCMomentumReconstructorTest, RKTwoPointBackpropUsesAnalyzerWithFixedTarget) {
+    // [EN] kTwoPointBackprop now uses the same RkLeastSquaresAnalyzer as
+    // kFixedTargetPdcOnly (3 params: u, v, p with fixed target position).
+    // Verify it produces valid, accurate momentum reconstruction. / [CN]
+    // kTwoPointBackprop 现在使用与 kFixedTargetPdcOnly 相同的分析器。
     const std::string field_path = WriteConstantFieldMap("pdc_constant_field_rk_uncertainty", 0.6);
 
     MagneticField mag_field;
@@ -215,52 +217,34 @@ TEST(PDCMomentumReconstructorTest, RKTwoPointBackpropMatchesLegacyCompatibilityS
     const PDCInputTrack track = MakeSyntheticCurvedTrack(&mag_field, target_pos, truth_momentum);
 
     TargetConstraint target = MakeConstraint();
-    target.pdc_sigma_mm = 2.0;
+    target.pdc_sigma_u_mm = 2.0;
+    target.pdc_sigma_v_mm = 2.0;
+    target.pdc_angle_deg = 57.0;
     target.target_sigma_xy_mm = 5.0;
 
     RecoConfig config = MakeRkOnlyConfig(truth_momentum.Mag() * 0.95, RkFitMode::kTwoPointBackprop);
-    config.tolerance_mm = 8.0;
 
     PDCMomentumReconstructor reconstructor(&mag_field);
     const RecoResult result = reconstructor.ReconstructRK(track, target, config);
 
-    TargetReconstructor legacy_reconstructor(&mag_field);
-    legacy_reconstructor.SetTrajectoryStepSize(config.rk_step_mm);
-    RecoTrack legacy_track(track.pdc1, track.pdc2);
-    legacy_track.pdgCode = 2212;
-    const int search_rounds = std::max(1, std::min(8, config.max_iterations / 10));
-    const TargetReconstructionResult legacy_result = legacy_reconstructor.ReconstructAtTargetWithDetails(
-        legacy_track,
-        target.target_position,
-        false,
-        config.p_min_mevc,
-        config.p_max_mevc,
-        config.tolerance_mm,
-        search_rounds
-    );
-
-    EXPECT_TRUE(result.status == SolverStatus::kSuccess || result.status == SolverStatus::kNotConverged);
+    EXPECT_EQ(result.status, SolverStatus::kSuccess);
     EXPECT_EQ(result.method_used, SolveMethod::kRungeKutta);
     EXPECT_TRUE(std::isfinite(result.p4_at_target.P()));
     EXPECT_GT(result.p4_at_target.P(), 0.0);
     EXPECT_TRUE(std::isfinite(result.min_distance_mm));
-    EXPECT_TRUE(std::isfinite(result.fit_start_position.X()));
-    EXPECT_TRUE(std::isfinite(result.fit_start_position.Y()));
-    EXPECT_TRUE(std::isfinite(result.fit_start_position.Z()));
-    EXPECT_TRUE(std::isfinite(legacy_result.bestMomentum.P()));
-    EXPECT_GT(legacy_result.bestMomentum.P(), 0.0);
-    EXPECT_NEAR(result.p4_at_target.Px(), legacy_result.bestMomentum.Px(), 1.0e-9);
-    EXPECT_NEAR(result.p4_at_target.Py(), legacy_result.bestMomentum.Py(), 1.0e-9);
-    EXPECT_NEAR(result.p4_at_target.Pz(), legacy_result.bestMomentum.Pz(), 1.0e-9);
-    EXPECT_NEAR(result.min_distance_mm, legacy_result.finalDistance, 1.0e-9);
-    EXPECT_EQ(result.iterations, search_rounds);
-    const SolverStatus expected_status =
-        (legacy_result.success || legacy_result.finalDistance <= config.tolerance_mm)
-            ? SolverStatus::kSuccess
-            : SolverStatus::kNotConverged;
-    EXPECT_EQ(result.status, expected_status);
-    EXPECT_TRUE((result.fit_start_position - track.pdc1).Mag() < 1.0e-9 ||
-                (result.fit_start_position - track.pdc2).Mag() < 1.0e-9);
+    EXPECT_TRUE(std::isfinite(result.chi2_raw));
+    EXPECT_GE(result.ndf, 1);
+    // [EN] Fixed target position: fit_start_position should be the target. / [CN] 固定靶点：起点应为靶点。
+    EXPECT_NEAR(result.fit_start_position.X(), target_pos.X(), 1.0e-9);
+    EXPECT_NEAR(result.fit_start_position.Y(), target_pos.Y(), 1.0e-9);
+    EXPECT_NEAR(result.fit_start_position.Z(), target_pos.Z(), 1.0e-9);
+    // [EN] Should reconstruct within ~50 MeV/c of truth for a clean synthetic track.
+    const double px_err = std::abs(result.p4_at_target.Px() - truth_momentum.X());
+    const double py_err = std::abs(result.p4_at_target.Py() - truth_momentum.Y());
+    const double pz_err = std::abs(result.p4_at_target.Pz() - truth_momentum.Z());
+    EXPECT_LT(px_err, 50.0) << "px bias too large: " << px_err;
+    EXPECT_LT(py_err, 50.0) << "py bias too large: " << py_err;
+    EXPECT_LT(pz_err, 50.0) << "pz bias too large: " << pz_err;
 }
 
 TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlyUsesTwoPointLossWithFixedVertex) {
@@ -276,7 +260,9 @@ TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlyUsesTwoPointLossWithFixed
     const PDCInputTrack track = MakeSyntheticCurvedTrack(&mag_field, target_pos, truth_momentum);
 
     TargetConstraint target = MakeConstraint();
-    target.pdc_sigma_mm = 2.0;
+    target.pdc_sigma_u_mm = 2.0;
+    target.pdc_sigma_v_mm = 2.0;
+    target.pdc_angle_deg = 57.0;
     target.target_sigma_xy_mm = 5.0;
 
     RecoConfig config = MakeRkOnlyConfig(truth_momentum.Mag(), RkFitMode::kFixedTargetPdcOnly);
@@ -287,7 +273,7 @@ TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlyUsesTwoPointLossWithFixed
     EXPECT_EQ(result.status, SolverStatus::kSuccess);
     EXPECT_TRUE(std::isfinite(result.chi2_raw));
     EXPECT_TRUE(std::isfinite(result.chi2_reduced));
-    EXPECT_EQ(result.ndf, 3);
+    EXPECT_EQ(result.ndf, 1);
     EXPECT_TRUE(result.uncertainty_valid);
     EXPECT_TRUE(result.posterior_valid);
     EXPECT_NEAR(result.fit_start_position.X(), target_pos.X(), 1.0e-9);
@@ -300,9 +286,9 @@ TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlyUsesTwoPointLossWithFixed
     EXPECT_GT(result.px_credible.sigma, 0.0);
 }
 
-TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlySupportsPerPlaneCovariance) {
-    // [EN] Fixed-target two-point mode should keep covariance whitening and posterior intervals available. / [CN] 固定靶点两点模式应继续支持协方差白化与后验区间输出。
-    const std::string field_path = WriteConstantFieldMap("pdc_constant_field_rk_fixed_target_covariance", 0.54);
+TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlySupportsAnisotropicWireSigmas) {
+    // [EN] Fixed-target two-point mode should build a 2x2 wire-coordinate whitening from per-plane sigma_u/sigma_v and still emit posterior intervals. / [CN] 固定靶点两点模式应基于每平面 σ_u/σ_v 构造丝坐标 2x2 白化，并继续输出后验区间。
+    const std::string field_path = WriteConstantFieldMap("pdc_constant_field_rk_wire_sigma", 0.54);
 
     MagneticField mag_field;
     ASSERT_TRUE(mag_field.LoadFieldMap(field_path));
@@ -313,13 +299,11 @@ TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlySupportsPerPlaneCovarianc
     const PDCInputTrack track = MakeSyntheticCurvedTrack(&mag_field, target_pos, truth_momentum);
 
     TargetConstraint target = MakeConstraint();
-    target.use_pdc_covariance = true;
-    target.pdc1_cov_mm2 = {4.0, 0.4, 0.2,
-                           0.4, 2.25, 0.1,
-                           0.2, 0.1, 5.0};
-    target.pdc2_cov_mm2 = {3.5, 0.3, 0.15,
-                           0.3, 2.0, 0.05,
-                           0.15, 0.05, 4.5};
+    target.pdc_sigma_u_mm = 2.0;
+    target.pdc_sigma_v_mm = 1.5;
+    target.pdc_uv_correlation = 0.2;
+    target.pdc_angle_deg = 57.0;
+    target.target_sigma_xy_mm = 5.0;
 
     RecoConfig config = MakeRkOnlyConfig(truth_momentum.Mag(), RkFitMode::kFixedTargetPdcOnly);
     config.tolerance_mm = 3.5;
@@ -328,7 +312,7 @@ TEST(PDCMomentumReconstructorTest, RKFixedTargetPdcOnlySupportsPerPlaneCovarianc
     const auto result = reconstructor.ReconstructRK(track, target, config);
 
     EXPECT_EQ(result.status, SolverStatus::kSuccess);
-    EXPECT_EQ(result.ndf, 3);
+    EXPECT_EQ(result.ndf, 1);
     EXPECT_TRUE(result.used_measurement_covariance);
     EXPECT_TRUE(result.uncertainty_valid);
     EXPECT_TRUE(result.posterior_valid);

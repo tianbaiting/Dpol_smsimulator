@@ -58,8 +58,14 @@ struct CliOptions {
     reco::RuntimeBackend backend = reco::RuntimeBackend::kAuto;
     int max_files = 0;
     int max_iterations = 40;
-    double pdc_sigma_mm = 2.0;
+    double pdc_sigma_u_mm = 2.0;
+    double pdc_sigma_v_mm = 2.0;
+    double pdc_uv_correlation = 0.0;
+    double pdc_angle_deg = 57.0;
     double target_sigma_xy_mm = 5.0;
+    bool momentum_prior_enabled = false;
+    double momentum_prior_center_mev_c = 0.0;
+    double momentum_prior_sigma_mev_c = 0.0;
     double p_min_mevc = 50.0;
     double p_max_mevc = 5000.0;
     double tolerance_mm = 5.0;
@@ -128,15 +134,18 @@ void PrintUsage(const char* argv0) {
         << "Usage(single-file): " << argv0
         << " --input-file FILE --output-file FILE --geometry-macro FILE [--backend auto|nn|rk|multidim]\n"
         << "                   [--nn-model-json FILE] [--magnetic-field-map FILE] [--magnet-rotation-deg DEG]\n"
-        << "                   [--pdc-sigma-mm V] [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
+        << "                   [--pdc-sigma-u-mm V] [--pdc-sigma-v-mm V] [--pdc-uv-correlation V] [--pdc-angle-deg V]\n"
+        << "                   [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
         << "                   [--rk-step-mm V] [--max-iterations N] [--tolerance-mm V]\n"
         << "                   [--center-brho-tm V] [--rk-fit-mode two-point-backprop|fixed-target-pdc-only|three-point-free]\n"
         << "                   [--rk-write-errors on|off] [--rk-write-laplace on|off]\n"
+        << "                   [--momentum-prior-mev-c V --momentum-prior-sigma-mev-c V]\n"
         << "\n"
         << "Usage(directory): " << argv0
         << " --input-dir DIR --output-dir DIR --geometry-macro FILE [--backend auto|nn|rk|multidim]\n"
         << "                   [--nn-model-json FILE] [--magnetic-field-map FILE] [--magnet-rotation-deg DEG]\n"
-        << "                   [--max-files N] [--pdc-sigma-mm V] [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
+        << "                   [--max-files N] [--pdc-sigma-u-mm V] [--pdc-sigma-v-mm V] [--pdc-angle-deg V]\n"
+        << "                   [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
         << "                   [--rk-write-errors on|off] [--rk-write-laplace on|off]\n";
 }
 
@@ -185,8 +194,20 @@ CliOptions ParseArgs(int argc, char* argv[]) {
             opts.max_files = ParseInt(argv[++i], "--max-files");
         } else if (arg == "--max-iterations" && i + 1 < argc) {
             opts.max_iterations = ParseInt(argv[++i], "--max-iterations");
-        } else if (arg == "--pdc-sigma-mm" && i + 1 < argc) {
-            opts.pdc_sigma_mm = ParseDouble(argv[++i], "--pdc-sigma-mm");
+        } else if (arg == "--pdc-sigma-u-mm" && i + 1 < argc) {
+            opts.pdc_sigma_u_mm = ParseDouble(argv[++i], "--pdc-sigma-u-mm");
+        } else if (arg == "--pdc-sigma-v-mm" && i + 1 < argc) {
+            opts.pdc_sigma_v_mm = ParseDouble(argv[++i], "--pdc-sigma-v-mm");
+        } else if (arg == "--pdc-uv-correlation" && i + 1 < argc) {
+            opts.pdc_uv_correlation = ParseDouble(argv[++i], "--pdc-uv-correlation");
+        } else if (arg == "--pdc-angle-deg" && i + 1 < argc) {
+            opts.pdc_angle_deg = ParseDouble(argv[++i], "--pdc-angle-deg");
+        } else if (arg == "--momentum-prior-mev-c" && i + 1 < argc) {
+            opts.momentum_prior_center_mev_c = ParseDouble(argv[++i], "--momentum-prior-mev-c");
+            opts.momentum_prior_enabled = true;
+        } else if (arg == "--momentum-prior-sigma-mev-c" && i + 1 < argc) {
+            opts.momentum_prior_sigma_mev_c = ParseDouble(argv[++i], "--momentum-prior-sigma-mev-c");
+            opts.momentum_prior_enabled = true;
         } else if (arg == "--target-sigma-mm" && i + 1 < argc) {
             opts.target_sigma_xy_mm = ParseDouble(argv[++i], "--target-sigma-mm");
         } else if (arg == "--p-min-mevc" && i + 1 < argc) {
@@ -239,8 +260,14 @@ CliOptions ParseArgs(int argc, char* argv[]) {
     if (opts.max_iterations <= 0) {
         throw std::runtime_error("--max-iterations must be > 0");
     }
-    if (opts.pdc_sigma_mm <= 0.0 || opts.target_sigma_xy_mm <= 0.0) {
+    if (opts.pdc_sigma_u_mm <= 0.0 || opts.pdc_sigma_v_mm <= 0.0 || opts.target_sigma_xy_mm <= 0.0) {
         throw std::runtime_error("sigma parameters must be positive");
+    }
+    if (opts.pdc_uv_correlation <= -1.0 || opts.pdc_uv_correlation >= 1.0) {
+        throw std::runtime_error("--pdc-uv-correlation must be strictly within (-1, 1)");
+    }
+    if (opts.momentum_prior_enabled && opts.momentum_prior_sigma_mev_c <= 0.0) {
+        throw std::runtime_error("--momentum-prior-sigma-mev-c must be positive when momentum prior is enabled");
     }
     if (opts.p_min_mevc <= 0.0 || opts.p_max_mevc <= opts.p_min_mevc) {
         throw std::runtime_error("invalid momentum range");
@@ -658,8 +685,14 @@ int main(int argc, char* argv[]) {
         reco::PDCMomentumReconstructor proton_reco(magnetic_field.get());
         reco::RuntimeOptions runtime_options;
         runtime_options.backend = opts.backend;
-        runtime_options.pdc_sigma_mm = opts.pdc_sigma_mm;
+        runtime_options.pdc_sigma_u_mm = opts.pdc_sigma_u_mm;
+        runtime_options.pdc_sigma_v_mm = opts.pdc_sigma_v_mm;
+        runtime_options.pdc_uv_correlation = opts.pdc_uv_correlation;
+        runtime_options.pdc_angle_deg = opts.pdc_angle_deg;
         runtime_options.target_sigma_xy_mm = opts.target_sigma_xy_mm;
+        runtime_options.momentum_prior_enabled = opts.momentum_prior_enabled;
+        runtime_options.momentum_prior_center_mev_c = opts.momentum_prior_center_mev_c;
+        runtime_options.momentum_prior_sigma_mev_c = opts.momentum_prior_sigma_mev_c;
         runtime_options.p_min_mevc = opts.p_min_mevc;
         runtime_options.p_max_mevc = opts.p_max_mevc;
         runtime_options.tolerance_mm = opts.tolerance_mm;

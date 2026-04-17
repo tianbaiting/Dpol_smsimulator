@@ -58,7 +58,10 @@ TargetConstraint MakeConstraint() {
     target.target_position.SetXYZ(0.0, 0.0, 0.0);
     target.mass_mev = 938.2720813;
     target.charge_e = 1.0;
-    target.pdc_sigma_mm = 2.0;
+    target.pdc_sigma_u_mm = 2.0;
+    target.pdc_sigma_v_mm = 2.0;
+    target.pdc_uv_correlation = 0.0;
+    target.pdc_angle_deg = 57.0;
     target.target_sigma_xy_mm = 5.0;
     return target;
 }
@@ -220,14 +223,14 @@ TEST(PDCErrorAnalysisTest, EvaluateChi2IsLocallyMinimalNearCentralFit) {
         central_fit.fit_start_position.Y() - fixture.target.target_position.Y();
     const double u = central_fit.p4_at_target.Px() / pz;
     const double v = central_fit.p4_at_target.Py() / pz;
-    const double q = fixture.target.charge_e / central_fit.p4_at_target.P();
+    const double p = central_fit.p4_at_target.P();
 
     PDCErrorAnalysis analysis(&fixture.mag_field);
     const double chi2_center = analysis.EvaluateChi2(
-        dx, dy, u, v, q, fixture.track, fixture.target, fixture.config
+        dx, dy, u, v, p, fixture.track, fixture.target, fixture.config
     );
     const double chi2_shifted = analysis.EvaluateChi2(
-        dx, dy, u + 0.03, v - 0.02, q * 1.02,
+        dx, dy, u + 0.03, v - 0.02, p * 0.98,
         fixture.track, fixture.target, fixture.config
     );
 

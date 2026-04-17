@@ -140,7 +140,7 @@ detail::RkParameterState BuildStateFromRecoResult(const RecoResult& reco_result,
     }
     const double p_mag = reco_result.p4_at_target.P();
     if (p_mag > 1.0e-12) {
-        state.q = target.charge_e / p_mag;
+        state.p = p_mag;
     }
     return state;
 }
@@ -168,7 +168,8 @@ double DefaultProfileScale(const detail::RkLeastSquaresAnalyzer& analyzer,
     if (full_index == 2 || full_index == 3) {
         return std::max(0.05, std::abs(analyzer.ParameterStep(state, full_index) * 50.0));
     }
-    return std::max(1.0e-5, std::abs(state.q) * 0.1);
+    // [EN] |p| profile half-range: 10% of current value, floor 1 MeV/c.
+    return std::max(1.0, std::abs(state.p) * 0.1);
 }
 
 double InterpolateCrossing(double x1, double y1,
@@ -380,7 +381,7 @@ detail::RkParameterState LocalVectorToState(
         if (full_index == 1) state.dy = local_values(local);
         if (full_index == 2) state.u = local_values(local);
         if (full_index == 3) state.v = local_values(local);
-        if (full_index == 4) state.q = local_values(local);
+        if (full_index == 4) state.p = local_values(local);
     }
     return state;
 }
@@ -395,7 +396,7 @@ TVectorD StateToLocalVector(const detail::RkLeastSquaresAnalyzer& analyzer,
         if (full_index == 1) local(i) = state.dy;
         if (full_index == 2) local(i) = state.u;
         if (full_index == 3) local(i) = state.v;
-        if (full_index == 4) local(i) = state.q;
+        if (full_index == 4) local(i) = state.p;
     }
     return local;
 }
@@ -410,7 +411,7 @@ bool InBounds(const detail::RkLeastSquaresAnalyzer& analyzer,
         if (full_index == 1) value = state.dy;
         if (full_index == 2) value = state.u;
         if (full_index == 3) value = state.v;
-        if (full_index == 4) value = state.q;
+        if (full_index == 4) value = state.p;
         double lower = analyzer.ParameterLowerBound(full_index);
         double upper = analyzer.ParameterUpperBound(full_index);
         if (lower > upper) {
@@ -617,7 +618,7 @@ double PDCErrorAnalysis::ComputeEffectiveSampleSize(const std::vector<double>& c
                        : static_cast<double>(n);
 }
 
-double PDCErrorAnalysis::EvaluateChi2(double dx, double dy, double u, double v, double q,
+double PDCErrorAnalysis::EvaluateChi2(double dx, double dy, double u, double v, double p,
                                       const PDCInputTrack& track,
                                       const TargetConstraint& target,
                                       const RecoConfig& config) const {
@@ -631,7 +632,7 @@ double PDCErrorAnalysis::EvaluateChi2(double dx, double dy, double u, double v, 
     state.dy = dy;
     state.u = u;
     state.v = v;
-    state.q = q;
+    state.p = p;
     return analyzer.EvaluateChi2Raw(state);
 }
 
@@ -791,7 +792,7 @@ std::array<ProfileLikelihoodResult, 5> PDCErrorAnalysis::ComputeProfileLikelihoo
     const RecoResult& central_fit
 ) const {
     std::array<ProfileLikelihoodResult, 5> results;
-    const std::array<std::string, 5> param_names{"dx", "dy", "u", "v", "q"};
+    const std::array<std::string, 5> param_names{"dx", "dy", "u", "v", "p"};
     for (int i = 0; i < 5; ++i) {
         results[static_cast<std::size_t>(i)].parameter_index = i;
         results[static_cast<std::size_t>(i)].parameter_name = param_names[static_cast<std::size_t>(i)];
@@ -818,7 +819,7 @@ std::array<ProfileLikelihoodResult, 5> PDCErrorAnalysis::ComputeProfileLikelihoo
                               (full_index == 1) ? central_state.dy :
                               (full_index == 2) ? central_state.u :
                               (full_index == 3) ? central_state.v :
-                                                  central_state.q;
+                                                  central_state.p;
         double sigma = ExtractStateSigma(central_fit, full_index);
         if (!std::isfinite(sigma) || sigma <= 0.0) {
             sigma = DefaultProfileScale(analyzer, central_state, full_index);
@@ -961,8 +962,6 @@ BayesianResult PDCErrorAnalysis::ComputeBayesianPosterior(
         return result;
     }
 
-    const detail::RkParameterState prior_center =
-        BuildStateFromRecoResult(central_fit, target);
     const detail::RkParameterState initial_state = central_solve.state;
 
     const TMatrixD& proposal_covariance =
@@ -987,7 +986,7 @@ BayesianResult PDCErrorAnalysis::ComputeBayesianPosterior(
     }
     double current_log_posterior =
         -0.5 * current_eval.chi2_raw +
-        analyzer.EvaluateLogPrior(current_state, bayesian_config, prior_center);
+        analyzer.EvaluateLogPrior(current_state);
 
     double proposal_scale = std::max(1.0e-3, bayesian_config.mcmc_proposal_scale);
     int accepted_total = 0;
@@ -1019,7 +1018,7 @@ BayesianResult PDCErrorAnalysis::ComputeBayesianPosterior(
             if (proposal_eval.valid && detail::IsFinite(proposal_eval.p4_at_target)) {
                 const double proposal_log_posterior =
                     -0.5 * proposal_eval.chi2_raw +
-                    analyzer.EvaluateLogPrior(proposal_state, bayesian_config, prior_center);
+                    analyzer.EvaluateLogPrior(proposal_state);
                 const double log_alpha = proposal_log_posterior - current_log_posterior;
                 if (log_alpha >= 0.0 || std::log(uniform01(rng)) < log_alpha) {
                     current_state = proposal_state;

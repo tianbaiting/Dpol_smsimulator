@@ -290,6 +290,9 @@ RecoConfig BuildRecoConfig(const RuntimeOptions& options, bool have_magnetic_fie
     config.rk_fit_mode = options.rk_fit_mode;
     config.compute_uncertainty = options.compute_uncertainty;
     config.compute_posterior_laplace = options.compute_posterior_laplace;
+    config.momentum_prior.enabled = options.momentum_prior_enabled;
+    config.momentum_prior.center_mev_c = options.momentum_prior_center_mev_c;
+    config.momentum_prior.sigma_mev_c = options.momentum_prior_sigma_mev_c;
 
     const bool allow_auto = options.backend == RuntimeBackend::kAuto;
     config.enable_nn =
@@ -315,7 +318,10 @@ TargetConstraint BuildTargetConstraint(const GeometryManager& geometry, const Ru
     target.target_position = geometry.GetTargetPosition();
     target.mass_mev = options.mass_mev;
     target.charge_e = options.charge_e;
-    target.pdc_sigma_mm = options.pdc_sigma_mm;
+    target.pdc_sigma_u_mm = options.pdc_sigma_u_mm;
+    target.pdc_sigma_v_mm = options.pdc_sigma_v_mm;
+    target.pdc_uv_correlation = options.pdc_uv_correlation;
+    target.pdc_angle_deg = options.pdc_angle_deg;
     target.target_sigma_xy_mm = options.target_sigma_xy_mm;
     return target;
 }

@@ -53,8 +53,14 @@ struct CliOptions {
     std::string geometry_macro;
     std::string magnetic_field_map;
     double magnet_rotation_deg = 30.0;
-    double pdc_sigma_mm = 2.0;
+    double pdc_sigma_u_mm = 2.0;
+    double pdc_sigma_v_mm = 2.0;
+    double pdc_uv_correlation = 0.0;
+    double pdc_angle_deg = 57.0;
     double target_sigma_xy_mm = 5.0;
+    bool momentum_prior_enabled = false;
+    double momentum_prior_center_mev_c = 0.0;
+    double momentum_prior_sigma_mev_c = 0.0;
     double p_min_mevc = 50.0;
     double p_max_mevc = 5000.0;
     double tolerance_mm = 5.0;
@@ -201,8 +207,20 @@ CliOptions ParseArgs(int argc, char* argv[]) {
             opts.magnetic_field_map = argv[++i];
         } else if (arg == "--magnet-rotation-deg" && i + 1 < argc) {
             opts.magnet_rotation_deg = ParseDouble(argv[++i], "--magnet-rotation-deg");
-        } else if (arg == "--pdc-sigma-mm" && i + 1 < argc) {
-            opts.pdc_sigma_mm = ParseDouble(argv[++i], "--pdc-sigma-mm");
+        } else if (arg == "--pdc-sigma-u-mm" && i + 1 < argc) {
+            opts.pdc_sigma_u_mm = ParseDouble(argv[++i], "--pdc-sigma-u-mm");
+        } else if (arg == "--pdc-sigma-v-mm" && i + 1 < argc) {
+            opts.pdc_sigma_v_mm = ParseDouble(argv[++i], "--pdc-sigma-v-mm");
+        } else if (arg == "--pdc-uv-correlation" && i + 1 < argc) {
+            opts.pdc_uv_correlation = ParseDouble(argv[++i], "--pdc-uv-correlation");
+        } else if (arg == "--pdc-angle-deg" && i + 1 < argc) {
+            opts.pdc_angle_deg = ParseDouble(argv[++i], "--pdc-angle-deg");
+        } else if (arg == "--momentum-prior-mev-c" && i + 1 < argc) {
+            opts.momentum_prior_center_mev_c = ParseDouble(argv[++i], "--momentum-prior-mev-c");
+            opts.momentum_prior_enabled = true;
+        } else if (arg == "--momentum-prior-sigma-mev-c" && i + 1 < argc) {
+            opts.momentum_prior_sigma_mev_c = ParseDouble(argv[++i], "--momentum-prior-sigma-mev-c");
+            opts.momentum_prior_enabled = true;
         } else if (arg == "--target-sigma-mm" && i + 1 < argc) {
             opts.target_sigma_xy_mm = ParseDouble(argv[++i], "--target-sigma-mm");
         } else if (arg == "--p-min-mevc" && i + 1 < argc) {
@@ -325,8 +343,14 @@ std::string CsvEscape(const std::string& text) {
 reco::RuntimeOptions BuildRuntimeOptions(const CliOptions& opts) {
     reco::RuntimeOptions runtime_options;
     runtime_options.backend = reco::RuntimeBackend::kRungeKutta;
-    runtime_options.pdc_sigma_mm = opts.pdc_sigma_mm;
+    runtime_options.pdc_sigma_u_mm = opts.pdc_sigma_u_mm;
+    runtime_options.pdc_sigma_v_mm = opts.pdc_sigma_v_mm;
+    runtime_options.pdc_uv_correlation = opts.pdc_uv_correlation;
+    runtime_options.pdc_angle_deg = opts.pdc_angle_deg;
     runtime_options.target_sigma_xy_mm = opts.target_sigma_xy_mm;
+    runtime_options.momentum_prior_enabled = opts.momentum_prior_enabled;
+    runtime_options.momentum_prior_center_mev_c = opts.momentum_prior_center_mev_c;
+    runtime_options.momentum_prior_sigma_mev_c = opts.momentum_prior_sigma_mev_c;
     runtime_options.p_min_mevc = opts.p_min_mevc;
     runtime_options.p_max_mevc = opts.p_max_mevc;
     runtime_options.initial_p_mevc = 1000.0;

@@ -31,6 +31,19 @@ enum class RkFitMode {
     kThreePointFree
 };
 
+// [EN] RK fitter parameterization. kDirectionCosines uses (dx, dy, u, v, p) where
+// u=px/pz, v=py/pz are direction cosines and p=|momentum|. kCartesian uses
+// (dx, dy, px, py, pz) directly — useful as a cross-check (in the Gaussian
+// limit the two are related by exact Jacobian; differences flag numerical issues
+// or non-Gaussian posteriors).
+// [CN] RK拟合器参数化。kDirectionCosines 使用方向余弦 (u,v)+动量幅值 p；
+// kCartesian 直接用 (px,py,pz)。两者在高斯极限下经 Jacobian 等价，不一致则
+// 暴露数值问题或非高斯后验。
+enum class RkParameterization {
+    kDirectionCosines,
+    kCartesian
+};
+
 struct PDCInputTrack {
     TVector3 pdc1{0.0, 0.0, 0.0};
     TVector3 pdc2{0.0, 0.0, 0.0};
@@ -38,6 +51,12 @@ struct PDCInputTrack {
     bool IsValid() const { return (pdc2 - pdc1).Mag2() > 1.0e-12; }
 };
 
+// [EN] Credible/confidence interval. When produced by the online sigma-point
+// propagator the interval can be asymmetric: lower68/upper68 are empirical
+// quantiles and `sigma = 0.5 * (upper68 - lower68)` is only an equivalent
+// symmetric width. Gaussian fallbacks keep lower68 = center - sigma.
+// [CN] 可信/置信区间。由在线 sigma-point 传播器产生时可非对称：
+// lower68/upper68 是经验分位数，sigma 仅为等效对称宽度。
 struct IntervalEstimate {
     bool valid = false;
     double center = std::numeric_limits<double>::quiet_NaN();
@@ -48,15 +67,32 @@ struct IntervalEstimate {
     double upper95 = std::numeric_limits<double>::quiet_NaN();
 };
 
+// [EN] Wire-coordinate PDC measurement model (shared by both planes). / [CN] 丝坐标PDC测量模型（两个平面共享）。
+// Each PDC hit contributes two independent residuals in the wire frame
+// (u, v) — the third (along-track / out-of-plane) component is not a real
+// measurement and is discarded from the chi2.
 struct TargetConstraint {
     TVector3 target_position{0.0, 0.0, 0.0};
     double mass_mev = 938.2720813;
     double charge_e = 1.0;
-    double pdc_sigma_mm = 2.0;
     double target_sigma_xy_mm = 5.0;
-    bool use_pdc_covariance = false;
-    std::array<double, 9> pdc1_cov_mm2{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    std::array<double, 9> pdc2_cov_mm2{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    double pdc_sigma_u_mm = 2.0;
+    double pdc_sigma_v_mm = 2.0;
+    double pdc_uv_correlation = 0.0;  // in [-1, 1]
+    double pdc_angle_deg = 57.0;      // used to derive default u_dir/v_dir
+    // [EN] Optional explicit wire directions; when either is the zero vector
+    // the analyzer derives them from pdc_angle_deg. / [CN] 可选显式丝方向；
+    // 若为零向量则由 pdc_angle_deg 推导。
+    TVector3 pdc_u_dir{0.0, 0.0, 0.0};
+    TVector3 pdc_v_dir{0.0, 0.0, 0.0};
+};
+
+// [EN] Optional physics-motivated prior on |p| for the Laplace posterior.
+// [CN] 可选的物理先验（|p|上的高斯），用于Laplace后验。
+struct MomentumPrior {
+    bool enabled = false;
+    double center_mev_c = 0.0;
+    double sigma_mev_c = 0.0;
 };
 
 struct RecoConfig {
@@ -75,14 +111,17 @@ struct RecoConfig {
     bool enable_nn = false;
     bool enable_multi_dim = true;
     RkFitMode rk_fit_mode = RkFitMode::kThreePointFree;
+    RkParameterization rk_parameterization = RkParameterization::kDirectionCosines;
 
     double center_brho_tm = 7.2751;
     std::string nn_model_json_path;
     bool compute_uncertainty = true;
     bool compute_posterior_laplace = true;
-    double posterior_u_sigma = 0.25;
-    double posterior_v_sigma = 0.25;
-    double posterior_q_rel_sigma = 0.35;
+
+    // [EN] When enabled, the Laplace posterior adds a Gaussian prior on |p|.
+    // Otherwise the posterior reduces to the Fisher covariance (no fake prior).
+    // [CN] 启用时Laplace后验在|p|上加高斯先验；否则后验退化为Fisher协方差。
+    MomentumPrior momentum_prior;
 };
 
 struct RecoResult {
@@ -222,15 +261,10 @@ struct ProfileLikelihoodResult {
     std::vector<double> scan_p;
 };
 
-// [EN] Bayesian posterior configuration
-// [CN] 贝叶斯后验配置
+// [EN] Bayesian posterior configuration. Prior on |p| is taken from
+// RecoConfig::momentum_prior (shared source of truth).
+// [CN] 贝叶斯后验配置。|p|先验由RecoConfig::momentum_prior统一控制。
 struct BayesianConfig {
-    enum class PriorType { kFlat, kGaussian };
-    PriorType prior_type = PriorType::kGaussian;
-    bool prior_centered_at_mle = true;  // MLE-centered vs zero-centered
-    double prior_u_sigma = 0.25;
-    double prior_v_sigma = 0.25;
-    double prior_q_rel_sigma = 0.35;
     bool use_laplace = true;
     bool use_mcmc = false;
     int mcmc_n_samples = 5000;

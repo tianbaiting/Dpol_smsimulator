@@ -23,8 +23,14 @@ struct RuntimeOptions {
     RuntimeBackend backend = RuntimeBackend::kAuto;
     double mass_mev = 938.2720813;
     double charge_e = 1.0;
-    double pdc_sigma_mm = 2.0;
+    double pdc_sigma_u_mm = 2.0;
+    double pdc_sigma_v_mm = 2.0;
+    double pdc_uv_correlation = 0.0;
+    double pdc_angle_deg = 57.0;
     double target_sigma_xy_mm = 5.0;
+    bool momentum_prior_enabled = false;
+    double momentum_prior_center_mev_c = 0.0;
+    double momentum_prior_sigma_mev_c = 0.0;
     double p_min_mevc = 50.0;
     double p_max_mevc = 5000.0;
     double initial_p_mevc = 1000.0;
