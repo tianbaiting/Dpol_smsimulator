@@ -82,3 +82,7 @@ clangd_db/
 
 .tags
 .nvimlog
+
+# Agent/assistant guides (local only)
+CLAUDE.md
+AGENTS.md
