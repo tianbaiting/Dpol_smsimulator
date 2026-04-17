@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Iterable, Iterator, List, Optional
 
 from .schema import Event
-from .paths import ypol_phi_random_dir, zpol_b_discrete_dir
+from .paths import ypol_phi_random_dir, zpol_b_discrete_dir, ypol_20260413_dir
 
 
 def _read_lines(filepath: Path) -> Iterator[List[str]]:
@@ -33,6 +33,47 @@ def iter_ypol_phi_random(
         filepath = folder / "dbreak.dat"
         if not filepath.is_file():
             print(f"[ypol] missing: {filepath}")
+            continue
+        for parts in _read_lines(filepath):
+            if len(parts) < 9:
+                continue
+            event_no = int(parts[0])
+            pxp, pyp, pzp = map(float, parts[1:4])
+            pxn, pyn, pzn = map(float, parts[4:7])
+            b = float(parts[7])
+            rpphi_deg = float(parts[8])
+            yield Event(
+                dataset="ypol",
+                target=target,
+                gamma=gamma,
+                pol=pol,
+                event_no=event_no,
+                pxp=pxp,
+                pyp=pyp,
+                pzp=pzp,
+                pxn=pxn,
+                pyn=pyn,
+                pzn=pzn,
+                b=b,
+                rpphi_deg=rpphi_deg,
+            )
+
+
+def iter_ypol_20260413(
+    root: Path,
+    target: str,
+    energy: str,
+    gamma: str,
+    pols: Iterable[str],
+) -> Iterator[Event]:
+    for pol in pols:
+        folder = ypol_20260413_dir(root, target, energy, gamma, pol)
+        if not folder.is_dir():
+            print(f"[ypol-20260413] missing folder: {folder}")
+            continue
+        filepath = folder / "dbreak.dat"
+        if not filepath.is_file():
+            print(f"[ypol-20260413] missing: {filepath}")
             continue
         for parts in _read_lines(filepath):
             if len(parts) < 9:

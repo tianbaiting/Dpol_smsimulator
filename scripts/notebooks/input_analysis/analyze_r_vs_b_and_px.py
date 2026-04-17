@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from core.features import compute_derived
-from core.io import iter_ypol_phi_random, iter_zpol_b_discrete
+from core.io import iter_ypol_phi_random, iter_zpol_b_discrete, iter_ypol_20260413
 from core.paths import default_data_root
 from core.schema import Event
 
@@ -49,12 +49,14 @@ def _collect_events(
     b_min: int,
     b_max: int,
     bmax_event_filter: int,
+    data_layout: str = "default",
 ) -> Dict[str, List[Tuple[float, float, float, float, float]]]:
     rows: Dict[str, List[Tuple[float, float, float, float, float]]] = {}
     for gamma in gammas:
         selected: List[Tuple[float, float, float, float, float]] = []
         if dataset == "ypol":
-            iterator = iter_ypol_phi_random(
+            ypol_iter_fn = iter_ypol_20260413 if data_layout == "20260413ypol" else iter_ypol_phi_random
+            iterator = ypol_iter_fn(
                 root=data_root,
                 target=target,
                 energy=energy,
@@ -292,6 +294,10 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--particle-px-max", type=float, default=250.0)
     parser.add_argument("--particle-px-bins", type=int, default=20)
     parser.add_argument("--sensitivity-min-stats", type=int, default=2000)
+    parser.add_argument("--data-layout", choices=["default", "20260413ypol"], default="default",
+                        help="Directory layout for ypol data")
+    parser.add_argument("--dataset", choices=["ypol", "zpol", "both"], default="both",
+                        help="Which dataset(s) to process")
     return parser.parse_args()
 
 
@@ -307,7 +313,8 @@ def main() -> None:
     particle_bin_width = float((args.particle_px_max - args.particle_px_min) / args.particle_px_bins)
 
     all_results: Dict[str, Dict[str, object]] = {}
-    for dataset in ("ypol", "zpol"):
+    datasets = ["ypol", "zpol"] if args.dataset == "both" else [args.dataset]
+    for dataset in datasets:
         rows = _collect_events(
             dataset=dataset,
             data_root=data_root,
@@ -318,6 +325,7 @@ def main() -> None:
             b_min=args.b_min,
             b_max=args.b_max,
             bmax_event_filter=args.bmax_event_filter,
+            data_layout=args.data_layout,
         )
         ratio_vs_b = _calc_r_vs_b(rows, b_edges)
         ratio_vs_sum_px = _calc_r_vs_sum_px(rows, px_edges)

@@ -25,7 +25,7 @@ from typing import Dict, Iterable, List, Tuple, Optional
 from core.accumulators import Accumulator
 from core.cuts import CUTS
 from core.features import compute_derived
-from core.io import iter_ypol_phi_random, iter_zpol_b_discrete
+from core.io import iter_ypol_phi_random, iter_zpol_b_discrete, iter_ypol_20260413
 from core.paths import default_data_root
 from plots.plot_2d import (
     plot_phi_corr_raw,
@@ -103,12 +103,13 @@ def _process_ypol(
     pols: List[str],
     cut_names: List[str],
     max_points_3d: int,
+    iter_fn=iter_ypol_phi_random,
 ) -> Dict[str, Dict[str, Accumulator]]:
     cut_funcs = {name: CUTS["ypol"][name] for name in cut_names}
     store = _build_store(cut_names, gammas, max_points_3d)
 
     for gamma in gammas:
-        for event in iter_ypol_phi_random(data_root, target, energy, gamma, pols):
+        for event in iter_fn(data_root, target, energy, gamma, pols):
             d = compute_derived(event)
             for cut_name, fn in cut_funcs.items():
                 if fn(event, d):
@@ -245,6 +246,8 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--b-min", type=int, default=5)
     parser.add_argument("--b-max", type=int, default=10)
     parser.add_argument("--bmax-event-filter", type=int, default=10)
+    parser.add_argument("--data-layout", choices=["default", "20260413ypol"], default="default",
+                        help="Directory layout for ypol data")
     parser.add_argument("--output-dir", type=str, default="output")
     return parser.parse_args()
 
@@ -271,6 +274,7 @@ def main() -> None:
                 sys.exit(1)
 
     if args.dataset in ("ypol", "both"):
+        iter_fn = iter_ypol_20260413 if args.data_layout == "20260413ypol" else iter_ypol_phi_random
         store = _process_ypol(
             data_root,
             args.target,
@@ -279,6 +283,7 @@ def main() -> None:
             pols=["ynp", "ypn"],
             cut_names=cut_names,
             max_points_3d=args.max_3d,
+            iter_fn=iter_fn,
         )
         _render_outputs(
             dataset="ypol",

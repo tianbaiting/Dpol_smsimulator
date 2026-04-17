@@ -11,7 +11,7 @@ def default_data_root() -> Path:
         if candidate.exists():
             return candidate
     here = Path(__file__).resolve()
-    repo_root = here.parents[3]
+    repo_root = here.parents[4]
     return repo_root / "data" / "qmdrawdata" / "qmdrawdata"
 
 
@@ -21,3 +21,7 @@ def ypol_phi_random_dir(root: Path, target: str, energy: str, gamma: str, pol: s
 
 def zpol_b_discrete_dir(root: Path, target: str, energy: str, gamma: str, pol: str) -> Path:
     return root / "z_pol" / "b_discrete" / f"d+{target}E{energy}g{gamma}{pol}"
+
+
+def ypol_20260413_dir(root: Path, target: str, energy: str, gamma: str, pol: str) -> Path:
+    return root / "20260413ypol" / f"d+{target}E{energy}" / f"d+{target}E{energy}g{gamma}{pol}-RP360"
