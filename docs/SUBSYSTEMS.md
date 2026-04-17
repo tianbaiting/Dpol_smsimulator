@@ -136,3 +136,111 @@ python scripts/batch/batch_run_ypol.py --config configs/simulation/macros/simula
 - **Physics list 对中子影响大**：`QGSP_BIC_XS` / `QGSP_INCLXX_XS` / `QGSP_MENATE_R` 对 NEBULA 中子产额/能谱差很多，验收前固定一个。
 - **`TARTSYS` / ANAROOT**：`WITH_ANAROOT=ON` 是默认；若环境无 `TARTSYS`，要么 `source thisroot.sh; export TARTSYS=...`，要么 `cmake -DWITH_ANAROOT=OFF`。
 - **束流输入坐标系**：ASCII 的 (px, py, pz) 是**靶点动量**，不是实验室系。
+
+---
+
+## §2 ROOT 重建
+
+### 2.1 做什么
+
+读 sim.root 的 `FragSimData`，把 PDC1 / PDC2 两平面命中解成轨迹，反推**靶点动量** (px, py, pz)。产出 `reco.root`：点估计 + 不确定度（Fisher / Laplace MCMC / Profile）+ 收敛状态 + 轨迹采样。
+
+`libs/analysis_pdc_reco/` 是主框架。`libs/analysis/include/TargetReconstructor.hh` 是遗留兼容层，**不要**在那里加新特性。
+
+### 2.2 组件地图
+
+| 路径 | 角色 |
+| --- | --- |
+| `apps/run_reconstruction/main.cc` | CLI（ParseArgs + runtime 装配） |
+| `libs/analysis_pdc_reco/src/PDCRecoFactory.cc` | 按 `RuntimeBackend`（Auto/NN/RK/MultiDim/Legacy）装配 reconstructor |
+| `libs/analysis_pdc_reco/src/PDCRecoRuntime.cc` | 顶层 runtime：读 sim.root、迭代、写 reco.root |
+| `libs/analysis_pdc_reco/src/PDCMomentumReconstructorRK.cc` | **主 RK 重建器**：3 种 fit mode × 2 种 parameterization + LM |
+| `libs/analysis_pdc_reco/src/PDCRkAnalysisInternal.cc` | LM 粗搜（7×3×5=105 候选）+ top-5 多起点 + dE/dx/MS 接口 |
+| `libs/analysis_pdc_reco/src/PDCErrorAnalysis.cc` | Fisher / Laplace MCMC / Profile 三方法 |
+| `libs/analysis_pdc_reco/src/PDCNNMomentumReconstructor.cc` | NN 后端推理（读 JSON） |
+| `libs/analysis/src/PDCSimAna.cc` | sim.root → `PDCInputTrack`（u/v 丝坐标 + z 平面） |
+| `libs/analysis_pdc_reco/include/PDCRecoTypes.hh` | `SolverStatus`, `SolveMethod`, `RkFitMode`, `RkParameterization`, `PDCInputTrack`, `IntervalEstimate` |
+| `libs/analysis/include/GeometryManager.hh` | 几何宏解析（PDC 位置/角度、磁场角度/强度） |
+| `libs/analysis/include/MagneticField.hh` | 常数场或映射场（30° 旋转） |
+| `libs/analysis/include/ParticleTrajectory.hh` | RK4 积分 |
+| `libs/analysis/include/EventDataReader.hh` | sim.root 读盘封装 |
+| `libs/analysis/include/RecoEvent.hh` | reco.root 写盘封装 |
+
+### 2.3 输入与输出
+
+**输入（CLI，见 `apps/run_reconstruction/main.cc::ParseArgs`）：**
+- `--input <sim.root>` 或 `--input-dir <dir>`
+- `--output <reco.root>` 或 `--output-dir <dir>`
+- `--geometry-macro <geom.mac>`（**必填**）
+- `--backend {auto|nn|rk|multidim|legacy}`（默认 `auto`）
+- `--nn-model <model.json>`（backend=nn 时必填）
+- `--magnetic-field <T>`（覆盖几何宏）
+- `--max-files <N>`, `--max-iterations <N>`
+- `--pdc-sigma-u-mm <mm>`, `--pdc-sigma-v-mm <mm>`（测量模型 σ）
+
+**输出（reco.root → `recoTree`）：**
+
+| 分支 | 含义 |
+| --- | --- |
+| `reco_target_momentum` | `{px, py, pz}` MeV/c |
+| `reco_uncertainty` | fisher/mcmc/profile σ |
+| `reco_interval` | 68/95% CI |
+| `reco_trajectory` | RK 步长采样 |
+| `reco_status` | `SolverStatus` + 迭代次数 + χ² |
+| `reco_config_snapshot` | YAML：backend / 参数 / 几何（可复现） |
+
+伴生 CSV：`track_summary.csv`, `bayesian_samples.csv`, `profile_samples.csv`（供 §4 分析消费）。
+
+### 2.4 入口命令
+
+```bash
+# Auto（有 NN 模型用 NN，否则 RK）
+bin/reconstruct_target_momentum \
+    --input  build/sim/pdc_truth_grid.root \
+    --output build/reco/pdc_truth_grid_reco.root \
+    --geometry-macro configs/simulation/geometry/3deg_1.15T.mac
+
+# 强制 NN
+bin/reconstruct_target_momentum ... --backend nn \
+    --nn-model scripts/reconstruction/nn_target_momentum/models/formal/model.json
+
+# 强制 RK + Fisher σ 诊断
+bin/reconstruct_target_momentum ... --backend rk \
+    --pdc-sigma-u-mm 2.0 --pdc-sigma-v-mm 2.0
+
+# 批量
+bin/reconstruct_target_momentum \
+    --input-dir  build/sim/ensemble_n50/ \
+    --output-dir build/reco/ensemble_n50/ \
+    --geometry-macro configs/simulation/geometry/3deg_1.15T.mac \
+    --max-files 50
+```
+
+三种 `RkFitMode`：
+- `kTwoPointBackprop` — PDC 反传至靶点（简单、快）
+- `kFixedTargetPdcOnly` — 固定靶点 z，拟合 PDC (u,v)（**主模式**）
+- `kThreePointFree` — 靶点 + PDC 三点全自由（用于不确定度诊断）
+
+两种 `RkParameterization`：
+- `kDirectionCosines` — (u=px/pz, v=py/pz, p=|p|)，Fisher 默认
+- `kCartesian` — (px, py, pz) 直接参数化
+
+### 2.5 典型改动点
+
+| 想做什么 | 改哪里 |
+| --- | --- |
+| 加新重建算法 | `libs/analysis_pdc_reco/src/PDC<Name>Reconstructor.cc/hh`；`PDCRecoFactory` 注册枚举 |
+| 加新不确定度方法 | 扩 `PDCErrorAnalysis`；在 `reco_uncertainty` 分支加字段 |
+| 改测量模型（dE/dx+MS） | `PDCRkAnalysisInternal.cc` 的 χ² 函数；`PDCMomentumReconstructorRK` 已预留接口 |
+| 改 PDC 测量模型 | `RuntimeOptions::pdc_angle_deg` / `pdc_sigma_u_mm` / `pdc_sigma_v_mm` |
+| NN 网络结构 | `scripts/reconstruction/nn_target_momentum/train_mlp.py` 的 `MLP` 类；重训练 + 导出 |
+| 磁场旋转 | `RuntimeOptions::magnetic_field_rotation_deg`（默认 30.0） + `MagneticField::ApplyRotation` |
+
+### 2.6 常见坑
+
+- **`reco_status` 必须写盘**：solver_status 曾只在内存、不入 reco.root，批量分析时分不清 LM 失败 vs NN 异常。新方法一定 write-through。
+- **LM 粗搜盲点**：`kFixedTargetPdcOnly` + `kDirectionCosines` 的 7×3×5 网格在 (px=-100, py=0) 附近有盲点，top-5 多起点才能稳。改网格前跑 `tests/integration/test_rk_nn_comparison.py`。
+- **Fisher σ 欠估计**：(u,v,p) 线性化对大 |px|、大 |py| 会低估 2–10×（见 `docs/reports/reconstruction/rk_reconstruction_status_20260416.pdf`）。精度论断前对照 MCMC/Profile。
+- **Auto 静默切换**：若 `--nn-model` 路径存在但 JSON 损坏，Auto 静默回落 RK。生产流水线**显式**指定 `--backend`。
+- **几何宏不匹配**：sim.root 与重建必须用同一个 `.mac`；否则 PDC 平面 z 错，RK 全垮。
+- **NN JSON schema**：训练侧必跑 `export_model_for_cpp.py`；直接给 `.pt` 会 fail。
