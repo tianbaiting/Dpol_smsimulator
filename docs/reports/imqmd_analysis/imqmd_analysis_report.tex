@@ -1,0 +1,517 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{multicol}
+
+% figure paths -- all output plots live here
+\graphicspath{
+  {../../../scripts/notebooks/input_analysis/output/}
+}
+
+\title{ImQMD Raw Data Analysis Report}
+\subtitle{Deuteron Breakup Observables for DPOL Experiment}
+\author{tbt}
+\date{April 2026}
+
+\begin{document}
+
+% ============================================================
+\begin{frame}
+\titlepage
+\end{frame}
+
+% ============================================================
+\begin{frame}{Outline}
+\tableofcontents
+\end{frame}
+
+% ============================================================
+\section{ImQMD Data Overview}
+% ============================================================
+
+\begin{frame}{ImQMD Simulation Data}
+\begin{itemize}
+  \item ImQMD (Improved Quantum Molecular Dynamics) transport model
+  \item Simulates deuteron breakup on various nuclear targets at $T_\text{lab} = 190$ MeV/u
+  \item Outputs: proton \& neutron momenta $(p_x^p, p_y^p, p_z^p, p_x^n, p_y^n, p_z^n)$, impact parameter $b$, reaction plane angle $\phi_\text{RP}$
+  \item Two polarization configurations:
+  \begin{itemize}
+    \item \textbf{ypol}: tensor polarization along $y$-axis (perpendicular to beam)
+    \item \textbf{zpol}: tensor polarization along $z$-axis (beam direction)
+  \end{itemize}
+  \item $10^6$ events per configuration, symmetry energy parameter $\gamma \in [0.5, 0.85]$
+\end{itemize}
+\end{frame}
+
+% ============================================================
+\begin{frame}{Dataset Summary}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Dataset} & \textbf{Targets} & \textbf{$\gamma$ values} & \textbf{Polarizations} \\
+\midrule
+ypol (old)      & $^{208}$Pb, $^{130}$Xe & 0.50, 0.60, 0.70, 0.80 & ynp, ypn \\
+ypol (20260413) & $^{112}$Sn, $^{124}$Sn & 0.50--0.85 (step 0.05) & ynp, ypn \\
+zpol            & $^{208}$Pb, $^{112}$Sn, $^{124}$Sn, $^{140}$Xe & 0.50--0.80 & znp, zpn \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+\textbf{Data format} (\texttt{dbreak.dat}):
+\begin{itemize}
+  \item ypol: 9 columns --- event\#, $p_x^p$, $p_y^p$, $p_z^p$, $p_x^n$, $p_y^n$, $p_z^n$, $b$, $\phi_\text{RP}$
+  \item zpol: 7 columns per impact parameter file --- event\#, $p_x^p$, $p_y^p$, $p_z^p$, $p_x^n$, $p_y^n$, $p_z^n$
+\end{itemize}
+\end{frame}
+
+% ============================================================
+\section{Analysis Pipeline}
+% ============================================================
+
+\begin{frame}{Data Processing Flow}
+\begin{enumerate}
+  \item \textbf{Read}: parse \texttt{dbreak.dat} $\to$ Event objects $(p_x^p, p_y^p, p_z^p, p_x^n, p_y^n, p_z^n, b, \phi_\text{RP})$
+  \item \textbf{Derive}: compute total momentum $\vec{P}_\text{tot} = \vec{p}^p + \vec{p}^n$, azimuthal angle $\phi = \text{atan2}(P_y^\text{tot}, P_x^\text{tot})$
+  \item \textbf{Rotate}: transform into reaction plane frame by rotating by $-\phi$ around $z$-axis
+        \[
+          \begin{pmatrix} p_x' \\ p_y' \end{pmatrix} =
+          \begin{pmatrix} \cos\phi & \sin\phi \\ -\sin\phi & \cos\phi \end{pmatrix}
+          \begin{pmatrix} p_x \\ p_y \end{pmatrix}
+        \]
+  \item \textbf{Cut}: apply kinematic selections (loose $\to$ mid $\to$ tight)
+  \item \textbf{Accumulate}: collect momenta distributions and compute observables
+\end{enumerate}
+\end{frame}
+
+% ============================================================
+\begin{frame}{Event Selection Cuts}
+\textbf{ypol cuts} (polarization axis = $y$):
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Cut} & \textbf{Conditions} & \textbf{Motivation} \\
+\midrule
+loose & $|p_y^p - p_y^n| < 150$, $P_{xy}^2 > 2500$ & unphysical breakup removal \\
+mid   & loose $+$ $(p_x'^p + p_x'^n) < 200$ & in-plane momentum constraint \\
+tight & mid $+$ $(\pi - |\phi|) < 0.2$ & near-backscatter selection \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.2cm}
+\textbf{zpol cuts} (polarization axis = $z$):
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Cut} & \textbf{Conditions} & \textbf{Motivation} \\
+\midrule
+loose & $(p_z^p + p_z^n) > 1150$, $|p_z^p - p_z^n| < 150$ & forward + unphysical removal \\
+mid   & loose $+$ $(p_x^p + p_x^n) < 200$, $P_{xy}^2 > 2500$ & transverse constraint \\
+tight & mid $+$ $(\pi - |\phi|) < 0.5$ & near-backscatter selection \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.2cm}
+\footnotesize
+Deuteron binding energy: $E_b = 2.2$ MeV $\Rightarrow$ max physical relative momentum $\sim 45$ MeV/c. \\
+Cut at 150 MeV/c conservatively removes unphysical ImQMD breakups.
+\end{frame}
+
+% ============================================================
+\section{Observable: R Ratio}
+% ============================================================
+
+\begin{frame}{The $R$ Observable}
+\begin{block}{Definition}
+\[
+  R = \frac{N(P_x'^{p} > P_x'^{n})}{N(P_x'^{p} < P_x'^{n})}
+\]
+where $P_x'^{p,n}$ are proton/neutron $x$-momenta in the reaction plane frame.
+\end{block}
+
+\vspace{0.3cm}
+\begin{itemize}
+  \item Quantifies the \textbf{isovector reorientation effect}
+  \item In a non-uniform nuclear mean field, protons and neutrons experience different impulses
+  \item $R$ shows strong sensitivity to the symmetry energy parameter $\gamma$
+  \item Key observable for constraining the nuclear equation of state
+\end{itemize}
+\end{frame}
+
+% ============================================================
+\begin{frame}{$P_x^p - P_x^n$ Distribution Example}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{ypol/Sn112/tight/gamma_050/pxn_minus_pxp.png}
+\\{\footnotesize $^{112}$Sn, $\gamma=0.50$, tight cut}
+\end{column}
+\begin{column}{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{ypol/Sn124/tight/gamma_050/pxn_minus_pxp.png}
+\\{\footnotesize $^{124}$Sn, $\gamma=0.50$, tight cut}
+\end{column}
+\end{columns}
+\vspace{0.3cm}
+Asymmetry in the $P_x^n - P_x^p$ distribution directly reflects the isovector reorientation effect.
+\end{frame}
+
+% ============================================================
+\section{Results: ypol}
+% ============================================================
+
+\begin{frame}{ypol $R$ vs $\gamma$ --- $^{208}$Pb}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\textwidth]{ypol/Pb208/ratio_vs_gamma.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item Target: $^{208}$Pb (old dataset)
+  \item $\gamma = 0.50, 0.60, 0.70, 0.80$
+  \item Tight cut: $R$ drops from $0.72$ to $0.34$
+  \item Strong $\gamma$ sensitivity confirmed
+  \item Tight cut enhances asymmetry signal
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+\begin{frame}{ypol $R$ vs $\gamma$ --- $^{112}$Sn (New Data)}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\textwidth]{ypol/Sn112/ratio_vs_gamma.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item Target: $^{112}$Sn (20260413 dataset)
+  \item $\gamma = 0.50$--$0.85$ (8 points)
+  \item Tight cut: $R$ from $0.68$ to $0.37$
+  \item $\sim$250k events/gamma (loose)
+  \item Smooth monotonic decrease
+  \item Finer $\gamma$ grid resolves curvature
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+\begin{frame}{ypol $R$ vs $\gamma$ --- $^{124}$Sn (New Data)}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\textwidth]{ypol/Sn124/ratio_vs_gamma.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item Target: $^{124}$Sn (20260413 dataset)
+  \item $\gamma = 0.50$--$0.85$ (8 points)
+  \item Tight cut: $R$ from $1.22$ to $0.50$
+  \item \textbf{Strongest $\gamma$ sensitivity}
+  \item Larger $N/Z$ ratio amplifies isovector effect
+  \item $R$ crosses unity at $\gamma \approx 0.55$
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+\begin{frame}{ypol Comparison: $R$ at Tight Cut across Targets}
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{$\gamma$} & \textbf{$^{208}$Pb} & \textbf{$^{112}$Sn} & \textbf{$^{124}$Sn} \\
+\midrule
+0.50 & 0.718 & 0.675 & 1.218 \\
+0.55 & ---   & 0.590 & 1.080 \\
+0.60 & 0.542 & 0.521 & 0.928 \\
+0.65 & ---   & 0.486 & 0.773 \\
+0.70 & 0.414 & 0.438 & 0.701 \\
+0.75 & ---   & 0.414 & 0.619 \\
+0.80 & 0.338 & 0.393 & 0.562 \\
+0.85 & ---   & 0.369 & 0.504 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+  \item $^{124}$Sn has the widest $R$ range: from $1.22$ to $0.50$ ($\Delta R = 0.71$)
+  \item $^{208}$Pb: $\Delta R = 0.38$; $^{112}$Sn: $\Delta R = 0.31$
+  \item Neutron-rich $^{124}$Sn is the most sensitive probe of $\gamma$
+\end{itemize}
+\end{frame}
+
+% ============================================================
+\section{Results: zpol}
+% ============================================================
+
+\begin{frame}{zpol $R$ vs $\gamma$ --- $^{208}$Pb}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\textwidth]{zpol/Pb208/ratio_vs_gamma.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item Target: $^{208}$Pb, zpol dataset
+  \item $\gamma = 0.50, 0.60, 0.70, 0.80$
+  \item Tight cut: $R$ from $1.11$ to $0.27$
+  \item \textbf{Very strong sensitivity}
+  \item $R$ drops by factor $\sim 4 \times$
+  \item zpol shows larger dynamic range than ypol for Pb
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+\begin{frame}{ypol vs zpol: $^{208}$Pb Tight Cut}
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{$\gamma$} & \textbf{ypol $R$} & \textbf{zpol $R$} \\
+\midrule
+0.50 & 0.718 & 1.106 \\
+0.60 & 0.542 & 0.784 \\
+0.70 & 0.414 & 0.510 \\
+0.80 & 0.338 & 0.270 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+  \item zpol: $R$ ranges from $1.11$ to $0.27$ ($\Delta R = 0.84$) --- crosses unity
+  \item ypol: $R$ ranges from $0.72$ to $0.34$ ($\Delta R = 0.38$) --- stays below 1
+  \item Different polarization axes probe complementary aspects of the symmetry energy
+  \item Combined measurement constrains $\gamma$ more tightly
+\end{itemize}
+\end{frame}
+
+% ============================================================
+\section{All Targets Comparison}
+% ============================================================
+
+\begin{frame}{$R$ vs $\gamma$ --- All Targets, Loose Cut}
+\centering
+\includegraphics[width=0.78\textwidth]{R_vs_gamma_all_targets_loose.png}
+
+\vspace{0.2cm}
+\footnotesize
+Loose cut: basic unphysical breakup removal. ypol (solid) and zpol (dashed) for all targets.
+\end{frame}
+
+% ============================================================
+\begin{frame}{$R$ vs $\gamma$ --- All Targets, Mid Cut}
+\centering
+\includegraphics[width=0.78\textwidth]{R_vs_gamma_all_targets_mid.png}
+
+\vspace{0.2cm}
+\footnotesize
+Mid cut: adds in-plane momentum constraint. zpol targets show stronger $\gamma$ dependence than ypol.
+\end{frame}
+
+% ============================================================
+\begin{frame}{$R$ vs $\gamma$ --- All Targets, Tight Cut}
+\centering
+\includegraphics[width=0.78\textwidth]{R_vs_gamma_all_targets_tight.png}
+
+\vspace{0.2cm}
+\footnotesize
+Tight cut: maximum sensitivity. zpol $^{208}$Pb and $^{130}$Xe show the steepest slopes; ypol $^{124}$Sn crosses $R=1$.
+\end{frame}
+
+% ============================================================
+\section{Differential Observables}
+% ============================================================
+
+\begin{frame}{$R$ vs Impact Parameter $b$ --- ypol $^{124}$Sn}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\textwidth]{r_observable/ypol/Sn124/R_vs_b_y03.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item $R(b)$ for different $\gamma$ values
+  \item $\gamma$ separation strongest at large $b > 10$ fm (peripheral collisions)
+  \item Central collisions ($b < 5$ fm): $R \approx 1$ for all $\gamma$
+  \item Physics: peripheral collisions have longer interaction time, amplifying symmetry energy effect
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+\begin{frame}{$R$ vs Impact Parameter $b$ --- ypol $^{112}$Sn}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\textwidth]{r_observable/ypol/Sn112/R_vs_b_y03.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item Same trend as $^{124}$Sn
+  \item Smaller $\gamma$ spread (lower $N/Z$)
+  \item Peripheral region ($b > 10$ fm) still shows best separation
+  \item Consistent with isovector mechanism
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+\begin{frame}{$R$ vs Neutron $p_x$ --- ypol $^{124}$Sn}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\textwidth]{r_observable/ypol/Sn124/R_vs_pxn.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item $R$ as a function of neutron $p_x$ in reaction plane
+  \item Strong $\gamma$ dependence at low $|p_x^n|$
+  \item High $|p_x^n|$ region: $R \to 0$ (neutron dominates)
+  \item Sensitivity concentrated at $|p_x^n| < 50$ MeV/c
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+\begin{frame}{$R$ vs Total $P_x$ --- ypol $^{124}$Sn}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\textwidth]{r_observable/ypol/Sn124/R_vs_sum_px.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item $R$ vs total in-plane momentum $P_x^\text{tot} = p_x'^p + p_x'^n$
+  \item Best $\gamma$ separation at low $P_x^\text{tot}$
+  \item Consistent with tight cut physics: near-backscatter events with small total transverse momentum
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+\begin{frame}{$R$ vs $b$ --- zpol $^{208}$Pb}
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\textwidth]{r_observable/zpol/Pb208/R_vs_b_y03.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{itemize}
+  \item zpol $^{208}$Pb: $R(b)$
+  \item Dramatic $\gamma$ separation at $b > 8$ fm
+  \item zpol probes beam-axis polarization response
+  \item Complementary to ypol differential behavior
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ============================================================
+\section{Momentum Correlations}
+% ============================================================
+
+\begin{frame}{$P_x^n$ vs $P_x^p$ Correlation --- ypol $^{112}$Sn}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{ypol/Sn112/tight/gamma_050/pxn_vs_pxp.png}
+\\{\footnotesize $\gamma = 0.50$}
+\end{column}
+\begin{column}{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{ypol/Sn112/tight/gamma_085/pxn_vs_pxp.png}
+\\{\footnotesize $\gamma = 0.85$}
+\end{column}
+\end{columns}
+\vspace{0.2cm}
+Reaction-plane rotated $P_x^n$ vs $P_x^p$ (tight cut). The correlation pattern shifts with $\gamma$, reflecting the isovector momentum redistribution.
+\end{frame}
+
+% ============================================================
+\begin{frame}{$P_x^n$ vs $P_x^p$ Correlation --- ypol $^{124}$Sn}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{ypol/Sn124/tight/gamma_050/pxn_vs_pxp.png}
+\\{\footnotesize $\gamma = 0.50$}
+\end{column}
+\begin{column}{0.5\textwidth}
+\centering
+\includegraphics[width=\textwidth]{ypol/Sn124/tight/gamma_085/pxn_vs_pxp.png}
+\\{\footnotesize $\gamma = 0.85$}
+\end{column}
+\end{columns}
+\vspace{0.2cm}
+$^{124}$Sn shows more pronounced shift in the correlation pattern compared to $^{112}$Sn, consistent with the larger $N/Z$ ratio enhancing the isovector effect.
+\end{frame}
+
+% ============================================================
+\section{Summary}
+% ============================================================
+
+\begin{frame}{Summary}
+\begin{itemize}
+  \item Analyzed ImQMD deuteron breakup data for multiple targets and polarization configurations
+  \item The $R = N(P_x^p > P_x^n) / N(P_x^p < P_x^n)$ observable shows strong sensitivity to $\gamma$
+\end{itemize}
+
+\vspace{0.3cm}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llcc}
+\toprule
+\textbf{Dataset} & \textbf{Target} & \textbf{$R$ range (tight)} & \textbf{$\Delta R$} \\
+\midrule
+ypol & $^{208}$Pb  & $0.72 \to 0.34$ & 0.38 \\
+ypol & $^{112}$Sn  & $0.68 \to 0.37$ & 0.31 \\
+ypol & $^{124}$Sn  & $1.22 \to 0.50$ & \textbf{0.71} \\
+zpol & $^{208}$Pb  & $1.11 \to 0.27$ & \textbf{0.84} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+  \item Neutron-rich $^{124}$Sn provides the strongest ypol sensitivity
+  \item zpol $^{208}$Pb has the largest overall dynamic range
+  \item Differential $R(b)$: peripheral collisions ($b > 10$ fm) dominate $\gamma$ separation
+  \item New 20260413 data (8 $\gamma$ points) resolves curvature in $R(\gamma)$
+\end{itemize}
+\end{frame}
+
+% ============================================================
+%\begin{frame}{Next Steps}
+%\begin{itemize}
+%  \item Run zpol analysis for $^{112}$Sn and $^{124}$Sn with matching $\gamma$ grid
+%  \item Systematic comparison: ypol vs zpol for Sn isotopes
+%  \item Feed ImQMD breakup distributions into Geant4 simulation (SAMURAI detector response)
+%  \item Reconstruct $R$ observable from simulated detector output
+%  \item Quantify experimental sensitivity to $\gamma$ after detector acceptance and resolution
+%\end{itemize}
+%\end{frame}
+
+\end{document}
