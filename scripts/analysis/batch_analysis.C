@@ -403,7 +403,8 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     runtimeOptions.tolerance_mm = recoToleranceMM;
     runtimeOptions.max_iterations = 50;
     runtimeOptions.rk_step_mm = recoRKStepMM;
-    runtimeOptions.pdc_sigma_mm = 2.0;
+    runtimeOptions.pdc_sigma_u_mm = 2.0;
+    runtimeOptions.pdc_sigma_v_mm = 2.0;
     runtimeOptions.target_sigma_xy_mm = 5.0;
     runtimeOptions.nn_model_json_path = nnModelJsonPath;
     runtimeOptions.rk_fit_mode = recoRKMode;

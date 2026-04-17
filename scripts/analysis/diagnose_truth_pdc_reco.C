@@ -468,7 +468,8 @@ void diagnose_truth_pdc_reco(const char* sim_root,
     runtimeOptions.max_iterations = 80;
     runtimeOptions.tolerance_mm = 5.0;
     runtimeOptions.rk_step_mm = rk_step_mm;
-    runtimeOptions.pdc_sigma_mm = 0.5;
+    runtimeOptions.pdc_sigma_u_mm = 0.5;
+    runtimeOptions.pdc_sigma_v_mm = 0.5;
     runtimeOptions.target_sigma_xy_mm = 5.0;
     runtimeOptions.mass_mev = kProtonMassMeV;
     runtimeOptions.compute_uncertainty = false;
