@@ -1,157 +1,129 @@
-# SMSimulator
+# SMSimulator 5.5 — SAMURAI/DPOL Simulation & Reconstruction
 
-基于 Geant4 的 RIKEN SAMURAI/DPOL（氘极化）实验模拟与重建框架。
+RIKEN SAMURAI 终端氘核极化（DPOL）实验的 Geant4 模拟 + ROOT 重建 + 几何接受率筛选一体化仓库。
 
 [Ask DeepWiki](https://deepwiki.com/tianbaiting/Dpol_smsimulator) · 仓库：<https://github.com/tianbaiting/Dpol_smsimulator>
 
-## 快速命令
+---
+
+## 三条数据流
 
 ```
-./build.sh      # 编译项目（完整重建）
-./run_sim.sh    # 运行模拟
-./test.sh       # 运行测试
+┌──────────────────────────────────────────────────────────────────┐
+│  [A] 几何筛选（side path，跳过 Geant4）                           │
+│      RunQMDGeoFilter → acceptance CSV                             │
+│                                                                  │
+│  [B] Geant4 模拟                                                  │
+│      sim_deuteron + .mac → sim.root                               │
+│        ├ beam          : TClonesArray<TBeamSimData>               │
+│        ├ FragSimData   : TClonesArray<TSimData>   ← 主分支        │
+│        └ NEBULASimData : TClonesArray<TSimData>                   │
+│                                                                  │
+│  [C] ROOT 重建                                                    │
+│      reconstruct_target_momentum → reco.root                      │
+│        reco_target_momentum + reco_uncertainty + reco_interval    │
+│        + reco_trajectory + reco_status + reco_config_snapshot     │
+│                                                                  │
+│  [D] 分析 & NN 后端                                               │
+│      scripts/analysis/, scripts/reconstruction/nn_target_momentum │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-增量构建：
+详见 [docs/SUBSYSTEMS.md §0 全局数据流](docs/SUBSYSTEMS.md#0-全局数据流)。
+
+---
+
+## 快速上手
 
 ```bash
 micromamba activate anaroot-env
+
 mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_APPS=ON -DBUILD_ANALYSIS=ON -DWITH_ANAROOT=ON
+cmake .. -DCMAKE_BUILD_TYPE=Release
 make -j$(nproc)
+cd ..
+
+# B: Geant4 模拟
+bin/sim_deuteron configs/simulation/macros/simulation.mac
+
+# C: ROOT 重建
+bin/reconstruct_target_momentum \
+    --input  build/sim/pdc_truth_grid.root \
+    --output build/reco/pdc_truth_grid_reco.root \
+    --geometry-macro configs/simulation/geometry/3deg_1.15T.mac
+
+# A: 几何筛选（side path）
+bin/run_qmd_geo_filter \
+    --qmd    data/qmd/imqmd.root \
+    --field  1.15 --angle 3 \
+    --output build/filter/3deg_115T/
 ```
 
-## 目录结构
+---
 
-```
-libs/                       C++ 库源码
-  ├─ smlogger/              异步日志（SM_INFO / SM_DEBUG / SM_WARN / SM_ERROR）
-  ├─ smg4lib/               Geant4 核心封装（actions / construction / physics）
-  ├─ sim_deuteron_core/     氘核物理模拟核心
-  ├─ analysis_pdc_reco/     PDC→靶动量重建（主运行时框架，新功能放这里）
-  ├─ analysis/              遗留分析库（兼容用，避免新增功能）
-  ├─ geo_accepentce/        几何接受度分析
-  └─ qmd_geo_filter/        QMD 几何过滤
+## 子系统速览
 
-apps/                       可执行程序
-  ├─ sim_deuteron/          主 Geant4 模拟
-  ├─ run_reconstruction/    靶动量重建 CLI
-  └─ tools/                 分析工具
+| 子系统 | 入口 | 做什么 | 细节 |
+| --- | --- | --- | --- |
+| Geant4 模拟 | `bin/sim_deuteron` | 追粒子到 PDC/NEBULA，写 sim.root | [§1](docs/SUBSYSTEMS.md#1-geant4-模拟) |
+| ROOT 重建 | `bin/reconstruct_target_momentum` | PDC → 靶点动量（RK 或 NN） | [§2](docs/SUBSYSTEMS.md#2-root-重建) |
+| 几何筛选 | `bin/run_qmd_geo_filter` | 跳过 Geant4 的快速接受率扫描 | [§3](docs/SUBSYSTEMS.md#3-几何筛选) |
+| 分析 & NN | `scripts/analysis/`, `scripts/reconstruction/nn_target_momentum/` | ensemble coverage, 训练 MLP | [§4](docs/SUBSYSTEMS.md#4-分析--nn-后端) |
 
-configs/simulation/         配置文件
-  ├─ macros/                Geant4 宏文件（.mac）
-  └─ geometry/              GDML 几何定义
+---
 
-scripts/
-  ├─ analysis/              Python / ROOT 分析脚本
-  ├─ batch/                 批处理（如 batch_run_ypol.py）
-  └─ reconstruction/nn_target_momentum/   NN 动量重建：训练与推理
-
-data/
-  ├─ input/                 输入数据
-  ├─ simulation/            模拟输出
-  └─ reconstruction/        重建输出
-
-tests/                      GoogleTest 单元与集成测试
-skills/                     子系统领域文档（SKILL.md）
-docs/                       构建与分析文档
-```
-
-## 运行示例
+## 常用开发命令
 
 ```bash
-# 基本模拟
-./run_sim.sh configs/simulation/macros/simulation.mac
-
-# 可视化模拟
-./run_sim.sh configs/simulation/macros/simulation_vis.mac
-
-# 直接运行
-./bin/sim_deuteron configs/simulation/macros/your_macro.mac
-
-# 靶动量重建
-./bin/reconstruct_target_momentum --config configs/reconstruction/default.yaml
+./build.sh              # clean rebuild（少用）
+./test.sh               # 跑所有测试
+cd build && ctest -L unit                     # 只跑单元测试
+SM_LOG_LEVEL=DEBUG bin/sim_deuteron <macro>   # 高日志级别
 ```
 
-## 测试
+---
 
+## 目录总览
+
+```
+apps/           可执行入口（sim_deuteron, run_reconstruction, tools/）
+libs/           核心库（smg4lib, sim_deuteron_core, analysis_pdc_reco,
+                analysis, qmd_geo_filter, geo_accepentce, smlogger）
+configs/        Geant4 宏 + GDML 几何 + 物理配置
+scripts/        分析 / 批处理 / NN 训练 / 事件生成
+tests/          单元 + 集成测试
+docs/           设计 spec / 报告 / 子系统文档
+skills/         领域 skill（Claude Code 深度文档）
+```
+
+---
+
+## 更多文档
+
+- [docs/SUBSYSTEMS.md](docs/SUBSYSTEMS.md) — 各子系统深度（I/O、组件地图、入口命令、典型改动点、坑）
+- `docs/reports/` — 物理结果报告（PDF + TeX）
+- `skills/` — 按领域组织的 Claude Code skill（PDC 重建、几何筛选等）
+- `CLAUDE.md` — Claude Code 工作指引（本地文件，不入库）
+
+---
+
+## 依赖与环境
+
+- **基础栈**：ROOT 6.x, Geant4 10.x+, XercesC, CMake 3.16+
+- **可选**：ANAROOT（`WITH_ANAROOT=ON`，需 `TARTSYS` 环境变量）
+- **Python（分析 + NN）**：`anaroot-env` micromamba 环境（含 PyROOT、PyTorch、numpy、matplotlib）
+- **语言**：C++20（核心），Python 3.x（分析 / ML）
+
+构建前：
 ```bash
-./test.sh                            # 全部测试
-cd build && ctest --output-on-failure
-cd build && ctest -L unit            # 按 label 过滤（unit / performance / visualization / realdata）
-cd build && ctest -R test_name       # 按名称过滤
-
-# 可视化测试
-SM_TEST_VISUALIZATION=ON ./bin/test_TargetReconstructor
+micromamba activate anaroot-env   # 必须
+export TARTSYS=/path/to/anaroot   # 若 WITH_ANAROOT=ON
 ```
 
-## 数据分析
+CMake 选项与环境变量完整列表见 [docs/SUBSYSTEMS.md §A](docs/SUBSYSTEMS.md#a-附录)。
 
-```bash
-# ROOT 宏
-cd configs/simulation/macros && root -l run_display.C
+---
 
-# Python 分析
-cd scripts/analysis && python analyze_*.py
+## 提交风格
 
-# 批量运行
-cd scripts/batch && python batch_run_ypol.py
-
-# NN 动量重建
-python scripts/reconstruction/nn_target_momentum/train_mlp.py
-python scripts/reconstruction/nn_target_momentum/export_model_for_cpp.py
-```
-
-## CMake 选项
-
-| 选项 | 默认 | 说明 |
-| --- | --- | --- |
-| `BUILD_TESTS` | ON | 构建单元/集成测试 |
-| `BUILD_APPS` | ON | 构建全部可执行程序 |
-| `BUILD_ANALYSIS` | ON | 构建分析库 |
-| `WITH_ANAROOT` | ON | 链接 ANAROOT（未定义 `TARTSYS` 时关闭） |
-| `WITH_GEANT4_UIVIS` | ON | 启用 Geant4 UI/Vis 驱动 |
-
-## 环境变量
-
-| 变量 | 用途 |
-| --- | --- |
-| `SM_LOG_LEVEL` | 日志级别：TRACE / DEBUG / INFO / WARN / ERROR / CRITICAL |
-| `SM_BATCH_MODE` | 批处理模式日志 |
-| `SM_TEST_VISUALIZATION` | 测试可视化开关 |
-| `TARTSYS` | ANAROOT 安装路径（可选） |
-
-## 常用工作流
-
-开发：编辑源码 → `./build.sh` → `./test.sh` → `./run_sim.sh ...mac`
-
-批量：编辑配置 → `scripts/batch/batch_run_ypol.py` → `scripts/analysis/analyze_*.py`
-
-增量编译单模块：`cd build && make <target>`（例如 `make sim_deuteron`）
-
-## 调试
-
-```bash
-make VERBOSE=1           # 查看完整编译命令
-cmake .. --trace         # CMake 执行跟踪
-ldd bin/sim_deuteron     # 检查动态库依赖
-```
-
-## 文档
-
-- 子系统领域文档入口：`skills/`（每个子目录含 `SKILL.md`；PDC 重建从 `skills/smsim-pdc-target-reco-overview/` 开始）
-- 项目说明：`CLAUDE.md`、`AGENTS.md`
-- 构建指南：`docs/BUILD_GUIDE.md`
-- 测试流程：`RUN_TEST_GUIDE.md`
-- 分析报告：`docs/DPOL_Analysis_Report.md`、`docs/reports/`
-
-## 常见问题
-
-- 找不到 ROOT：`source $ROOTSYS/bin/thisroot.sh`
-- 找不到 Geant4：`source /path/to/geant4.sh`
-- 找不到 ANAROOT：`export TARTSYS=/path/to/anaroot`，或 `cmake .. -DWITH_ANAROOT=OFF`
-- 编译失败：检查环境变量 → `make VERBOSE=1` → 必要时清空 `build/` 重来
-
-## 编码约定
-
-C++20；4 空格缩进，左括号同行；源文件 `.cc`，头文件 `.hh`；类型 PascalCase，成员字段 `f` / `fg` 前缀；日志统一用 `SM_INFO` / `SM_DEBUG` 等宏，不用 `std::cout` / `G4cout`。
+简短、祈使、常小写：`add ...`, `fix ...`, `delete ...`, `update ...`。
