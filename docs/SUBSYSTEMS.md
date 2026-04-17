@@ -244,3 +244,93 @@ bin/reconstruct_target_momentum \
 - **Auto 静默切换**：若 `--nn-model` 路径存在但 JSON 损坏，Auto 静默回落 RK。生产流水线**显式**指定 `--backend`。
 - **几何宏不匹配**：sim.root 与重建必须用同一个 `.mac`；否则 PDC 平面 z 错，RK 全垮。
 - **NN JSON schema**：训练侧必跑 `export_model_for_cpp.py`；直接给 `.pt` 会 fail。
+
+---
+
+## §3 几何筛选
+
+### 3.1 做什么
+
+`bin/run_qmd_geo_filter` **完全绕过 Geant4**。给它一个 QMD 事件文件（含候选产物的 (px, py, pz) 和 A/Z），用 RK4 + SAMURAI 磁场 + PDC/NEBULA 包络判定每个产物能否飞到探测器有效区，输出接受率分类。
+
+用途：
+- Geant4 前快速扫描"这组动量分布值不值得跑"
+- IPS target / 偏转角参数扫描找最大接受率
+- 给理论预言打接受率权重
+
+### 3.2 组件地图
+
+| 路径 | 角色 |
+| --- | --- |
+| `libs/qmd_geo_filter/src/RunQMDGeoFilter.cc` | CLI（getopt） |
+| `libs/qmd_geo_filter/include/QMDGeoFilter.hh` | 主类；`MomentumData`, `RatioResult`, `GeometryFilterResult` |
+| `libs/qmd_geo_filter/src/QMDGeoFilter.cc` | RK4 + 分类主体 |
+| `libs/geo_accepentce/include/BeamDeflectionCalculator.hh` | 束流偏转（氘 190 MeV/u，从 `(0,0,-4000)` mm 沿 +z） |
+| `libs/geo_accepentce/include/DetectorAcceptanceCalculator.hh` | PDC 包络 1680×780×380 mm；NEBULA 在 `(0,0,5000)`，3600×1800×600 mm |
+| `libs/geo_accepentce/include/GeoAcceptanceManager.hh` | 串联 beam deflection + detector acceptance |
+| `libs/analysis/include/ParticleTrajectory.hh` | 复用的 RK4（与 §2 同一份） |
+| `libs/analysis/include/MagneticField.hh` | 复用的磁场（与 §2 同一份） |
+
+### 3.3 输入与输出
+
+**输入（CLI）：**
+- `--qmd <qmd.root>` — QMD 事件 TTree
+- `--field <T>` — 场强（1.15 / 1.2）
+- `--angle <deg>` — 偏转角（3 / 5 / 8 / 10）
+- `--target <x,y,z>` — 靶点（默认 `(0,0,0)`）
+- `--pol <value>` — 极化（占位）
+- `--gamma <value>` — 束流 γ
+- `--fieldmap <path>` — 磁场映射（可选；不给用常数场）
+- `--fixed-pdc` — 固定 PDC 位置（否则按 `--angle` 自算）
+- `--pdc-x/y/z <mm>`, `--pdc-angle <deg>` — 固定 PDC 位姿
+- `--pdc-macro <geom.mac>` — 从 Geant4 几何宏读 PDC 位姿
+- `--px-range <lo,hi>` — 可选截断
+- `--output <dir>` — 输出目录
+
+**输出：**
+- `<dir>/ratio_result.csv` — `GeometryFilterResult` 四分类：`bothAccepted` / `pdcOnlyAccepted` / `nebulaOnlyAccepted` / `bothRejected`
+- `<dir>/trajectories.csv` — 每轨迹采样点（可选大文件）
+- `<dir>/config_snapshot.yaml` — 运行配置（可复现）
+
+### 3.4 入口命令
+
+```bash
+# 1.15 T, 3°, 自动 PDC
+bin/run_qmd_geo_filter \
+    --qmd     data/qmd/imqmd_pb208_190mevu.root \
+    --field   1.15 --angle 3 \
+    --output  build/filter/imqmd_3deg_115T/
+
+# 与 Geant4 对齐
+bin/run_qmd_geo_filter \
+    --qmd <qmd.root> --field 1.15 --angle 3 \
+    --pdc-macro configs/simulation/geometry/3deg_1.15T.mac \
+    --output build/filter/aligned/
+
+# 角度扫描
+for angle in 3 5 8 10; do
+  bin/run_qmd_geo_filter --qmd <qmd.root> --field 1.15 --angle $angle \
+      --output build/filter/scan_${angle}deg/
+done
+```
+
+### 3.5 典型改动点
+
+| 想做什么 | 改哪里 |
+| --- | --- |
+| 加第三探测器（如 VETO） | `libs/geo_accepentce/include/VetoAcceptanceCalculator.hh`；扩 `GeoAcceptanceManager` 与 `GeometryFilterResult` 分类 |
+| 改 PDC/NEBULA 包络 | `DetectorAcceptanceCalculator.hh` 的 `PDCConfiguration` / `NEBULAConfiguration` 默认值 |
+| 换 RK 步长 | `ParticleTrajectory` 步长策略（**与 §2 共享！**） |
+| 加能量损失 | `QMDGeoFilter::PropagateOne` 加 dE/dx（当前纯 Lorentz 力） |
+| 自定义束流入口 | `BeamDeflectionCalculator`（默认氘 190 MeV/u） |
+| 加新分类 | 扩 `GeometryFilterResult`；改 `QMDGeoFilter::Classify` |
+
+### 3.6 常见坑
+
+- **`--angle` 与 `--pdc-macro` 同给**：以 `--pdc-macro` 为准，`--angle` 只做磁场旋转。希望一致：都给或只给 macro。
+- **QMD TTree schema**：输入 branch 名必须与 `QMDGeoFilter::ReadQMD` hardcode 一致，否则静默读 0。
+- **PDC 是平面框，不是丝网**：接受率判定只看粒子过没过 1680×780 mm 矩形；真正丝读出要跑 §1/§2。这是上界估计。
+- **与 Geant4 一致性**：RK4 共享，但 NEBULA 默认在 `(0,0,5000)`——若用 6 m/7 m 非默认值的宏，要同步 `NEBULAConfiguration::position`。
+- **`--fixed-pdc` 陷阱**：必须同时给 `--pdc-x/y/z/angle`，否则用未初始化默认值。
+- **输出目录不会自动创建**：上级不存在会失败。
+- **30° 磁场旋转**：与 §2 一致（SAMURAI 系绕 y 旋转 30°）。`--angle` 是**偏转角**不是旋转角。
