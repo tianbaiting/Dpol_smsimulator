@@ -334,3 +334,102 @@ done
 - **`--fixed-pdc` 陷阱**：必须同时给 `--pdc-x/y/z/angle`，否则用未初始化默认值。
 - **输出目录不会自动创建**：上级不存在会失败。
 - **30° 磁场旋转**：与 §2 一致（SAMURAI 系绕 y 旋转 30°）。`--angle` 是**偏转角**不是旋转角。
+
+---
+
+## §4 分析 & NN 后端
+
+### 4.1 做什么
+
+两类下游消费：
+
+1. **Ensemble coverage / bias 诊断**（读 reco.root + sim.root）
+   - 同真值点 N=50 重复：Fisher/MCMC/Profile 声明的 σ 实际覆盖 p16–p84 的多少（Clopper-Pearson 95% CI）
+   - reco 动量弥散、PDC 命中弥散、per-truth bias/ratio 表
+2. **NN 后端生命周期**（训练 → 导出 → C++ 推理）
+   - sim.root → PyTorch MLP → `.pt` + `model_meta.json` → C++ JSON → `PDCNNMomentumReconstructor::LoadModel`
+
+### 4.2 组件地图
+
+| 路径 | 角色 |
+| --- | --- |
+| `scripts/analysis/analyze_ensemble_coverage.py` | 主覆盖率分析：`track_summary.csv` + `bayesian_samples.csv` + `profile_samples.csv` → 68/95% 覆盖 + Clopper-Pearson CI |
+| `scripts/analysis/compute_per_truth_g4_vs_fisher.py` | 每真值点 Fisher σ vs G4 p16-p84 半宽比值 |
+| `scripts/analysis/extract_pdc_hits_from_reco.py` | reco.root → PDC 命中 CSV |
+| `scripts/analysis/plot_pdc_hit_dispersion.py` | PDC 命中分布图（5×3 网格 + 单点放大） |
+| `scripts/analysis/plot_reco_momentum_dispersion.py` | reco 动量分布图 |
+| `scripts/analysis/run_ensemble_coverage.sh` | 一键 sim → reco → coverage |
+| `scripts/analysis/batch_analysis.C` / `diagnose_truth_pdc_reco.C` | ROOT 宏诊断（历史兼容） |
+| `scripts/batch/batch_run_ypol.py` | Geant4 批量驱动（ypol 扫描） |
+| `scripts/reconstruction/nn_target_momentum/build_dataset.C` | sim.root → 训练集（features=pdc1/2_xyz，targets=px/py/pz_truth） |
+| `scripts/reconstruction/nn_target_momentum/train_mlp.py` | PyTorch MLP（Linear+ReLU） |
+| `scripts/reconstruction/nn_target_momentum/evaluate_mlp.py` | 留出测试集评估 |
+| `scripts/reconstruction/nn_target_momentum/infer_mlp.py` | Python 端 sanity check |
+| `scripts/reconstruction/nn_target_momentum/export_model_for_cpp.py` | `.pt` + `meta.json` → C++ 可读 JSON |
+| `scripts/reconstruction/nn_target_momentum/run_pipeline.sh` | 端到端：`$0 <sim.root> <geom.mac> [out] [max_events]` |
+| `scripts/reconstruction/nn_target_momentum/run_formal_training.sh` | 正式训练：TRAIN=200k / VAL=30k / TEST=30k, R_MAX=150 MeV/c, PZ ∈ [500,700] |
+| `scripts/reconstruction/nn_target_momentum/run_domain_matched_retrain.sh` | 领域匹配 fine-tune |
+| `scripts/reconstruction/nn_target_momentum/generate_tree_input_disk_pz.C` | 训练用动量网格（disk in px/py, fixed pz） |
+
+### 4.3 输入与输出
+
+**Coverage：**
+- 输入：`<reco_dir>/{track_summary,bayesian_samples,profile_samples}.csv`（§2 产生）
+- 输出：`<out>/coverage_summary.csv`, `per_truth_coverage.csv`, 配套 PNG
+
+**NN 训练：**
+- 输入：sim.root
+- 特征：`FEATURE_NAMES = ["pdc1_x", "pdc1_y", "pdc1_z", "pdc2_x", "pdc2_y", "pdc2_z"]`
+- 目标：`TARGET_NAMES = ["px_truth", "py_truth", "pz_truth"]`
+- 产物：`models/<tag>/{model.pt, model_meta.json, model.json, train_history.csv}`
+
+### 4.4 入口命令
+
+```bash
+# Coverage 全流程
+bash scripts/analysis/run_ensemble_coverage.sh configs/simulation/geometry/3deg_1.15T.mac
+
+# 只跑 coverage 分析
+micromamba run -n anaroot-env python scripts/analysis/analyze_ensemble_coverage.py \
+    --reco-dir build/reco/ensemble_n50/ \
+    --out-dir  build/analysis/ensemble_n50/
+
+# per-truth G4 vs Fisher σ
+micromamba run -n anaroot-env python scripts/analysis/compute_per_truth_g4_vs_fisher.py \
+    --merged build/reco/ensemble_n50/ensemble_pdc_reco_merged.csv
+
+# NN 端到端
+bash scripts/reconstruction/nn_target_momentum/run_pipeline.sh \
+    build/sim/nn_train.root \
+    configs/simulation/geometry/3deg_1.15T.mac \
+    build/nn_models/exp42 \
+    50000
+
+# NN 正式训练
+bash scripts/reconstruction/nn_target_momentum/run_formal_training.sh
+
+# 只导出（已有 .pt）
+micromamba run -n anaroot-env python \
+    scripts/reconstruction/nn_target_momentum/export_model_for_cpp.py \
+    --model-dir build/nn_models/exp42
+```
+
+### 4.5 典型改动点
+
+| 想做什么 | 改哪里 |
+| --- | --- |
+| 加新诊断图 | `scripts/analysis/plot_<name>.py`；优先复用 `track_summary.csv` |
+| 改 coverage 置信水平 | `analyze_ensemble_coverage.py` 的 `Z_68=1.0`, `Z_95=1.96`, Clopper-Pearson α |
+| 改 NN 结构 | `train_mlp.py` 的 `MLP`；必须重跑 `export_model_for_cpp.py` + 更新 `model_meta.json` |
+| 加新特征 | `FEATURE_NAMES` + `build_dataset.C` 抽取；同步 `PDCNNMomentumReconstructor::BuildInput` |
+| 改训练动量范围 | `run_formal_training.sh` 的 `R_MAX_MEVC` / `PZ_MIN` / `PZ_MAX`；同步 `generate_tree_input_disk_pz.C` |
+| 加领域匹配 fine-tune | 参考 `run_domain_matched_retrain.sh`（冻结前 N 层 + 小 lr） |
+
+### 4.6 常见坑
+
+- **训练集覆盖**：训练范围 (R_MAX=150 MeV/c, pz∈[500,700]) 之外预测退化；coverage 部分根因是训练/测试分布不一致。
+- **Feature/Target 顺序**：C++ 端按 `FEATURE_NAMES`/`TARGET_NAMES` 的**顺序**喂值，改名不改 `BuildInput` 会静默错位。
+- **归一化**：mean/std 常数写在 `model_meta.json`；C++ 端必须同样应用，漏了 = 推理全错。
+- **micromamba env**：Python 脚本假设 `anaroot-env` 已激活；`micromamba run -n anaroot-env python ...` 安全。
+- **N=50 ensemble 耗时**：全套 5×3 网格 × 50 事件，20–60 min（取决于 physics list）。
+- **`run_pipeline.sh` 用新 sim.root**：不会复用已有 reco.root；只想更新 NN 直接走 `build_dataset.C` + `train_mlp.py`。
