@@ -433,3 +433,61 @@ micromamba run -n anaroot-env python \
 - **micromamba env**：Python 脚本假设 `anaroot-env` 已激活；`micromamba run -n anaroot-env python ...` 安全。
 - **N=50 ensemble 耗时**：全套 5×3 网格 × 50 事件，20–60 min（取决于 physics list）。
 - **`run_pipeline.sh` 用新 sim.root**：不会复用已有 reco.root；只想更新 NN 直接走 `build_dataset.C` + `train_mlp.py`。
+
+---
+
+## §A 附录
+
+### A.1 FragSimData 字段（sim.root）
+
+```
+FragSimData : TClonesArray<TSimData>
+  pos[3]        (Double_t, mm)     全局位置
+  mom[3]        (Double_t, MeV/c)  动量
+  track_id      (Int_t)             Geant4 track ID
+  parent_id     (Int_t)             父 track ID
+  detector_id   (Int_t)             1=PDC1, 2=PDC2（枚举见 FragmentSD.cc）
+  edep          (Double_t, MeV)    能量沉积
+  time          (Double_t, ns)     相对事件开始
+  pdg           (Int_t)             PDG code（2212 p, 2112 n, 1000010020 d）
+```
+
+### A.2 reco.root 分支
+
+见 §2.3 表；完整 schema 参考 `libs/analysis/include/RecoEvent.hh`。
+
+### A.3 CMake 选项
+
+| 选项 | 默认 | 说明 |
+| --- | --- | --- |
+| `CMAKE_BUILD_TYPE` | Release | Release / Debug / RelWithDebInfo |
+| `BUILD_TESTS` | ON | GoogleTest + CTest |
+| `BUILD_APPS` | ON | `bin/` 下的可执行 |
+| `BUILD_ANALYSIS` | ON | `libs/analysis*` 全家桶 |
+| `WITH_ANAROOT` | ON | 需 `TARTSYS`；OFF 跳过实验数据读盘 |
+| `WITH_GEANT4_UIVIS` | ON | Geant4 UI/Vis（visualization test 需要） |
+
+### A.4 环境变量
+
+| 变量 | 作用 |
+| --- | --- |
+| `SM_LOG_LEVEL` | TRACE/DEBUG/INFO/WARN/ERROR/CRITICAL |
+| `SM_BATCH_MODE` | 1=批量日志 |
+| `SM_TEST_VISUALIZATION` | ON 启用可视化测试 |
+| `TARTSYS` | ANAROOT 根目录 |
+
+### A.5 测试标签
+
+| label | 意图 |
+| --- | --- |
+| `unit` | 纯单元（< 1s/个） |
+| `performance` | 性能回归 |
+| `visualization` | 需 `SM_TEST_VISUALIZATION=ON` |
+| `realdata` | 需真实数据 |
+
+### A.6 相关报告
+
+- `docs/reports/reconstruction/rk_reconstruction_status_20260416.pdf`（EN）/ `_zh.pdf`（ZH）— Fisher σ 欠估计诊断
+- `docs/reports/imqmd_analysis/` — IMQMD 几何筛选结果
+- `docs/imqmd_rawdata_analysis_guide.md` — IMQMD 原始数据指南
+- `docs/superpowers/specs/2026-04-17-readme-rewrite-design.md` — 本文档的设计 spec
