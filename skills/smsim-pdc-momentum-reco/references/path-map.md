@@ -7,6 +7,7 @@
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorRK.cc`
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorMultiDim.cc`
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorNN.cc`
+- `libs/analysis_pdc_reco/include/PDCFrameRotation.hh`
 - `libs/analysis_pdc_reco/include/PDCRecoTypes.hh`
 - `libs/analysis_pdc_reco/include/PDCRecoRuntime.hh`
 - `libs/analysis_pdc_reco/src/PDCRecoRuntime.cc`

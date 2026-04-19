@@ -7,6 +7,7 @@
 - `RecoConfig` and solver status contracts
 - backend boundaries and dispatcher behavior
 - RK mode selection via `--rk-fit-mode`
+- lab → target-frame rotation of reco momentum + covariance (`PDCFrameRotation.hh`, applied in `main.cc`)
 - legacy compatibility boundaries with `TargetReconstructor`
 
 ## Entry Points
@@ -16,6 +17,7 @@
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorRK.cc`
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorMultiDim.cc`
 - `libs/analysis_pdc_reco/src/PDCMomentumReconstructorNN.cc`
+- `libs/analysis_pdc_reco/include/PDCFrameRotation.hh`
 - `libs/analysis_pdc_reco/include/PDCRecoTypes.hh`
 - `libs/analysis_pdc_reco/include/PDCRecoRuntime.hh`
 - `libs/analysis_pdc_reco/src/PDCRecoRuntime.cc`
@@ -35,6 +37,7 @@
 - `TargetReconstructor` is compatibility-only unless the task is explicitly about migration or regression coverage.
 - legacy step scans and synthetic TargetReconstructor studies belong under `scripts/analysis/legacy_target_reco/`.
 - The NN backend is part of the main runtime framework even if its model lifecycle lives in separate scripts.
+- Reco output contract: `reco_p{x,y,z}` in the CSV and the exported covariance are in the **event-generator target frame** (beam-as-Z). The RK solver works in the Geant4 lab frame, and `main.cc` applies `R_y(alpha_tgt)` to both the momentum vector and its covariance before writing. Downstream consumers (analyze, plotting, NN training) must compare against truth in the target frame.
 
 ## Focused Validation
 
