@@ -24,7 +24,7 @@ SPECIAL_POINTS = [(px, py) for py in (-20.0, 0.0, 20.0)
                             for px in (-100.0, -50.0, 0.0, 50.0, 100.0)]
 
 DEFAULT_MERGED = (
-    "build/test_output/ensemble_n50/g4_fluctuation/ensemble_pdc_reco_merged.csv"
+    "build/test_output/ensemble_n50_targetframe/g4_fluctuation/ensemble_pdc_reco_merged.csv"
 )
 DEFAULT_OUT_DIR = "docs/reports/reconstruction"
 
@@ -148,7 +148,7 @@ def main():
     print(f"[plot] wrote {overview_path}")
 
     # also dump summary table CSV next to data
-    summary_csv = Path("build/test_output/ensemble_n50/g4_fluctuation") / "pdc_dispersion_summary.csv"
+    summary_csv = Path(args.merged).parent / "pdc_dispersion_summary.csv"
     pd.DataFrame(summary_rows).to_csv(summary_csv, index=False)
     print(f"[plot] wrote {summary_csv}")
 

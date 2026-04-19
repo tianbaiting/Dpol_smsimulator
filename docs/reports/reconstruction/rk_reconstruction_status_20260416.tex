@@ -37,6 +37,37 @@
 \section{Physical Setup}
 % ============================================================
 
+\begin{frame}{Coordinate frames: lab vs.\ target (beam-as-Z)}
+\small
+Two right-handed frames are used consistently throughout this report:
+\begin{itemize}
+  \item \textbf{Lab frame} (Geant4 world): $+z$ along the nominal SAMURAI beamline,
+    $+y$ vertical up. PDC hits, field map, RK integration, and the
+    internal least-squares fit all live here.
+  \item \textbf{Target frame} (``beam-as-Z'', event-generator input):
+    $+z$ along the incident beam direction after the $\alpha_\mathrm{tgt}=3^\circ$
+    target tilt; differs from lab by $R_y(-\alpha_\mathrm{tgt})$.
+    \texttt{truth\_proton\_p4} stays in this frame (\texttt{fMomentum} is never
+    rewritten; the forward $R_y(-\alpha)$ only rotates a local copy used for the
+    particle gun).
+\end{itemize}
+
+\textbf{All truth vs.\ reco comparisons and all plots in this report are in the target frame.}
+The reconstruction tools (\texttt{main.cc}, \texttt{analyze\_pdc\_rk\_error.cc})
+apply $R_y(+\alpha_\mathrm{tgt})$ at the write stage; the $3\times3$ momentum
+covariance is rotated as $\Sigma'=R\Sigma R^\mathrm{T}$ and $px/py/pz$ intervals
+are rebuilt as Gaussian fallbacks from the rotated diagonals. $|\vec p|$ is
+rotation-invariant and its interval is passed through unchanged.
+
+Prior to 2026-04-19, this rotation was missing and a systematic
+$\Delta p_x \approx -p_z\sin\alpha \approx -33$~MeV/$c$ contaminated the residuals
+($p_z \approx 627$~MeV/$c$; if $p_z\!\approx\!1$~GeV/$c$ the offset is $-52$~MeV/$c$).
+Fisher 68\% coverage on $p_x$ went from $\approx 0.05$ back to $\approx 0.80$ after the fix.
+All plots here were regenerated after the fix.
+Shared helpers: \texttt{libs/analysis\_pdc\_reco/include/PDCFrameRotation.hh}.
+\end{frame}
+
+% ============================================================
 \begin{frame}{SAMURAI Spectrometer Geometry}
 \small
 \begin{columns}[T]
@@ -592,11 +623,11 @@ python3 scripts/analysis/analyze\_ensemble\_coverage.py \textbackslash\\
 \phantom{xx}--output-dir build/test\_output/ensemble\_n50/coverage\_final
 \end{flushleft}
 
-\textbf{Source CSVs} (all live under \texttt{build/test\_output/ensemble\_n50/}):
+\textbf{Source CSVs} (post-fix outputs in \texttt{build/test\_output/ensemble\_n50\_targetframe/}):
 \begin{itemize}\setlength{\itemsep}{0pt}
 \item \texttt{rk\_fixed\_target\_pdc\_only\_error\_analysis/track\_summary.csv} --- per-event Fisher/Laplace (744 rows)
-\item \texttt{.../profile\_samples.csv} --- 32-event Profile LH intervals (px, py, pz, $|p|$)
-\item \texttt{.../bayesian\_samples.csv} --- 64-event MCMC intervals ($|p|$ only in current analyzer)
+\item \texttt{.../profile\_samples.csv} --- 128-event Profile LH intervals (px, py, pz, $|p|$)
+\item \texttt{.../bayesian\_samples.csv} --- 128-event MCMC intervals ($|p|$ only in current analyzer)
 \item \texttt{coverage\_final/coverage\_with\_ci.csv} --- Clopper-Pearson CIs (Table on next slides)
 \item \texttt{coverage\_final/pull\_summary.csv}, \texttt{pull\_distributions.png}
 \end{itemize}
@@ -613,31 +644,31 @@ For each component we list \emph{each method's 68\% half-width} ($\pm$ in MeV/$c
 \toprule
 Comp. & Med.\ bias & Res.\ hw & Method & Half-width (68\%) & Half-w / Res.\ hw & Cov.\ 68\% & CP 95\% CI \\
 \midrule
-\multirow{3}{*}{$p_x$} & \multirow{3}{*}{$-33.1$} & \multirow{3}{*}{$6.21$}
-  & Fisher  & 7.52 & 1.21 & 0.052 & [0.038, 0.071] \\
-  & & & Laplace & 7.52 & 1.21 & 0.054 & [0.039, 0.072] \\
-  & & & Profile & 6.44 & 1.04 & 0.000 & [0.000, 0.109] \\
+\multirow{3}{*}{$p_x$} & \multirow{3}{*}{$-0.33$} & \multirow{3}{*}{$5.98$}
+  & Fisher  & 7.40 & 1.24 & 0.801 & [0.771, 0.829] \\
+  & & & Laplace & 7.40 & 1.24 & 0.801 & [0.771, 0.829] \\
+  & & & Profile & 7.06 & 1.18 & 0.711 & [0.624, 0.788] \\
 \midrule
 \multirow{3}{*}{$p_y$} & \multirow{3}{*}{$-0.04$} & \multirow{3}{*}{$1.40$}
-  & Fisher  & 0.77 & 0.55 & 0.426 & [0.390, 0.463] \\
-  & & & Laplace & 0.77 & 0.55 & 0.427 & [0.392, 0.464] \\
-  & & & Profile & 0.56 & 0.40 & 0.344 & [0.186, 0.532] \\
+  & Fisher  & 0.75 & 0.54 & 0.421 & [0.385, 0.457] \\
+  & & & Laplace & 0.75 & 0.54 & 0.421 & [0.385, 0.457] \\
+  & & & Profile & 0.57 & 0.41 & 0.367 & [0.284, 0.457] \\
 \midrule
-\multirow{3}{*}{$p_z$} & \multirow{3}{*}{$-1.49$} & \multirow{3}{*}{$6.60$}
-  & Fisher  & 6.43 & 0.97 & 0.680 & [0.645, 0.714] \\
-  & & & Laplace & 6.43 & 0.97 & 0.681 & [0.647, 0.715] \\
-  & & & Profile & 5.45 & 0.83 & 0.625 & [0.437, 0.789] \\
+\multirow{3}{*}{$p_z$} & \multirow{3}{*}{$-0.65$} & \multirow{3}{*}{$5.57$}
+  & Fisher  & 6.94 & 1.25 & 0.772 & [0.740, 0.801] \\
+  & & & Laplace & 6.94 & 1.25 & 0.772 & [0.740, 0.801] \\
+  & & & Profile & 5.61 & 1.01 & 0.695 & [0.608, 0.774] \\
 \midrule
 \multirow{4}{*}{$|\vec{p}|$} & \multirow{4}{*}{$-0.66$} & \multirow{4}{*}{$5.30$}
   & Fisher  & 6.68 & 1.26 & 0.761 & [0.728, 0.791] \\
   & & & Laplace & 6.68 & 1.26 & 0.769 & [0.737, 0.799] \\
-  & & & Profile & 5.64 & 1.06 & 0.813 & [0.636, 0.928] \\
-  & & & MCMC    & 5.16 & 0.97 & 0.656 & [0.527, 0.771] \\
+  & & & Profile & 6.19 & 1.17 & 0.781 & [0.700, 0.849] \\
+  & & & MCMC    & 5.25 & 0.99 & 0.633 & [0.543, 0.716] \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{Takeaways} (with Sn target disabled): (i) $|\vec{p}|$ and $p_z$ half-widths are now \emph{well-matched} to realised residual spread (ratio $0.83$--$1.26$) and the observed 68\% coverage lands within its CP CI of 68\% --- Fisher actually works for the curvature-constrained directions; (ii) $p_y$ half-width is still under-reported by $\sim\!1.8\times$ (residual hw 1.4 vs.\ Fisher 0.77) $\Rightarrow$ coverage 43\% rather than 68\%; (iii) $p_x$ is a \emph{systematic bias problem}, not a coverage problem: half-widths match (residual hw 6.21 vs.\ Fisher 7.52, ratio 1.2), but the median residual is shifted by $-33$~MeV/$c$ so truth falls $\sim\!4.4\sigma$ below reco for every event $\Rightarrow$ coverage 5\%; (iv) MCMC per-component missing because current \texttt{analyze\_pdc\_rk\_error} samples only $|\vec p|$ in \texttt{bayesian\_samples.csv}.
+\textbf{Takeaways} (post 2026-04-19 coordinate-frame fix, target frame, all four methods re-run): (i) Fisher/Laplace half-widths for $|\vec{p}|$, $p_x$, $p_z$ are within $\sim\!25\%$ of the realised residual spread (ratio $1.24$--$1.26$); Fisher 68\% coverage lands near nominal (0.76--0.80). Profile gives narrower intervals (ratio $1.01$--$1.18$) with coverage 0.69--0.78; (ii) $p_y$ is still under-reported by $\sim\!1.9\times$ (residual hw 1.40 vs.\ Fisher 0.75, Profile 0.57) $\Rightarrow$ coverage 0.37--0.42 --- this is the one genuine algorithm-level shortfall; $p_y$ is invariant under $R_y$ and unaffected by the rotation fix; (iii) $p_x$ was previously at 5\% due to $-33$~MeV/$c$ bias; after rotating reco output to the target frame, bias drops to $-0.33$~MeV/$c$ and Fisher coverage jumps to 0.80, Profile to 0.71; (iv) MCMC $|\vec p|$ 0.633 is in line with the pre-fix value (rotation does not affect $|\vec p|$). MCMC per-component missing because \texttt{analyze\_pdc\_rk\_error} samples only $|\vec p|$ in \texttt{bayesian\_samples.csv}.
 \end{frame}
 
 % ============================================================
@@ -670,7 +701,7 @@ MCMC    & $\sim\!160$ chain steps   & Metropolis-Hastings on posterior $\rightar
 \end{tabular}
 \end{table}
 
-\textbf{Consequence}: all four share the \emph{same} forward model (RK4 trajectory + PDC residuals). A bias or linearization error in RK propagates into every interval. With the Sn target disabled, the $p_z$ residual std collapses and $|\vec p|$/$p_z$ coverage recovers to nominal 68\%; what remains is (a) a persistent $p_x$ median bias of $-33\;\mathrm{MeV}/c$ that drives $p_x$ coverage to 5\% even though the per-event spread matches Fisher (i.e.\ the RK forward model is mis-centred, not noisy) and (b) $(u,v,p)$ parameterization giving Fisher $\sigma_{p_y}\!\approx\!0.77\;\mathrm{MeV}/c$ while realised $p_y$ spread is 1.4 MeV/$c$ (ratio 1.8, coverage 43\%). Different wrappers around the same biased forward model cannot fix (a); fixing it needs $dE/dx$ in the propagator and a full Cartesian/unparameterised refit.
+\textbf{Consequence}: all four share the \emph{same} forward model (RK4 trajectory + PDC residuals). A bias or linearization error in RK propagates into every interval. The 2026-04-19 coordinate-frame fix eliminated what looked like ``persistent $p_x$ bias $-33\;\mathrm{MeV}/c$'': reco output is now rotated from lab into target frame and the residual $p_x$ median is $-0.33\;\mathrm{MeV}/c$. Fisher/Laplace $p_x$ coverage recovered from 0.05 to 0.80. The remaining genuine algorithm-level issue is $(u,v,p)$ parameterisation giving Fisher $\sigma_{p_y}\!\approx\!0.75\;\mathrm{MeV}/c$ while realised $p_y$ spread is 1.40 MeV/$c$ (ratio 1.86, coverage 0.42). Fixing this needs $dE/dx$ in the propagator and a full Cartesian/unparameterised refit.
 \end{frame}
 
 % ============================================================
@@ -704,31 +735,31 @@ Comp. & Method & $N$ & 68\% & 68\% CI & 95\% & 95\% CI \\
 \midrule
 $|\vec{p}|$ & Fisher  & 744 & 0.761 & [0.728, 0.791] & 0.901 & [0.877, 0.921] \\
 $|\vec{p}|$ & Laplace & 744 & 0.769 & [0.737, 0.799] & --    & --              \\
-$|\vec{p}|$ & MCMC    & 64  & 0.656 & [0.527, 0.771] & 0.891 & [0.788, 0.955] \\
-$|\vec{p}|$ & Profile & 32  & 0.813 & [0.636, 0.928] & 0.969 & [0.838, 0.999] \\
+$|\vec{p}|$ & MCMC    & 128 & 0.633 & [0.543, 0.716] & 0.898 & [0.833, 0.945] \\
+$|\vec{p}|$ & Profile & 128 & 0.781 & [0.700, 0.849] & 0.930 & [0.871, 0.967] \\
 \midrule
-$p_x$ & Fisher  & 744 & \textbf{0.052} & [0.038, 0.071] & \textbf{0.196} & [0.168, 0.227] \\
-$p_x$ & Laplace & 744 & 0.054 & [0.039, 0.072] & --    & --              \\
-$p_x$ & Profile & 32  & \textbf{0.000} & [0.000, 0.109] & 0.000 & [0.000, 0.109] \\
+$p_x$ & Fisher  & 744 & \textbf{0.801} & [0.771, 0.829] & 0.910 & [0.887, 0.930] \\
+$p_x$ & Laplace & 744 & 0.801 & [0.771, 0.829] & --    & --              \\
+$p_x$ & Profile & 128 & 0.711 & [0.624, 0.788] & 0.930 & [0.871, 0.967] \\
 \midrule
-$p_y$ & Fisher  & 744 & 0.426 & [0.390, 0.463] & 0.691 & [0.656, 0.724] \\
-$p_y$ & Laplace & 744 & 0.427 & [0.392, 0.464] & --    & --              \\
-$p_y$ & Profile & 32  & 0.344 & [0.186, 0.532] & 0.562 & [0.377, 0.736] \\
+$p_y$ & Fisher  & 744 & 0.421 & [0.385, 0.457] & 0.690 & [0.655, 0.723] \\
+$p_y$ & Laplace & 744 & 0.421 & [0.385, 0.457] & --    & --              \\
+$p_y$ & Profile & 128 & 0.367 & [0.284, 0.457] & 0.625 & [0.535, 0.709] \\
 \midrule
-$p_z$ & Fisher  & 744 & 0.680 & [0.645, 0.714] & 0.870 & [0.843, 0.893] \\
-$p_z$ & Laplace & 744 & 0.681 & [0.647, 0.715] & --    & --              \\
-$p_z$ & Profile & 32  & 0.625 & [0.437, 0.789] & 0.906 & [0.750, 0.980] \\
+$p_z$ & Fisher  & 744 & 0.772 & [0.740, 0.801] & 0.902 & [0.878, 0.922] \\
+$p_z$ & Laplace & 744 & 0.772 & [0.740, 0.801] & --    & --              \\
+$p_z$ & Profile & 128 & 0.695 & [0.608, 0.774] & 0.883 & [0.814, 0.933] \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{Verdict}. The picture splits cleanly by direction:
+\textbf{Verdict} (post 2026-04-19 rotation fix; all four methods re-run on post-fix data):
 \begin{itemize}\setlength{\itemsep}{0pt}
-\item \textbf{$|\vec p|$ and $p_z$ land at nominal 68\%} (Fisher $|\vec p|$ 76\%, $p_z$ 68\%) --- with the target MS removed, the dipole curvature constraint is tight enough that Fisher's Gaussian interval correctly tracks the realised spread. $|\vec p|$ is slightly over-conservative.
-\item \textbf{$p_y$ mildly under-covers} (43\% at 68\% nominal). Residual half-width 1.40 vs.\ Fisher $\sigma$ 0.77 MeV/$c$ (1.8$\times$). Root cause: $(u,v,p)$ parameterisation still deflates $p_y$ Fisher info by $\sim\!2\times$, even without MS.
-\item \textbf{$p_x$ is pathological} (5\%). Residual \emph{spread} matches Fisher (1.2$\times$), but median bias is $-33\;\mathrm{MeV}/c$ --- truth lies $\sim\!4.4\sigma$ below reco for \emph{every} event. This is reconstruction miscalibration, not a coverage miscount. Profile LH confirms (0/32 covered) since it shares the same biased forward model.
+\item \textbf{$p_x$ recovered} from 0.05 $\to$ 0.80 (Fisher) and 0 $\to$ 0.71 (Profile) by rotating reco output into the target frame --- the ``$-33\;\mathrm{MeV}/c$ bias'' was a coordinate-frame artifact, not a forward-model mis-calibration. Residual spread matches Fisher within $25\%$; median bias is now $-0.33$~MeV/$c$.
+\item \textbf{$|\vec p|$ and $p_z$} land near nominal 68\% (0.76 and 0.77 Fisher; 0.78 and 0.70 Profile; MCMC $|\vec p|$ 0.63) --- dipole curvature is tight enough that the Gaussian interval tracks the realised spread.
+\item \textbf{$p_y$ still under-covers} (0.42 Fisher, 0.37 Profile at 68\% nominal). Residual half-width 1.40 vs.\ Fisher $\sigma$ 0.75 (1.9$\times$) / Profile hw 0.57 (2.5$\times$). Root cause: $(u,v,p)$ parameterisation deflates $p_y$ Fisher info by $\sim\!2\times$. $p_y$ is invariant under the $R_y$ fix; numbers unchanged pre/post-fix --- the one genuine algorithm-level shortfall.
 \end{itemize}
-Drivers: missing $dE/dx$ (biases $p_z$ projection, and indirectly $p_x$ via coupled RK Jacobian) and $(u,v,p)$ linearisation (depresses $p_y$ Fisher).
+Remaining driver: $(u,v,p)$ linearisation. Adding $dE/dx$ in the propagator and a Cartesian/unparameterised refit is the natural next step.
 \end{frame}
 
 % ============================================================
@@ -786,7 +817,9 @@ Drivers: missing $dE/dx$ (biases $p_z$ projection, and indirectly $p_x$ via coup
 \small
 \textbf{Transfer function}. The RK4 fitter inverts $\vec p_\mathrm{target} \mapsto (\vec r_\mathrm{PDC1}, \vec r_\mathrm{PDC2})$. Under the $\sigma_\mathrm{wire}\!\sim\!0.2$~mm assumption that goes into the Fisher matrix, PDC1/PDC2 positions should map to $\sigma_p\!\sim$ few MeV/$c$ --- this is what the analyzer reports. With the Sn target disabled, the physical PDC $\sigma$ (Step 1) drops to $3$--$15$ mm --- still $\sim 15$--$75\times$ larger than wire smearing, but not the $\sim 500\times$ seen with the target in.
 
-\textbf{Consequence}. When we now take the 50 same-truth replicas and look at how much the \emph{reconstructed} momentum scatters (histogram below), the global G4/Fisher halfwidth ratios are $p_x:\,0.83$, $p_y:\,1.82$, $p_z:\,1.03$, $|\vec p|:\,0.99$. Fisher is almost exactly right for $p_z/|\vec p|$, 1.8$\times$ too optimistic for $p_y$, and --- once you strip the per-event bias away --- also close for $p_x$. The dominant $p_x$ failure mode is a \emph{median bias} ($-33\;\mathrm{MeV}/c$, Step 2 baseline frame), not a mis-sized error bar.
+\textbf{Consequence}. Taking the 50 same-truth replicas and measuring how the \emph{reconstructed} momentum scatters (histogram below), the post-fix global G4/Fisher halfwidth ratios are $p_x:\,0.81$, $p_y:\,1.86$, $p_z:\,0.80$, $|\vec p|:\,0.79$. Fisher is slightly conservative on $|\vec p|$, $p_x$ and $p_z$ (ratios $0.79$--$0.81$; realised scatter $\sim\!20\%$ narrower than the error bar), and $\sim\!1.9\times$ too optimistic for $p_y$. The entire ``$p_x$ reconstruction bias'' seen pre-fix was the missing lab$\to$target rotation; after the 2026-04-19 fix the median $p_x$ residual is $|\langle\Delta p_x\rangle|\lesssim 3\;\mathrm{MeV}/c$ across the grid.
+
+\textbf{Frame}. All $p_x/p_y/p_z$ below are in the target frame (see the ``Coordinate frames'' slide early in Physical Setup). Pre-fix PNGs had a spurious $\Delta p_x \approx -p_z\sin\alpha \approx -627\times\sin 3^\circ \approx -33\;\mathrm{MeV}/c$ from the lab/target mismatch.
 
 \textbf{Source scripts}:
 \begin{itemize}
@@ -802,7 +835,7 @@ Drivers: missing $dE/dx$ (biases $p_z$ projection, and indirectly $p_x$ via coup
 
 \vspace{0.1cm}
 \small
-Black line = truth, red dashed = G4 median, pink band = Fisher $\sigma$ around median. $N{=}49$ replicas. $p_x$: median shifted to $\sim\!-32\;\mathrm{MeV}/c$, G4 $\sigma\!=\!4.7$ vs.\ Fisher $\sigma\!=\!7.2$, ratio 0.66 --- so the \emph{spread} is fine but the fitter's $p_x$ zero is wrong. $p_y$: ratio 1.9 (G4 1.5 vs.\ Fisher 0.8), the only direction where Fisher under-reports the realised spread. $p_z$: ratio 0.71 (G4 4.1 vs.\ Fisher 5.8), essentially matched. A handful of outliers near $|p|\!\sim\!0$ or double-peaked failures still appear but are numerically small.
+Black line = truth, red dashed = G4 median, pink band = Fisher $\sigma$ around median. $N{=}49$ replicas. Post-fix numbers (target frame). $p_x$: median at $+0.3\;\mathrm{MeV}/c$ (was $-33$ pre-fix, purely the coordinate-frame artifact), G4 $\sigma\!=\!4.5$ vs.\ Fisher $\sigma\!=\!7.1$, ratio 0.63 --- Fisher slightly conservative. $p_y$: ratio 1.96 (G4 1.5 vs.\ Fisher 0.8), the one direction where Fisher under-reports the realised spread. $p_z$: ratio 0.69 (G4 4.4 vs.\ Fisher 6.3), median residual $-1.3\;\mathrm{MeV}/c$. The only remaining issues are $p_y$ under-sizing and $(u,v,p)$ linearisation residuals.
 \end{frame}
 
 % ============================================================
@@ -812,7 +845,7 @@ Black line = truth, red dashed = G4 median, pink band = Fisher $\sigma$ around m
 
 \vspace{0.1cm}
 \small
-$N{=}50$. $p_x$: G4 $\sigma\!=\!4.0$ vs.\ Fisher $\sigma\!=\!6.9$, ratio 0.58 (Fisher conservative); the median is much closer to truth than at $(-100,0)$ --- biases are strongly direction-dependent. $p_y$: ratio 2.8 (G4 1.4 vs.\ Fisher 0.5) --- Fisher here is the tightest $\sigma$ in the grid yet the realised spread is typical, so the mismatch is largest at this point. $p_z$: ratio 0.70 (G4 5.1 vs.\ Fisher 7.3). Point-by-point heterogeneity is real --- the ratios vary by $\sim 2$--$3\times$ across the 15 truth points and are summarised on the next slide.
+$N{=}50$. Post-fix (target frame). $p_x$: median at $+0.03\;\mathrm{MeV}/c$ (centered), G4 $\sigma\!=\!3.8$ vs.\ Fisher $\sigma\!=\!6.7$, ratio 0.57 (Fisher conservative). $p_y$: ratio 2.78 (G4 1.4 vs.\ Fisher 0.5) --- this is the largest mismatch across the 15 truth points (Fisher tightest, G4 typical). $p_z$: ratio 0.67 (G4 5.2 vs.\ Fisher 7.8). Point-by-point ratio heterogeneity is real, $\sim 2$--$3\times$ across the grid; summarised on the next slide.
 \end{frame}
 
 % ============================================================
@@ -828,20 +861,20 @@ Matching the PDC-plane spread (Step 1) with the reco-momentum spread (Step 2) pe
 \cmidrule(lr){3-6}\cmidrule(lr){7-9}
 $p_x$ & $p_y$ & $\sigma^{1}_x$ & $\sigma^{1}_y$ & $\sigma^{2}_x$ & $\sigma^{2}_y$ & $p_x$ & $p_y$ & $p_z$ \\
 \midrule
-$0$    & $0$   & 2.8  & 11.2 & 3.5  & 15.2 & 0.66 & 1.87 & 0.71 \\
-$+100$ & $0$   & 3.7  &  9.1 & 5.7  & 12.3 & 0.58 & 2.80 & 0.70 \\
-$-100$ & $0$   & 2.7  & 10.7 & 3.0  & 14.3 & 3.62 & 1.65 & 3.64 \\
-$0$    & $+20$ & 2.9  &  9.6 & 4.0  & 12.6 & 0.92 & 1.88 & 0.74 \\
-$0$    & $-20$ & 3.2  &  8.4 & 4.6  & 10.6 & 0.86 & 1.52 & 0.75 \\
+$0$    & $0$   & 2.8  & 11.2 & 3.5  & 15.2 & 0.63 & 1.96 & 0.69 \\
+$+100$ & $0$   & 3.7  &  9.1 & 5.7  & 12.3 & 0.57 & 2.78 & 0.67 \\
+$-100$ & $0$   & 2.7  & 10.7 & 3.0  & 14.3 & 3.51 & 1.63 & 3.51 \\
+$0$    & $+20$ & 2.9  &  9.6 & 4.0  & 12.6 & 0.89 & 1.90 & 0.72 \\
+$0$    & $-20$ & 3.2  &  8.4 & 4.6  & 10.6 & 0.84 & 1.61 & 0.73 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{Read-across}:
 \begin{itemize}
-  \item Without the Sn target the PDC $\sigma_y$ collapses from ${\sim}100$~mm to ${\sim}10$--$15$~mm and the reco-momentum G4/Fisher ratios land near 1 for $p_x,p_z$ and ${\sim}2$ for $p_y$ --- Fisher \emph{sizing} is essentially correct everywhere except $p_y$.
-  \item $(-100, 0)$ is the one point where $p_x/p_z$ G4 halfwidths blow up to $\sim\!36$ and $\sim\!21$ MeV/$c$ (ratios 3.6). This is the LM coarse-grid coverage hole at the PDC acceptance edge (inward-bending trajectories with marginal geometry); see coverage findings for RK at that grid point in the project memo.
-  \item The remaining coverage shortfall (5\% on $p_x$, 43\% on $p_y$) is now clearly separated into two causes: (a) residual $p_x$ bias of order ${-30}$~MeV/$c$ that Fisher \emph{cannot} correct (error bar is the wrong object); (b) $p_y$ Fisher-sigma under-sizing by $\sim 2\times$ driven by $(u,v,p)$ linearisation. Adding $dE/dx$ + Cartesian refit is the natural fix for both.
+  \item Without the Sn target, PDC $\sigma_y$ collapses from ${\sim}100$~mm to ${\sim}10$--$15$~mm and the reco-momentum G4/Fisher ratios sit at $0.6$--$0.9$ for $p_x,p_z$ and $1.5$--$3$ for $p_y$ --- Fisher \emph{sizing} is essentially correct everywhere except $p_y$.
+  \item $(-100, 0)$ is the one point where $p_x/p_z$ G4 halfwidths blow up to $\sim\!35$ and $\sim\!22$~MeV/$c$ (ratio 3.5). This is the LM coarse-grid coverage hole at the PDC acceptance edge (inward-bending trajectories with marginal geometry); see coverage findings for RK at that grid point in the project memo.
+  \item After the 2026-04-19 lab$\to$target rotation fix, the $\sim\!-33$~MeV/$c$ $p_x$ bias seen pre-fix is gone ($|\langle\Delta p_x\rangle|\lesssim 3$~MeV/$c$ now). What was previously attributed to a residual $p_x$ bias was in fact a coordinate-frame artifact. The one genuine issue that remains is $p_y$ Fisher-sigma under-sizing by $\sim 2\times$ driven by $(u,v,p)$ linearisation; the natural fix is $dE/dx$ + Cartesian refit. Coverage numbers need to be re-computed from the post-fix \texttt{validation\_summary.csv}.
 \end{itemize}
 \end{frame}
 
@@ -851,7 +884,7 @@ $0$    & $-20$ & 3.2  &  8.4 & 4.6  & 10.6 & 0.86 & 1.52 & 0.75 \\
 \includegraphics[width=0.99\textwidth]{reco_momentum_dispersion_grid_px.png}
 
 \vspace{0.05cm}
-{\scriptsize Rows = truth $p_y \in \{+20, 0, -20\}$, cols = truth $p_x \in \{-100,-50,0,50,100\}$ MeV/$c$. Per cell: histogram of $N{=}48$--$50$ reco $p_x$ values, black = truth, red dashed = G4 median, pink = Fisher $\sigma$ band. Annotated $r$ = G4 $\sigma$ / Fisher $\sigma$. Bias is typically $-20$ to $-40\;\mathrm{MeV}/c$ and flips sign near $(-100,0)$ where the LM solver hits a coarse-grid basin; $\sigma$ itself tracks Fisher within a factor of 2 except at that point.}
+{\scriptsize Rows = truth $p_y \in \{+20, 0, -20\}$, cols = truth $p_x \in \{-100,-50,0,50,100\}$ MeV/$c$ (target frame). Per cell: histogram of $N{=}48$--$50$ reco $p_x$ values, black = truth, red dashed = G4 median, pink = Fisher $\sigma$ band. Annotated $r$ = G4 $\sigma$ / Fisher $\sigma$. Post-fix: median bias $|\langle\Delta p_x\rangle|\lesssim 3$~MeV/$c$ everywhere (pre-fix was a uniform $-30$ to $-40$, which was the coordinate-frame artifact). $(-100,0)$ cell is the LM coarse-grid basin at the PDC acceptance edge, with G4 $\sigma\sim 35$~MeV/$c$ and ratio 3.5; elsewhere ratios sit at $0.4$--$0.9$ --- Fisher sizing is right, bias is gone.}
 \end{frame}
 
 % ============================================================
@@ -860,7 +893,7 @@ $0$    & $-20$ & 3.2  &  8.4 & 4.6  & 10.6 & 0.86 & 1.52 & 0.75 \\
 \includegraphics[width=0.99\textwidth]{reco_momentum_dispersion_grid_py.png}
 
 \vspace{0.05cm}
-{\scriptsize Same layout as previous slide, now for $p_y$. The realised G4 halfwidth is $\sim 1$--$2\;\mathrm{MeV}/c$ across the grid; Fisher $\sigma_{p_y}$ is consistently $0.5$--$1.0\;\mathrm{MeV}/c$, giving ratios of $1.5$--$2.8$. This is the systematic Fisher-sigma under-sizing discussed in the Outlook --- the $(u,v,p)$ parameterisation linearises the $p_y$ response in a way that excludes a real fraction of the injected spread.}
+{\scriptsize Same layout, now for $p_y$ (target frame). $p_y$ is invariant under the $R_y$ fix, so these numbers are unchanged pre/post-fix. G4 halfwidth is $1.1$--$1.7\;\mathrm{MeV}/c$; Fisher $\sigma_{p_y}$ is $0.5$--$1.0\;\mathrm{MeV}/c$; ratios are $1.2$--$3.2$ (global median 1.86). This is the systematic Fisher-sigma under-sizing discussed in the Outlook --- the $(u,v,p)$ parameterisation linearises the $p_y$ response in a way that excludes a real fraction of the injected spread. Median bias $|\langle\Delta p_y\rangle|\lesssim 0.5$~MeV/$c$ throughout.}
 \end{frame}
 
 % ============================================================
@@ -869,7 +902,7 @@ $0$    & $-20$ & 3.2  &  8.4 & 4.6  & 10.6 & 0.86 & 1.52 & 0.75 \\
 \includegraphics[width=0.99\textwidth]{reco_momentum_dispersion_grid_pz.png}
 
 \vspace{0.05cm}
-{\scriptsize Same layout, now for $p_z$. G4/Fisher ratios sit at $0.7$--$0.8$ almost everywhere --- Fisher is slightly conservative for $p_z$, consistent with the global ratio of $1.03$ from the residual analysis. The $(-100,0)$ cell is again the outlier, with G4 $\sigma\!\sim\!21\;\mathrm{MeV}/c$ driven by LM failures at the PDC acceptance edge. Truth $p_z=627\;\mathrm{MeV}/c$ throughout.}
+{\scriptsize Same layout, now for $p_z$ (target frame). Post-fix G4/Fisher ratios sit mostly at $0.5$--$0.9$ (global 0.80) --- Fisher is slightly conservative for $p_z$. Median bias $|\langle\Delta p_z\rangle|\lesssim 3$~MeV/$c$ across the grid (pre-fix had a small $p_z\cos\alpha - p_z \approx -0.9$~MeV/$c$ rotation residual that is now eliminated). The $(-100,0)$ cell is again the outlier, with G4 $\sigma\!\sim\!22\;\mathrm{MeV}/c$ and ratio 3.5, driven by LM failures at the PDC acceptance edge. Truth $p_z=627\;\mathrm{MeV}/c$ throughout.}
 \end{frame}
 
 % ============================================================
@@ -899,7 +932,7 @@ $0$    & $-20$ & 3.2  &  8.4 & 4.6  & 10.6 & 0.86 & 1.52 & 0.75 \\
 
 \item \textbf{Multiple scattering}: include Coulomb scattering in gas/window materials as process noise in the trajectory model.
 
-\item \textbf{Fix under-coverage}: the 744-event target-off ensemble (this report) shows Fisher 68\% coverage $= 76\%$ ($|\vec p|$), $68\%$ ($p_z$), $43\%$ ($p_y$), $5\%$ ($p_x$). $p_z/|\vec p|$ are already at nominal; the two outstanding issues are (i) the $p_x$ median bias of $-33\;\mathrm{MeV}/c$ --- needs a Cartesian refit (no $(u,v,p)$ linearisation) and $dE/dx$ in the RK propagator; (ii) the $p_y$ Fisher $\sigma$ deflation by $\sim 2\times$, same root cause. Retest on the 89k-event dataset once the fit is Cartesian.
+\item \textbf{Fix under-coverage} (post 2026-04-19 rotation fix): Fisher 68\% coverage $p_x\,80\%$, $|\vec p|\,76\%$, $p_z\,77\%$, $p_y\,42\%$. Profile (N=128): $p_x\,71\%$, $|\vec p|\,78\%$, $p_z\,70\%$, $p_y\,37\%$. MCMC $|\vec p|\,63\%$. $p_x$ jumped from 5\% $\to$ 80\% just by rotating reco output to the target frame --- the apparent $-33\;\mathrm{MeV}/c$ ``bias'' was a coordinate artifact, not a forward-model defect. The one remaining algorithm-level issue is $p_y$ Fisher $\sigma$ deflation by $\sim 2\times$ ($p_y$ invariant under the rotation). Fix is a Cartesian $(p_x,p_y,p_z)$ refit (no $(u,v,p)$ linearisation) plus $dE/dx$ in the RK propagator; retest on the 89k-event dataset once the fit is Cartesian.
 
 \item \textbf{Enable quality gate}: once validated, set \texttt{require\_gate\_pass=1} in E2E integration tests.
 \end{itemize}

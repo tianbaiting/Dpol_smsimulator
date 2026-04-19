@@ -22,7 +22,7 @@ SPECIAL_POINTS = [(px, py) for py in (-20.0, 0.0, 20.0)
                             for px in (-100.0, -50.0, 0.0, 50.0, 100.0)]
 
 DEFAULT_MERGED = (
-    "build/test_output/ensemble_n50/g4_fluctuation/ensemble_pdc_reco_merged.csv"
+    "build/test_output/ensemble_n50_targetframe/g4_fluctuation/ensemble_pdc_reco_merged.csv"
 )
 DEFAULT_OUT_DIR = "docs/reports/reconstruction"
 DEFAULT_TRUTH_PZ = 627.0
@@ -122,7 +122,7 @@ def main():
               f"py σ={info['reco_py_g4_halfwidth']:.1f}/{info['reco_py_fisher_sigma']:.1f}  "
               f"pz σ={info['reco_pz_g4_halfwidth']:.1f}/{info['reco_pz_fisher_sigma']:.1f}")
 
-    summary_csv = Path("build/test_output/ensemble_n50/g4_fluctuation") / "reco_momentum_dispersion_summary.csv"
+    summary_csv = Path(args.merged).parent / "reco_momentum_dispersion_summary.csv"
     pd.DataFrame(rows).to_csv(summary_csv, index=False)
     print(f"[plot] wrote {summary_csv}")
 

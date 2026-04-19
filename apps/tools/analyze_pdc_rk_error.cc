@@ -1,6 +1,7 @@
 #include "GeometryManager.hh"
 #include "MagneticField.hh"
 #include "PDCErrorAnalysis.hh"
+#include "PDCFrameRotation.hh"
 #include "PDCRecoRuntime.hh"
 #include "RecoEvent.hh"
 #include "SMLogger.hh"
@@ -671,6 +672,10 @@ int main(int argc, char* argv[]) {
         if (!reco::LoadGeometryFromMacro(geometry, opts.geometry_macro)) {
             throw std::runtime_error("failed to load geometry macro: " + opts.geometry_macro);
         }
+        // [EN] Reco runs in Geant4 lab frame; rotate all output by R_y(+α) to
+        // match truth, which the generator stored in the beam-as-Z target frame.
+        // [CN] 重建工作在 lab 系；写出前按 R_y(+α) 旋到与 truth 一致的靶系。
+        const double target_angle_rad = geometry.GetTargetAngleRad();
 
         MagneticField magnetic_field;
         if (!reco::LoadMagneticField(magnetic_field, opts.magnetic_field_map, opts.magnet_rotation_deg)) {
@@ -741,13 +746,17 @@ int main(int argc, char* argv[]) {
                     pdc_track.pdc1 = track.start;
                     pdc_track.pdc2 = track.end;
 
-                    const reco::RecoResult reco_result =
+                    const reco::RecoResult reco_result_lab =
                         reconstructor.ReconstructRK(pdc_track, target, config);
-                    if (!((reco_result.status == reco::SolverStatus::kSuccess ||
-                           reco_result.status == reco::SolverStatus::kNotConverged) &&
-                          reco_result.p4_at_target.P() > 0.0)) {
+                    if (!((reco_result_lab.status == reco::SolverStatus::kSuccess ||
+                           reco_result_lab.status == reco::SolverStatus::kNotConverged) &&
+                          reco_result_lab.p4_at_target.P() > 0.0)) {
                         continue;
                     }
+                    // [EN] lab → target frame rotation so reco matches the
+                    // target-frame truth. See PDCFrameRotation.hh.
+                    const reco::RecoResult reco_result =
+                        reco::RotateRecoResultToTargetFrame(reco_result_lab, target_angle_rad);
 
                     TrackCandidate candidate;
                     candidate.file_index = static_cast<int>(file_index);
@@ -885,9 +894,15 @@ int main(int argc, char* argv[]) {
             sample.px = result.profile_momentum[0];
             sample.py = result.profile_momentum[1];
             sample.pz = result.profile_momentum[2];
-            sample.p = result.profile_momentum[3];
+            sample.p = result.profile_momentum[3];  // |p| is rotation-invariant
             sample.parameter_profiles = result.parameter_profiles;
             sample.quartile = -1;
+            // [EN] Rotate profile-likelihood px/py/pz intervals lab → target
+            // (Gaussian-diagonal fallback; |p| interval unchanged).
+            // [CN] 把 profile likelihood 的 px/py/pz 区间从 lab 旋到靶系
+            // （对角高斯近似；|p| 不变）。
+            reco::RotateMomentumIntervalTripletY(sample.px, sample.py, sample.pz,
+                                                 target_angle_rad);
             profile_results.push_back(sample);
 
             const double distance = std::abs(candidate.central_p4.P() - global_median_p);
@@ -923,16 +938,24 @@ int main(int argc, char* argv[]) {
             sample.laplace_px = bayesian.laplace_px;
             sample.laplace_py = bayesian.laplace_py;
             sample.laplace_pz = bayesian.laplace_pz;
-            sample.laplace_p = bayesian.laplace_p;
+            sample.laplace_p = bayesian.laplace_p;  // |p| rotation-invariant
             sample.mcmc_px = bayesian.mcmc_px;
             sample.mcmc_py = bayesian.mcmc_py;
             sample.mcmc_pz = bayesian.mcmc_pz;
-            sample.mcmc_p = bayesian.mcmc_p;
+            sample.mcmc_p = bayesian.mcmc_p;        // |p| rotation-invariant
             sample.acceptance_rate = bayesian.mcmc_acceptance_rate;
             sample.effective_sample_size = bayesian.mcmc_effective_sample_size;
             sample.geweke_z_score = bayesian.geweke_z_score;
             sample.converged = bayesian.converged;
             sample.quartile = -1;
+            // [EN] Rotate Laplace + MCMC px/py/pz intervals lab → target
+            // (Gaussian-diagonal fallback; asymmetry in MCMC quantiles is lost).
+            // [CN] Laplace + MCMC 的 px/py/pz 区间 lab→靶系，对角高斯近似；
+            // MCMC 原本的非对称分位信息会退化为高斯。
+            reco::RotateMomentumIntervalTripletY(sample.laplace_px, sample.laplace_py,
+                                                 sample.laplace_pz, target_angle_rad);
+            reco::RotateMomentumIntervalTripletY(sample.mcmc_px, sample.mcmc_py,
+                                                 sample.mcmc_pz, target_angle_rad);
             bayesian_results.push_back(sample);
         }
 

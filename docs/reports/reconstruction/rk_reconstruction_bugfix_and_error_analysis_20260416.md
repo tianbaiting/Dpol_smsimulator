@@ -1,8 +1,21 @@
 # RK 动量重建修复与误差分析报告
 
-**日期**: 2026-04-16  
-**适用版本**: smsimulator5.5, commit after error module rewrite + RK bugfix  
+**日期**: 2026-04-16（增补 2026-04-19 坐标系修复说明）
+**适用版本**: smsimulator5.5, commit after error module rewrite + RK bugfix + frame rotation fix
 **作者**: Baiting Tian
+
+---
+
+## 0. 坐标系约定
+
+本报告使用两个右手直角坐标系：
+
+- **Lab 系**（Geant4 世界系）：$+z$ 沿 SAMURAI 实验厅的标称束流方向。PDC 命中、磁场表、RK 积分、最小二乘拟合全在此系内。
+- **靶系（beam-as-Z 系）**：以入射束流方向为 $+z$，相对于 lab 系绕 $y$ 轴旋转 $\alpha_\mathrm{tgt}=3^\circ$。事件发生器写入 ROOT 的 `truth_proton_p4` 保持在此系（`DeutPrimaryGeneratorAction.cc` 仅对初级方向的本地副本执行 $R_y(-\alpha)$，未回写 `fMomentum`）。
+
+**本报告所有 truth vs. reco 比较、所有直方图均在靶系下给出。** 重建端（`apps/run_reconstruction/main.cc` 与 `apps/tools/analyze_pdc_rk_error.cc`）在写出前对重建动量施加 $R_y(+\alpha_\mathrm{tgt})$，$3\times 3$ 协方差同步 $\Sigma'=R\Sigma R^\top$；$px/py/pz$ 区间用旋转后的对角高斯重建；$|\vec p|$ 旋转不变。共享实现位于 `libs/analysis_pdc_reco/include/PDCFrameRotation.hh`。
+
+**2026-04-19 之前**缺少此旋转，造成 $\Delta p_x \approx -p_z\sin\alpha \approx -33\;\mathrm{MeV}/c$ 的伪偏差（$p_z \approx 627\;\mathrm{MeV}/c$；若 $p_z \approx 1\;\mathrm{GeV}/c$ 则为 $-52\;\mathrm{MeV}/c$）。修复后 $p_x$ 的 Fisher 68\% 覆盖率由 $\approx 0.05$ 恢复至 $\approx 0.80$。本报告直方图均在修复后重新生成。
 
 ---
 

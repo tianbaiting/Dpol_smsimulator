@@ -26,6 +26,33 @@
 \titlepage
 \end{frame}
 
+\begin{frame}{Coordinate frames: lab vs.\ target (beam-as-Z)}
+\small
+Two right-handed frames:
+\begin{itemize}
+  \item \textbf{Lab frame} (Geant4 world): $+z$ along the nominal SAMURAI beamline.
+    PDC hits, field map, RK integration, and the internal fit live here.
+  \item \textbf{Target frame} (``beam-as-Z''): $+z$ along the incident beam;
+    rotated about $y$ by $-\alpha_\mathrm{tgt}=-3^\circ$ relative to lab.
+    \texttt{truth\_proton\_p4} stays in this frame
+    (see \texttt{DeutPrimaryGeneratorAction.cc}: the forward $R_y(-\alpha)$ is
+    applied to a local copy only; \texttt{fMomentum} is never rewritten).
+\end{itemize}
+
+\textbf{All truth vs.\ reco plots and all interval coverage numbers in this
+report are in the target frame.} Reco tools apply $R_y(+\alpha_\mathrm{tgt})$
+at the write stage; the $3\times3$ momentum covariance is rotated as
+$\Sigma'=R\Sigma R^\mathrm{T}$; $px/py/pz$ Fisher/Laplace intervals are
+Gaussian-rebuilt from the rotated diagonals; $|\vec p|$ is rotation-invariant.
+MCMC/profile asymmetric quantile information degrades to Gaussian fallback.
+Prior to 2026-04-19 this rotation was missing; the affected
+$\Delta p_x \approx -p_z\sin\alpha \approx -33$~MeV/$c$ bias contaminated
+all pre-fix plots ($p_z \approx 627$~MeV/$c$; $\approx\!-52$~MeV/$c$ for
+$p_z \approx 1$~GeV/$c$). Fisher 68\% $p_x$ coverage recovered from $\approx 0.05$
+to $\approx 0.80$ after the fix.
+Shared helper: \texttt{libs/analysis\_pdc\_reco/include/PDCFrameRotation.hh}.
+\end{frame}
+
 \begin{frame}{Study Scope}
 \textbf{Physics question}
 \begin{itemize}

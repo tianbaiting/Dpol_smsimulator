@@ -2,6 +2,7 @@
 #include "GeometryManager.hh"
 #include "MagneticField.hh"
 #include "NEBULAReconstructor.hh"
+#include "PDCFrameRotation.hh"
 #include "PDCSimAna.hh"
 #include "PDCMomentumReconstructor.hh"
 #include "PDCRecoRuntime.hh"
@@ -14,6 +15,7 @@
 #include "TTree.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <filesystem>
@@ -329,6 +331,7 @@ bool ProcessSingleFile(const fs::path& input_file,
                        reco::PDCMomentumReconstructor& proton_reco,
                        const reco::RecoConfig& proton_config,
                        const reco::TargetConstraint& target_constraint,
+                       double target_angle_rad,
                        FileStats* stats) {
     if (!stats) {
         return false;
@@ -509,10 +512,15 @@ bool ProcessSingleFile(const fs::path& input_file,
             pdc_track.pdc1 = track.start;
             pdc_track.pdc2 = track.end;
 
-            const reco::RecoResult reco_result = proton_reco.Reconstruct(pdc_track, target_constraint, proton_config);
-            if ((reco_result.status == reco::SolverStatus::kSuccess ||
-                 reco_result.status == reco::SolverStatus::kNotConverged) &&
-                reco_result.p4_at_target.P() > 0.0) {
+            const reco::RecoResult reco_result_lab = proton_reco.Reconstruct(pdc_track, target_constraint, proton_config);
+            if ((reco_result_lab.status == reco::SolverStatus::kSuccess ||
+                 reco_result_lab.status == reco::SolverStatus::kNotConverged) &&
+                reco_result_lab.p4_at_target.P() > 0.0) {
+                // [EN] Rotate reco from lab frame to target frame so it matches truth
+                // (truth stays in the event-generator "beam-as-Z" frame).
+                // [CN] 把 reco 从 lab 系旋到靶系，与 truth（事件发生器的 beam-as-Z 系）对齐。
+                const reco::RecoResult reco_result =
+                    RotateRecoResultToTargetFrame(reco_result_lab, target_angle_rad);
                 const double nan = std::numeric_limits<double>::quiet_NaN();
                 auto append_interval = [](const reco::IntervalEstimate& interval,
                                           std::vector<double>* lower68,
@@ -740,6 +748,7 @@ int main(int argc, char* argv[]) {
                                               proton_reco,
                                               proton_config,
                                               target_constraint,
+                                              geometry.GetTargetAngleRad(),
                                               &file_stats);
             if (!ok) {
                 continue;
