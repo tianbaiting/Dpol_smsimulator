@@ -24,7 +24,7 @@ SPECIAL_POINTS = [(px, py) for py in (-20.0, 0.0, 20.0)
 DEFAULT_MERGED = (
     "build/test_output/ensemble_n50_targetframe/g4_fluctuation/ensemble_pdc_reco_merged.csv"
 )
-DEFAULT_OUT_DIR = "docs/reports/reconstruction"
+DEFAULT_OUT_DIR = "docs/reports/reconstruction/figures/g4_fluctuation/reco_momentum"
 DEFAULT_TRUTH_PZ = 627.0
 
 
@@ -114,7 +114,7 @@ def main():
     rows = []
     for px, py in SPECIAL_POINTS:
         tag = f"px{int(px):+d}_py{int(py):+d}".replace("+", "p").replace("-", "m")
-        out_path = out_dir / f"reco_momentum_dispersion_{tag}.png"
+        out_path = out_dir / f"{tag}.png"
         info = plot_one_point(df, px, py, args.truth_pz, out_path)
         rows.append(info)
         print(f"[plot] wrote {out_path}  N={info['N']}  "
@@ -128,7 +128,7 @@ def main():
 
     # 3x5 overview grids, one per component.
     for comp in ("px", "py", "pz"):
-        grid_path = out_dir / f"reco_momentum_dispersion_grid_{comp}.png"
+        grid_path = out_dir / f"grid_{comp}.png"
         plot_component_grid(df, comp, args.truth_pz, grid_path)
         print(f"[plot] wrote {grid_path}")
 

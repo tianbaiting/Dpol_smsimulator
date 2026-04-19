@@ -114,7 +114,7 @@ PDC 位置分辨 & $\sigma_{uv} = 0.5\;\mathrm{mm}$ & Geant4 模拟中的 smeari
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\textwidth]{samurai_geometry_xz.png}
+\includegraphics[width=0.92\textwidth]{figures/geometry/samurai_geometry_xz.png}
 \caption{SAMURAI 磁谱仪 $xz$ 平面俯视图（从 Geant4 VRML 导出渲染）。蓝色：SAMURAI 偶极磁铁（绕 $y$ 轴旋转 $30^\circ$，中心在原点）；绿色（磁铁内部）：靶点（$z \approx -1070\;\mathrm{mm}$）；黄色：质子轨迹在磁场中弯曲（$p_z = 627\;\mathrm{MeV}/c$，$p_x$ 扫描）；粉色：PDC1（$z \approx 4000\;\mathrm{mm}$）和 PDC2（$z \approx 5000\;\mathrm{mm}$）漂移室。}
 \end{figure}
 
@@ -1292,21 +1292,21 @@ PDC2 比 PDC1 大 $\sim$25--40\%（$y$ 方向更明显），与两者间 $\sim$4
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.96\textwidth]{pdc_hit_dispersion_pxp0_pyp0.png}
+\includegraphics[width=0.96\textwidth]{figures/g4_fluctuation/pdc_hits/pxp0_pyp0.png}
 \caption{$(p_x, p_y, p_z)=(0, 0, 627)$ MeV/$c$ 真值下 49 份 G4 重复事件的 PDC1/PDC2 命中散点。左 PDC1、右 PDC2。注意 $y$ 方向尺度仍是 $x$ 的 $\sim$4 倍；红线为 $p_{50}$ 中位数。关掉 Sn 靶后 $\sigma_y$ 从 $\sim$100 mm 降到 $\sim$10--15 mm。}
 \label{fig:pdc_disp_0_0}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.96\textwidth]{pdc_hit_dispersion_pxp100_pyp0.png}
+\includegraphics[width=0.96\textwidth]{figures/g4_fluctuation/pdc_hits/pxp100_pyp0.png}
 \caption{$(+100, 0, 627)$ MeV/$c$ 真值下的同样对比。$\sigma_x$ 比 $(0,0)$ 略大（3.7/5.7 mm vs.\ 2.8/3.5 mm），$\sigma_y$ 略小（9.1/12.3 mm vs.\ 11.2/15.2 mm）。}
 \label{fig:pdc_disp_100_0}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.99\textwidth]{pdc_hit_dispersion_overview.png}
+\includegraphics[width=0.99\textwidth]{figures/g4_fluctuation/pdc_hits/overview.png}
 \caption{完整 $5\times 3$ 真值网格的 PDC2 命中弥散总览（行 $p_y \in \{+20, 0, -20\}$，列 $p_x \in \{-100,-50,0,50,100\}\;\mathrm{MeV}/c$）。每个格内是该真值点 $N{=}48$--$50$ 份 G4 重复事件的 PDC2 $(x,y)$ 散点，标注的是鲁棒半宽 $\sigma_x,\sigma_y$。PDC1 的数据见 \texttt{pdc\_dispersion\_summary.csv}。整个网格上 PDC 平面的 $\sigma_y$ 都在 $8$--$15$ mm 量级，$\sigma_x$ 在 $2$--$6$ mm——比 0.2 mm 的丝坐标涂抹大 $10$--$75\times$，但已经是关掉 Sn 靶之后"纯 PDC 气体 MS + 丝坐标噪声"的物理下限。\textbf{轨迹噪声仍主导测量噪声，但已是真实 PDC 追踪实验的 MS 水平。}}
 \label{fig:pdc_disp_overview}
 \end{figure}
@@ -1321,19 +1321,50 @@ RK4 fitter 做的是 $\vec p_\mathrm{target} \mapsto (\vec r_\mathrm{PDC1}, \vec
 \paragraph{坐标系提示。}
 以下所有 $p_x, p_y, p_z$ 直方图都在\textbf{靶系}下给出（见 \S\ref{sec:frame_convention}）。2026-04-19 修复前的图因缺少 lab$\to$target 的 $R_y$ 旋转而在 $p_x$ 上带有 $-p_z\sin\alpha \approx -627\times\sin 3^\circ \approx -33\;\mathrm{MeV}/c$ 的系统性偏差（pre-fix 版本 PNG 归档于 \texttt{ensemble\_n50\_with\_target\_backup/}），本节所有数字与 PNG 为修复后重跑版本（\texttt{ensemble\_n50\_targetframe/}）。
 
+\paragraph{Fisher $\sigma$ 带和 Geant4 物理的边界。}
+Fisher 矩阵的所有信息都来自 RK 前向模型：
+\[
+F \;=\; J^{\!\top}\,\Sigma_\mathrm{meas}^{-1}\,J,
+\qquad
+\Sigma_p^\mathrm{Fisher} \;=\; F^{-1},
+\]
+其中 $J = \partial\,(\vec r_\mathrm{PDC1},\vec r_\mathrm{PDC2})/\partial(p_x,p_y,p_z)$ 是最佳拟合点处的 RK Jacobian，$\Sigma_\mathrm{meas}$ 只装了 PDC 丝的位置协方差（$\sigma_\mathrm{wire}\!\sim\!0.2$ mm）。\textbf{Fisher 能看到的只有这两样}——测量噪声 + 确定性前向模型的一阶展开。
+
+\vspace{0.05cm}
+\textbf{Fisher 看不到的 Geant4 随机过程}（每一条都会把真实的重建散布推得比 Fisher $\sigma$ 更宽）：
+\begin{itemize}\itemsep0pt
+  \item PDC 气体、窗口、约 1 m 空气中的多次库仑散射（multiple scattering，MS）；
+  \item 电离能损的 Landau/Vavilov 涨落——RK 传播只带 $dE/dx$ 的\emph{均值}；
+  \item $\delta$ 电子产生、次级核反应；
+  \item PDC 漂移气体 cluster 扩散的非高斯尾巴（$\sigma_\mathrm{wire}$ 是理想化的高斯）。
+\end{itemize}
+
+\vspace{0.05cm}
+\textbf{ensemble 直方图才看得见完整物理}。固定真值 $(p_x,p_y,p_z)$、换 50 个随机种子独立跑 Geant4，直方图宽度就是 \emph{实测的} $\sigma_p^\mathrm{G4}$。这也是本节两张图（Step 1 PDC 弥散 + Step 2 reco 动量弥散）的存在意义：Fisher 给 \emph{预测}，G4 ensemble 给 \emph{真相}。
+
+\vspace{0.05cm}
+\textbf{G4/Fisher 比值 $r$ 的读法}：
+\begin{itemize}\itemsep0pt
+  \item $r \gg 1$ $\Rightarrow$ Geant4 物理（主要是 MS）在这个方向上贡献了 Fisher 看不见的散布。$p_y$ 在 $r\!\approx\!1.9$ 处就是这种情况——磁场在 $xz$ 平面里弯曲，$p_y$ 完全不受磁铁约束；PDC 气体里每一次 MS 踢都在 $y$ 上加一份 Fisher 无法预估的方差。
+  \item $r \lesssim 1$ $\Rightarrow$ 假设的 $\sigma_\mathrm{wire}$ 比 G4 实际给出的 PDC 读数涨落偏保守。$p_x,\,p_z,\,|\vec p|$ 在 $r\!\approx\!0.8$ 就是这种情况：偶极约束足够强，丝测量噪声主导，而 $0.2$ mm 标称值略大于实际。
+\end{itemize}
+
+\vspace{0.05cm}
+\textbf{结论}。想让 Fisher 看到 Geant4 物理，只能把过程协方差并入测量协方差：$\Sigma_\mathrm{meas} \to \Sigma_\mathrm{meas} + \Sigma_\mathrm{MS} + \Sigma_\mathrm{strag}$（Kalman/Gluckstern 径迹拟合的做法）。当前 RK 后端没有这一步，所以 $p_y$ Fisher $\sigma$ 系统性欠估 $\sim\!2\times$。Profile / MCMC 的输入和 Fisher 共用同一个前向模型，该欠估它们也逃不掉；真正的修法是 Cartesian 重参数 + 加入过程噪声。
+
 \paragraph{逐点重建动量直方图。}
 脚本：\texttt{scripts/analysis/plot\_reco\_momentum\_dispersion.py}。每点一张 1×3 子图（reco px / py / pz），黑竖线 = 真值、红虚线 = G4 中位数、粉带 = Fisher $\sigma$（围绕中位数）。
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.98\textwidth]{reco_momentum_dispersion_pxp0_pyp0.png}
+\includegraphics[width=0.98\textwidth]{figures/g4_fluctuation/reco_momentum/pxp0_pyp0.png}
 \caption{基线 $(0,0,627)$ 真值下 49 份 G4 重复事件的 reco $(p_x, p_y, p_z)$ 分布（靶系）。2026-04-19 修复后，$p_x$ 中位数已居中在 $+0.3\;\mathrm{MeV}/c$（修复前为 $-33\;\mathrm{MeV}/c$，就是漏了坐标系旋转），G4 $\sigma=4.5$ vs.\ Fisher $\sigma=7.1$，比值 0.63——Fisher 稍保守；$p_y$ G4=1.5 vs.\ Fisher=0.8，比值 1.96（这是真正的 Fisher 欠估方向）；$p_z$ 中位 $-1.3\;\mathrm{MeV}/c$、G4=4.4 vs.\ Fisher=6.3，比值 0.69。修复后 $p_x$ 已无系统偏差，余下只剩 $p_y$ Fisher 欠估和 $(u,v,p)$ 线性化残留。}
 \label{fig:reco_disp_0_0}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.98\textwidth]{reco_momentum_dispersion_pxp100_pyp0.png}
+\includegraphics[width=0.98\textwidth]{figures/g4_fluctuation/reco_momentum/pxp100_pyp0.png}
 \caption{$(+100, 0, 627)$ 真值下 50 份 G4 重复事件（靶系）。修复后 $p_x$ 中位 $+0.03\;\mathrm{MeV}/c$（已居中），G4=3.8 vs.\ Fisher=6.7，比值 0.57（Fisher 稍保守）；$p_y$ G4=1.4 vs.\ Fisher=0.5，比值 2.78（15 个真值点中比值最大——Fisher $\sigma_{p_y}$ 最紧而 G4 典型）；$p_z$ G4=5.2 vs.\ Fisher=7.8，比值 0.67。不同真值点的 Fisher/残差比值确实有 $\sim 2\text{-}3\times$ 的点到点差异——下表汇总。}
 \label{fig:reco_disp_100_0}
 \end{figure}
@@ -1343,21 +1374,21 @@ RK4 fitter 做的是 $\vec p_\mathrm{target} \mapsto (\vec r_\mathrm{PDC1}, \vec
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.99\textwidth]{reco_momentum_dispersion_grid_px.png}
+\includegraphics[width=0.99\textwidth]{figures/g4_fluctuation/reco_momentum/grid_px.png}
 \caption{完整 $5\times 3$ 真值网格的 reco $p_x$ 直方图（靶系；行 $p_y \in \{+20,0,-20\}$，列 $p_x \in \{-100,-50,0,50,100\}\;\mathrm{MeV}/c$）。每格黑线 = 真值、红虚线 = G4 中位数、粉带 = Fisher $\sigma$；标注 $r$ = G4 $\sigma$ / Fisher $\sigma$。2026-04-19 修复后，中位偏差收敛到 $|\langle\Delta p_x\rangle| \lesssim 3\;\mathrm{MeV}/c$（修复前统一偏 $-30$ 到 $-40$，全盘是坐标系错误）；$(-100,0)$ 格仍是 LM 在 PDC 接收度边缘掉到粗格盆地的异常点，G4 $\sigma$ 飙到 $\sim 35\;\mathrm{MeV}/c$，比值 3.5。除该格外比值稳定在 $0.4$--$0.9$，\textbf{Fisher 大小基本正确、偏差已消除}，剩下主要是粗格 LM 盆地在极端动量点的散布。}
 \label{fig:reco_disp_grid_px}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.99\textwidth]{reco_momentum_dispersion_grid_py.png}
+\includegraphics[width=0.99\textwidth]{figures/g4_fluctuation/reco_momentum/grid_py.png}
 \caption{同样布局，分量改为 $p_y$（靶系）。$p_y$ 方向本就不受 $R_y$ 旋转影响，修复前后数字不变：G4 半宽 $1.1$--$1.7\;\mathrm{MeV}/c$，Fisher $\sigma_{p_y}$ 在 $0.5$--$1.0\;\mathrm{MeV}/c$，比值 $1.2$--$3.2$（全局中位 1.86）——这是 \textbf{Fisher $\sigma_{p_y}$ 系统性欠估 $\sim 2\times$} 的可视化证据。物理上归因于 $(u,v,p)$ 参数化把 $p_y$ 响应线性化后低估了实际传递涨落。中位偏差始终 $|\langle\Delta p_y\rangle| \lesssim 0.5\;\mathrm{MeV}/c$。}
 \label{fig:reco_disp_grid_py}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.99\textwidth]{reco_momentum_dispersion_grid_pz.png}
+\includegraphics[width=0.99\textwidth]{figures/g4_fluctuation/reco_momentum/grid_pz.png}
 \caption{同样布局，分量改为 $p_z$（靶系）。修复后整个网格 G4/Fisher 比值主要在 $0.5$--$0.9$（全局 0.80）——Fisher 对 $p_z$ \emph{略微保守}。中位偏差 $|\langle\Delta p_z\rangle| \lesssim 3\;\mathrm{MeV}/c$（修复前存在 $p_z\cos\alpha - p_z \approx -0.9\;\mathrm{MeV}/c$ 的小偏差，修复后消除）。唯一例外仍是 $(-100,0)$ 格：LM 拟合在 PDC 接收度边缘失败导致 G4 $\sigma\sim 22\;\mathrm{MeV}/c$，比值飙到 3.5。所有格的真值 $p_z=627\;\mathrm{MeV}/c$。}
 \label{fig:reco_disp_grid_pz}
 \end{figure}

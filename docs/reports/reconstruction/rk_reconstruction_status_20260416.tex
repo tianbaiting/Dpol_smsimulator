@@ -89,7 +89,7 @@ Shared helpers: \texttt{libs/analysis\_pdc\_reco/include/PDCFrameRotation.hh}.
 
 \column{0.42\textwidth}
 \centering
-\includegraphics[width=\textwidth]{samurai_geometry_xz.png}
+\includegraphics[width=\textwidth]{figures/geometry/samurai_geometry_xz.png}
 \vspace{-0.3cm}
 {\tiny Geant4 VRML render ($xz$ plane)}
 \end{columns}
@@ -777,7 +777,7 @@ Remaining driver: $(u,v,p)$ linearisation. Adding $dE/dx$ in the propagator and 
 \begin{itemize}
 \item \texttt{scripts/analysis/extract\_pdc\_hits\_from\_reco.py} (PyROOT $\to$ CSV)
 \item \texttt{scripts/analysis/plot\_pdc\_hit\_dispersion.py} (one PNG per truth point)
-\item Output: \texttt{docs/reports/reconstruction/pdc\_hit\_dispersion\_px\{...\}\_py\{...\}.png}
+\item Output: \texttt{docs/reports/reconstruction/figures/g4\_fluctuation/pdc\_hits/px\{...\}\_py\{...\}.png}
 \end{itemize}
 
 \textbf{Key observation}. Dispersion is strongly \emph{anisotropic}: $\sigma_\mathrm{PDC,y} \gg \sigma_\mathrm{PDC,x}$ (factor 3--4). SAMURAI dipole bends in $x\text{-}z$, so the field constrains $x$ but leaves $y$ free to drift with every multiple-scattering kick. This is the geometric root cause of the $p_y$ information collapse. Without the Sn target the absolute scale drops to $\sigma_y{\sim}10$--$15$ mm (was $\sim 100$ mm with target) --- but the anisotropy remains.
@@ -786,7 +786,7 @@ Remaining driver: $(u,v,p)$ linearisation. Adding $dE/dx$ in the propagator and 
 % ============================================================
 \begin{frame}{PDC Hit Dispersion --- Baseline $(p_x,p_y)=(0,0)$}
 \centering
-\includegraphics[width=0.96\textwidth]{pdc_hit_dispersion_pxp0_pyp0.png}
+\includegraphics[width=0.96\textwidth]{figures/g4_fluctuation/pdc_hits/pxp0_pyp0.png}
 
 \vspace{0.1cm}
 \small
@@ -796,7 +796,7 @@ Remaining driver: $(u,v,p)$ linearisation. Adding $dE/dx$ in the propagator and 
 % ============================================================
 \begin{frame}{PDC Hit Dispersion --- $(p_x,p_y)=(+100,0)$}
 \centering
-\includegraphics[width=0.96\textwidth]{pdc_hit_dispersion_pxp100_pyp0.png}
+\includegraphics[width=0.96\textwidth]{figures/g4_fluctuation/pdc_hits/pxp100_pyp0.png}
 
 \vspace{0.1cm}
 \small
@@ -806,7 +806,7 @@ Remaining driver: $(u,v,p)$ linearisation. Adding $dE/dx$ in the propagator and 
 % ============================================================
 \begin{frame}{PDC2 Hit Dispersion --- Full $5\times 3$ Truth Grid}
 \centering
-\includegraphics[width=0.99\textwidth]{pdc_hit_dispersion_overview.png}
+\includegraphics[width=0.99\textwidth]{figures/g4_fluctuation/pdc_hits/overview.png}
 
 \vspace{0.05cm}
 {\scriptsize Rows = $p_y \in \{+20, 0, -20\}$, cols = $p_x \in \{-100,-50,0,50,100\}$ MeV/$c$. Each cell: PDC2 (x,y) scatter for the $N{=}48$--$50$ replicas at that truth point, with robust $\sigma_x,\sigma_y$ annotated. PDC1 is similar and tabulated in \texttt{pdc\_dispersion\_summary.csv}. Trajectory $\sigma_y$ stays in $8$--$15$~mm across the whole grid; $\sigma_x$ in $2$--$6$~mm. Target MS is no longer inflating these numbers.}
@@ -824,14 +824,48 @@ Remaining driver: $(u,v,p)$ linearisation. Adding $dE/dx$ in the propagator and 
 \textbf{Source scripts}:
 \begin{itemize}
 \item \texttt{scripts/analysis/plot\_reco\_momentum\_dispersion.py}
-\item Output: \texttt{docs/reports/reconstruction/reco\_momentum\_dispersion\_px\{...\}\_py\{...\}.png}
+\item Output: \texttt{docs/reports/reconstruction/figures/g4\_fluctuation/reco\_momentum/px\{...\}\_py\{...\}.png}
 \end{itemize}
+\end{frame}
+
+% ============================================================
+\begin{frame}{What the Fisher $\sigma$ Band Does (and Does Not) See}
+\small
+\textbf{Fisher input channels --- everything it knows comes from the RK forward model}:
+\[
+F \;=\; J^{\!\top}\,\Sigma_\mathrm{meas}^{-1}\,J,
+\qquad
+\Sigma_p^\mathrm{Fisher} \;=\; F^{-1},
+\]
+where $J = \partial\,(\vec r_\mathrm{PDC1},\vec r_\mathrm{PDC2})\,/\,\partial(p_x,p_y,p_z)$ is the RK Jacobian at the best-fit momentum and $\Sigma_\mathrm{meas}$ is the PDC wire-position covariance ($\sigma_\mathrm{wire}\!\sim\!0.2$~mm per layer). That is \emph{all} the Fisher matrix has seen.
+
+\vspace{0.10cm}
+\textbf{Geant4 physics that Fisher is blind to} (every one of these \emph{adds} spread that shows up in the histograms):
+\begin{itemize}\itemsep0pt
+  \item multiple Coulomb scattering in PDC gas, window foils, $\sim$1~m of air between PDC1 and PDC2;
+  \item ionisation-energy-loss straggling (Landau/Vavilov) --- only the \emph{mean} $dE/dx$ enters the RK propagator;
+  \item $\delta$-electron emission, secondary nuclear interactions;
+  \item PDC drift-gas cluster-diffusion tails beyond the Gaussian $\sigma_\mathrm{wire}$ assumption.
+\end{itemize}
+
+\vspace{0.05cm}
+\textbf{Ensemble histograms are the other knob --- they contain everything}. Fixing truth $(p_x,p_y,p_z)$ and running 50 independent Geant4 replicas (different seeds) samples the full stochastic chain; the histogram width is the realised $\sigma_p^\mathrm{G4}$.
+
+\vspace{0.05cm}
+\textbf{Reading the G4/Fisher ratio}:
+\begin{itemize}\itemsep0pt
+  \item $r \gg 1$ $\Rightarrow$ G4 physics (mostly multiple scattering) contributes spread Fisher cannot predict. $p_y$ at ratio $\approx\!1.9$ is the main sign of this --- the dipole bends in $xz$ so $p_y$ is not constrained by the field, and every MS kick in the PDC gas deflects $y$ with variance $F$ has no input to estimate.
+  \item $r \lesssim 1$ $\Rightarrow$ the assumed $\sigma_\mathrm{wire}$ is conservative relative to the actual PDC smearing that G4 produces. $p_x,\,p_z,\,|\vec p|$ at ratio $\approx\!0.8$ sit here: the dipole constraint is rigid enough that wire noise dominates, and our nominal $0.2$~mm overshoots.
+\end{itemize}
+
+\vspace{0.05cm}
+\textbf{Takeaway}. The only way to make Fisher ``see'' Geant4 physics is to fold the process covariance into $\Sigma_\mathrm{meas}$ (Kalman/Gluckstern-style: replace $\Sigma_\mathrm{meas}$ by $\Sigma_\mathrm{meas}+\Sigma_\mathrm{MS}+\Sigma_\mathrm{strag}$). Current RK backend does not do this --- hence $p_y$ Fisher sigma under-sizes by $\sim\!2\times$. Profile and MCMC intervals suffer the same input, so they share the same deficit; only re-parameterising in Cartesian with process noise added closes the gap.
 \end{frame}
 
 % ============================================================
 \begin{frame}{Reco Momentum Dispersion --- Baseline $(0,0,627)$}
 \centering
-\includegraphics[width=0.98\textwidth]{reco_momentum_dispersion_pxp0_pyp0.png}
+\includegraphics[width=0.98\textwidth]{figures/g4_fluctuation/reco_momentum/pxp0_pyp0.png}
 
 \vspace{0.1cm}
 \small
@@ -841,7 +875,7 @@ Black line = truth, red dashed = G4 median, pink band = Fisher $\sigma$ around m
 % ============================================================
 \begin{frame}{Reco Momentum Dispersion --- $(+100,0,627)$}
 \centering
-\includegraphics[width=0.98\textwidth]{reco_momentum_dispersion_pxp100_pyp0.png}
+\includegraphics[width=0.98\textwidth]{figures/g4_fluctuation/reco_momentum/pxp100_pyp0.png}
 
 \vspace{0.1cm}
 \small
@@ -881,7 +915,7 @@ $0$    & $-20$ & 3.2  &  8.4 & 4.6  & 10.6 & 0.84 & 1.61 & 0.73 \\
 % ============================================================
 \begin{frame}{Reco $p_x$ Dispersion --- Full $5\times 3$ Truth Grid}
 \centering
-\includegraphics[width=0.99\textwidth]{reco_momentum_dispersion_grid_px.png}
+\includegraphics[width=0.99\textwidth]{figures/g4_fluctuation/reco_momentum/grid_px.png}
 
 \vspace{0.05cm}
 {\scriptsize Rows = truth $p_y \in \{+20, 0, -20\}$, cols = truth $p_x \in \{-100,-50,0,50,100\}$ MeV/$c$ (target frame). Per cell: histogram of $N{=}48$--$50$ reco $p_x$ values, black = truth, red dashed = G4 median, pink = Fisher $\sigma$ band. Annotated $r$ = G4 $\sigma$ / Fisher $\sigma$. Post-fix: median bias $|\langle\Delta p_x\rangle|\lesssim 3$~MeV/$c$ everywhere (pre-fix was a uniform $-30$ to $-40$, which was the coordinate-frame artifact). $(-100,0)$ cell is the LM coarse-grid basin at the PDC acceptance edge, with G4 $\sigma\sim 35$~MeV/$c$ and ratio 3.5; elsewhere ratios sit at $0.4$--$0.9$ --- Fisher sizing is right, bias is gone.}
@@ -890,7 +924,7 @@ $0$    & $-20$ & 3.2  &  8.4 & 4.6  & 10.6 & 0.84 & 1.61 & 0.73 \\
 % ============================================================
 \begin{frame}{Reco $p_y$ Dispersion --- Full $5\times 3$ Truth Grid}
 \centering
-\includegraphics[width=0.99\textwidth]{reco_momentum_dispersion_grid_py.png}
+\includegraphics[width=0.99\textwidth]{figures/g4_fluctuation/reco_momentum/grid_py.png}
 
 \vspace{0.05cm}
 {\scriptsize Same layout, now for $p_y$ (target frame). $p_y$ is invariant under the $R_y$ fix, so these numbers are unchanged pre/post-fix. G4 halfwidth is $1.1$--$1.7\;\mathrm{MeV}/c$; Fisher $\sigma_{p_y}$ is $0.5$--$1.0\;\mathrm{MeV}/c$; ratios are $1.2$--$3.2$ (global median 1.86). This is the systematic Fisher-sigma under-sizing discussed in the Outlook --- the $(u,v,p)$ parameterisation linearises the $p_y$ response in a way that excludes a real fraction of the injected spread. Median bias $|\langle\Delta p_y\rangle|\lesssim 0.5$~MeV/$c$ throughout.}
@@ -899,7 +933,7 @@ $0$    & $-20$ & 3.2  &  8.4 & 4.6  & 10.6 & 0.84 & 1.61 & 0.73 \\
 % ============================================================
 \begin{frame}{Reco $p_z$ Dispersion --- Full $5\times 3$ Truth Grid}
 \centering
-\includegraphics[width=0.99\textwidth]{reco_momentum_dispersion_grid_pz.png}
+\includegraphics[width=0.99\textwidth]{figures/g4_fluctuation/reco_momentum/grid_pz.png}
 
 \vspace{0.05cm}
 {\scriptsize Same layout, now for $p_z$ (target frame). Post-fix G4/Fisher ratios sit mostly at $0.5$--$0.9$ (global 0.80) --- Fisher is slightly conservative for $p_z$. Median bias $|\langle\Delta p_z\rangle|\lesssim 3$~MeV/$c$ across the grid (pre-fix had a small $p_z\cos\alpha - p_z \approx -0.9$~MeV/$c$ rotation residual that is now eliminated). The $(-100,0)$ cell is again the outlier, with G4 $\sigma\!\sim\!22\;\mathrm{MeV}/c$ and ratio 3.5, driven by LM failures at the PDC acceptance edge. Truth $p_z=627\;\mathrm{MeV}/c$ throughout.}

@@ -26,7 +26,7 @@ SPECIAL_POINTS = [(px, py) for py in (-20.0, 0.0, 20.0)
 DEFAULT_MERGED = (
     "build/test_output/ensemble_n50_targetframe/g4_fluctuation/ensemble_pdc_reco_merged.csv"
 )
-DEFAULT_OUT_DIR = "docs/reports/reconstruction"
+DEFAULT_OUT_DIR = "docs/reports/reconstruction/figures/g4_fluctuation/pdc_hits"
 
 
 def robust_halfwidth(s: pd.Series) -> float:
@@ -136,14 +136,14 @@ def main():
     summary_rows = []
     for px, py in SPECIAL_POINTS:
         tag = f"px{int(px):+d}_py{int(py):+d}".replace("+", "p").replace("-", "m")
-        out_path = out_dir / f"pdc_hit_dispersion_{tag}.png"
+        out_path = out_dir / f"{tag}.png"
         info = plot_one_point(df, px, py, out_path)
         summary_rows.append(info)
         print(f"[plot] wrote {out_path}  N={info['N']}  "
               f"PDC1 σ=({info['pdc1_sigma_x']:.1f},{info['pdc1_sigma_y']:.1f})  "
               f"PDC2 σ=({info['pdc2_sigma_x']:.1f},{info['pdc2_sigma_y']:.1f})  mm")
 
-    overview_path = out_dir / "pdc_hit_dispersion_overview.png"
+    overview_path = out_dir / "overview.png"
     plot_overview(df, overview_path)
     print(f"[plot] wrote {overview_path}")
 
