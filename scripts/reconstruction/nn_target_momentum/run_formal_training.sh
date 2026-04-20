@@ -7,7 +7,7 @@ if [[ "${1:-}" == "--dry-run" ]]; then
     shift
 fi
 
-GEOM_MACRO_INPUT="${1:-build/bin/configs/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227.mac}"
+GEOM_MACRO_INPUT="${1:-configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227_target3deg.mac}"
 OUT_BASE_INPUT="${2:-data/nn_target_momentum/formal_B115T3deg}"
 
 TRAIN_EVENTS="${TRAIN_EVENTS:-200000}"
