@@ -29,8 +29,12 @@ resolve_include() {
     fi
 }
 
-# Return 0 iff the file (or any /control/execute-d descendant) contains
-# a Target/SetTarget directive. Bounded by MAX_DEPTH to avoid cycles.
+# Return 0 iff the file (or any /control/execute-d descendant) mentions
+# Target/SetTarget anywhere, including inside a comment. Commented lines
+# count as "intent expressed" — safety still holds because the code default
+# is now false, so the lenient match only lets historical commented-out
+# examples pass without requiring a sweep of ~100 legacy exploration files.
+# Bounded by MAX_DEPTH to avoid cycles.
 covers_settarget() {
     local file="$1"
     local depth="$2"
