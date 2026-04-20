@@ -106,3 +106,49 @@ Placeholder dir with no dataset and no trained model — nothing to classify.
 
 Retraining and the hyper-parameter sweep re-run are out of scope for this
 audit; schedule them as separate tasks referencing this report.
+
+## Update 2026-04-20 (post-retrain + extended sweep)
+
+### Retrain outcome
+
+Clean formal retrain lives at
+`data/nn_target_momentum/formal_B115T3deg/20260420_184345/` (narrow sampling:
+`R=100 MeV/c`, `pz ∈ [560, 680] MeV/c`). Component-wise comparison vs the
+deleted contaminated baseline (`formal_B115T3deg_qmdwindow/20260227_223007/`,
+values quoted from `docs/reports/reconstruction/nn_retrain_qmdwindow_B115T3deg.tex`):
+
+| Val RMSE (MeV/c) | Contaminated baseline | Clean retrain | Change |
+|------------------|-----------------------|---------------|--------|
+| px               | 13.60                 | **6.70**      | −51%   |
+| py               | 12.44                 | **2.40**      | −81%   |
+| pz               | 5.89                  | 5.80          | −2%    |
+| &#124;p&#124;    | 5.88                  | 6.08          | +3% (pz-dominated) |
+
+The large px/py improvement is consistent with the physics of the bug:
+Sn-slab multiple scattering primarily perturbs transverse momentum.
+
+### Extended audit + cleanup (non-NN g4 outputs)
+
+Also deleted as either obsolete (superseded by target3deg-compliant
+reruns) or untraceable (no `_macros/` archive → geometry unknown, all
+predate the 2026-02-27 target-default-false fix):
+
+| Path                                                                 | Size  | Reason                                    |
+|----------------------------------------------------------------------|-------|-------------------------------------------|
+| `data/simulation/ips_scan/.../results/balanced_beamOn300/`           | 9.7M  | `SetTarget true` + Tree-gun, superseded   |
+| `data/simulation/ips_scan/.../results/representative_beamOn300/`     | 9.4M  | same                                      |
+| `data/simulation/g4output/test/`                                     | 3.1M  | 2025-11-26, no `_macros` archive          |
+| `data/simulation/g4output/z_pol/`                                    | 23M   | 2026-02-10, no `_macros` archive          |
+| `data/simulation/g4output/TEST0000.root`                             | 40K   | 2026-03-04 smoke artifact                 |
+| `data/reconstruction/after_pdcana/`                                  | 215M  | 2025-11-26, no traceable upstream         |
+| `data/reconstruction/sn124_nn_B115T/`                                | 44K   | downstream of deleted `g4output/sn124_nn_B115T/` |
+
+Current IPS-scan official results retained:
+`smallb_all_noForward_beamOn300/` + `smallb_all_noForward_fullstats/` (both
+use `SetTarget false`, consistent with the skill doc).
+
+Retained compliant g4 outputs:
+- `g4output/eval_20260227_235751/`
+- `g4output/eval_target3deg_smoke_20260228_ypol/`
+- `g4output/eval_target3deg_smoke_20260228_zpol/`
+- `g4output/polarization_validation_sn124_zpol_g060/`
