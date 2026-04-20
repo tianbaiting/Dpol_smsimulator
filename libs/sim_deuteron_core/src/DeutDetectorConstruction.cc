@@ -54,7 +54,7 @@
 //______________________________________________________________________________
 DeutDetectorConstruction::DeutDetectorConstruction() 
   :
-  fFillAir{false}, fSetTarget{true}, fSetDump{true}, fSetIPS{false}, fTargetMat{"Sn"},
+  fFillAir{false}, fSetTarget{false}, fSetDump{true}, fSetIPS{false}, fTargetMat{"Sn"},
   fTargetPos{0,0,0}, fTargetSize{50,50,5}, fTargetAngle{0}, fIPSAxisOffset{0}
   // Otherwise they'd be initialized randomly
 {
