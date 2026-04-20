@@ -24,3 +24,10 @@ target_link_libraries(test_DeutDetectorConstruction_defaults PRIVATE
 gtest_discover_tests(test_DeutDetectorConstruction_defaults
     PROPERTIES LABELS "unit"
 )
+
+# Macro-config regression test: no .mac sets Target/Position without Target/SetTarget
+add_test(NAME test_no_bare_target_macros
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test_no_bare_target_macros.sh
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+set_tests_properties(test_no_bare_target_macros PROPERTIES LABELS "unit")
