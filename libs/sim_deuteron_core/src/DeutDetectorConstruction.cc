@@ -354,6 +354,22 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
 
   physiWorld = expHall_phys;  // 存储世界体积
 
+  // [EN] Double-scattering guard: Tree-gun input already contains post-target
+  // secondaries (IMQMD / Faddeev output); enabling the target would scatter them twice.
+  // [CN] 双重散射保护：Tree-gun 输入已经是穿靶后的次级粒子，再开启靶物质会造成二次散射
+  if (fSetTarget) {
+    auto* genAction = G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+    if (auto* basic = dynamic_cast<const PrimaryGeneratorActionBasic*>(genAction)) {
+      if (basic->GetBeamType() == "Tree") {
+        SM_WARN("Target is ENABLED with Tree-gun input. Tree input typically "
+                "contains post-target secondaries (IMQMD / Faddeev output); "
+                "enabling the target will cause double scattering. Set "
+                "'/samurai/geometry/Target/SetTarget false' unless this is "
+                "an intentional beam-on-target study.");
+      }
+    }
+  }
+
   return expHall_phys;
 }
 //______________________________________________________________________________
