@@ -362,6 +362,8 @@ if [[ "${DRY_RUN}" -eq 0 ]]; then
     export R_MAX_MEVC PZ_MIN_MEVC PZ_MAX_MEVC
     export TARGET_X_MM TARGET_Y_MM TARGET_Z_MM TARGET_X_CM TARGET_Y_CM TARGET_Z_CM
     export TRAIN_EVENTS VAL_EVENTS TEST_EVENTS TRAIN_SEED VAL_SEED TEST_SEED
+    CAMPAIGN_TAG="formal_B115T3deg_diskR${R_MAX_MEVC%.*}_pz${PZ_MIN_MEVC%.*}_${PZ_MAX_MEVC%.*}"
+    export CAMPAIGN_TAG
     export TREE_TRAIN TREE_VAL TREE_TEST
     export SIM_ROOT_TRAIN SIM_ROOT_VAL SIM_ROOT_TEST
     export DATASET_TRAIN_CSV DATASET_VAL_CSV DATASET_TEST_CSV
@@ -375,7 +377,7 @@ from pathlib import Path
 
 manifest_path = Path(os.environ["MANIFEST_PATH"])
 manifest = {
-    "campaign": "formal_B115T3deg_diskR150_pz500_700",
+    "campaign": os.environ["CAMPAIGN_TAG"],
     "geometry": {
         "path": os.environ["GEOM_ABS"],
         "sha256": os.environ.get("GEOM_SHA256", ""),
