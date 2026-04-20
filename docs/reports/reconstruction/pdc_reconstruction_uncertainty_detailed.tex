@@ -160,7 +160,7 @@ MCMC posterior & Random-walk samples from the posterior & Bayesian credible inte
 \toprule
 Backend & Matched events & Mean \(|\mathrm{bias}_{p_x}|\) & Mean \(|\mathrm{bias}_{p_y}|\) & Mean \(|\mathrm{bias}_{p_z}|\) \\
 \midrule
-NN & 5 & 21.04 & 15.56 & 3.10 \\
+NN \textcolor{red}{(contaminated model)} & 5 & 21.04 & 15.56 & 3.10 \\
 RK fixed-target & 5 & 178.35 & 11.46 & 234.39 \\
 RK three-point & 5 & 651.35 & 15.77 & 190.31 \\
 RK two-point & 5 & 67.99 & 1.40 & 604.92 \\
@@ -170,7 +170,7 @@ MultiDim & 0 & n/a & n/a & n/a \\
 \end{table}
 
 \vspace{0.1cm}
-On this fixture, the NN branch is currently the strongest point estimator, while the RK modes still need calibration or configuration tuning for this truth-grid operating point.
+On this fixture, the NN branch is currently the strongest point estimator, while the RK modes still need calibration or configuration tuning for this truth-grid operating point. \textcolor{red}{Audit note 2026-04-20: the NN row was produced by the deleted polluted model; the clean retrain is expected to keep (and likely extend) its point-estimate lead, especially on $p_x,p_y$. Also note RK numbers here predate the 2026-04-16 RK bugfix --- see \texttt{rk\_reconstruction\_status\_20260416} for current RK.}
 \end{frame}
 
 \begin{frame}{How to Read the Truth-Grid Result}

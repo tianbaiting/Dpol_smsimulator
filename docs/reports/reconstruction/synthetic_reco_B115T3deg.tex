@@ -155,7 +155,15 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}{QMD-Window Retraining Test (New)}
+\begin{frame}{QMD-Window Retraining Test \textcolor{red}{[CONTAMINATED --- see audit 2026-04-20]}}
+\textcolor{red}{\footnotesize RMSE rows below are from the polluted
+\texttt{formal\_B115T3deg\_qmdwindow/20260227\_223007/} training (target
+silently scattered the Tree-gun input a second time). Kept-fraction rows are
+geometry-only and remain valid. Clean retrain at
+\texttt{formal\_B115T3deg/20260420\_184345/} gives val $|\vec p|$ RMSE $=6.08$
+with $p_x$ $-51\%$, $p_y$ $-81\%$ vs contaminated baseline. See
+\texttt{docs/audit/2026-04-20-nn\_target\_contamination\_audit.md}.}
+
 \textbf{New campaign setup}
 \begin{itemize}
 \item Geometry: \texttt{geometry\_B115T\_pdcOptimized\_20260227.mac}, target \(3^\circ\).
@@ -182,8 +190,11 @@ Test \(|\vec p|\) RMSE (MeV/c) & 9.84 & 5.88 \\
 \textbf{Conclusion}: Narrowing to qmd-window improves both usable sample rate and hold-out momentum accuracy.
 \end{frame}
 
-\begin{frame}{NN Optimisation Progress After QMD-Window}
+\begin{frame}{NN Optimisation Progress After QMD-Window \textcolor{red}{[CONTAMINATED]}}
 \small
+\textcolor{red}{All 7 optimisation runs in the table consumed the polluted
+dataset and were deleted; re-sweep on the clean dataset may pick a different
+winner.}
 \begin{table}
 \centering
 \begin{tabular}{lcc}
@@ -204,19 +215,27 @@ Best current asymmetric run & 12.8027 & 5.2488 \\
 \end{itemize}
 \end{frame}
 
-\begin{frame}{NN Current Status}
-\textbf{Current training leader}
+\begin{frame}{NN Current Status \textcolor{red}{[SUPERSEDED]}}
+\textbf{Previous leader (deleted due to contamination)}
 \begin{itemize}
-\item Run: \texttt{asym\_20260307\_120933\_px431\_zscore\_256\_256\_128}
+\item Run: \texttt{asym\_20260307\_120933\_px431\_zscore\_256\_256\_128} \textcolor{red}{--- deleted}
 \item Loss setup: manual weighting \(4,3,1\) with target \(z\)-score normalization.
 \item Network width: \(6 \rightarrow 256 \rightarrow 256 \rightarrow 128 \rightarrow 3\).
 \end{itemize}
 
-\textbf{What we learned}
+\textbf{Current production model (2026-04-20 clean retrain)}
 \begin{itemize}
-\item Asymmetric \(p_x\)-heavier weighting gives the best \(pxpy\) RMSE mean so far.
-\item Width increase alone gives only marginal gain after normalization is enabled.
-\item Optimisation is helping, but this is still an incremental campaign rather than a closed final model-selection step.
+\item Run: \texttt{data/nn\_target\_momentum/formal\_B115T3deg/20260420\_184345/}
+\item Same narrow sampling (\(R=100\) MeV/c, \(p_z\in[560,680]\) MeV/c).
+\item Default hyperparameters: \(6\rightarrow 128\rightarrow 128\rightarrow 64\rightarrow 3\), MSE, Adam \(10^{-3}\).
+\item Val \(|\vec p|\) RMSE \(= 6.08\); large transverse gain (\(p_x\) \(-51\%\), \(p_y\) \(-81\%\)).
+\end{itemize}
+
+\textbf{What we learned (unchanged in direction; numbers pending re-sweep)}
+\begin{itemize}
+\item Asymmetric \(p_x\)-heavier weighting and \(z\)-score normalisation
+showed modest gains --- but the winning configuration was deleted and
+should be re-derived on the clean dataset before claiming a new best.
 \end{itemize}
 \end{frame}
 
