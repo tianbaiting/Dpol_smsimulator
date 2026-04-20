@@ -48,6 +48,7 @@
 #include "DeutSteppingAction.hh"
 #include "DeutTrackingAction.hh"
 #include "DeutPrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorActionBasic.hh"
 #include "VacuumDownstreamConstruction.hh"
 
 
@@ -357,6 +358,10 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
   // [EN] Double-scattering guard: Tree-gun input already contains post-target
   // secondaries (IMQMD / Faddeev output); enabling the target would scatter them twice.
   // [CN] 双重散射保护：Tree-gun 输入已经是穿靶后的次级粒子，再开启靶物质会造成二次散射
+  // Note: Construct() may run again via UpdateGeometry() (e.g. from AutoConfigGeometry,
+  // which forces target=true then switches the gun to Pencil). A spurious warning from
+  // that intermediate state is harmless — AutoConfigGeometry immediately overrides the
+  // gun type afterwards and no beamOn runs with the flagged combination.
   if (fSetTarget) {
     auto* genAction = G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
     if (auto* basic = dynamic_cast<const PrimaryGeneratorActionBasic*>(genAction)) {
