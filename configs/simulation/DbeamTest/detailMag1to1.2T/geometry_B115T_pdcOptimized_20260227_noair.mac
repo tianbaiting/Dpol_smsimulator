@@ -1,0 +1,17 @@
+# Geometry configuration - Magnetic field: 1.15T, PDC optimized on 2026-02-27
+/control/getEnv SMSIMDIR
+# [EN] Target disabled: exploration-only macro (beam / field / PDC orientation) / [CN] 仅用于束流/磁场/PDC位置的探索性宏，不需要靶物质
+/samurai/geometry/Target/SetTarget false
+/samurai/geometry/PDC/Angle 69 deg
+/samurai/geometry/PDC/Position1 70 0 400 cm
+/samurai/geometry/PDC/Position2 70 0 500 cm
+/samurai/geometry/Dump/SetDump false
+/samurai/geometry/Dump/Angle 36.67 deg
+/samurai/geometry/Dump/Position -0.93 -25.00 0.00 cm
+/samurai/geometry/NEBULA/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Dayone.csv
+/samurai/geometry/NEBULA/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
+/samurai/geometry/Dipole/Angle 30 deg
+/samurai/geometry/Dipole/FieldFile {SMSIMDIR}/configs/simulation/geometry/filed_map/180703-1,15T-3000.table
+/samurai/geometry/Dipole/FieldFactor 1
+/samurai/geometry/FillAir false
+/samurai/geometry/Update
