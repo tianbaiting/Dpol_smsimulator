@@ -23,8 +23,8 @@ MAC_BASELINE=${SMSIM_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry
 MAC_NOAIR=${SMSIM_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227_noair.mac
 FIELD_MAP=${SMSIM_DIR}/configs/simulation/geometry/filed_map/180703-1,15T-3000.table
 # [EN] nn-model-json is required by test_pdc_target_momentum_e2e argparse even when --backend=rk.
-# Any valid NN model JSON works; we reuse the one from run_ensemble_coverage.sh baseline.
-NN_MODEL_JSON=${SMSIM_DIR}/data/nn_target_momentum/formal_B115T3deg_qmdwindow/20260227_223007/model/model_cpp.json
+# Any valid NN model JSON works; we point to the clean-retrain model present in the repo.
+NN_MODEL_JSON=${NN_MODEL_JSON:-${SMSIM_DIR}/data/nn_target_momentum/domain_matched_retrain/20260228_002757/model/model_cpp.json}
 
 # Sanity
 for f in "$MAC_BASELINE" "$MAC_NOAIR" "$FIELD_MAP" "$NN_MODEL_JSON" \
