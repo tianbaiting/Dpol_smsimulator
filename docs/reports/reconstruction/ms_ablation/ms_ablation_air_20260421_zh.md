@@ -1,3 +1,7 @@
+> **⚠ 修正说明（2026-04-22）**: 本 memo 的 baseline 几何**不完全物理**——靶→dipole 入射面（~0.68 m）与 dipole yoke 内腔（~0.95 m）在 Geant4 里误为空气（应为束流真空）。因此本 memo "air 贡献 94%" 的数字混合了约 1.6 m 虚假上游空气 + 1.8 m 真实下游空气。物理真实的 baseline（只真实下游空气）与完整分解见 [`ms_ablation_mixed_20260422_zh.md`](ms_ablation_mixed_20260422_zh.md)（stage A′）。本 memo 保留作为历史记录与代码 bug 的直接证据，**不再作为 stage D 的输入**。
+
+---
+
 # MS 消融实验 v1 · Air 关闭 — 主 memo
 
 - **日期**: 2026-04-21
