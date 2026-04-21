@@ -147,6 +147,7 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
 
   //---------------------------- SAMURAI Magnet ----------------------------
   //---------------------------- yoke
+  fDipoleConstruction->SetBeamLineVacuum(fBeamLineVacuum);
   fDipoleConstruction->ConstructSub();
   fDipoleConstruction->PutSAMURAIMagnet(expHall_log);
 
@@ -200,6 +201,19 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
   new G4PVPlacement(G4Transform3D(vacuum_rm, vacuum_downstream_pos),
                     vacuum_downstream_log, "vacuum_downstream",
                     expHall_log, false, 0);
+
+  //------------------------------ Vacuum Upstream (target → dipole)
+  // [EN] Only place when fBeamLineVacuum=true; keeps default-false bit-for-bit
+  // identical to pre-change geometry (no extra LV in the world).
+  // [CN] 仅 fBeamLineVacuum=true 时拼装；默认 false 保持 bit-for-bit 兼容。
+  if (fBeamLineVacuum) {
+    G4LogicalVolume *vacuum_upstream_log =
+      fVacuumUpstreamConstruction->ConstructSub(Dipole_phys);
+    G4ThreeVector vacuum_upstream_pos = fVacuumUpstreamConstruction->GetPosition();
+    new G4PVPlacement(nullptr, vacuum_upstream_pos,
+                      vacuum_upstream_log, "vacuum_upstream",
+                      expHall_log, false, 0, true);  // checkOverlaps=true
+  }
 
 // ...existing code...
 

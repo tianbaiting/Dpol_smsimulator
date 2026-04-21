@@ -31,9 +31,11 @@ public:
   G4double GetAngle(){return fAngle;}
   TString GetFieldFileName(){return fMagField->GetFieldFileName();}
   Double_t GetFieldFactor(){return fMagField->GetFieldFactor();}
-  
+  void SetBeamLineVacuum(G4bool tf){fBeamLineVacuum = tf;}
+
 protected:
   G4double fAngle;
+  G4bool fBeamLineVacuum;
 
   G4LogicalVolume* fLogicDipole;
 
