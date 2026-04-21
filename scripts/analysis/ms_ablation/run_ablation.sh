@@ -1,6 +1,10 @@
 #!/bin/bash
-# Run the Air-off MS ablation experiment (v1).
-# Two conditions (baseline / no_air) over 3 truth points × ENSEMBLE_SIZE seeds.
+# Run the MS ablation experiment v2 (stage A').
+# Three conditions:
+#   - all_air         : FillAir=true,  BeamLineVacuum=false (= stage A baseline)
+#   - beamline_vacuum : FillAir=true,  BeamLineVacuum=true  (NEW; experimentally real)
+#   - all_vacuum      : FillAir=false                        (= stage A no_air)
+# 3 truth points × ENSEMBLE_SIZE seeds per condition.
 set -euo pipefail
 
 SMSIM_DIR=${SMSIM_DIR:-/home/tian/workspace/dpol/smsimulator5.5}
@@ -11,23 +15,17 @@ SEED_B=${SEED_B:-20260422}
 OUT_ROOT=${OUT_ROOT:-${BUILD_DIR}/test_output/ms_ablation_air}
 RK_FIT_MODE=${RK_FIT_MODE:-fixed-target-pdc-only}
 
-# [EN] Normalize OUT_ROOT/BUILD_DIR to absolute paths (test binary cds into output-dir so relative paths break log writes). / [CN] OUT_ROOT/BUILD_DIR 必须为绝对路径，否则测试进程 cd 后 log 路径失效。
-if [[ "${OUT_ROOT}" != /* ]]; then
-    OUT_ROOT="$(pwd)/${OUT_ROOT}"
-fi
-if [[ "${BUILD_DIR}" != /* ]]; then
-    BUILD_DIR="$(pwd)/${BUILD_DIR}"
-fi
+# Normalize to absolute paths.
+if [[ "${OUT_ROOT}" != /* ]]; then OUT_ROOT="$(pwd)/${OUT_ROOT}"; fi
+if [[ "${BUILD_DIR}" != /* ]]; then BUILD_DIR="$(pwd)/${BUILD_DIR}"; fi
 
-MAC_BASELINE=${SMSIM_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227_target3deg.mac
-MAC_NOAIR=${SMSIM_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227_target3deg_noair.mac
+MAC_ALL_AIR=${SMSIM_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227_target3deg.mac
+MAC_MIXED=${SMSIM_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227_target3deg_mixed.mac
+MAC_ALL_VAC=${SMSIM_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227_target3deg_noair.mac
 FIELD_MAP=${SMSIM_DIR}/configs/simulation/geometry/filed_map/180703-1,15T-3000.table
-# [EN] nn-model-json is required by test_pdc_target_momentum_e2e argparse even when --backend=rk.
-# Any valid NN model JSON works; we point to the clean-retrain model present in the repo.
 NN_MODEL_JSON=${NN_MODEL_JSON:-${SMSIM_DIR}/data/nn_target_momentum/domain_matched_retrain/20260228_002757/model/model_cpp.json}
 
-# Sanity
-for f in "$MAC_BASELINE" "$MAC_NOAIR" "$FIELD_MAP" "$NN_MODEL_JSON" \
+for f in "$MAC_ALL_AIR" "$MAC_MIXED" "$MAC_ALL_VAC" "$FIELD_MAP" "$NN_MODEL_JSON" \
          "$BUILD_DIR/bin/test_pdc_target_momentum_e2e" \
          "$BUILD_DIR/bin/sim_deuteron" \
          "$BUILD_DIR/bin/reconstruct_target_momentum" \
@@ -35,7 +33,7 @@ for f in "$MAC_BASELINE" "$MAC_NOAIR" "$FIELD_MAP" "$NN_MODEL_JSON" \
     [[ -e "$f" ]] || { echo "MISSING: $f" >&2; exit 1; }
 done
 
-echo "=== MS ablation Air v1 ==="
+echo "=== MS ablation Air v2 (stage A') ==="
 echo "git HEAD:      $(cd "$SMSIM_DIR" && git rev-parse HEAD)"
 echo "ENSEMBLE_SIZE: $ENSEMBLE_SIZE"
 echo "SEEDS:         A=$SEED_A B=$SEED_B"
@@ -77,16 +75,18 @@ run_condition() {
         --out-dir "$outdir"
 }
 
-run_condition "baseline" "$MAC_BASELINE"
-run_condition "no_air"   "$MAC_NOAIR"
+run_condition "all_air"         "$MAC_ALL_AIR"
+run_condition "beamline_vacuum" "$MAC_MIXED"
+run_condition "all_vacuum"      "$MAC_ALL_VAC"
 
 echo
-echo "=== Comparing baseline vs no_air ==="
+echo "=== Comparing three conditions ==="
 micromamba run -n anaroot-env python3 \
     "$SMSIM_DIR/scripts/analysis/ms_ablation/compare_ablation.py" \
-    --baseline-dir "$OUT_ROOT/baseline" \
-    --noair-dir    "$OUT_ROOT/no_air" \
-    --out-dir      "$OUT_ROOT"
+    --all-air-dir         "$OUT_ROOT/all_air" \
+    --beamline-vacuum-dir "$OUT_ROOT/beamline_vacuum" \
+    --all-vacuum-dir      "$OUT_ROOT/all_vacuum" \
+    --out-dir             "$OUT_ROOT"
 
 echo
 echo "=== Done. Outputs under: $OUT_ROOT ==="
