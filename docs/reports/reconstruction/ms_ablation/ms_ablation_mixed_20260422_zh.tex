@@ -36,7 +36,7 @@
 
 \begin{abstract}
 \noindent
-本文记录 SAMURAI + PDC 设置下、改变粒子飞行路径上真空/空气分布的三种几何测试，量化空气对 PDC 命中位置分辨率 $\sigma_y(\mathrm{PDC2})$ 的贡献。粒子路径被拆成五个几何段；两个正交开关 \texttt{/samurai/geometry/FillAir} 与 \texttt{/samurai/geometry/BeamLineVacuum} 控制其中四段的材质。三情形 $\sigma_y(\mathrm{PDC2})$ 分别为 14.4--15.4~mm（全空气）、6.8--8.2~mm（只下游空气）、0.95--1.00~mm（全真空）。结论：PDC2 $y$ 通道下游空气贡献 $\sigma_{y,\mathrm{MS}}\approx 7.4$~mm（quadrature），作为 RK 重建 process-noise 的输入。
+本文记录 SAMURAI + PDC 设置下、改变粒子飞行路径上真空/空气分布的三种几何测试，量化空气对 PDC 命中位置分辨率 $\sigma_y(\mathrm{PDC2})$ 的贡献。粒子路径被拆成五个几何段；两个正交开关 \texttt{/samurai/geometry/FillAir} 与 \texttt{/samurai/geometry/BeamLineVacuum} 控制其中四段的材质。三情形 $\sigma_y(\mathrm{PDC2})$ 分别为 14.4--15.4~mm（全空气）、6.8--8.2~mm（只下游空气）、0.95--1.00~mm（全真空）。结论：PDC2 $y$ 通道由下游段（段 4+5）空气引入的 $\sigma_{y,\mathrm{MS}}\approx 7.4$~mm（quadrature 口径），可在下游段为空气的实验配置下作为 RK 重建 process-noise 的候选输入。
 \end{abstract}
 
 \tableofcontents
@@ -62,7 +62,7 @@
 5 & PDC1 $\to$ PDC2                         & $\sim 1.00$ m \\
 \midrule
   & 上游合计（段 1+2）                       & $\sim 1.63$ m \\
-  & 下游合计（段 4+5，实验上必为空气）        & $\sim 1.80$ m \\
+  & 下游合计（段 4+5）                       & $\sim 1.80$ m \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -88,7 +88,7 @@
 \end{tabular}
 \end{table}
 
-\textbf{beamline\_vacuum} 对应实验上真实的几何：上游束流管与 dipole 腔都是真空，exit window 之后到 PDC 的开放段是空气。\textbf{all\_air} 与 \textbf{all\_vacuum} 分别把上游段改成空气或把下游段改成真空，用来做消融对比；二者在实验上都不可达，只用于数值分解空气对 $\sigma$ 的贡献。
+三种情形为模拟端的几何配置，用来量化各段空气对 PDC $\sigma$ 的贡献。实验真实条件下上游段是空气还是真空仍在探索中，本文不对此作结论；下述三情形只作为消融分解用。
 
 % ============================================================
 \section{代码控制}
@@ -295,7 +295,7 @@ $3.43$ m & $1.13\times 10^{-2}$ & \textbf{3.45} mrad \\
 \section{RK process-noise 输入}
 % ============================================================
 
-RK 重建 process-noise 需要“只由下游真实空气段引入的” $\sigma_\mathrm{MS}$。取 \S 5.2 的 quadrature 口径（$\sigma_\mathrm{down}$）：
+若 RK 重建 process-noise 需要"仅由下游段（段 4+5）空气引入的" $\sigma_\mathrm{MS}$（适用于下游段为空气的实验配置），取 \S 5.2 的 quadrature 口径（$\sigma_\mathrm{down}$）：
 
 \begin{center}
 \begin{tabular}{lrp{8cm}}
