@@ -1,8 +1,22 @@
 # RK 动量重建修复与误差分析报告
 
-**日期**: 2026-04-16（增补 2026-04-19 坐标系修复说明）
+**日期**: 2026-04-16（增补 2026-04-19 坐标系修复说明；2026-04-20 NN 参考号失效批注）
 **适用版本**: smsimulator5.5, commit after error module rewrite + RK bugfix + frame rotation fix
 **作者**: Baiting Tian
+
+---
+
+> **⚠️ 2026-04-20 NN 参考数据失效**
+>
+> 本报告中所有"NN（参考）"列、RK-vs-NN 的 MAE/bias 对比、以及 §5 中 NN 接近几何极限的
+> 论断，都是用**已删除的污染模型** `formal_B115T3deg_qmdwindow/20260227_223007/`
+> 在 E2E 测试中产生的（详见 `docs/audit/2026-04-20-nn_target_contamination_audit.md`）。
+>
+> **影响：**
+> - **RK 修复的主结论不变**：三个 bug 的根因、修复方法、以及 RK 自身的 MAE 数字都是几何-物理层面的，不依赖 NN。
+> - **"RK 与 NN 横向动量几乎一致"的论断失效**：清洁模型下验证集 $p_x$ RMSE $-51\%$、$p_y$ $-81\%$，清洁 NN 在 $p_x,p_y$ 上会明显优于 RK。
+> - **"NN $p_z$ 接近几何极限"仍成立**：$p_z$ 验证集几乎不变（5.89 $\to$ 5.80 MeV/c），靶物质多重散射主要扰动横向。
+> - **待办：** 用 `formal_B115T3deg/20260420_184345/model/model.pt` 重跑 `test_rk_nn_comparison.py`，更新 §2 §4 §5 中所有 NN 列。
 
 ---
 

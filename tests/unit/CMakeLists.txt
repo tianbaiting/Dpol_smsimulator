@@ -7,25 +7,27 @@ include(GoogleTest)
 # 测试可执行文件
 ##############################################################################
 
-# 示例测试文件 - 目前为空，可在未来添加
-# 实际的 analysis 测试在 tests/analysis/ 中
+# Analysis-specific tests live in tests/analysis/.
 
-# 如果需要添加其他单元测试，在此处添加
-# 例如:
-# if(BUILD_ANALYSIS)
-#     add_executable(test_my_component test_my_component.cc)
-#     target_link_libraries(test_my_component PRIVATE
-#         analysis
-#         GTest::GTest
-#         GTest::Main
-#         ${ROOT_LIBRARIES}
-#     )
-#     gtest_discover_tests(test_my_component)
-# endif()
+# Default-value regression tests for DeutDetectorConstruction
+add_executable(test_DeutDetectorConstruction_defaults
+    test_DeutDetectorConstruction_defaults.cc
+)
+target_link_libraries(test_DeutDetectorConstruction_defaults PRIVATE
+    sim_deuteron_core
+    smg4lib
+    GTest::gtest
+    GTest::gtest_main
+    ${Geant4_LIBRARIES}
+    ${ROOT_LIBRARIES}
+)
+gtest_discover_tests(test_DeutDetectorConstruction_defaults
+    PROPERTIES LABELS "unit"
+)
 
-message(STATUS "Unit tests directory configured (currently empty)")
-message(STATUS "Analysis-specific tests are in tests/analysis/")
-
-##############################################################################
-# 添加更多单元测试...
-##############################################################################
+# Macro-config regression test: no .mac sets Target/Position without Target/SetTarget
+add_test(NAME test_no_bare_target_macros
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test_no_bare_target_macros.sh
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+set_tests_properties(test_no_bare_target_macros PROPERTIES LABELS "unit")

@@ -50,6 +50,7 @@ public:
   void SetFillAir(G4bool tf){fFillAir = tf;}
 
   void SetTarget(G4bool tf){fSetTarget = tf;}
+  G4bool IsTargetEnabled() const { return fSetTarget; }
   void SetTargetMat(G4String mat){fTargetMat = mat;}
   void SetTargetSize(G4ThreeVector size){fTargetSize = size;}
   void SetDump(G4bool tf){fSetDump = tf;}

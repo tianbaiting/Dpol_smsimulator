@@ -14,6 +14,41 @@
 \titlepage
 \end{frame}
 
+\begin{frame}{Retraction / Update --- 2026-04-20}
+\textbf{Contamination found in original qmd-window training}
+\begin{itemize}
+\item The original \texttt{formal\_B115T3deg\_qmdwindow/20260227\_223007/}
+training consumed Geant4 output produced while the
+\texttt{DeutDetectorConstruction::fSetTarget} default was silently
+\texttt{true}. Tree-gun input (already post-IMQMD secondaries) was
+therefore scattered a second time by the Sn target.
+\item Audit: \texttt{docs/audit/2026-04-20-nn\_target\_contamination\_audit.md}.
+\item The polluted formal run and all 7 \texttt{optimization\_runs/*}
+sweeps were deleted; the Results / Sweep / Best-Candidate /
+Final-Accuracy tables in this deck therefore no longer reflect
+production state.
+\end{itemize}
+
+\textbf{Clean retrain:} \texttt{data/nn\_target\_momentum/formal\_B115T3deg/20260420\_184345/}
+(same narrow sampling: \(R=100\) MeV/c, \(p_z\in[560,680]\) MeV/c)
+\begin{table}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Val RMSE (MeV/c) & Contaminated & Clean retrain & Change \\
+\midrule
+\(p_x\) & 13.60 & \textbf{6.70} & \(-51\%\) \\
+\(p_y\) & 12.44 & \textbf{2.40} & \(-81\%\) \\
+\(p_z\) & 5.89 & 5.80 & \(-2\%\) \\
+\(|\vec p|\) & 5.88 & 6.08 & \(+3\%\) (\(p_z\) dominated) \\
+\bottomrule
+\end{tabular}
+\end{table}
+Large transverse gain matches the physics of the bug: Sn multiple
+scattering perturbs \(p_x,p_y\) more than \(p_z\).
+\end{frame}
+
 \begin{frame}{Motivation}
 \begin{itemize}
 \item Task: reconstruct target proton momentum \((p_x,p_y,p_z)\) from PDC two-point track.
@@ -133,7 +168,7 @@ Implemented as \texttt{nn.MSELoss()} in PyTorch.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Results}
+\begin{frame}{Results \textcolor{red}{[CONTAMINATED --- see retraction frame]}}
 \begin{table}
 \centering
 \begin{tabular}{lcc}
@@ -148,6 +183,10 @@ Test \(|\vec{p}|\) RMSE (MeV/c) & 9.84 & 5.88 \\
 \bottomrule
 \end{tabular}
 \end{table}
+\footnotesize
+\textcolor{red}{RMSE numbers from the polluted model. Kept-fraction numbers
+(geometry acceptance only) are still valid. Clean retrain: val \(|\vec p|\) RMSE
+\(= 6.08\); see retraction frame for component-wise detail.}
 \end{frame}
 
 \begin{frame}{Post-Baseline Optimisation Objective}
@@ -175,8 +214,10 @@ Test \(|\vec{p}|\) RMSE (MeV/c) & 9.84 & 5.88 \\
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Optimisation Progress: Loss and Normalisation Sweep}
+\begin{frame}{Optimisation Progress: Loss and Normalisation Sweep \textcolor{red}{[CONTAMINATED]}}
 \small
+\textcolor{red}{All 7 sweep runs consumed the polluted dataset; the sweep was
+deleted and is not re-run --- a clean re-sweep may pick a different winner.}
 \begin{table}
 \centering
 \begin{tabular}{lccc}
@@ -199,7 +240,9 @@ Baseline qmd-window & 13.0186 & 5.8863 & 5.8798 \\
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Current Best Candidate and Interpretation}
+\begin{frame}{Current Best Candidate and Interpretation \textcolor{red}{[CONTAMINATED]}}
+\textcolor{red}{Both rows of the table below are from the polluted dataset
+and are retained only to document the pre-audit state.}
 \textbf{Reference vs current best training candidate}
 \begin{table}
 \centering
@@ -245,10 +288,13 @@ Test \(|\vec p|\) RMSE & 5.8798 & 5.2488 \\
 \begin{frame}{Where Artifacts Are Written}
 \textbf{Geometry and model}
 \begin{itemize}
-\item Geometry macro (target-fixed 3deg):\\
+\item Geometry macro (target-fixed 3deg, \texttt{SetTarget false}):\\
 \texttt{configs/simulation/DbeamTest/detailMag1to1.2T/geometry\_B115T\_pdcOptimized\_20260227\_target3deg.mac}
-\item NN model used (no ypol/zpol retraining):\\
-\texttt{data/nn\_target\_momentum/formal\_B115T3deg\_qmdwindow/20260227\_223007/model/}
+\item \textbf{Clean production model (2026-04-20 retrain):}\\
+\texttt{data/nn\_target\_momentum/formal\_B115T3deg/20260420\_184345/model/model.pt}\\
+\textcolor{red}{Previous path
+\texttt{formal\_B115T3deg\_qmdwindow/20260227\_223007/model/} was deleted
+due to target contamination.}
 \end{itemize}
 
 \textbf{Campaign outputs}
@@ -263,8 +309,13 @@ Test \(|\vec p|\) RMSE & 5.8798 & 5.2488 \\
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Final Accuracy (All Files, All Events)}
+\begin{frame}{Final Accuracy (All Files, All Events) \textcolor{red}{[INVALIDATED]}}
 \small
+\textcolor{red}{These \texttt{evaluate\_reconstruct\_sn\_nn} RMSEs were produced
+by the now-deleted polluted model running over the clean
+\texttt{eval\_20260227\_235751/} reconstruction files. Matching efficiency
+(geometry acceptance) is unaffected; the RMSE rows must be re-derived with
+the 2026-04-20 clean model before quoting.}
 \begin{table}
 \centering
 \begin{tabular}{lccc}
@@ -290,27 +341,34 @@ Reco efficiency (\%) & 67.0919 & 66.8787 & 71.7801 \\
 \item The campaign now runs with explicit target position and target angle in geometry macro.
 \item Full-event processing is enforced in production (\texttt{beamOn=0}, all selected files).
 \item Reconstruction yields high usable statistics:
-\(3{,}632{,}185\) matched proton events from \(5{,}413{,}747\) truth proton events.
+\(3{,}632{,}185\) matched proton events from \(5{,}413{,}747\) truth proton events
+(\(67.09\%\) matching efficiency --- geometry-only, unaffected by the model swap).
 \end{itemize}
 
-\textbf{Current performance interpretation}
+\textbf{Current performance interpretation} \textcolor{red}{[pending re-eval]}
 \begin{itemize}
-\item Y-pol dominates total statistics and shows stable \(|\vec{p}|\) RMSE \(\approx 7.90\) MeV/c.
-\item Z-pol remains harder (\(p_x,p_z\) errors larger) but still achieves \(71.78\%\) matching efficiency.
-\item Overall, the corrected-target full-event chain is now suitable for large-scale reconstruction studies.
+\item RMSE-based Y-pol / Z-pol comparisons depended on the polluted model
+and must be re-derived with the 2026-04-20 clean model.
+\item Validation-set comparison (from the clean retrain): \(p_x\) RMSE
+\(13.60\rightarrow 6.70\), \(p_y\) RMSE \(12.44\rightarrow 2.40\); full-event
+re-eval is expected to follow the same direction.
+\item Geometry chain and matching efficiency numbers remain production-grade.
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Conclusion}
 \begin{itemize}
-\item Narrowing to qmd-window significantly improves effective kept samples (\(\sim24\%\rightarrow\sim45\%\)).
-\item Hold-out accuracy also improves (test \(|\vec{p}|\) RMSE \(9.84 \rightarrow 5.88\) MeV/c).
-\item This window is therefore a strong default candidate for B115T/3deg proton momentum reconstruction.
-\item If future edge generalization drops, next step is two-stage training:
-\begin{itemize}
-\item Stage 1: qmd-window pretrain.
-\item Stage 2: short fine-tune with wider window.
-\end{itemize}
+\item Narrowing to the qmd-window sampling significantly improves
+effective kept samples (\(\sim24\%\rightarrow\sim45\%\)) --- this is a
+geometry-acceptance result and survives the contamination audit.
+\item The clean 2026-04-20 retrain on the same narrow window confirms
+the window choice: val \(|\vec p|\) RMSE \(= 6.08\) MeV/c with strong
+transverse gain (\(p_x\) \(-51\%\), \(p_y\) \(-81\%\) vs the deleted polluted
+baseline).
+\item Clean production model: \texttt{formal\_B115T3deg/20260420\_184345/model/}.
+\item Follow-up: re-run \texttt{evaluate\_reconstruct\_sn\_nn} over
+\texttt{eval\_20260227\_235751/} with the clean model; re-do the
+hyperparameter sweep on the clean dataset before claiming a best candidate.
 \end{itemize}
 \end{frame}
 

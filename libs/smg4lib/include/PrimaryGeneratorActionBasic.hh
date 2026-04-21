@@ -27,6 +27,7 @@ public:
   virtual ~PrimaryGeneratorActionBasic();
 
   virtual bool SetBeamType(G4String beamType);
+  const TString& GetBeamType() const { return fBeamType; }
   void GeneratePrimaries(G4Event* anEvent);
   virtual void SetPrimaryVertex(G4Event* anEvent);
 

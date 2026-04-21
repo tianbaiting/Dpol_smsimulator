@@ -48,13 +48,14 @@
 #include "DeutSteppingAction.hh"
 #include "DeutTrackingAction.hh"
 #include "DeutPrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorActionBasic.hh"
 #include "VacuumDownstreamConstruction.hh"
 
 
 //______________________________________________________________________________
 DeutDetectorConstruction::DeutDetectorConstruction() 
   :
-  fFillAir{false}, fSetTarget{true}, fSetDump{true}, fSetIPS{false}, fTargetMat{"Sn"},
+  fFillAir{false}, fSetTarget{false}, fSetDump{true}, fSetIPS{false}, fTargetMat{"Sn"},
   fTargetPos{0,0,0}, fTargetSize{50,50,5}, fTargetAngle{0}, fIPSAxisOffset{0}
   // Otherwise they'd be initialized randomly
 {
@@ -353,6 +354,26 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
   }
 
   physiWorld = expHall_phys;  // 存储世界体积
+
+  // [EN] Double-scattering guard: Tree-gun input already contains post-target
+  // secondaries (IMQMD / Faddeev output); enabling the target would scatter them twice.
+  // [CN] 双重散射保护：Tree-gun 输入已经是穿靶后的次级粒子，再开启靶物质会造成二次散射
+  // Note: Construct() may run again via UpdateGeometry() (e.g. from AutoConfigGeometry,
+  // which forces target=true then switches the gun to Pencil). A spurious warning from
+  // that intermediate state is harmless — AutoConfigGeometry immediately overrides the
+  // gun type afterwards and no beamOn runs with the flagged combination.
+  if (fSetTarget) {
+    auto* genAction = G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();
+    if (auto* basic = dynamic_cast<const PrimaryGeneratorActionBasic*>(genAction)) {
+      if (basic->GetBeamType() == "Tree") {
+        SM_WARN("Target is ENABLED with Tree-gun input. Tree input typically "
+                "contains post-target secondaries (IMQMD / Faddeev output); "
+                "enabling the target will cause double scattering. Set "
+                "'/samurai/geometry/Target/SetTarget false' unless this is "
+                "an intentional beam-on-target study.");
+      }
+    }
+  }
 
   return expHall_phys;
 }

@@ -1,5 +1,7 @@
 # Geometry configuration - Magnetic field: 1.15T, PDC optimized on 2026-02-27
 /control/getEnv SMSIMDIR
+# [EN] Target disabled: exploration-only macro (beam / field / PDC orientation) / [CN] 仅用于束流/磁场/PDC位置的探索性宏，不需要靶物质
+/samurai/geometry/Target/SetTarget false
 /samurai/geometry/PDC/Angle 69 deg
 /samurai/geometry/PDC/Position1 70 0 400 cm
 /samurai/geometry/PDC/Position2 70 0 500 cm
