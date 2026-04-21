@@ -50,12 +50,13 @@
 #include "DeutPrimaryGeneratorAction.hh"
 #include "PrimaryGeneratorActionBasic.hh"
 #include "VacuumDownstreamConstruction.hh"
+#include "VacuumUpstreamConstruction.hh"
 
 
 //______________________________________________________________________________
 DeutDetectorConstruction::DeutDetectorConstruction() 
   :
-  fFillAir{false}, fSetTarget{false}, fSetDump{true}, fSetIPS{false}, fTargetMat{"Sn"},
+  fFillAir{false}, fBeamLineVacuum{false}, fSetTarget{false}, fSetDump{true}, fSetIPS{false}, fTargetMat{"Sn"},
   fTargetPos{0,0,0}, fTargetSize{50,50,5}, fTargetAngle{0}, fIPSAxisOffset{0}
   // Otherwise they'd be initialized randomly
 {
@@ -71,6 +72,7 @@ DeutDetectorConstruction::DeutDetectorConstruction()
   fExitWindowC2Construction = new ExitWindowC2Construction();
   fWindowHoleSD = 0;
   fVacuumDownstreamConstruction = new VacuumDownstreamConstruction();
+  fVacuumUpstreamConstruction = new VacuumUpstreamConstruction();
 }
 //______________________________________________________________________________
 DeutDetectorConstruction::~DeutDetectorConstruction()
@@ -82,8 +84,9 @@ DeutDetectorConstruction::~DeutDetectorConstruction()
   delete fIPSConstruction;
   delete fExitWindowNConstruction;
   delete fExitWindowC2Construction;
-  delete fVacuumDownstreamConstruction;  
-  
+  delete fVacuumDownstreamConstruction;
+  delete fVacuumUpstreamConstruction;
+
 }
 //______________________________________________________________________________
 G4VPhysicalVolume* DeutDetectorConstruction::Construct()

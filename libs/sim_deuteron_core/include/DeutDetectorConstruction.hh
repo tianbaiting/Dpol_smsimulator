@@ -11,6 +11,7 @@ class IPSConstruction;
 class ExitWindowNConstruction;
 class ExitWindowC2Construction;
 class VacuumDownstreamConstruction;  // 添加前向声明
+class VacuumUpstreamConstruction;
 
 class G4VSensitiveDetector;
 class G4VModularPhysicsList;
@@ -49,6 +50,9 @@ public:
 
   void SetFillAir(G4bool tf){fFillAir = tf;}
 
+  void SetBeamLineVacuum(G4bool tf){fBeamLineVacuum = tf;}
+  G4bool IsBeamLineVacuum() const { return fBeamLineVacuum; }
+
   void SetTarget(G4bool tf){fSetTarget = tf;}
   G4bool IsTargetEnabled() const { return fSetTarget; }
   void SetTargetMat(G4String mat){fTargetMat = mat;}
@@ -58,6 +62,7 @@ public:
 private:
   G4VPhysicalVolume* physiWorld;  // 添加成员变量
   G4bool fFillAir;
+  G4bool fBeamLineVacuum;
   G4bool fSetTarget;
   G4bool fSetDump;
   G4bool fSetIPS;
@@ -98,9 +103,8 @@ private:
   VacuumDownstreamConstruction *fVacuumDownstreamConstruction;
 
 
-  // VacuumUpstreamConstruction *fVacuumUpstreamConstruction;
-  // VacuumDownstreamConstruction *fVacuumDownstreamConstruction;
-  
+  VacuumUpstreamConstruction *fVacuumUpstreamConstruction;
+
   G4String fInputMacroFile;
   G4VModularPhysicsList* fModularPhysicsList;
 };

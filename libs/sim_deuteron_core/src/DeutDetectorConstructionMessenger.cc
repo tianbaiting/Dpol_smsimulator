@@ -28,6 +28,12 @@ DeutDetectorConstructionMessenger::DeutDetectorConstructionMessenger(DeutDetecto
   fFillAirCmd->SetParameterName("FillAir",true);
   fFillAirCmd->SetDefaultValue(false);
 
+  fBeamLineVacuumCmd = new G4UIcmdWithABool("/samurai/geometry/BeamLineVacuum",this);
+  fBeamLineVacuumCmd->SetGuidance("Put target-to-dipole and dipole yoke interior in vacuum (G4_Galactic).");
+  fBeamLineVacuumCmd->SetGuidance("Orthogonal to FillAir which controls the world material.");
+  fBeamLineVacuumCmd->SetParameterName("BeamLineVacuum",true);
+  fBeamLineVacuumCmd->SetDefaultValue(false);
+
   fTargetDirectory = new G4UIdirectory("/samurai/geometry/Target/");
   fTargetDirectory->SetGuidance("Modification Commands for the Target");
 
@@ -139,6 +145,7 @@ DeutDetectorConstructionMessenger::~DeutDetectorConstructionMessenger()
   delete fUpdateGeometryCmd;
   delete fAutoConfigGeometryCmd;
   delete fFillAirCmd;
+  delete fBeamLineVacuumCmd;
 
   delete fTargetDirectory;
   delete fSetTargetCmd;
@@ -172,6 +179,9 @@ void DeutDetectorConstructionMessenger::SetNewValue(G4UIcommand* command,
   
   }else if ( command == fFillAirCmd ){
     fDetectorConstruction->SetFillAir(fFillAirCmd->GetNewBoolValue(newValue));
+
+  }else if ( command == fBeamLineVacuumCmd ){
+    fDetectorConstruction->SetBeamLineVacuum(fBeamLineVacuumCmd->GetNewBoolValue(newValue));
 
   }else if ( command == fSetTargetCmd ){
     fDetectorConstruction->SetTarget(fSetTargetCmd->GetNewBoolValue(newValue));
