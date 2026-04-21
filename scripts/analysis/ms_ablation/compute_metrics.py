@@ -13,6 +13,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -113,6 +114,7 @@ def _load_pdc_hits_from_reco(reco_root: Path) -> pd.DataFrame:
                 "pdc1_x": trk.start.X(), "pdc1_y": trk.start.Y(), "pdc1_z": trk.start.Z(),
                 "pdc2_x": trk.end.X(),   "pdc2_y": trk.end.Y(),   "pdc2_z": trk.end.Z(),
             })
+    f.Close()
     return pd.DataFrame(rows)
 
 
@@ -125,7 +127,6 @@ def main():
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parents[3]
-    import os
     os.chdir(repo_root)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
