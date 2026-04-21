@@ -31,7 +31,7 @@
 #include "G4SystemOfUnits.hh"//Geant4.10
 //______________________________________________________________________________________
 DipoleConstruction::DipoleConstruction()
-  : fAngle(0), fLogicDipole(0),
+  : fAngle(0), fBeamLineVacuum(false), fLogicDipole(0),
     fMagField(0), fMagFieldFactor(1.0)
 {
   fWorldMaterial = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
@@ -117,6 +117,29 @@ G4LogicalVolume* DipoleConstruction::ConstructSub()
 
   auto yoke_vis = new G4VisAttributes(G4Colour{0,0,1,0.5});
   fLogicDipole->SetVisAttributes(yoke_vis);
+
+  //------------------------------- vchamber cavity volume
+  // [EN] Place a logical volume inside the yoke that fills the void carved
+  // out by vchamber_box + vchamber_trap. Without it the cavity inherits world
+  // material. fBeamLineVacuum=true: vacuum; false: match world material
+  // (bit-for-bit compatible with the pre-change geometry).
+  // [CN] 给 yoke 内被挖掉的 void 安一个显式 logical volume。
+  G4VSolid* vchamber_cavity_sol = new G4UnionSolid(
+      "vchamber_cavity", vchamber_box, vchamber_trap, vct_rm, *vct_trans);
+  G4Material* cavity_mat = nullptr;
+  if (fBeamLineVacuum) {
+    cavity_mat = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
+  } else {
+    auto* lvs = G4LogicalVolumeStore::GetInstance();
+    auto* expHall_lv = lvs->GetVolume("expHall_log", false);
+    cavity_mat = expHall_lv ? expHall_lv->GetMaterial()
+                            : G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
+  }
+  G4LogicalVolume* cavity_log = new G4LogicalVolume(
+      vchamber_cavity_sol, cavity_mat, "vchamber_cavity_log");
+  cavity_log->SetVisAttributes(new G4VisAttributes(G4Colour(0.8, 0.8, 1.0, 0.2)));
+  new G4PVPlacement(nullptr, {0,0,0}, cavity_log, "vchamber_cavity",
+                    fLogicDipole, false, 0, true);  // checkOverlaps=true
 
   return fLogicDipole;
 }
