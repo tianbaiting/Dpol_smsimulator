@@ -9,7 +9,15 @@ ENSEMBLE_SIZE=${ENSEMBLE_SIZE:-50}
 SEED_A=${SEED_A:-20260421}
 SEED_B=${SEED_B:-20260422}
 OUT_ROOT=${OUT_ROOT:-${BUILD_DIR}/test_output/ms_ablation_air}
-RK_FIT_MODE=fixed-target-pdc-only
+RK_FIT_MODE=${RK_FIT_MODE:-fixed-target-pdc-only}
+
+# [EN] Normalize OUT_ROOT/BUILD_DIR to absolute paths (test binary cds into output-dir so relative paths break log writes). / [CN] OUT_ROOT/BUILD_DIR 必须为绝对路径，否则测试进程 cd 后 log 路径失效。
+if [[ "${OUT_ROOT}" != /* ]]; then
+    OUT_ROOT="$(pwd)/${OUT_ROOT}"
+fi
+if [[ "${BUILD_DIR}" != /* ]]; then
+    BUILD_DIR="$(pwd)/${BUILD_DIR}"
+fi
 
 MAC_BASELINE=${SMSIM_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227.mac
 MAC_NOAIR=${SMSIM_DIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T_pdcOptimized_20260227_noair.mac
