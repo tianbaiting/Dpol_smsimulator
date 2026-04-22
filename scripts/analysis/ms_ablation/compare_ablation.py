@@ -22,12 +22,15 @@ SIGMA_COLS = [
 CONDITION_ORDER = ["all_air", "beamline_vacuum", "all_vacuum"]
 
 # (delta_suffix, minuend_condition, subtrahend_condition)
-# "upstream_air"   = all_air - beamline_vacuum (fake upstream air contribution)
-# "downstream_air" = beamline_vacuum - all_vacuum (real downstream air contribution)
-# "total_air"      = all_air - all_vacuum (stage A's original number)
+# "mag_region_air" = all_air - beamline_vacuum: contribution of air in the
+#    connected magnet cavity + downstream pipe (both switched by BeamLineVacuum).
+# "pdc_region_air" = beamline_vacuum - all_vacuum: contribution of air in the
+#    ExitWindow -> PDC1 -> PDC2 region (switched by FillAir).
+# "total_air"      = all_air - all_vacuum: combined air contribution (stage A
+#    equivalent quantity).
 DELTAS = [
-    ("upstream_air",   "all_air",         "beamline_vacuum"),
-    ("downstream_air", "beamline_vacuum", "all_vacuum"),
+    ("mag_region_air", "all_air",         "beamline_vacuum"),
+    ("pdc_region_air", "beamline_vacuum", "all_vacuum"),
     ("total_air",      "all_air",         "all_vacuum"),
 ]
 

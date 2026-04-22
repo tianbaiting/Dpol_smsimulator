@@ -26,24 +26,24 @@ def test_three_way_all_conditions_present():
     assert set(out["condition"]) == {"all_air", "beamline_vacuum", "all_vacuum"}
 
 
-def test_three_way_delta_upstream_air():
-    """delta_sigma_y_pdc2_mm_upstream_air = all_air - beamline_vacuum."""
+def test_three_way_delta_mag_region_air():
+    """delta_sigma_y_pdc2_mm_mag_region_air = all_air - beamline_vacuum."""
     all_air   = _sample_summary(15.2)
     mixed     = _sample_summary(10.5)
     all_vac   = _sample_summary(1.0)
     out = build_comparison(all_air=all_air, beamline_vacuum=mixed, all_vacuum=all_vac)
     row = out[out["condition"] == "all_air"].iloc[0]
-    assert row["delta_sigma_y_pdc2_mm_upstream_air"] == pytest.approx(15.2 - 10.5)
+    assert row["delta_sigma_y_pdc2_mm_mag_region_air"] == pytest.approx(15.2 - 10.5)
 
 
-def test_three_way_delta_downstream_air():
-    """delta_sigma_y_pdc2_mm_downstream_air = beamline_vacuum - all_vacuum."""
+def test_three_way_delta_pdc_region_air():
+    """delta_sigma_y_pdc2_mm_pdc_region_air = beamline_vacuum - all_vacuum."""
     all_air   = _sample_summary(15.2)
     mixed     = _sample_summary(10.5)
     all_vac   = _sample_summary(1.0)
     out = build_comparison(all_air=all_air, beamline_vacuum=mixed, all_vacuum=all_vac)
     row = out[out["condition"] == "beamline_vacuum"].iloc[0]
-    assert row["delta_sigma_y_pdc2_mm_downstream_air"] == pytest.approx(10.5 - 1.0)
+    assert row["delta_sigma_y_pdc2_mm_pdc_region_air"] == pytest.approx(10.5 - 1.0)
 
 
 def test_three_way_delta_total_air():
@@ -63,8 +63,8 @@ def test_three_way_all_vacuum_has_no_delta():
     all_vac   = _sample_summary(1.0)
     out = build_comparison(all_air=all_air, beamline_vacuum=mixed, all_vacuum=all_vac)
     row = out[out["condition"] == "all_vacuum"].iloc[0]
-    assert pd.isna(row["delta_sigma_y_pdc2_mm_upstream_air"])
-    assert pd.isna(row["delta_sigma_y_pdc2_mm_downstream_air"])
+    assert pd.isna(row["delta_sigma_y_pdc2_mm_mag_region_air"])
+    assert pd.isna(row["delta_sigma_y_pdc2_mm_pdc_region_air"])
     assert pd.isna(row["delta_sigma_y_pdc2_mm_total_air"])
 
 
@@ -86,7 +86,7 @@ def test_three_way_multiple_truth_points():
 
     # tp (0,0) upstream-air delta on all_air row
     r = out[(out["truth_px"] == 0.0) & (out["condition"] == "all_air")].iloc[0]
-    assert r["delta_sigma_y_pdc2_mm_upstream_air"] == pytest.approx(15.2 - 10.5)
+    assert r["delta_sigma_y_pdc2_mm_mag_region_air"] == pytest.approx(15.2 - 10.5)
     # tp (100,0) downstream-air delta on beamline_vacuum row
     r = out[(out["truth_px"] == 100.0) & (out["condition"] == "beamline_vacuum")].iloc[0]
-    assert r["delta_sigma_y_pdc2_mm_downstream_air"] == pytest.approx(8.1 - 0.9)
+    assert r["delta_sigma_y_pdc2_mm_pdc_region_air"] == pytest.approx(8.1 - 0.9)

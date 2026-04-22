@@ -1,9 +1,10 @@
 #!/bin/bash
-# Run the MS ablation experiment v2 (stage A').
-# Three conditions:
-#   - all_air         : FillAir=true,  BeamLineVacuum=false (= stage A baseline)
-#   - beamline_vacuum : FillAir=true,  BeamLineVacuum=true  (NEW; experimentally real)
-#   - all_vacuum      : FillAir=false                        (= stage A no_air)
+# Run the MS ablation experiment v2 (stage A'' — 2026-04-22 rev2).
+# Three conditions (magnet cavity and downstream pipe are a connected vessel,
+# so both follow BeamLineVacuum; the EW → PDC region is controlled by FillAir):
+#   - all_air         : FillAir=true,  BeamLineVacuum=false (mag+pipe=air, PDC=air)
+#   - beamline_vacuum : FillAir=true,  BeamLineVacuum=true  (mag+pipe=vacuum, PDC=air)
+#   - all_vacuum      : FillAir=false                        (everything vacuum; reference)
 # 3 truth points × ENSEMBLE_SIZE seeds per condition.
 set -euo pipefail
 
