@@ -120,7 +120,21 @@ G4LogicalVolume* VacuumDownstreamConstruction::ConstructSub(G4VPhysicalVolume *d
   G4ThreeVector dpos(0.5*subt2_size.x(),0,-0.5*subt2_size.z());
   G4SubtractionSolid *vacuum_solid = new  G4SubtractionSolid("vacuum_upstream",vacuum_sub_dipole,subt2,
 							     &rm,subt2_pos0);
-  G4LogicalVolume *vacuum_log = new G4LogicalVolume(vacuum_solid,fVacuumMaterial,"vacuum_upstream_log");
+
+  // [EN] Pipe material: if fBeamLineVacuum=true, vacuum (G4_Galactic) — same as
+  // the dipole cavity, reflecting that the pipe is physically connected to the
+  // magnet interior. Else match the world material (air if FillAir=true).
+  // [CN] 管道材质跟随 BeamLineVacuum 开关（与磁铁内腔一致），或继承 world 材质。
+  G4Material* pipe_mat = nullptr;
+  if (fBeamLineVacuum) {
+    pipe_mat = G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
+  } else {
+    auto* lvs = G4LogicalVolumeStore::GetInstance();
+    auto* expHall_lv = lvs->GetVolume("expHall_log", false);
+    pipe_mat = expHall_lv ? expHall_lv->GetMaterial()
+                          : G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic");
+  }
+  G4LogicalVolume *vacuum_log = new G4LogicalVolume(vacuum_solid,pipe_mat,"vacuum_upstream_log");
 
   vacuum_log->SetVisAttributes(new G4VisAttributes(G4Colour::Gray()));
 

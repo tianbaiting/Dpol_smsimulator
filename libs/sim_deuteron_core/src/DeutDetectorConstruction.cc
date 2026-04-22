@@ -192,8 +192,12 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
   fExitWindowC2Construction->GetWindowHoleVolume()->SetSensitiveDetector(fWindowHoleSD);
 
   //------------------------------ Vacuum Downstream
-  G4LogicalVolume *vacuum_downstream_log = 
-    fVacuumDownstreamConstruction->ConstructSub(Dipole_phys, 
+  // [EN] The downstream pipe is physically connected to the dipole cavity,
+  // so its material follows the same BeamLineVacuum switch.
+  // [CN] 下游管道与磁铁腔体物理联通，材质跟随 BeamLineVacuum 开关。
+  fVacuumDownstreamConstruction->SetBeamLineVacuum(fBeamLineVacuum);
+  G4LogicalVolume *vacuum_downstream_log =
+    fVacuumDownstreamConstruction->ConstructSub(Dipole_phys,
                                                  fExitWindowC2Construction->GetWindowHolePhys());
   G4ThreeVector vacuum_downstream_pos = fVacuumDownstreamConstruction->GetPosition();
   G4RotationMatrix vacuum_rm; 
