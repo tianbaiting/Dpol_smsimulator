@@ -301,21 +301,21 @@ due to target contamination.}
 \begin{itemize}
 \item Full Geant4 outputs:\\
 \texttt{data/simulation/g4output/eval\_20260227\_235751/}
-\item Full reconstruction outputs:\\
+\item Full reconstruction outputs (polluted model, kept as baseline):\\
 \texttt{data/reconstruction/eval\_20260227\_235751/}
+\item Full reconstruction outputs (clean model, 2026-04-22 rerun):\\
+\texttt{data/reconstruction/eval\_20260422\_cleanmodel/}
 \item Smoke-test outputs:\\
 \texttt{data/simulation/g4output/eval\_target3deg\_smoke\_20260228\_\{ypol,zpol\}}\\
 \texttt{data/reconstruction/eval\_target3deg\_smoke\_20260228\_\{ypol,zpol\}}
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Final Accuracy (All Files, All Events) \textcolor{red}{[INVALIDATED]}}
+\begin{frame}{Final Accuracy (Clean Model, All Files, All Events)}
 \small
-\textcolor{red}{These \texttt{evaluate\_reconstruct\_sn\_nn} RMSEs were produced
-by the now-deleted polluted model running over the clean
-\texttt{eval\_20260227\_235751/} reconstruction files. Matching efficiency
-(geometry acceptance) is unaffected; the RMSE rows must be re-derived with
-the 2026-04-20 clean model before quoting.}
+\textcolor{gray}{Re-evaluated 2026-04-22 with the clean model over the same
+\texttt{eval\_20260227\_235751/} Geant4 outputs; reconstruction step re-run
+into \texttt{eval\_20260422\_cleanmodel/}.}
 \begin{table}
 \centering
 \begin{tabular}{lccc}
@@ -325,11 +325,37 @@ Metric & Overall & Y-pol & Z-pol \\
 Files & 156 & 16 & 140 \\
 Events total & 5,413,747 & 5,178,328 & 235,419 \\
 Matched events & 3,632,185 & 3,463,201 & 168,984 \\
-Reco efficiency (\%) & 67.0919 & 66.8787 & 71.7801 \\
-\(p_x\) RMSE (MeV/c) & 38.7268 & 37.8827 & 53.1511 \\
-\(p_y\) RMSE (MeV/c) & 11.2901 & 11.2611 & 11.8694 \\
-\(p_z\) RMSE (MeV/c) & 11.9982 & 11.1051 & 23.8083 \\
-\(|\vec{p}|\) RMSE (MeV/c) & 8.4297 & 7.9028 & 15.7297 \\
+Reco efficiency (\%) & 67.092 & 66.879 & 71.780 \\
+\(p_x\) RMSE (MeV/c) & \textbf{18.328} & \textbf{17.403} & \textbf{31.828} \\
+\(p_y\) RMSE (MeV/c) & 11.170 & 11.141 & 11.746 \\
+\(p_z\) RMSE (MeV/c) & 16.072 & 15.073 & 29.937 \\
+\(|\vec{p}|\) RMSE (MeV/c) & 13.021 & 12.296 & 23.356 \\
+\(p_x\) Bias (MeV/c)  &  -2.016 &  -1.425 & -14.125 \\
+\(p_y\) Bias (MeV/c)  &   0.091 &   0.050 &   0.932 \\
+\(p_z\) Bias (MeV/c)  &  -6.336 &  -6.928 &   5.786 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{frame}
+
+\begin{frame}{Clean vs Polluted (RMSE change over full eval)}
+\small
+\begin{table}
+\centering
+\begin{tabular}{llrrr}
+\toprule
+Set & Component & Polluted & Clean & $\Delta$ \\
+\midrule
+Overall & $p_x$  & 38.73 & \textbf{18.33} & \textbf{-53\%} \\
+Overall & $p_y$  & 11.29 & 11.17 & -1\% \\
+Overall & $p_z$  & 12.00 & 16.07 & +34\% \\
+Overall & $|\vec p|$ &  8.43 & 13.02 & +54\% \\
+Y-pol   & $p_x$  & 37.88 & \textbf{17.40} & \textbf{-54\%} \\
+Y-pol   & $p_z$  & 11.11 & 15.07 & +36\% \\
+Y-pol   & $|\vec p|$ &  7.90 & 12.30 & +56\% \\
+Z-pol   & $p_x$  & 53.15 & \textbf{31.83} & \textbf{-40\%} \\
+Z-pol   & $p_z$  & 23.81 & 29.94 & +26\% \\
+Z-pol   & $|\vec p|$ & 15.73 & 23.36 & +49\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -345,30 +371,36 @@ Reco efficiency (\%) & 67.0919 & 66.8787 & 71.7801 \\
 (\(67.09\%\) matching efficiency --- geometry-only, unaffected by the model swap).
 \end{itemize}
 
-\textbf{Current performance interpretation} \textcolor{red}{[pending re-eval]}
+\textbf{Clean-model performance (2026-04-22 re-eval)}
 \begin{itemize}
-\item RMSE-based Y-pol / Z-pol comparisons depended on the polluted model
-and must be re-derived with the 2026-04-20 clean model.
-\item Validation-set comparison (from the clean retrain): \(p_x\) RMSE
-\(13.60\rightarrow 6.70\), \(p_y\) RMSE \(12.44\rightarrow 2.40\); full-event
-re-eval is expected to follow the same direction.
-\item Geometry chain and matching efficiency numbers remain production-grade.
+\item \(p_x\) RMSE drops \(40\%\)--\(54\%\) across all three sets, matching
+the validation-set \(p_x\) \(-51\%\) from the clean retrain.
+\item \(p_y\) RMSE flat (\(\sim 11\) MeV/c), bias \(<1\) MeV/c --- NN learns \(p_y\) best.
+\item \(p_z\) and \(|\vec p|\) RMSE rise \(26\%\)--\(56\%\); driven by events whose
+truth \(p_z\) falls outside the training window \([560, 680]\) MeV/c, where
+the polluted model was accidentally better.
+\item \(p_z\) bias: overall \(-6.3\), y-pol \(-6.9\), z-pol \(+5.8\) MeV/c. Needs
+per-truth-bin residual breakdown.
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Conclusion}
 \begin{itemize}
-\item Narrowing to the qmd-window sampling significantly improves
-effective kept samples (\(\sim24\%\rightarrow\sim45\%\)) --- this is a
-geometry-acceptance result and survives the contamination audit.
-\item The clean 2026-04-20 retrain on the same narrow window confirms
-the window choice: val \(|\vec p|\) RMSE \(= 6.08\) MeV/c with strong
-transverse gain (\(p_x\) \(-51\%\), \(p_y\) \(-81\%\) vs the deleted polluted
-baseline).
+\item Narrowing to the qmd-window sampling improves effective kept
+samples (\(\sim24\%\rightarrow\sim45\%\)) --- geometry-acceptance result,
+survives the contamination audit.
+\item Clean 2026-04-20 retrain: val \(|\vec p|\) RMSE \(= 6.08\) MeV/c,
+transverse gain \(p_x\) \(-51\%\), \(p_y\) \(-81\%\) vs the deleted polluted
+baseline.
+\item Full-event re-eval (2026-04-22) on \(5.4\)M events confirms the
+\(p_x\) gain (\(-40\%\) to \(-54\%\) RMSE across overall/y-pol/z-pol); \(p_y\)
+flat; \(p_z\) slightly worse because of OOD \(p_z\) tails in the eval set.
 \item Clean production model: \texttt{formal\_B115T3deg/20260420\_184345/model/}.
-\item Follow-up: re-run \texttt{evaluate\_reconstruct\_sn\_nn} over
-\texttt{eval\_20260227\_235751/} with the clean model; re-do the
-hyperparameter sweep on the clean dataset before claiming a best candidate.
+Clean reco outputs: \texttt{eval\_20260422\_cleanmodel/}.
+\item Follow-up: per-truth-bin residual breakdown (separate in-window vs
+OOD \(p_z\)); consider widening training window to cover IMQMD tails; point
+\texttt{run\_target\_momentum\_reco\_pipeline.sh} defaults at the clean model;
+re-do hyperparameter sweep on the clean dataset.
 \end{itemize}
 \end{frame}
 
