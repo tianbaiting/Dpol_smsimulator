@@ -68,6 +68,7 @@ result/
 *.lof
 *.lot
 *.q
+*.xdv
 
 *.gdml
 
