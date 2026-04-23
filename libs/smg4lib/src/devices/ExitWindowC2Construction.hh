@@ -25,6 +25,9 @@ public:
   void SetPosition(G4ThreeVector val){fPosition = val;}
   void PutExitWindow(G4LogicalVolume *expHall_log);
 
+  void SetBeamLineVacuum(G4bool tf) { fBeamLineVacuum = tf; }
+  G4bool IsBeamLineVacuum() const { return fBeamLineVacuum; }
+
   G4LogicalVolume *GetWindowHoleVolume(){return fWindowHole_log;}
   G4VPhysicalVolume *GetWindowHolePhys(){return fWindowHole_phys;}
 
@@ -33,6 +36,7 @@ protected:
 
   G4double fAngle;
   G4ThreeVector fPosition;
+  G4bool fBeamLineVacuum = false;
 
   G4Material* fWorldMaterial;
   G4Material* fFlangeMaterial;

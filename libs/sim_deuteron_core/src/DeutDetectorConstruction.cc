@@ -178,8 +178,11 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
 
   //-----exit window for charged particles
 
-  //------------------------------ exit window for charged particles  
-  fExitWindowC2Construction->ConstructSub();  
+  //------------------------------ exit window for charged particles
+  // [EN] Hole material tracks BeamLineVacuum (connected to downstream pipe).
+  // [CN] EW 中心孔材质跟随 BeamLineVacuum（与下游真空管联通）。
+  fExitWindowC2Construction->SetBeamLineVacuum(fBeamLineVacuum);
+  fExitWindowC2Construction->ConstructSub();
   //sim_samurai21: magAngle + 29.91*deg
   G4double windowAngle = -magAngle - 29.91*deg;  // 保存角度供后续使用
   fExitWindowC2Construction->SetAngle(windowAngle);  

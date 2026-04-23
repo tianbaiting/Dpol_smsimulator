@@ -120,7 +120,18 @@ G4LogicalVolume* ExitWindowC2Construction::ConstructSub()
   G4VSolid* window_flng_hldr2_hole = new G4SubtractionSolid("windowc2_flng_hldr2_hole",window_flng_hldr2,window_hole_box);
 
   fWindowFlange_log = new G4LogicalVolume(window_flng_hldr2_hole,fFlangeMaterial,"ExitWindowC2_log");
-  fWindowHole_log = new G4LogicalVolume(window_hole_box,fVacuumMaterial,"ExitWindowC2Hole_log");
+
+  // [EN] Hole material tracks BeamLineVacuum: connected to downstream pipe + dipole cavity.
+  // [CN] 孔材质跟随 BeamLineVacuum：与下游真空管、磁铁腔体物理联通。
+  G4Material* holeMat = nullptr;
+  if (fBeamLineVacuum) {
+    holeMat = fVacuumMaterial;  // G4_Galactic
+  } else {
+    auto* lvs = G4LogicalVolumeStore::GetInstance();
+    auto* expHall_lv = lvs->GetVolume("expHall_log", false);
+    holeMat = expHall_lv ? expHall_lv->GetMaterial() : fVacuumMaterial;
+  }
+  fWindowHole_log = new G4LogicalVolume(window_hole_box, holeMat, "ExitWindowC2Hole_log");
 
 //  window_flange_log->SetVisAttributes(new G4VisAttributes(false));// invisible
 //  //fWindowHole_log->SetVisAttributes(new G4VisAttributes(false));// invisible
