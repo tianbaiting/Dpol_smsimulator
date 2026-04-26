@@ -109,6 +109,41 @@ The PDC2 $\sigma_y$ entries above are not the end of the story: they propagate b
 \section{PDC reconstruction reference frame}
 % [content from Tasks 4--6]
 \subsection{Hardware foundations}
+The PDC1/PDC2 hardware specification is documented across four canonical sources: Kobayashi 2013 §3.4\footref{fn:kobayashi2013}, the RIKEN internal \texttt{Detector-PDC.pdf} tech note\footref{fn:detectorpdc}, the SAMURAI 2012 construction proposal\footref{fn:samurai2012}, and the older RIBF-TAC05 (2005) construction proposal\footref{fn:ribftac05}. The proton-arm magnet is the SAMURAI superconducting H-shape dipole described by Sato et al., providing a 7~Tm bending power, a maximum field of 3~T, an 80~cm pole gap and a 2~m pole face, with the field map computed in OPERA-3d / TOSCA\footnote{\label{fn:sato2013}H.~Sato et al., IEEE Trans. Appl. Supercond. \textbf{23}, 4500308 (2013), DOI: \href{https://doi.org/10.1109/TASC.2012.2237225}{10.1109/TASC.2012.2237225}.}. The drift cells follow the Walenta geometry with an 8~mm drift distance, arranged as five planes (U/V/X/U/V) at $\pm 45^\circ/0^\circ$ over a $1700 \times 800$~mm$^2$ active area, filled with Ar + 25\% iC$_4$H$_{10}$ (or alternatively Ar + 50\% C$_2$H$_6$) and read out via $\sim$810 channels\footref{fn:detectorpdc}. The chambers sit at $\sim 59^\circ$ on the proton arm with the design targets of 1~mm position resolution, 2~mrad angular resolution, and 0.8\% relative momentum resolution, with commissioning RI runs reaching $\Delta p/p \approx 1/1500$\footref{fn:kobayashi2013} and a proton-mode design specification of $\Delta p/p \approx 1/700$\footref{fn:ribftac05}. The signal chain feeds an ASD shaper into AMT-VME TDCs at 0.78~ns/ch\footref{fn:ribftac05}, where the AMT chip is the TDC ASIC originally described by Arai\footnote{\label{fn:arai2000}Y.~Arai, Nucl. Instr. Meth. A \textbf{453}, 365 (2000), DOI: \href{https://doi.org/10.1016/S0168-9002(00)00658-6}{10.1016/S0168-9002(00)00658-6}.}. The boundary between the dipole-cavity vacuum (Region~A) and the downstream air volume (Region~B) is the SAMURAI Exit Window described by Shimizu et al.: a Kevlar foil of 280~µm backed by a Mylar foil of 75~µm\footnote{\label{fn:shimizu2013}Y.~Shimizu et al., Nucl. Instr. Meth. B \textbf{317}, 739--742 (2013), DOI: \href{https://doi.org/10.1016/j.nimb.2013.08.059}{10.1016/j.nimb.2013.08.059}.}. The matching offline reconstruction pipeline is the RIKEN ROOT-based drift-chamber analysis described by Otsu et al.\footnote{\label{fn:otsu2016}H.~Otsu et al., Nucl. Instr. Meth. B \textbf{376}, 175 (2016), DOI: \href{https://doi.org/10.1016/j.nimb.2016.02.056}{10.1016/j.nimb.2016.02.056}.}. Together these four canonical sources cover the hardware geometry and design specifications, but none of them publishes a head-to-head proton-arm reconstruction performance paper; that gap is the motivation for §3.2 (algorithm spine) and §3.3 (performance achieved).
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{p{5.0cm} p{5.0cm} p{4.6cm}}
+    \toprule
+    Item & Value & Source \\
+    \midrule
+    PDC location              & $\sim 59^\circ$ on proton arm        & Kobayashi 2013 §3.4 \\
+    Active area               & $1700 \times 800$~mm$^2$             & Detector-PDC tech note \\
+    Drift cell                & Walenta, 8~mm drift                  & Detector-PDC tech note \\
+    Plane configuration       & U/V/X/U/V at $\pm 45^\circ/0^\circ$  & Detector-PDC tech note \\
+    Primary gas               & Ar + 25\% iC$_4$H$_{10}$             & Detector-PDC tech note \\
+    Alternative gas           & Ar + 50\% C$_2$H$_6$                 & Detector-PDC tech note \\
+    Channels                  & $\sim 810$                           & Detector-PDC tech note \\
+    Readout TDC               & AMT-VME, 0.78~ns/ch                  & RIBF-TAC05 2005 + Arai 2000 \\
+    Magnet type               & superconducting H-dipole             & Sato 2013 \\
+    Bending power             & 7~Tm                                 & Sato 2013 \\
+    Max field                 & 3~T                                  & Sato 2013 \\
+    Gap                       & 80~cm                                & Sato 2013 \\
+    Pole face                 & 2~m                                  & Sato 2013 \\
+    Field map source          & OPERA-3d / TOSCA                     & Sato 2013 \\
+    ExitWindow                & Kevlar 280~µm + Mylar 75~µm          & Shimizu 2013 \\
+    Design position $\sigma$  & 1~mm                                 & Kobayashi 2013 §3.4 \\
+    Design angle $\sigma$     & 2~mrad                               & Kobayashi 2013 §3.4 \\
+    Design $\Delta p/p$       & 0.8\%                                & Kobayashi 2013 §3.4 \\
+    Commissioning RI $\Delta p/p$ & $1/1500$                         & Kobayashi 2013 \\
+    Proton mode $\Delta p/p$ design & $\sim 1/700$                   & RIBF-TAC05 2005 \\
+    \bottomrule
+  \end{tabular}
+  \caption{PDC1/PDC2 + magnet + ExitWindow hardware specifications. Sources cited inline; full bibliographic entries in §7.}
+  \label{tab:hardware-spec}
+\end{table}
+
 \subsection{Algorithm spine}
 \subsection{Performance achieved across SAMURAI campaigns}
 

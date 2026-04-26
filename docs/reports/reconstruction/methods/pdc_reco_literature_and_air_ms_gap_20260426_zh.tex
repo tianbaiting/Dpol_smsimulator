@@ -109,6 +109,41 @@
 \section{PDC 重建参考框架（文献）}
 % [content from Tasks 4--6]
 \subsection{硬件基础}
+PDC1/PDC2 的硬件规格分散记录于四份规范资料：Kobayashi 2013 §3.4\footref{fn:kobayashi2013}、RIKEN 内部技术注释 \texttt{Detector-PDC.pdf}\footref{fn:detectorpdc}、SAMURAI 2012 建造提案\footref{fn:samurai2012}，以及更早的 RIBF-TAC05 (2005) 建造提案\footref{fn:ribftac05}。质子臂磁铁为 Sato 等描述的 SAMURAI 超导 H 形偶极磁铁，弯转能力 7~Tm，最大磁场 3~T，极间隙 80~cm，极面尺寸 2~m，磁场图通过 OPERA-3d / TOSCA 计算\footnote{\label{fn:sato2013}H.~Sato et al., IEEE Trans. Appl. Supercond. \textbf{23}, 4500308 (2013), DOI: \href{https://doi.org/10.1109/TASC.2012.2237225}{10.1109/TASC.2012.2237225}.}。漂移单元采用 Walenta 几何，漂移距离 8~mm，五个探测面按 U/V/X/U/V 排列于 $\pm 45^\circ/0^\circ$，活动面积 $1700 \times 800$~mm$^2$，工作气体为 Ar + 25\% iC$_4$H$_{10}$（备选 Ar + 50\% C$_2$H$_6$），共约 810 路读出通道\footref{fn:detectorpdc}。漂移室位于质子臂 $\sim 59^\circ$ 方向，设计目标为：位置分辨 1~mm、角度分辨 2~mrad、相对动量分辨 0.8\%；投运的 RI 束流测试达到 $\Delta p/p \approx 1/1500$\footref{fn:kobayashi2013}，质子模式的原始设计值为 $\Delta p/p \approx 1/700$\footref{fn:ribftac05}。信号链由 ASD 整形器接入 AMT-VME TDC，量化精度 0.78~ns/ch\footref{fn:ribftac05}；其中 AMT 芯片是 Arai 提出的 TDC ASIC\footnote{\label{fn:arai2000}Y.~Arai, Nucl. Instr. Meth. A \textbf{453}, 365 (2000), DOI: \href{https://doi.org/10.1016/S0168-9002(00)00658-6}{10.1016/S0168-9002(00)00658-6}.}。偶极腔真空（Region~A）与下游 air 体积（Region~B）之间的边界为 Shimizu 等描述的 SAMURAI Exit Window：Kevlar 膜 280~µm 加 Mylar 膜 75~µm\footnote{\label{fn:shimizu2013}Y.~Shimizu et al., Nucl. Instr. Meth. B \textbf{317}, 739--742 (2013), DOI: \href{https://doi.org/10.1016/j.nimb.2013.08.059}{10.1016/j.nimb.2013.08.059}.}。与之对应的离线重建管线是 Otsu 等描述的 RIKEN ROOT 框架内漂移室分析流程\footnote{\label{fn:otsu2016}H.~Otsu et al., Nucl. Instr. Meth. B \textbf{376}, 175 (2016), DOI: \href{https://doi.org/10.1016/j.nimb.2016.02.056}{10.1016/j.nimb.2016.02.056}.}。这四份规范资料覆盖了硬件几何与设计指标，但其中没有任何一份发表过专门的质子臂重建性能比较论文；这正是 §3.2（算法主干）与 §3.3（实测性能）需要补齐的缺口。
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{p{5.0cm} p{5.0cm} p{4.6cm}}
+    \toprule
+    Item & Value & Source \\
+    \midrule
+    PDC location              & $\sim 59^\circ$ on proton arm        & Kobayashi 2013 §3.4 \\
+    Active area               & $1700 \times 800$~mm$^2$             & Detector-PDC tech note \\
+    Drift cell                & Walenta, 8~mm drift                  & Detector-PDC tech note \\
+    Plane configuration       & U/V/X/U/V at $\pm 45^\circ/0^\circ$  & Detector-PDC tech note \\
+    Primary gas               & Ar + 25\% iC$_4$H$_{10}$             & Detector-PDC tech note \\
+    Alternative gas           & Ar + 50\% C$_2$H$_6$                 & Detector-PDC tech note \\
+    Channels                  & $\sim 810$                           & Detector-PDC tech note \\
+    Readout TDC               & AMT-VME, 0.78~ns/ch                  & RIBF-TAC05 2005 + Arai 2000 \\
+    Magnet type               & superconducting H-dipole             & Sato 2013 \\
+    Bending power             & 7~Tm                                 & Sato 2013 \\
+    Max field                 & 3~T                                  & Sato 2013 \\
+    Gap                       & 80~cm                                & Sato 2013 \\
+    Pole face                 & 2~m                                  & Sato 2013 \\
+    Field map source          & OPERA-3d / TOSCA                     & Sato 2013 \\
+    ExitWindow                & Kevlar 280~µm + Mylar 75~µm          & Shimizu 2013 \\
+    Design position $\sigma$  & 1~mm                                 & Kobayashi 2013 §3.4 \\
+    Design angle $\sigma$     & 2~mrad                               & Kobayashi 2013 §3.4 \\
+    Design $\Delta p/p$       & 0.8\%                                & Kobayashi 2013 §3.4 \\
+    Commissioning RI $\Delta p/p$ & $1/1500$                         & Kobayashi 2013 \\
+    Proton mode $\Delta p/p$ design & $\sim 1/700$                   & RIBF-TAC05 2005 \\
+    \bottomrule
+  \end{tabular}
+  \caption{PDC1/PDC2 + magnet + ExitWindow hardware specifications. Sources cited inline; full bibliographic entries in §7.}
+  \label{tab:hardware-spec}
+\end{table}
+
 \subsection{算法主干}
 \subsection{SAMURAI 各次实验中达到的性能}
 
