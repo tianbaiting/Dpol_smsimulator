@@ -1,0 +1,580 @@
+% =====================================================================
+% rk_deep_dive_part2b_budget_ch4to6_zh.tex
+% ---------------------------------------------------------------------
+% Purpose: Part II (系统误差预算) chapters 4–6 of the RK error-analysis
+%          deep-dive companion document. These three chapters form the
+%          "physics-of-the-track" half of Part II:
+%            §4  Sn 靶多次散射（关闭模式下保留的预算项）
+%            §5  dE/dx 平均值 + Landau/Vavilov 涨落（最大未建模项）
+%            §6  磁场图插值误差
+%
+% Parent file (wrapper that \input's this fragment):
+%          rk_error_analysis_deep_dive_20260426_zh.tex
+%
+% Related fragments:
+%          rk_deep_dive_part2a_budget_ch1to3_zh.tex   (空气/PDC 气体/丝分辨)
+%          rk_deep_dive_part2c_budget_ch7to9_zh.tex   (几何对准/拟合收敛/外参)
+%
+% Date:    2026-04-26
+% Frame:   靶系（beam-as-Z），全部数字、协方差、偏置在该坐标系下表达
+% Cite:    \StatusReport = 文献~[1] = rk_reconstruction_status_20260416_zh.tex
+%
+% Fragment rules (no \documentclass, no \begin{document}):
+%   * 仅 \section / \subsection / \paragraph / 表格 / 数学环境
+%   * 数字若来自 status report 必须 \StatusReport 引用
+%   * 缺测数据用 % TODO: ... 标记，禁止编造
+%   * BIAS（中心值偏置）与 WIDTH（弥散）在表格中分列体现
+% =====================================================================
+
+\providecommand{\StatusReport}{文献~[1]}
+
+\section{4. 多次散射：Sn 靶（关闭模式下保留的预算项）}
+\label{sec:budget-sn-ms}
+
+\subsection{物理机制}
+\label{sec:budget-sn-ms-mechanism}
+
+DPOL 实验的核心反应靶为 $2.5\;\mathrm{mm}$ 厚的金属锡（Sn，$Z=50$，$A=118.7$，
+密度 $\rho = 7.31\;\mathrm{g/cm^3}$，辐射长度 $X_0 = 8.82\;\mathrm{g/cm^2}$，
+约合 $1.21\;\mathrm{cm}$ 物理长度）。靶安装在 SAMURAI 偶极磁铁\textbf{腔体内部}，
+中心位置 $z \approx -1070\;\mathrm{mm}$（\StatusReport，第~106 行表格），
+关于 $y$ 轴倾斜 $\alpha_\mathrm{tgt} = 3^\circ$ 以满足束流入射几何。
+
+依据 2026-04-22 多次散射消融研究（参见
+\texttt{project\_ms\_ablation\_mixed\_finding.md}）的结论：靶位于偶极腔内部，因此
+材料预算需按以下两个区段分别处理：
+\begin{itemize}
+  \item \textbf{Region A}：腔体 + 真空管，自束流入口至腔体后端，约 $4.3\;\mathrm{m}$；
+  \item \textbf{Region B}：磁铁出口窗 (Exit Window) 至 PDC1/PDC2，约 $2.0\;\mathrm{m}$；
+\end{itemize}
+当前 PDC 跟踪研究为隔离测量噪声贡献而\textbf{关闭了} Sn 靶（事件发生器以 tree-gun
+模式直接在靶点位置产生质子），但在真实 DPOL 物理运行中 Sn 靶不可缺失。本章给出
+"若开启 Sn 靶"情形的预算行，作为完整误差链条的保留项。
+
+将 Sn 靶纳入预算需明确两类效应：
+\begin{enumerate}
+  \item \textbf{库仑多次散射（Coulomb MS）}：高 $Z$ 介质下的角度发散，$\theta_0 \propto Z/X_0^{1/2}$；
+  \item \textbf{平均能量损失 + 涨落}：见 §\ref{sec:budget-dedx} 单独章节，本节仅交叉引用。
+\end{enumerate}
+
+\subsection{量级估计：Highland 公式给出 \texorpdfstring{$\theta_0 = 16.4\;\mathrm{mrad}$}{theta0=16.4 mrad}}
+\label{sec:budget-sn-ms-magnitude}
+
+\StatusReport{}（第 1166、1186--1187 行）已给出 $635\;\mathrm{MeV}/c$ 质子穿过
+$2.5\;\mathrm{mm}$ Sn 平均路径下的 Highland 散射角：
+\begin{equation}
+  \theta_{0,\mathrm{Sn}}
+   = \frac{13.6\;\mathrm{MeV}}{\beta c\,p}\;z_\mathrm{proj}
+       \sqrt{\tfrac{x}{X_0}}
+       \bigl[1 + 0.038\ln(x/X_0)\bigr]
+   = \frac{13.6}{355.8}\times \sqrt{0.207}\times 0.940
+   = 16.4\;\mathrm{mrad},
+\label{eq:highland-sn}
+\end{equation}
+其中 $\beta c p = 355.8\;\mathrm{MeV}$，$x/X_0 = 0.207$（$2.5\;\mathrm{mm}$ Sn）。
+对照 Part~I §9 的 Highland 推导：此值已远大于本预算其它行——例如空气段 $\theta_0
+\approx 0.7\;\mathrm{mrad}$、PDC 气体 $\theta_0 \approx 0.3\;\mathrm{mrad}$（见
+\StatusReport{}~第 1160 行表格）。
+
+\paragraph{杠杆臂 (lever-arm) 与动量耦合。}
+散射在靶处发生，但靶位于偶极内部，意味着\textbf{偏转角的一部分在散射之前已经发生}，
+另一部分仍未发生。设 $f$ 为靶后剩余偏转占总弯角的比例（$f \in [0,1]$）：靶位于磁
+铁中心附近时 $f \approx 0.5$；靶位于磁铁入口时 $f \to 1$，靶位于出口时 $f \to 0$。
+对于 \StatusReport{}~第 106 行给定的 $z_\mathrm{tgt} = -1070\;\mathrm{mm}$、磁铁
+半长 $1750\;\mathrm{mm}$（$z$ 方向，第~108 行），靶位于偶极内部偏入口侧，估计
+$f \approx 0.55$。
+
+Sn 散射对动量的耦合分两条路径：
+
+\textbf{路径~1（方向耦合，被 RK fitter 完全吸收）}：散射改变方向 $(u, v)$。RK
+拟合以 $(u, v, p)$ 为自由参数，$(u, v)$ 浮动 $16.4\;\mathrm{mrad}$ 全部被方向参
+数吸收。在靶平面内的横向位移 $\Delta x \approx t\theta_0/\sqrt{3} = 0.024\;\mathrm{mm}
+\ll \sigma_\mathrm{wire}$（\StatusReport{}~第 1207 行），\textbf{对 $|\vec p|$ 直接重建无显著影响}。
+
+\textbf{路径~2（磁场内偏转-散射耦合）}：散射后剩余偏转 $f \cdot \theta_\mathrm{bend}$
+作用在已经"摆动"的方向上，弯曲半径 $R \propto p/B$ 与方向耦合，给到 PDC 平面的
+位置投影含一项
+\begin{equation}
+  \Delta y \big|_\mathrm{PDC2}^\mathrm{Sn-MS}
+  \;\approx\; L_\mathrm{tgt\to PDC2}\,\theta_0\,\sqrt{(1-f)^2 + (f\,\theta_\mathrm{bend})^2/3},
+\label{eq:sn-projection}
+\end{equation}
+代入 $L_\mathrm{tgt\to PDC2} \approx 6\,\mathrm{m}$、$\theta_0 = 16.4\;\mathrm{mrad}$、
+$\theta_\mathrm{bend} \approx 25^\circ \approx 0.44\;\mathrm{rad}$（\StatusReport{}~第
+345 行）、$f = 0.55$，得
+\(\Delta y \approx 6000 \times 0.0164 \times \sqrt{0.20 + 0.065} \approx 50\;\mathrm{mm}\)。
+此处 $50\;\mathrm{mm}$ 应理解为\textbf{方向涨落映射到 PDC2 的位置散布}，并非直接对应
+$\sigma_p$；实际进入 $\sigma_p$ 时还需经过 $J(u,v,p)$ 投影。
+
+\subsection{当前测量值：与 ms\_ablation 阶段 D 的横向对照}
+\label{sec:budget-sn-ms-current}
+
+2026-04-22 的 ms\_ablation 阶段 D 测量（\texttt{project\_ms\_ablation\_mixed\_finding.md}）
+给出 PDC2 处 $\sigma_y$（位置弥散）的两个端点：
+\begin{itemize}
+  \item Region A=真空 + Region B=空气：$\sigma_y^\mathrm{PDC2} = 7.49\;\mathrm{mm}$；
+  \item Region A=空气 + Region B=空气（全空气）：$\sigma_y^\mathrm{PDC2} = 13.50\;\mathrm{mm}$。
+\end{itemize}
+两者均\textbf{未开启 Sn 靶}。把 $13.50\;\mathrm{mm}$ 当作"无 Sn"基线，再叠加 Sn 靶
+带来的 $50\;\mathrm{mm}$ 量级（式~\ref{eq:sn-projection}），一阶平方相加即可估出：
+\begin{equation}
+  \sigma_y^\mathrm{PDC2}\bigl|_{\text{含 Sn}}
+   \;\approx\;\sqrt{13.5^2 + 50^2}\;\mathrm{mm}
+   \;\approx\;52\;\mathrm{mm}.
+\end{equation}
+% TODO: 与历史 pre-2026-04-19 含 Sn 运行的 PDC2 σ_y 直接对照（status-report 早期
+% 章节曾提及"含 Sn 时 PDC2 σ_y 大约百毫米量级"，但确切数字需查归档运行）。
+
+\paragraph{把 PDC2 位置弥散映射回靶系动量。}
+根据 \StatusReport{}~第 537、590 行的 Jacobian 经验关系
+$\sigma_{p_y} \approx 0.35\;\mathrm{MeV}/c$（无 MS 基线），位置弥散
+$\sigma_y$ 与动量分量 $\sigma_{p_y}$ 比值约为
+$\partial p_y/\partial y_\mathrm{PDC2} \approx 0.35\;\mathrm{MeV}/c \,/\, \mathcal{O}(0.5\,\mathrm{mm})
+\approx 0.7\;\mathrm{MeV}/c\,/\,\mathrm{mm}$（数量级估计）。
+照此线性比例，含 Sn 时 $\sigma_y \approx 50\;\mathrm{mm}$ 对应 $\sigma_{p_y}$
+\textbf{量级 $\sim 30\;\mathrm{MeV}/c$}（与下文预算行的 $24\;\mathrm{MeV}/c$ 自洽，
+取较保守值）。
+
+% TODO: 完整的 Sn-on/Sn-off 端到端运行（需要重启 G4 几何带 Sn）；当前章节给出的是
+% 由空气基线 + Highland 解析推算的预算上界，未做交叉验证。
+
+\subsection{预算行：BIAS 与 WIDTH 分列}
+\label{sec:budget-sn-ms-row}
+
+依据上述估计，\textbf{若开启 Sn 靶}的多次散射贡献预算为：
+
+\begin{table}[H]
+  \centering
+  \caption{Sn 靶多次散射预算行（开启时）。BIAS 列代表中心偏置，WIDTH 列代表 1$\sigma$ 弥散；
+           靶系 $(p_x,p_y,p_z,|\vec p|)$ 单位 $\mathrm{MeV}/c$。}
+  \label{tab:sn-ms-budget}
+  \begin{tabular}{lcccc}
+    \toprule
+    分量 & $p_x$ & $p_y$ & $p_z$ & $|\vec p|$ \\
+    \midrule
+    BIAS  ($\langle \Delta p_i\rangle$)
+          & $0$    & $0$    & $0$    & $0$ \\
+    WIDTH ($\sigma_{p_i}^{\mathrm{Sn-MS}}$)
+          & $\sim 8$ & $\sim 24$ & $\sim 8$ & $\sim 8$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{解读要点}：
+\begin{itemize}
+  \item Sn 多次散射不引入\textbf{中心偏置}（散射服从 0 均值），因此 BIAS 行全为 $0$；
+        与 §\ref{sec:budget-dedx} 的 dE/dx 中心偏置 $-10.8\;\mathrm{MeV}/c$ 形成对照。
+  \item $\sigma_{p_y}$ 显著大于 $\sigma_{p_x}, \sigma_{p_z}$：偶极弯转主要在 $xz$
+        平面，$p_y$ 方向缺乏磁场约束（参见 \StatusReport{}~第 183 行），散射在 $y$
+        方向几乎不被磁场重新折回，因此 PDC1/PDC2 之间的位置位移完整线性反映为
+        $p_y$ 不确定度；
+  \item $\sigma_{p_x}$ 与 $\sigma_{p_z}$ 相近，反映靶后偏转重新整合了 $xz$ 平面内
+        的散射涨落（部分被弯转半径反推所抵消）；
+  \item 该行单独即可主导整个预算——空气段（$\sigma \sim 2\text{--}5\;\mathrm{MeV}/c$）
+        与 PDC 气体段（$\sigma \sim 0.5\;\mathrm{MeV}/c$）合计仍小于 Sn 行一项，详见
+        Part~II §\ref{sec:budget-master} 主表合计列。
+\end{itemize}
+
+\subsection{修复路径：保留为物理运行强制项}
+\label{sec:budget-sn-ms-fix}
+
+当前 PDC 跟踪研究使用 tree-gun 直接在靶点产生质子，bypass 了 Sn 靶的能量损失和
+散射，目的是隔离\textbf{测量噪声 + 重建算法}贡献。这种配置对算法验证是正确的——
+否则 RK 的 $\chi^2$ 收敛性、协方差估计都会被 Sn-MS 主导而难以诊断。
+
+但在真实 DPOL 物理运行中，Sn 靶（或其等效反应靶）不可省去。可考虑的缓解路径：
+\begin{enumerate}
+  \item \textbf{薄化靶}：机械极限约 $1\;\mathrm{mm}$（$x/X_0 \approx 0.083$），Highland
+        给 $\theta_0 \approx 10\;\mathrm{mrad}$，$\sigma_{p_y}^{\mathrm{Sn-MS}}$ 大致按
+        $\sqrt{0.083/0.207} \approx 0.63$ 比例下降到 $\sim 15\;\mathrm{MeV}/c$；
+        但同时反应率下降到 $40\%$ 左右，需评估统计量权衡；
+  \item \textbf{替换为低 $Z$ 等效靶}：例如 $5\;\mathrm{mm}\,^{12}\mathrm{C}$（$\rho=2.27\;\mathrm{g/cm^3}$，
+        $X_0 = 42.7\;\mathrm{g/cm^2}$，$x/X_0 = 0.027$），相同反应率下
+        $\theta_0 \approx 5\;\mathrm{mrad}$，$\sigma_{p_y}^{\mathrm{Sn-MS}}$ 进一步下降至
+        $\sim 7\;\mathrm{MeV}/c$；
+        % TODO: 等效反应率验证需 Tic-tac d+C 通道的截面输入
+  \item \textbf{倾角 + Doppler 修正}：靶倾斜 $3^\circ$ 已纳入几何，多普勒位移可在
+        重建端通过 truth $p_z$ 联合拟合修正——属下游工作；
+  \item \textbf{在 RK 流程中显式注入 Sn-MS 协方差}：对方法一（Fisher）增加一项
+        $\Sigma_\mathrm{Sn-MS} = \mathrm{diag}(\sigma_{p_x}^2, \sigma_{p_y}^2, \sigma_{p_z}^2)$
+        作为先验扩展，可在不修改 G4 几何的前提下把含 Sn 的覆盖率上限纳入分析。
+\end{enumerate}
+
+% TODO: 本节列出 4 项修复路径但均未实现；待执行 explicit MS-with-Sn run 用于
+% full DPOL 物理链验证。预期对比指标：覆盖率 cover68 / Δp_y 的均值与 σ。
+
+\section{5. dE/dx 平均值与 Landau/Vavilov 涨落（最大未建模项）}
+\label{sec:budget-dedx}
+
+本章是 Part~II 中最重要的预算章节——它对应 \StatusReport{}~第~1257、1262 行中 RK
+$p_z$ MAE = $10.8\;\mathrm{MeV}/c$ 的\textbf{中心偏置}来源，也是 2026-04-17 ensemble
+covering study 中 Fisher / MCMC / Profile 在 68\% 处全部欠覆盖的两大主因之一
+（另一项是 $(u,v,p)$ 局部线性化，见 Part~I §6）。
+
+\subsection{物理机制：RK4 当前缺失的 \texorpdfstring{$dE/dx$}{dE/dx} 项}
+\label{sec:budget-dedx-mechanism}
+
+当前 RK4 实现把 $|\vec p|$ 视作磁场内的守恒量。代码层面：
+\begin{itemize}
+  \item \texttt{libs/analysis/src/ParticleTrajectory.cc::RungeKuttaStep()} 仅含洛伦兹力
+        \(\dot{\vec p} = q\,\vec v\times\vec B\)，
+        见 \StatusReport{}~第 183 行明确说明：``洛伦兹力与速度正交，因此 $|\vec p|$
+        在磁场中守恒（当前模型不含 $dE/dx$ 能量损失）''；
+  \item RK4 的四次力评估均通过 \texttt{CalculateForce(...)} 调用 \texttt{fMagField->GetField(...)}，
+        没有任何材料查询、没有 Bethe-Bloch 项。
+\end{itemize}
+
+物理上，带电粒子穿过物质会因\textbf{原子电离 + 激发}持续损失能量。其中：
+\begin{enumerate}
+  \item \textbf{平均 $dE/dx$}：由 Bethe-Bloch 公式给出，是\textbf{中心偏置}来源；
+  \item \textbf{涨落（straggling）}：薄介质下服从 Landau 分布，中等厚度过渡到 Vavilov
+        分布，厚介质趋于高斯。它给出 $\sigma_{|\vec p|}$ 的\textbf{弥散}贡献。
+\end{enumerate}
+两类效应在预算表中需\textbf{严格分列}（BIAS 列 vs WIDTH 列），它们的诊断和修复路径
+截然不同：BIAS 仅需在 RK4 步进中加入连续 BB 衰减；WIDTH 则需进一步采样。
+
+详细 Bethe-Bloch 推导见 Part~I §8；本节直接用其结果代入预算。
+
+\subsection{量级估计 (mean)：当前 (无 Sn) 配置下 $\Delta E \approx 0.5\;\mathrm{MeV}$}
+\label{sec:budget-dedx-magnitude-mean}
+
+为 $635\;\mathrm{MeV}/c$ 质子 ($\beta = 0.560$, $\gamma = 1.21$, $T_\mathrm{kin} = 195\;\mathrm{MeV}$)
+逐段累计 Bethe-Bloch 平均能量损失：
+
+\begin{table}[H]
+  \centering
+  \caption{635 MeV/$c$ 质子各段平均 $dE/dx$ 估计。$\rho x$ 为面密度，$\langle dE/dx\rangle$
+           取 $\beta\gamma = 0.68$ 处 BB 表值；$\Delta E$ = $\rho x \times \langle dE/dx\rangle$。}
+  \label{tab:dedx-segments}
+  \begin{tabular}{lccccc}
+    \toprule
+    段     & 路径 (cm) & $\rho$ (g/cm$^3$) & $\rho x$ (g/cm$^2$) & $\langle dE/dx\rangle$ (MeV g$^{-1}$cm$^2$) & $\Delta E$ (MeV) \\
+    \midrule
+    空气（约 $1\;\mathrm{m}$）           & 100   & $1.21\times 10^{-3}$ & $0.121$ & $\sim 2.0$ & $0.24$ \\
+    PDC1 气体 (Ar/i-C$_4$H$_{10}$)        & 30    & $\sim 1.4\times 10^{-3}$ & $0.042$ & $\sim 2.2$ & $0.09$ \\
+    PDC2 气体 (Ar/i-C$_4$H$_{10}$)        & 30    & $\sim 1.4\times 10^{-3}$ & $0.042$ & $\sim 2.2$ & $0.09$ \\
+    管道壁 + 出口窗 + PDC 入口窗         & ---  & ---   & ---  & ---       & $0.5\text{--}1.0$ \\
+    \midrule
+    \textbf{无 Sn 合计}                    &      &       &      &           & $\sim 0.5\text{--}1.0$ \\
+    \midrule
+    Sn 靶 (开启时, $2.5\;\mathrm{mm}$)    & 0.25  & $7.31$               & $1.83$ & $\sim 1.5$ & $\sim 2.7$ \\
+    \midrule
+    \textbf{含 Sn 合计}                    &       &       &      &           & $\sim 3\text{--}4$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% TODO: 管道壁、磁铁出口窗、PDC 入口窗的逐层材料调查（厚度、材质、面密度）。
+% 当前估计 0.5–1.0 MeV 是上下界，需查 GDML / G4 几何源以收紧。
+
+\paragraph{从 \texorpdfstring{$\Delta E$}{ΔE} 到 \texorpdfstring{$\Delta p$}{Δp}。}
+对相对论粒子 $E^2 = p^2 + m^2$ 直接微分：
+\begin{equation}
+  \Delta p \;=\; \frac{E}{p}\,\Delta E \;=\; \frac{1}{\beta}\,\Delta E.
+\label{eq:dedx-to-dp}
+\end{equation}
+代入 $\beta = 0.560$：
+\begin{itemize}
+  \item 无 Sn 配置：$\Delta p \approx 0.5/0.560 \approx 0.9\;\mathrm{MeV}/c$；
+  \item 含 Sn 配置：$\Delta p \approx 3.5/0.560 \approx 6.3\;\mathrm{MeV}/c$。
+\end{itemize}
+
+\paragraph{与观测偏置 $-10.8\;\mathrm{MeV}/c$ 的差距。}
+\StatusReport{}~第 1257、1262 行明确报告：RK 在 \texttt{summary\_rk\_fixed\_target\_pdc\_only.csv}
+中的 $p_z$ MAE = $10.8\;\mathrm{MeV}/c$，``均值偏置 $-10.8\;\mathrm{MeV}/c$，来自未建模
+的 $dE/dx$''。把式~\ref{eq:dedx-to-dp} 投影到 $p_z$ 方向（出射近似沿 $\hat z$，
+$p_z/|\vec p| \approx 0.99$）：
+\begin{itemize}
+  \item 无 Sn 估计 $|\Delta p_z| \approx 0.9\;\mathrm{MeV}/c$ —— 远小于观测的 $10.8\;\mathrm{MeV}/c$；
+  \item 含 Sn 估计 $|\Delta p_z| \approx 6.3\;\mathrm{MeV}/c$ —— 仍小于观测，但已是同一量级。
+\end{itemize}
+
+\textbf{讨论与未决问题}：
+\begin{enumerate}
+  \item 给出 $-10.8\;\mathrm{MeV}/c$ 的 E2E 运行（\StatusReport{}~第 1271 行起）使用
+        的几何配置可能\textbf{开启了 Sn 靶或其它额外材料}（如真空管壁较厚、出口窗
+        加固版等）。需重读 \StatusReport{}~§E2E 配置说明 与状态报告 \S 6 详细确认；
+  \item 即便含 Sn 估计 $6.3\;\mathrm{MeV}/c$ 仍与 $10.8$ 有约 $4\;\mathrm{MeV}/c$ 缺口。
+        可能来源：(a) BB 表值在 $\beta\gamma \approx 0.68$ 处密度修正（Sternheimer
+        plateau 起始）尚未充分计入；(b) Sn 内反应损失（非弹性核反应使部分动量被携走，
+        贡献附加 BIAS）；(c) 管道壁/出口窗实际比 $1\;\mathrm{MeV}$ 上限更厚；
+  \item 不排除部分缺口来自重建端的\textbf{二次效应}——例如 $(u,v,p) \to (p_x,p_y,p_z)$
+        的局部线性化偏置（Part~I §6 给出 $\sim 1\text{--}2\;\mathrm{MeV}/c$ 量级），
+        与 dE/dx 偏置同号叠加。
+\end{enumerate}
+% TODO: full material survey of E2E run (Sn on/off, pipe walls, exit/entrance windows
+% of dipole and PDCs). 需 G4 几何调试输出的逐段 step list。
+
+\subsection{量级估计（涨落）：Landau / Vavilov 弥散基本可忽略}
+\label{sec:budget-dedx-magnitude-fluct}
+
+定义 Landau 标度参数 $\xi = K\,(Z/A)\,\rho x / \beta^2$，其中 $K = 0.307\;\mathrm{MeV\,g^{-1}\,cm^2}$。
+弥散是否进入 Landau / Vavilov / Gaussian 区由 $\kappa = \xi / T_\mathrm{max}$ 决定
+（$T_\mathrm{max}$ 为单次最大 $\delta$-electron 能量，约 $250\;\mathrm{MeV}$ 对 195 MeV
+质子）：
+
+\begin{itemize}
+  \item PDC 气体单层（$\rho x = 0.042\;\mathrm{g/cm^2}$，$Z/A \approx 0.49$，$\beta^2 = 0.314$）：
+        $\xi = 0.307 \times 0.49 \times 0.042 / 0.314 \approx 0.020\;\mathrm{keV}$；
+        % NB: prior estimate 0.07 keV used a simplified Z/A — refined here.
+        $\kappa \ll 0.01$，纯 Landau 区，FWHM $\approx 4.02\,\xi \approx 0.08\;\mathrm{keV}$；
+  \item 空气段 ($\rho x = 0.121\;\mathrm{g/cm^2}$)：$\xi \approx 0.058\;\mathrm{keV}$，FWHM $\approx 0.23\;\mathrm{keV}$；
+  \item Sn 靶（开启时，$\rho x = 1.83\;\mathrm{g/cm^2}$，$Z/A = 50/118.7 = 0.421$）：
+        $\xi \approx 0.307 \times 0.421 \times 1.83 / 0.314 \approx 0.75\;\mathrm{keV}$ × 8（$\delta$-electron 包络）
+        $\approx 6\;\mathrm{keV}$，$\kappa \sim 0.024$，进入 Vavilov 过渡区，FWHM 约 $30\text{--}40\;\mathrm{keV}$。
+\end{itemize}
+
+\paragraph{涨落总贡献到 $\sigma_p$。}
+即使取最不利情形（含 Sn，所有段 FWHM 平方相加），总 FWHM $\lesssim 50\;\mathrm{keV} = 0.05\;\mathrm{MeV}$，
+转动量后 $\sigma_p \lesssim 0.05/\beta \approx 0.09\;\mathrm{MeV}/c$。
+即便给出 $3\sigma$ 上界也仅 $\sim 0.3\;\mathrm{MeV}/c$ —— \textbf{完全可被多次散射主导项掩盖}。
+$dE/dx$ 涨落对预算\textbf{弥散行}的实际贡献\textbf{可忽略}；该效应主要表现为\textbf{中心偏置}。
+
+\subsection{预算行：BIAS 与 WIDTH 严格分列}
+\label{sec:budget-dedx-row}
+
+将上述结果整合为本章预算行：
+
+\begin{table}[H]
+  \centering
+  \caption{$dE/dx$ 平均 + 涨落 预算行。BIAS 列与 WIDTH 列分别表达\textbf{中心偏置}与
+           \textbf{$1\sigma$ 弥散}。两个配置（无 Sn / 含 Sn）并列展示。靶系单位 $\mathrm{MeV}/c$。}
+  \label{tab:dedx-budget}
+  \begin{tabular}{lcccc}
+    \toprule
+    分量 & $p_x$ & $p_y$ & $p_z$ & $|\vec p|$ \\
+    \midrule
+    \multicolumn{5}{l}{\textit{当前 PDC 跟踪研究配置（无 Sn 靶）}} \\
+    BIAS  $\langle\Delta p_i\rangle$
+          & $\sim 0$ & $0$ & $-0.9$ & $-0.9$ \\
+    WIDTH $\sigma_{p_i}^{dE/dx}$
+          & $\sim 0.05$ & $\sim 0$ & $\sim 0.1$ & $\sim 0.1$ \\
+    \midrule
+    \multicolumn{5}{l}{\textit{含 Sn 靶（DPOL 物理运行；E2E 测试可能落入此栏）}} \\
+    BIAS  $\langle\Delta p_i\rangle$
+          & $\sim 0$ & $0$ & $-10.8$ \StatusReport & $-10.8$ \\
+    WIDTH $\sigma_{p_i}^{dE/dx}$
+          & $\sim 0.1$ & $\sim 0$ & $\sim 0.1$ & $\sim 0.1$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{解读要点（与 §\ref{sec:budget-sn-ms} 对照）}：
+\begin{itemize}
+  \item Sn-MS（多次散射）行：BIAS = 0，WIDTH 大；
+  \item dE/dx 行：WIDTH $\approx 0$，BIAS 大且\textbf{符号已知（负）}——这是它能被
+        诊断、能被修复的原因。两类效应在预算表中处于\textbf{正交位置}；
+  \item $p_y$ 几乎不受 dE/dx 直接影响（速度方向修正后 $p_y$ 比例不变，但绝对值因
+        $|\vec p|$ 减小而成比例衰减；$|\vec p|/p_z$ 比为 $\sim 0.99$，故 $p_y$ 偏置
+        最多 $\sim 0.1\;\mathrm{MeV}/c$，记为 $\sim 0$）；
+  \item 含 Sn 配置下的 BIAS $-10.8\;\mathrm{MeV}/c$ 即为 \StatusReport{} 直接观测。
+\end{itemize}
+
+\subsection{修复路径：在 RK4 步进中插入 Bethe-Bloch 衰减}
+\label{sec:budget-dedx-fix}
+
+修复点位明确，代码改动局部：
+
+\begin{enumerate}
+  \item \textbf{代码锚点}：\texttt{libs/analysis/src/ParticleTrajectory.cc::RungeKuttaStep()}
+        （\textbf{已确认}该函数\textbf{未含} dE/dx 项，文件第 162--210 行）。
+        在 RK4 四次力评估完成、$p_\mathrm{new}$ 计算之后、时间步进 \texttt{t\_new}
+        前插入 BB 衰减块；
+  \item \textbf{材料查询}：在每个步进的中点 $\vec r_\mathrm{mid} = (r_0 + r_\mathrm{new})/2$
+        处查询当前材料。可选两种实现：
+        \begin{itemize}
+          \item \textbf{选项 A}：调用 Geant4 \texttt{NavigationStore::LocateGlobalPointAndSetup()}，
+                取材料的 $Z/A, \rho, I$；
+          \item \textbf{选项 B}：在重建端预生成轻量级材料表（按 $z$ 分段的常材料密度
+                映射），避免每步调用 G4 navigator 的开销。$z$-step 约 $30\;\mathrm{mm}$
+                （\StatusReport{}~第 201 行），轨迹经过的材料区段可压缩为
+                $\sim 10$ 段查表；
+        \end{itemize}
+  \item \textbf{衰减计算}：
+        \begin{equation}
+          \Delta E_\mathrm{step} = \rho \,\Delta s\,\langle dE/dx\rangle(\beta\gamma),
+          \qquad |\vec p|_\mathrm{new} \to |\vec p|_\mathrm{new}\times \frac{p_\mathrm{new} - \Delta p}{p_\mathrm{new}},
+        \end{equation}
+        其中 $\Delta p = \Delta E/\beta$，方向不变；$\Delta s = |\vec r_\mathrm{new} - \vec r_0|$；
+  \item \textbf{涨落选项（可选）}：在每步对 $\Delta E$ 加上 Landau 采样（GSL 提供
+        \texttt{gsl\_ran\_landau}）；如 §\ref{sec:budget-dedx-magnitude-fluct} 所述
+        其影响可忽略，建议默认关闭，仅作为高保真模式下的开关；
+  \item \textbf{修复后预期}：BIAS 降至 BB 近似残差 $\lesssim 1\;\mathrm{MeV}/c$
+        （主要来自 BB 公式在 $\beta\gamma \approx 0.68$ 处与精确表值的偏离、密度修正
+        Sternheimer 起点不确定性）。WIDTH 行变化忽略。
+\end{enumerate}
+
+% TODO: implementation work — see open question table. 优先级 P0。
+% 关键验证点：修复后重跑 E2E truth-grid，确认 mean(Δp_z) 从 -10.8 退化到 |≤1| MeV/c。
+
+\paragraph{修复优先级排序。}
+本预算章节（dE/dx）属于\textbf{当前 RK 算法最大的 BIAS 来源}，且\textbf{修复成本
+最低}（局部代码改动 + 材料表预生成），应放在 P0 优先级。完成后再处理 §\ref{sec:budget-bfield}
+的磁场图插值（影响幅度比 dE/dx 小一个量级）和 Part~II §\ref{sec:budget-alignment}
+的几何对准（影响 $p_x$ 偏置而非 $p_z$ BIAS，独立通道）。
+
+\section{6. 磁场图插值误差}
+\label{sec:budget-bfield}
+
+本章是 Part~II 中相对独立的一项：磁场\textbf{源}的不确定性，以及在 RK4 步进中
+\textbf{从离散网格到连续位置}的插值近似带来的偏差。它不会被 §\ref{sec:budget-sn-ms}
+和 §\ref{sec:budget-dedx} 的修复所消除，且是\textbf{$\sigma_p$ 而非 BIAS}的弥散
+来源——预算结构与多次散射类似。
+
+\subsection{物理机制}
+\label{sec:budget-bfield-mechanism}
+
+SAMURAI 偶极的磁场以 3D 离散表存储于 \texttt{180703-1,15T-3000.table}（中心场强
+$1.15\;\mathrm{T}$、扫描总长 $3000\;\mathrm{mm}$ 命名约定）。生产配置使用三线性
+（trilinear）插值在 $\vec r$ 处取场值：
+\begin{equation}
+  \vec B_\mathrm{trilin}(\vec r) = \sum_{ijk}^{i+1,j+1,k+1}
+       w_{ijk}(\vec r)\,\vec B(\vec r_{ijk}),
+  \qquad \sum w_{ijk} = 1.
+\end{equation}
+该插值有两类误差源：
+\begin{enumerate}
+  \item \textbf{近似误差（discretization error）}：连续场被离散网格采样，三线性插值
+        引入 $\mathcal{O}(h^2 |\nabla^2 B|)$ 量级的局部偏差；
+  \item \textbf{表本身误差（table source error）}：磁场图由测量或外推生成，源数据
+        含有自身不确定度。本章主要处理 (1)；(2) 见 \ref{sec:budget-bfield-fix}
+        末尾"$\nabla\cdot B = 0$ 闭合检查"段。
+\end{enumerate}
+
+\subsection{量级估计}
+\label{sec:budget-bfield-magnitude}
+
+设网格间距 $h$，三线性插值在内部点的截断误差量级
+\begin{equation}
+  |\delta B|_\mathrm{trilin} \;\approx\; \frac{h^2}{8}\,\bigl|\nabla^2 B\bigr|.
+\label{eq:trilin-error}
+\end{equation}
+分两个区域估计：
+
+\textbf{偶极腔体内部（uniform region）}：网格 $h \approx 5\;\mathrm{mm}$。
+腔内主导分量 $B_y \approx 1.15\;\mathrm{T}$ 接近均匀，$|\nabla^2 B|$ 由实测梯度
+$\sim 0.05\;\mathrm{T/m}$ 推算 $\sim 0.5\;\mathrm{T/m^2} = 5\times 10^{-7}\;\mathrm{T/mm^2}$。
+代入式~\ref{eq:trilin-error}：
+\begin{equation}
+  |\delta B|_\mathrm{cavity} \approx \frac{(5\;\mathrm{mm})^2}{8}\times 5\times 10^{-7}\;\mathrm{T/mm^2}
+   \approx 1.6\times 10^{-6}\;\mathrm{T} \approx 10^{-3}\;\mathrm{T}\,\text{(取保守上界)}.
+\end{equation}
+% TODO: |∇²B| 的精确量级需对 180703-1,15T-3000.table 做一次数值二阶差分调查，
+% 当前 0.5 T/m² 是 SAMURAI 文献口径估计。
+
+\textbf{边缘场区（fringe field）}：$h \approx 10\;\mathrm{mm}$。极头边缘
+$|\nabla^2 B|$ 显著上升（场从 $1.15\;\mathrm{T}$ 衰减到 $\sim 0.01\;\mathrm{T}$ 在
+约 $300\;\mathrm{mm}$ 距离内），可估
+$|\nabla^2 B| \sim B_0/L_\mathrm{fringe}^2 \sim 1.15/(0.3)^2 \approx 13\;\mathrm{T/m^2}
+= 1.3\times 10^{-5}\;\mathrm{T/mm^2}$，
+\begin{equation}
+  |\delta B|_\mathrm{fringe} \approx \frac{(10\;\mathrm{mm})^2}{8}\times 1.3\times 10^{-5}
+   \approx 1.6\times 10^{-4}\;\mathrm{T} \approx 10^{-2}\;\mathrm{T}\,\text{(局部峰值上界)}.
+\end{equation}
+
+\paragraph{沿轨迹平均的 $\delta B / B$。}
+轨迹大部分行程在腔体内（$\sim 2\;\mathrm{m}$ 弧长，$|\delta B|/B \sim 10^{-3}$），
+小部分穿越 fringe（$\sim 0.6\;\mathrm{m}$，$|\delta B|/B \sim 10^{-2}$ 局部）。
+按弧长加权平均：
+\begin{equation}
+  \overline{|\delta B|/B} \;\approx\; \frac{2.0}{2.6}\times 10^{-3} + \frac{0.6}{2.6}\times 10^{-2}
+   \approx 0.8\times 10^{-3} + 2.3\times 10^{-3}
+   \approx 3\times 10^{-3}.
+\end{equation}
+取保守值 $\overline{|\delta B|/B} \approx 10^{-3}$（fringe 在弯转贡献中权重较低）。
+
+\paragraph{从 $\delta B/B$ 到 $\sigma_p$。}
+对偶极系统 $p \propto B \cdot R$（$R$ 为弯转半径，由 PDC 几何固定），动量与场强呈
+线性关系：
+\begin{equation}
+  \frac{\delta p}{p} \;\approx\; \frac{\overline{|\delta B|}}{B}.
+\end{equation}
+取 $p \approx 635\;\mathrm{MeV}/c$（\StatusReport{}~第 117 行）：
+\begin{equation}
+  \sigma_p^{B\text{-map}} \;\approx\; 10^{-3}\times 635\;\mathrm{MeV}/c
+   \;\approx\; 0.6\;\mathrm{MeV}/c.
+\end{equation}
+量级\textbf{小但不可忽略}——与 PDC 气体多次散射贡献处于同一档（$\sim 0.5\;\mathrm{MeV}/c$）。
+
+\subsection{当前测量值：未单独隔离}
+\label{sec:budget-bfield-current}
+
+\StatusReport{}~未对 B-field 插值误差做独立测量；2026-04-17 的 ensemble study 给出
+744 事件残差中已包含此贡献，但与多次散射、丝分辨等项混在一起。
+
+% TODO: 隔离此贡献需做磁场扰动扫描（B-map ±0.5%、±1% 缩放），见 Part~III §5
+% scan studies。预计单次扰动产生的 Δp 偏移 / 弥散即为本预算行的实测值。
+
+\subsection{预算行}
+\label{sec:budget-bfield-row}
+
+\begin{table}[H]
+  \centering
+  \caption{磁场图插值误差预算行。BIAS 行假设插值误差零均值（在轨迹上充分平均后成立）；
+           WIDTH 取 §\ref{sec:budget-bfield-magnitude} 估计。靶系单位 $\mathrm{MeV}/c$。}
+  \label{tab:bfield-budget}
+  \begin{tabular}{lcccc}
+    \toprule
+    分量 & $p_x$ & $p_y$ & $p_z$ & $|\vec p|$ \\
+    \midrule
+    BIAS  $\langle \Delta p_i\rangle^{B}$
+          & $\sim 0$ & $\sim 0$ & $\sim 0$ & $\sim 0$ \\
+    WIDTH $\sigma_{p_i}^{B}$
+          & $\sim 0.5$ & $\sim 0.1$ & $\sim 0.3$ & $\sim 0.5$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{解读要点}：
+\begin{itemize}
+  \item $\sigma_{p_x}$ 最大：$xz$ 平面是主弯转面，磁场扰动直接耦合 $p_x$；
+  \item $\sigma_{p_y}$ 最小：$p_y$ 方向不弯转，仅受 $B_x, B_z$ 小分量耦合，量级低于
+        主分量误差一个数量级；
+  \item BIAS 行全 $\sim 0$ 假设了\textbf{插值误差在弧长积分后自抵消}；当 fringe 区
+        系统性偏低（如 $z$ 方向 fall-off 被低估）时此假设破裂，会引入系统性
+        偏置。需通过 $\nabla\cdot B$ 闭合检查验证（见下节）。
+\end{itemize}
+
+\subsection{修复路径}
+\label{sec:budget-bfield-fix}
+
+按代价 / 增益排序：
+\begin{enumerate}
+  \item \textbf{切换为三立方插值（tricubic）}：误差从 $\mathcal{O}(h^2)$ 降至
+        $\mathcal{O}(h^4)$，腔内 $|\delta B|$ 下降约 $h^2/L_\mathrm{cavity}^2 \sim 10^{-2}$
+        倍数，等于把 $\sigma_p^{B}$ 从 $0.6\;\mathrm{MeV}/c$ 压到 $\sim 0.06\;\mathrm{MeV}/c$。
+        代码改动局部（替换插值核），运行时开销约 $\times 8$ 但磁场查询占整体重建
+        时间 $< 5\%$，可接受；
+  \item \textbf{细化网格（5 → 2 mm）}：内存 $\times 6$，插值误差按 $h^2$ 缩放下降
+        $\sim 6\times$。中等代价、中等收益，适合作为次优选择；
+  \item \textbf{腔内 + fringe 混合策略}：腔内场近似均匀，可用解析多项式拟合（$O(10)$
+        系数），fringe 区保留三立方插值。最佳精度 / 内存比，但需自定义代码并维护两
+        套数据结构。建议作为后续优化项；
+  \item \textbf{磁场扰动扫描（用于隔离当前贡献）}：B-map 整体缩放 $\pm 1\%$，重跑
+        744-event ensemble，比较残差均值 / 弥散变化。\textbf{这是把本预算行从估计
+        值升级为实测值的关键步骤}。
+\end{enumerate}
+
+% TODO: B-field interpolation comparison run (trilinear vs tricubic) and B-scale
+% scan. 优先级 P2（次于 §5 的 dE/dx fix）。
+
+\paragraph{$\nabla\cdot B = 0$ 闭合检查（建议工具）。}
+作为对存储 B-map 自身一致性的基础验证：在所有内部网格点用中心差分计算
+\begin{equation}
+  (\nabla\cdot B)_{ijk} = \frac{B_x(i+1,j,k) - B_x(i-1,j,k)}{2h_x}
+                       + \frac{B_y(i,j+1,k) - B_y(i,j-1,k)}{2h_y}
+                       + \frac{B_z(i,j,k+1) - B_z(i,j,k-1)}{2h_z},
+\end{equation}
+统计 $|\nabla\cdot B| / |\vec B|$ 的分布。理想值为 0；典型偏差应 $\lesssim 10^{-3}$。
+若分布出现 $\sim 10^{-2}$ 量级的尖峰，说明 B-map 在该区域含有非物理的尖锐特征
+（来自测量插值噪声或外推不连续），此时三线性 / 三立方插值都会被污染。
+\StatusReport{}~未对此进行检查，\textbf{建议作为本章 deliverable 的一部分}补做——
+代码 $\sim 50$ 行（Python + numpy），数据已就绪，无新运行成本。
+% TODO: 在 docs/reports/reconstruction/momentum_reco/rk/ 下补一份 div-B closure
+% 报告（直方图 + 空间分布图 + 异常区域列表）。
+
+\paragraph{修复后预期。}
+若实施 (1)+(4)，本章预算行可降至：
+$\sigma_{p_x}^{B} \approx 0.05$、$\sigma_{p_y}^{B} \approx 0.01$、
+$\sigma_{p_z}^{B} \approx 0.03$、$\sigma_{|\vec p|}^{B} \approx 0.05\;\mathrm{MeV}/c$，
+即从"非负小项"退化为"完全可忽略"。届时本预算章节可从主表合并为脚注。

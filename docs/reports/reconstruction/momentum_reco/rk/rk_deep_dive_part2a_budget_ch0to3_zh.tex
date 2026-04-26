@@ -1,0 +1,422 @@
+% =============================================================================
+% rk_deep_dive_part2a_budget_ch0to3_zh.tex
+%
+% Purpose:
+%   Part II (Systematic budget) §0–§3 of the RK error-analysis deep-dive
+%   companion document.  Builds the canonical "误差预算 master table" and
+%   walks through the first three contributing rows in template form
+%   (物理机制 / 量级估计 / 当前测量值 / 预算行 / 修复路径).
+%
+% Parent file (wrapper):
+%   docs/reports/reconstruction/momentum_reco/rk/rk_error_analysis_deep_dive_20260426_zh.tex
+%
+% Related companion files:
+%   rk_deep_dive_part1a_math_ch1to3_zh.tex   (Likelihood/CR/Fisher)
+%   rk_deep_dive_part1b_math_ch4to6_zh.tex   (Wilks/Laplace/MCMC)
+%   rk_deep_dive_part1c_math_ch7to9_zh.tex   (Glückstern/Bethe-Bloch/Highland)
+%   rk_deep_dive_part2b_budget_ch4to6_zh.tex (dE/dx, RK step, target z 等)
+%   rk_deep_dive_part2c_budget_ch7to10_zh.tex(LM 失效、frame bug、综合表)
+%   rk_deep_dive_part3_diagnostics_zh.tex    (诊断与下一步)
+%
+% Status report (cross-reference target):
+%   rk_reconstruction_status_20260416_zh.tex  — labelled \StatusReport
+% Ensemble data root:
+%   build/test_output/ensemble_n50_targetframe/  — labelled \DeepDiveData
+%
+% Date         : 2026-04-26
+% Author       : Baiting Tian
+% Convention   : 默认靶系 (beam-as-Z)；动量分量 (p_x, p_y, p_z) 全部为靶系；
+%                公式编号 \label{eq:partIIa:section:topic}
+%
+% Local TOC:
+%   §0  综览：误差预算的方法学
+%   §1  PDC 位置分辨贡献
+%   §2  多次散射：1 m 空气间隙
+%   §3  多次散射：PDC1/PDC2 漂移气体
+% =============================================================================
+
+\providecommand{\StatusReport}{文献~[1]}
+\providecommand{\DeepDiveData}{[deep-dive-data]}
+
+\section{0. 综览：误差预算的方法学}
+\label{sec:partIIa:budget-overview}
+
+\subsection*{0.1 加性方差范式}
+
+把 RK 后端在 744 事件 ensemble 上观察到的动量残差宽度分解到独立物理来源是 Part II 的目标。
+基本假设是\textbf{独立加性方差}：对每一个动量分量 $p_k\in\{p_x,p_y,p_z,|\vec p|\}$，
+\begin{equation}
+  \sigma_\mathrm{tot}^2(p_k)\;=\;\sum_{i=1}^{N_\mathrm{src}} \sigma_i^2(p_k),
+  \label{eq:partIIa:budget:add-var}
+\end{equation}
+其中 $i$ 索引各物理误差源（PDC 位置分辨、空气 MS、PDC 气体 MS、Bethe--Bloch 涨落、RK 离散误差、靶 $z$ 不确定度、frame 旋转、LM 收敛尾、$B$ 场不均匀、对准 \ldots）。这一分解对应 Part I §3 (Fisher) 的概率视角：当似然在最佳点附近近似为高斯，逆 Fisher 信息可线性叠加各独立测量贡献。
+
+\subsection*{0.2 关于"独立"的两个保留}
+
+公式~\eqref{eq:partIIa:budget:add-var} 假设各源之间统计独立，但本问题里有两条已知的耦合：
+\begin{itemize}
+  \item \textbf{空气 MS 与 PDC 气体 MS 不严格独立。} 两者作用于同一段轨迹（出磁后 $\to$ PDC1 $\to$ PDC2），它们的角度涂抹在 PDC1 位置上是\emph{相关}的：空气段散射后入射 PDC1 时方向已经偏离，PDC1 内的散射又会进一步累加。Highland 公式本身\StatusReport{}~§理论分辨极限是把空气和 PDC 气体的 $x/X_0$ 直接相加再算一次 $\theta_0$（保守、相关已经吸收），但若按"独立两段"拆开求平方和会高估约 $5\text{--}10\%$。本预算采用平方和法，并在 §3 末尾保留一个 $-\,$10\% 的耦合修正项。
+  \item \textbf{Bethe--Bloch 能量损失的偏置 vs.~涨落。} dE/dx 的\emph{平均损失} $\langle\Delta E\rangle\sim 5$--$10$ MeV 表现为\textbf{系统偏置}（前向模型若不修正则给出偏低的 $|\vec p|$），其\emph{Bohr/Landau 涨落} $\sigma_E$ 才进入预算式~\eqref{eq:partIIa:budget:add-var} 的方差。Part II §4 会把这两件事拆开。
+\end{itemize}
+
+\subsection*{0.3 偏置 vs.~宽度：哪些行进入式 \eqref{eq:partIIa:budget:add-var}？}
+
+把误差源按其对残差直方图的影响形态分成三类：
+\begin{description}
+  \item[宽度型 (width)] 进入式~\eqref{eq:partIIa:budget:add-var} 求和。
+        典型成员：PDC 位置分辨 (§1)、空气 MS (§2)、PDC 气体 MS (§3)、
+        Bethe--Bloch 涨落、RK 离散误差。这些把残差分布的核心宽度撑开，
+        通常表现为近似高斯的中心 68\% 区间。
+  \item[偏置型 (bias)] \emph{不}进入式~\eqref{eq:partIIa:budget:add-var}，但出现在 master 表"修复后预测"列。
+        典型成员：dE/dx 平均损失、frame 旋转 bug（已于 2026-04-19 修复，
+        见 \StatusReport{}~§误差分析与 spec
+        \texttt{2026-04-19-reco-target-frame-design.md}）、靶 $z$ 系统偏置。
+        这些把整条直方图整体平移；修复前在 $|\vec p|$ 上看到 5--10 MeV/$c$ 的偏移，
+        修复后偏置归零，但宽度不变。
+  \item[尾部型 (tail / non-Gaussian)] 既不能用方差描述，也不能用偏置描述。
+        典型成员：LM 收敛盆地失败（约 2--5\% 的 ensemble 事件被困在错误极小，
+        贡献 $|p_y|>50$ MeV/$c$ 的极大尾巴）。处理方式：单独剔除并报告 outlier
+        比例，不进入式~\eqref{eq:partIIa:budget:add-var}。
+\end{description}
+
+注意 frame 旋转 bug 在 2026-04-19 之前\emph{只}是偏置（拼装矩阵转置错误），不影响宽度；
+当前 (2026-04-26) ensemble 上 $p_y$ Fisher $\sigma$ 系统性欠估 $\sim 2\times$ 的现象\emph{只}是宽度问题（\StatusReport{}~§方法总结说明：原因是测量协方差未含过程噪声 $\Sigma_\mathrm{MS}$）。把这两件事混在一起讨论是历史上常见的误诊。
+
+\subsection*{0.4 对账策略}
+
+把式~\eqref{eq:partIIa:budget:add-var} 的求和结果与 ensemble 实测残差宽度对账，是判断 master 表是否封闭的唯一手段。实测宽度的定义采用稳健分位数：
+\begin{equation}
+  \widehat{\sigma}_k^\mathrm{obs}
+  \;=\;\frac{p_{84}(\Delta p_k)\,-\,p_{16}(\Delta p_k)}{2},
+  \label{eq:partIIa:budget:halfw68}
+\end{equation}
+即 ensemble 残差 $\Delta p_k = p_k^\mathrm{reco} - p_k^\mathrm{truth}$ 在 [16\%, 84\%] 分位的半宽。该量在 \DeepDiveData{} 内的 \texttt{per\_truth\_point\_g4\_vs\_fisher.csv} 中以列名 \texttt{g4\_halfw68\_p\{x,y,z\}}, \texttt{g4\_halfw68\_p} 给出（与 Fisher 列 \texttt{fisher\_sigma\_p\{x,y,z\}}, \texttt{fisher\_sigma\_p} 配对）。CSV schema：
+\begin{verbatim}
+truth_px, truth_py, N,
+g4_halfw68_px, std_px, fisher_sigma_px,
+g4_halfw68_py, std_py, fisher_sigma_py,
+g4_halfw68_pz, std_pz, fisher_sigma_pz,
+g4_halfw68_p,  std_p,  fisher_sigma_p
+\end{verbatim}
+对账判据：
+\begin{equation}
+  \Bigl|\widehat{\sigma}_k^\mathrm{obs}\Bigr|^2
+  \;\stackrel{?}{=}\;\sum_{i\in\text{width rows}} \sigma_i^2(p_k).
+  \label{eq:partIIa:budget:closure}
+\end{equation}
+若左侧明显大于右侧 $\Rightarrow$ master 表漏行；明显小于 $\Rightarrow$ 某行高估或独立性假设失败。Part II §10 会把 15 个真值点的对账数字汇总成一张图。
+
+\subsection*{0.5 Master 误差预算表（占位预览）}
+
+下表给出 Part II 全部行的骨架；本文档 §1--§3 填前三行，§4--§6 填中段，§7--§9 填尾部，
+§10 给出 fixed-everything 后的预测列与最终对账。所有数字单位为 MeV/$c$，
+靶系。"修复后预测"列指 \emph{若该行对应的工程或软件修复全部到位}（如把 1 m 空气换成真空、
+把丝分辨从 0.5 mm 砍到 0.2 mm 等）后的剩余贡献；当前未填则记 "见 §$N$"。
+
+\begin{table}[ht]
+  \centering
+  \small
+  \begin{tabular}{l|cccc|c|l}
+    \hline
+    来源 & $\sigma_{p_x}$ & $\sigma_{p_y}$ & $\sigma_{p_z}$ & $\sigma_{|\vec p|}$ &
+      修复后预测 & 状态 \\
+    \hline
+    1. PDC 位置分辨 ($\sigma_w{=}0.5$ mm)    & 0.7   & 0.5   & 0.7   & 0.7   & 见~§1  & 见~§1 \\
+    2. MS：1 m 空气                          & 2.5   & 0.5   & 2.5   & 2.5   & 见~§2  & 见~§2 \\
+    3. MS：PDC1+PDC2 气体                    & 1.8   & 0.4   & 1.8   & 1.8   & 见~§3  & 见~§3 \\
+    4. dE/dx 涨落 (Bohr+Landau)              & 见~§4 & 见~§4 & 见~§4 & 见~§4 & 见~§4  & 见~§4 \\
+    5. RK 步长离散误差                       & 见~§5 & 见~§5 & 见~§5 & 见~§5 & 见~§5  & 见~§5 \\
+    6. 靶 $z$ 位置不确定度                   & 见~§6 & 见~§6 & 见~§6 & 见~§6 & 见~§6  & 见~§6 \\
+    7. LM 收敛盆地失败 (尾部)                & 见~§7 & 见~§7 & 见~§7 & 见~§7 & 见~§7  & 见~§7 \\
+    8. frame 旋转 bug (已修)                 & 0     & 0     & 0     & 0     & 0      & 已修复 \\
+    9. $B$ 场地图不均匀                      & 见~§9 & 见~§9 & 见~§9 & 见~§9 & 见~§9  & 见~§9 \\
+    \hline
+    \textbf{平方和合计} (式~\ref{eq:partIIa:budget:add-var}) &
+        见~§10 & 见~§10 & 见~§10 & 见~§10 & 见~§10 & --- \\
+    \textbf{ensemble 实测半宽 (\ref{eq:partIIa:budget:halfw68})} &
+        见~§10 & 见~§10 & 见~§10 & 见~§10 & 见~§10 & --- \\
+    \hline
+  \end{tabular}
+  \caption{Master 误差预算表预览（数值单位 MeV/$c$，靶系）。本节仅给出 §1--§3 的占位，
+    完整数值与对账见 Part II §10。}
+  \label{tab:partIIa:budget:master-preview}
+\end{table}
+
+% TODO: figure rk_deep_dive_part2a_budget_master_preview.pdf —
+%       将上表 9 行 + 2 合计行画成横向 stacked-bar，便于一眼看出哪一行主导。
+
+\subsection*{0.6 与 Part I 的对应关系}
+
+\begin{itemize}
+  \item §1（位置分辨）与 Part I §3 (Fisher 矩阵 $\mathbf F = \mathbf J^\top\Sigma^{-1}\mathbf J$ 中的 $\Sigma$ 对角项)、Part I §7 (Glückstern 公式) 直接对应。
+  \item §2--§3（MS）与 Part I §9 (Highland 公式) 对应；耦合到 $\Sigma_\mathrm{MS}$ 的过程协方差还未注入到当前后端 (\StatusReport{}~§方法总结)，因此 Fisher 在 $p_y$ 上欠估。
+  \item §4 (dE/dx) 与 Part I §8 (Bethe--Bloch + Bohr/Landau) 对应。
+  \item §5 (RK 离散) 与 Part I §2 (RK4 误差阶) 对应。
+\end{itemize}
+
+\section{1. PDC 位置分辨贡献}
+\label{sec:partIIa:budget:pdc-pos}
+
+\subsection*{1.1 物理机制}
+
+PDC1 与 PDC2 各自给出两套丝坐标 $(u, v)$（PDC 丝坐标系，与靶系 $(x, y)$ 之间是一个固定旋转，见 \StatusReport{}~§实验装置 / PDC 丝坐标系）。每一根丝读出的位置在 Geant4 端经过一次高斯涂抹：
+\begin{equation}
+  \tilde u \;=\; u_\mathrm{truth} + \mathcal N(0,\sigma_\mathrm{wire}^2),\qquad
+  \tilde v \;=\; v_\mathrm{truth} + \mathcal N(0,\sigma_\mathrm{wire}^2),
+  \label{eq:partIIa:budget:wire-smear}
+\end{equation}
+其中 $\sigma_\mathrm{wire}=0.5$ mm 为当前仿真默认值（代码锚点：\texttt{libs/analysis/src/PDCSimAna.cc::SmearWireCoord}）。两个 PDC、两个坐标 $\Rightarrow$ 共 4 个独立位置测量进入 $\chi^2$。残差结构与 Part I §3.2 中给出的 Fisher 矩阵 $\mathbf F = \mathbf J^\top\Sigma_\mathrm{meas}^{-1}\mathbf J$ 中 $\Sigma_\mathrm{meas} = \sigma_\mathrm{wire}^2\,\mathbb{I}_4$ 的对角结构对应。
+
+\subsection*{1.2 量级估计：Glückstern 公式}
+
+把 PDC 位置误差线性传播到动量误差，使用 Part I §7 的 Glückstern 估计（双平面 + 弯转长度 $L_\mathrm{eff}$ + 漂移基线 $L_{12}$）：
+\begin{equation}
+  \sigma_p \;\approx\; \frac{p^2\,\sigma_x\,\sqrt 2}{q\,B\,L_\mathrm{eff}\,L_{12}}.
+  \label{eq:partIIa:budget:gluckstern}
+\end{equation}
+代入当前几何（\StatusReport{}~§理论分辨极限）：$p\approx 635$ MeV/$c$、$q=1$、$B\approx 3.0$ T、$L_\mathrm{eff}\approx 0.6$ m、$L_{12}\approx 1.0$ m，$\sigma_x = \sigma_\mathrm{wire}=0.5$ mm，得 $\sigma_p \approx 1.0$ MeV/$c$。状态报告同节给出 $\sigma_x{=}0.5/2.0$ mm 对应 $\sigma_p{=}1.0/4.1$ MeV/$c$（线性比例 $\propto\sigma_x$）。
+
+由于 SAMURAI 磁偶在 $x$--$z$ 平面内弯曲，$y$ 方向不受磁场约束，
+丝坐标涂抹对 $p_y$ 的贡献只来自方向参数 $v$ 的拟合精度，
+量级为 $\sigma_{p_y}^\mathrm{pos}\sim p\cdot\sigma_\mathrm{wire}/L_{12} \approx 635\times 5\times 10^{-4}/1000 = 0.32$ MeV/$c$。考虑到两端 PDC 的 $v$ 测量都进入拟合，按 $\sqrt 2$ 因子调高约 0.5 MeV/$c$。
+
+\subsection*{1.3 当前测量值}
+
+在 744 事件 ensemble (\StatusReport{}~§当前性能 + \DeepDiveData{}/per\_truth\_point\_g4\_vs\_fisher.csv) 中，Fisher $\sigma_p$ 落在 $\sim 6$--7 MeV/$c$。这\emph{不是}纯位置贡献——它已经把 §2 空气 MS 与 §3 PDC 气体 MS 一起经 $\Sigma_\mathrm{meas}^{-1}$ 反算回去了（虽然过程噪声未显式注入，散射后的实际命中位置仍含散射偏移 $\Rightarrow$ 残差自身被 MS 撑宽）。要从 ensemble 直接看到\emph{纯位置}贡献，唯一办法是把 Geant4 关掉空气与 PDC 气体（即 ms\_ablation stage A 的"全真空"配置，见 §2.5），这正是 \texttt{ms\_ablation\_air\_20260421\_zh.md}（MEMORY 条目 \texttt{project\_ms\_ablation\_air\_finding}, 2026-04-21）和 \texttt{ms\_ablation\_mixed\_20260422\_zh.md}（条目 \texttt{project\_ms\_ablation\_mixed\_finding}, 2026-04-22）所做的工作。Stage A (vacuum 上下游) 的 PDC2 $\sigma_y$ 入参是 7.49 mm，stage A+B (air 上下游) 是 13.50 mm，差异即来自空气 MS 的传播放大。
+
+把式~\eqref{eq:partIIa:budget:gluckstern} 给出的 $\sim 1$ MeV/$c$ 看成纯位置贡献的上限估计是合理的（量级与 ms\_ablation stage A vacuum 端外推一致）。
+
+\subsection*{1.4 预算行}
+
+填入 master 表 (\ref{tab:partIIa:budget:master-preview}) 第 1 行的占位值（粗估，由式~\eqref{eq:partIIa:budget:gluckstern} 配合 $y$ 方向无磁场约束的 $\sqrt 2$ 比例规则）：
+\begin{equation}
+  \sigma_{p_x}^\mathrm{pos}\,\approx\,0.7,\quad
+  \sigma_{p_y}^\mathrm{pos}\,\approx\,0.5,\quad
+  \sigma_{p_z}^\mathrm{pos}\,\approx\,0.7,\quad
+  \sigma_{|\vec p|}^\mathrm{pos}\,\approx\,0.7\;\mathrm{MeV}/c.
+  \label{eq:partIIa:budget:row1}
+\end{equation}
+精确数值需要按 Glückstern 各列（$L_\mathrm{eff}$、$L_{12}$、$B$、$p$）逐步代入复算；§10 综合表会用 ensemble 上 ms\_ablation stage A 的"全真空"残差替代占位。
+
+\subsection*{1.5 修复路径}
+
+预测 $\sigma_p^\mathrm{pos}\propto\sigma_\mathrm{wire}$（线性）。三条可行路线：
+\begin{enumerate}
+  \item \textbf{硬件 / 标定层面}：把 PDC 丝坐标分辨从 0.5 mm 改善到 0.2 mm。\StatusReport{}~§理论分辨极限对此情形给出 $\sigma_p\sim 0.4$ MeV/$c$。在式~\eqref{eq:partIIa:budget:row1} 上线性缩放 $0.2/0.5=0.4$，即 $\sigma_{p_{x,z,|\vec p|}}\to 0.3$、$\sigma_{p_y}\to 0.2$ MeV/$c$。
+  \item \textbf{Geant4 端只改 \texttt{SmearWireCoord} 的 $\sigma$ 输入}：可以低成本地做敏感度扫描（已在 plans 中建议作为 future test），用来\emph{独立}验证位置贡献是否就是 §1 估算的水平。
+  \item \textbf{增加 PDC 平面数}（如插入 PDC0 或 PDC3）：Fisher 信息按 $1/N_\mathrm{plane}$ 衰减，但工程代价远高于改善单平面分辨。当前不在路线图。
+\end{enumerate}
+
+\textbf{结论。} PDC 位置分辨在当前几何下\emph{不是}主导误差源：
+其量级（$\sim 0.5$--$0.7$ MeV/$c$）远小于 §2 空气 MS 与 §3 PDC 气体 MS 的 $\sim 2$ MeV/$c$ 量级。
+这与 \StatusReport{}~§理论分辨极限的"几何 $\sigma_p \approx 1$ MeV/$c$ vs.~含 MS 的 $3.2$--$5.1$ MeV/$c$"判据一致。
+
+\section{2. 多次散射：1 m 空气间隙}
+\label{sec:partIIa:budget:air-ms}
+
+\subsection*{2.1 物理机制}
+
+质子从 SAMURAI 磁偶极出口窗到 PDC1 第一根丝之间穿过约 1 m 的常压空气间隙。
+这是\emph{出磁后}的散射——RK fitter 假设光滑解析轨迹（无过程噪声），
+\StatusReport{}~§理论分辨极限明确指出"散射角直接加入出射角测量误差"。
+此段散射的角度涂抹无法被前向模型消化，会以 $\theta_0\cdot L_\mathrm{drift}$ 的方式
+线性放大到 PDC1/PDC2 命中位置的偏移。机制公式见 Part I §9 (Highland)：
+\begin{equation}
+  \theta_0(\text{air}) \;=\; \frac{13.6\;\mathrm{MeV}}{\beta p}\,
+       z\,\sqrt{x/X_0}\,
+       \bigl[1 + 0.038\ln(x/X_0)\bigr].
+  \label{eq:partIIa:budget:highland-air}
+\end{equation}
+
+\subsection*{2.2 量级估计}
+
+\StatusReport{}~§理论分辨极限给出空气段（$\rho=1.205\times 10^{-3}$ g/cm$^3$、$X_0=36.66$ g/cm$^2$、$x/X_0 = 3.29\times 10^{-3}$、$p\approx 635$ MeV/$c$）的散射角：
+\begin{equation}
+  \theta_0(\text{air}, 1\,\text{m}) \;=\; 1.72\;\mathrm{mrad}.
+  \label{eq:partIIa:budget:theta-air}
+\end{equation}
+把这个出射角误差按"双平面角度法"传到动量 (\StatusReport{}~§双平面角度分辨与动量分辨)：
+\begin{equation}
+  \sigma_p \;=\; \frac{p}{\theta_\mathrm{bend}}\,\theta_0
+        \;=\; 1460\times 1.72\times 10^{-3}
+        \;\approx\; 2.5\;\mathrm{MeV}/c,
+  \label{eq:partIIa:budget:sigp-air}
+\end{equation}
+其中 $p/\theta_\mathrm{bend}=1460$ MeV/$c$/rad 为 \StatusReport{}~表给出的灵敏度。
+
+$y$ 方向（无磁场约束）的散射通过\emph{位置位移}传到 PDC2 之外的几何，因此其对 $p_y$ 的影响经由方向参数 $v$ 的拟合精度，而不是经由弯曲半径反演。量级显著小于 $x$/$z$ 方向，按经验比例约 $0.5$ MeV/$c$（与 \StatusReport{}~§Geant4 涨落给出的 PDC2 $\sigma_y / \sigma_x$ 各向异性 3--4 倍 + Glückstern 反向缩放一致）。
+
+\subsection*{2.3 当前测量值}
+
+\StatusReport{}~§理论分辨极限把空气与 PDC 气体合在一起给出 Highland 综合 $\sigma_p \approx 3.1$--5.1 MeV/$c$（$p$ 范围 540--890 MeV/$c$ 扫描）。把空气贡献单独抽出（即从 $\theta_0=2.10$ mrad 中扣除 PDC 气体的 1.21 mrad，剩 $\sqrt{2.10^2-1.21^2}\approx 1.72$ mrad，正好与式~\eqref{eq:partIIa:budget:theta-air} 一致），得到本行：
+\begin{equation}
+  \sigma_p(\text{air only}) \;\approx\; 2.5\;\mathrm{MeV}/c
+  \quad\text{（ensemble 上是\emph{主导}宽度贡献）}.
+\end{equation}
+
+ms\_ablation 系列报告（\texttt{docs/reports/reconstruction/momentum\_reco/ms\_ablation/}）做的是反向验证：把 Geant4 几何里的"上下游空气"换成真空，用 Sn 靶关掉、tree-gun 注入的 ensemble 跑同一拓扑，记录 PDC 命中宽度的变化。
+\begin{itemize}
+  \item Stage A (\texttt{ms\_ablation\_air\_20260421\_zh.md}, MEMORY 条目 \texttt{project\_ms\_ablation\_air\_finding}, 2026-04-21)：在 stage A 单独把空气换成真空，PDC2 $\sigma_y$ 的减小幅度对应空气贡献占总 PDC2 $\sigma_y$ 方差的 \textbf{91--94\%}，与 §2.2 的解析估计一致。\textbf{注意：该结论后被 stage A' 修正}——stage A 几何并不\emph{完全}是物理实验的几何，因为 Sn 靶位于磁场腔内（"target is inside dipole cavity"），上下游空气分布不能简单按"出磁后 1 m"估算。
+  \item Stage A' rev2 (\texttt{ms\_ablation\_mixed\_20260422\_zh.md}, MEMORY 条目 \texttt{project\_ms\_ablation\_mixed\_finding}, 2026-04-22)：把空气分两段——Region A（磁腔+管道，$\sim 4.3$ m）与 Region B（出磁窗 EW 到 PDCs，$\sim 2$ m）——分别考察。Stage D 给出 PDC2 $\sigma_y$ 输入：A 取 vacuum 时 7.49 mm，A+B 全 air 时 13.50 mm。差值 $\sqrt{13.50^2-7.49^2}=11.2$ mm 即为 Region A+B 空气贡献的位置宽度。
+\end{itemize}
+当前 master 表 §2 行是用 \StatusReport{} 的 1 m 空气近似（即 Region B 的较窄子集），\textbf{不}涵盖 Region A 的腔内空气；后者按 stage A' 的发现\emph{可能更大}，是 Part II §9（$B$ 场不均匀 / 几何不确定度）需要进一步拆解的耦合项。
+
+\subsection*{2.4 预算行}
+
+按式~\eqref{eq:partIIa:budget:sigp-air} 与 $y$/$x$ 各向异性比，填 master 表第 2 行：
+\begin{equation}
+  \sigma_{p_x}^\mathrm{air}\,\approx\,2.5,\quad
+  \sigma_{p_y}^\mathrm{air}\,\approx\,0.5,\quad
+  \sigma_{p_z}^\mathrm{air}\,\approx\,2.5,\quad
+  \sigma_{|\vec p|}^\mathrm{air}\,\approx\,2.5\;\mathrm{MeV}/c.
+  \label{eq:partIIa:budget:row2}
+\end{equation}
+误差范围按 \StatusReport{} 的 $p$ 扫描跨度估计为 $\pm 30\%$（$2.0$--$3.2$ MeV/$c$），主要来自 $\theta_\mathrm{bend}$ 在不同弯转构型下的差异。
+
+\subsection*{2.5 修复路径}
+
+\textbf{把 EW $\to$ PDC1 之间的 $\sim 1$ m 空气换成真空束流管 + 薄真空窗。}
+\begin{itemize}
+  \item 工程代价：一对真空法兰 + 30--50 $\mu$m 厚 Kapton/Mylar 真空窗 +
+        机械支撑（PDC 入射面无法直接焊真空窗，需要 stand-off 结构）。
+  \item 残余 MS：30 $\mu$m Kapton ($X_0=28.6$ cm) 给出 $x/X_0\approx 1\times 10^{-4}$，
+        Highland $\theta_0\approx 0.3$ mrad，远低于当前空气段。
+  \item 预测残余 $\sigma_p^\mathrm{air, fixed} < 0.5$ MeV/$c$（按式~\eqref{eq:partIIa:budget:sigp-air} 缩放）。
+  \item ms\_ablation 模拟侧已经验证了"全真空"配置下 PDC2 $\sigma_y \to 7.49$ mm
+        （vs.~$13.50$ mm 的 air baseline），与上述预测一致。
+\end{itemize}
+其他备选（成本递增）：He 袋（$X_0\approx 5300$ m，比空气好 $\sim 18\times$，$\theta_0\to 0.4$ mrad）；
+完全替换 PDC 入射段为真空气室（PDC 窗本身需重新设计）。
+
+\textbf{结论。} 1 m 空气 MS 是当前 ensemble 上最大的\emph{宽度型}误差源，约占总宽度方差的 60--70\%。
+工程修复路径明确（已有 ms\_ablation 数据支撑），是 Part II §10 修复后预测列下降幅度最大的一行。
+
+\section{3. 多次散射：PDC1/PDC2 漂移气体}
+\label{sec:partIIa:budget:pdc-gas-ms}
+
+\subsection*{3.1 物理机制}
+
+每个 PDC 内部填充 75\% Ar + 25\% i-C$_4$H$_{10}$（异丁烷淬灭气体）的 1 atm 工作气体，
+有效混合密度 $\rho \approx 1.87\times 10^{-3}$ g/cm$^3$，辐射长度 $X_0 \approx 24.1$ g/cm$^2$
+（\StatusReport{}~§理论分辨极限 表）。
+质子以约 $32^\circ$（相对 PDC 入射轴的等效斜入射角，由弯曲后磁谱计 + 几何决定）穿过 PDC 体，
+有效路径 $L_\mathrm{PDC}/\cos 32^\circ \approx 224$ mm。
+因 PDC1 与 PDC2 都各自有此散射，单步贡献相等但传播距离不同：
+\begin{itemize}
+  \item PDC1 内的散射通过 $L_{12}\sim 1$ m 漂移到 PDC2 命中位置，
+        贡献偏移 $\Delta x_2 = L_{12}\,\theta_0 \approx 1.21$ mm，
+        与丝分辨 $\sigma_\mathrm{wire}=0.5$ mm 量级相当（\StatusReport{}~§理论分辨极限）。
+  \item PDC2 内的散射只影响 PDC2 自身命中位置（$\sim$ 几个 mm 漂移），
+        其位置贡献 $\sim 0.1$ mm，远小于丝分辨；但仍然会改变出射方向，
+        对靶系动量重建无显著贡献（出射方向已脱离 fitter 的测量约束）。
+\end{itemize}
+因此 §3 行的主要贡献来自\emph{PDC1 散射经 $L_{12}$ 放大到 PDC2}的位置偏移机制，
+机制公式与 Part I §9 的 Highland 公式 + Part I §3.4 的 Glückstern 几何耦合结合。
+
+\subsection*{3.2 量级估计}
+
+\StatusReport{}~§理论分辨极限给出单 PDC 散射角：
+\begin{equation}
+  \theta_0(\text{PDC, 1 plane}) \;=\; 1.21\;\mathrm{mrad},
+  \label{eq:partIIa:budget:theta-pdc}
+\end{equation}
+对应等效位置贡献 $L_{12}\,\theta_0 = 1000\times 1.21\times 10^{-3} = 1.21$ mm。
+按 §2.2 的双平面角度法 + 同一 $p/\theta_\mathrm{bend}=1460$ MeV/$c$/rad：
+\begin{equation}
+  \sigma_p(\text{PDC gas, 1 plane}) \;\approx\;
+     1460 \times 1.21\times 10^{-3}
+     \;\approx\; 1.8\;\mathrm{MeV}/c.
+  \label{eq:partIIa:budget:sigp-pdc}
+\end{equation}
+该值是\emph{单平面（PDC1）}贡献。把 PDC2 的散射也算上时（按独立加性方差 $\sqrt 2$ 因子），
+原则上 $\sigma_p^\mathrm{PDC,gas, both} \approx 1.8\sqrt 2 \approx 2.5$ MeV/$c$；
+但 PDC2 内散射主要影响出射后下游的方向，\emph{不进入} PDC1$\to$PDC2 的位置基线，
+因此现实中只取单平面值 $\sim 1.8$ MeV/$c$ 是稳健下限。
+
+\subsection*{3.3 当前测量值}
+
+\StatusReport{}~§理论分辨极限把空气和 PDC 气体合并在 Highland 公式里给出 $\theta_0 = 2.10$ mrad：
+\begin{equation}
+  \theta_0(\text{air} + \text{PDC gas}) \;=\;\sqrt{\theta_0^2(\text{air})+\theta_0^2(\text{PDC})}
+       \;=\;\sqrt{1.72^2 + 1.21^2}\;=\;2.10\;\mathrm{mrad}.
+  \label{eq:partIIa:budget:theta-combined}
+\end{equation}
+对应合并 $\sigma_p \approx 3.1$ MeV/$c$（与 \StatusReport{} 的 3.1--5.1 MeV/$c$ 区间下端一致；上端 5.1 对应较低 $p$）。
+
+PDC 气体行的独立验证来自 \StatusReport{}~§Geant4 物理涨落给出的 PDC2 比 PDC1 命中宽度大 $\sim 25$--$40\%$（$y$ 方向更明显）的观察：这正是 PDC1 散射经 $L_{12}=1$ m 漂移到 PDC2 的传播效应。关掉 Sn 靶后 PDC $\sigma_y$ 从 $\sim 100$ mm 砍到 $\sim 10$--$15$ mm（\StatusReport{}~§Geant4 物理涨落同一段），剩下的 10--15 mm 即 PDC 气体 + 10 mm 气隙的真实 MS 水平——与式~\eqref{eq:partIIa:budget:sigp-pdc} 的解析估计在量级上一致（10--15 mm 的位置宽度 / $L_{12}\approx 1$ m $\approx 10$--$15$ mrad；考虑到 ensemble 是\emph{所有}事件混合，包含 PDC1 命中本身宽度 + PDC2 漂移放大，所以实际单平面 PDC 散射 $\theta_0$ 仍在 1--2 mrad 量级）。
+
+\subsection*{3.4 预算行}
+
+按式~\eqref{eq:partIIa:budget:sigp-pdc} 与 §2.4 同样的 $y$/$x$ 各向异性比，填 master 表第 3 行：
+\begin{equation}
+  \sigma_{p_x}^\mathrm{PDCgas}\,\approx\,1.8,\quad
+  \sigma_{p_y}^\mathrm{PDCgas}\,\approx\,0.4,\quad
+  \sigma_{p_z}^\mathrm{PDCgas}\,\approx\,1.8,\quad
+  \sigma_{|\vec p|}^\mathrm{PDCgas}\,\approx\,1.8\;\mathrm{MeV}/c.
+  \label{eq:partIIa:budget:row3}
+\end{equation}
+误差范围 $\pm 25\%$（$1.4$--$2.3$ MeV/$c$）。注意 §2 与 §3 的耦合修正：
+按 §0.2 的讨论，把 air + PDC gas 写成"独立两段"求平方和会高估 $\sim 5$--$10\%$；
+master 表 §10 综合时会用合并 $\theta_0=2.10$ mrad 直接算综合 MS 行（即 $\sigma_p\approx 3.1$ MeV/$c$），
+而不是把 §2 的 2.5 与 §3 的 1.8 直接平方和（后者给 $\sqrt{2.5^2+1.8^2}=3.08$ MeV/$c$，
+碰巧与合并值相近，是 Highland 平方和近似在 $\beta\sim 1$ 区间的一般性质）。
+
+\subsection*{3.5 修复路径}
+
+PDC 必须有气体——这决定了 §3 行的下限\emph{无法}通过软件修复消除。可行方向：
+\begin{enumerate}
+  \item \textbf{低 $Z$ 气体混合}：用 He/CO$_2$ 或 CF$_4$ 替换 Ar/i-C$_4$H$_{10}$。
+        $X_0$ 可能改善 2--3 倍 $\Rightarrow \theta_0$ 改善 $\sqrt 2$--$\sqrt 3$ 倍，
+        预测残余 $\sigma_p^\mathrm{PDCgas, fixed}\approx 1.0$ MeV/$c$。
+        \textbf{代价}：CF$_4$ 漂移速度 + 增益曲线需要重新标定；He 容易漏；
+        会牵涉电子学侧的时间窗调整。\textbf{标记 TODO：未来气体混合优化研究。}
+  \item \textbf{缩短气体路径}：把 PDC 厚度从当前的 $\sim 200$ mm 砍到 $\sim 100$ mm。
+        $\theta_0$ 改善 $\sqrt 2$ 倍，预测残余 $\sigma_p^\mathrm{PDCgas, fixed}\approx 1.3$ MeV/$c$。
+        \textbf{代价}：丝平面变密 / 单丝增益降低 / 漂移单元几何重设。
+  \item \textbf{延长 $L_{12}$}：把 PDC1 与 PDC2 间距从 1 m 拉到 1.5 m。
+        Glückstern $\sigma_p \propto 1/L_{12}$，预测改善 $1.5\times$；
+        但同时空气段 §2 也按 $L_\mathrm{drift}\,\theta_0$ 放大，需要联合优化。
+        \textbf{代价}：磁谱仪后端机械空间约束。
+\end{enumerate}
+
+\textbf{结论。} PDC 气体 MS 是当前 ensemble 上的次级宽度贡献（$\sim 25$--$30\%$ 总方差占比），
+\emph{无法}通过软件消除。在 §2（空气）修复后，§3 将成为新的主导误差源，
+对应"修复后预测"列的总和 $\sigma_p^\mathrm{post-fix}\sim 2$ MeV/$c$（位置 + PDC 气体 + dE/dx 涨落 + RK 离散，
+具体见 Part II §10）。气体混合优化是该行进一步压缩的唯一路线，但属于长周期工程改造，
+当前 deep-dive 仅记录方向、不展开方案设计。
+
+\subsection*{3.6 §1--§3 小结：宽度三巨头}
+
+把前三节合在一起，PDC 几何 + 探测器材料贡献的总宽度（按式~\eqref{eq:partIIa:budget:add-var} 平方和，并按 §0.2 / §3.4 给出的 $-10\%$ 耦合修正后）：
+\begin{equation}
+  \sigma_p^{\text{§1+§2+§3}}
+   \;\approx\;\sqrt{0.7^2+2.5^2+1.8^2}\times 0.95
+   \;\approx\; 3.0\;\mathrm{MeV}/c.
+  \label{eq:partIIa:budget:rows123-sum}
+\end{equation}
+这与 \StatusReport{}~§理论分辨极限的 Highland 综合估计 $3.1$ MeV/$c$（合并 $\theta_0=2.10$ mrad 算法）数值上完全一致——印证两种独立路径（按行求平方和 vs.~按合并 $X/X_0$ 算 Highland）在当前几何下殊途同归。
+
+但 ensemble 实测半宽 (\ref{eq:partIIa:budget:halfw68}) 在 $|\vec p|$ 上可达 6--7 MeV/$c$（\DeepDiveData{}/per\_truth\_point\_g4\_vs\_fisher.csv \texttt{g4\_halfw68\_p} 列）。\textbf{差距 $\sim 4$ MeV/$c$ 需要 §4--§9 来补齐}。预期主要来源：
+\begin{itemize}
+  \item §4 dE/dx 涨落（Bohr/Landau，估 $\sim 1$--2 MeV/$c$）；
+  \item §5 RK 步长离散误差（估 $< 0.5$ MeV/$c$，量级小但需验证）；
+  \item §6 靶 $z$ 不确定度（系统 + 涨落，估 $\sim 1$ MeV/$c$）；
+  \item §7 LM 收敛盆地失败的尾部（不进 $\sigma$ 求和，但拉宽分位 16--84\% 区间 $\sim 2$ MeV/$c$）；
+  \item §9 $B$ 场不均匀（估 $\sim 1$ MeV/$c$）。
+\end{itemize}
+若全部修复后，§1+§2+§3 的"修复后预测"和给出 $\sqrt{0.3^2 + 0.5^2 + 1.0^2}\approx 1.2$ MeV/$c$，
+是 deep-dive 给出的"硬件极限"近似。Part II §10 的最终对账图会把这条线作为参考标尺画出。
+
+% TODO: figure rk_deep_dive_part2a_rows123_quadrature_vs_observed.pdf —
+%       三柱图对比 §1+§2+§3 平方和、合并 Highland、ensemble 实测半宽。
+
+\subsection*{3.7 与下游章节的衔接}
+
+\begin{itemize}
+  \item Part II \texttt{part2b\_budget\_ch4to6\_zh.tex}：§4 dE/dx 涨落、§5 RK 步长离散误差、§6 靶 $z$。
+  \item Part II \texttt{part2c\_budget\_ch7to10\_zh.tex}：§7 LM 失效尾部、§8 frame 旋转 bug 复盘、§9 $B$ 场地图、§10 综合对账。
+  \item Part III \texttt{rk\_deep\_dive\_part3\_diagnostics\_zh.tex}：诊断脚本、ensemble 切片可视化、推荐下一步实验。
+\end{itemize}
+
+本节结束。Master 表的 §1--§3 行已写入式~\eqref{eq:partIIa:budget:row1}--\eqref{eq:partIIa:budget:row3}；
+"修复后预测"列与"状态"列在 §10 综合表中会用 ms\_ablation stage A 的真空配置数字 + 0.2 mm 丝分辨敏感扫描数字替代占位。

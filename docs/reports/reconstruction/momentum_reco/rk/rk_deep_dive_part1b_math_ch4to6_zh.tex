@@ -1,0 +1,840 @@
+% =============================================================================
+% rk_deep_dive_part1b_math_ch4to6_zh.tex
+%
+% Purpose:
+%   Part I (Mathematical foundations), Chapters 4–6 of the RK error-analysis
+%   deep-dive companion document. Covers:
+%     §4  Wilks 定理与 Profile Likelihood 的有效边界
+%     §5  Laplace 方法与 Bernstein–von Mises 定理
+%     §6  MCMC 理论：Metropolis-Hastings, 详细平衡、最优 acceptance、收敛诊断
+%
+% Parent file (wrapper):
+%   docs/reports/reconstruction/momentum_reco/rk/rk_error_analysis_deep_dive_20260426_zh.tex
+%
+% Related companion files:
+%   rk_deep_dive_part1a_math_ch1to3_zh.tex (Likelihood/CR/Fisher — separate)
+%   rk_deep_dive_part1c_math_ch7to9_zh.tex (Glückstern/Bethe-Bloch/Highland)
+%
+% Status report (cross-reference target):
+%   rk_reconstruction_status_20260416_zh.tex  — labelled \StatusReport
+%
+% Date         : 2026-04-26
+% Author       : Baiting Tian
+% Convention   : 默认靶系 (beam-as-Z)；公式编号 \label{eq:partIb:section:topic}
+%
+% Local TOC:
+%   §4  Wilks 定理与 Profile Likelihood 的有效边界
+%       4.1  陈述与意义
+%       4.2  证明骨架（二阶 Taylor 展开）
+%       4.3  正则条件
+%       4.4  失败模式
+%       4.5  与 N_dof = 1 重建问题的关联
+%       4.6  warm-start 扫描策略
+%   §5  Laplace 方法与 Bernstein–von Mises 定理
+%       5.1  Laplace 公式
+%       5.2  扁平先验下退化为 Fisher
+%       5.3  含动量高斯先验的显式表达
+%       5.4  Bernstein–von Mises 定理
+%       5.5  高阶修正 (Tierney–Kadane) 概述
+%   §6  MCMC 理论
+%       6.1  Markov 链基础与平稳性
+%       6.2  详细平衡与 MH 接受概率
+%       6.3  遍历性条件
+%       6.4  最优接受率 0.234
+%       6.5  自适应步长与收敛后停止自适应
+%       6.6  Geweke z-score
+%       6.7  ESS 与积分自相关时间
+%       6.8  当前 MCMC 配置诊断与改进建议
+% =============================================================================
+
+\providecommand{\StatusReport}{文献~[1]}
+
+\section{Wilks 定理与 Profile Likelihood 的有效边界}
+\label{sec:partIb:wilks}
+
+\subsection{陈述与意义}
+\label{sec:partIb:wilks:statement}
+
+设 $L(\vec{\alpha}\mid D)$ 为参数 $\vec{\alpha}\in\mathbb R^{n}$ 的似然函数，
+$\hat{\vec{\alpha}}$ 为不受约束的极大似然估计 (MLE)。
+若原假设 $H_0$ 把 $\vec{\alpha}$ 限制在一个 $k$ 维光滑约束子流形上，
+即 $H_0:\;\vec{\alpha}\in\mathcal M_0\subset\mathbb R^{n}$，
+其中 $\dim\mathcal M_0 = n-k$，则在 $H_0$ 成立时
+\begin{equation}
+  -2\ln\Lambda
+  \;=\;
+  -2\bigl[\ln L(\hat{\vec{\alpha}}_0)-\ln L(\hat{\vec{\alpha}})\bigr]
+  \;\xrightarrow{d}\;\chi^2_{k},
+  \qquad N\to\infty,
+  \label{eq:partIb:wilks:thm}
+\end{equation}
+其中 $\hat{\vec{\alpha}}_0$ 是受 $H_0$ 约束的 MLE，$N$ 为独立观测数。
+这就是 \emph{Wilks 定理}\,(1938)。
+
+在重建语境下，$\vec{\alpha}=(u,v,p)$ 或 $(\delta x,\delta y,u,v,p)$。
+Profile Likelihood 把某一个分量 $\alpha_k$ 固定为常数
+($H_0:\alpha_k = \alpha_k^{(0)}$，$k=1$)，
+对其余参数极大化 $L$；
+\eqref{eq:partIb:wilks:thm} 退化为
+\begin{equation}
+  \Delta\chi^2(\alpha_k^{(0)})
+  \;=\;
+  \chi^2_{\mathrm{prof}}(\alpha_k^{(0)})-\chi^2_{\min}
+  \;\xrightarrow{d}\;\chi^2_{1}.
+  \label{eq:partIb:wilks:profile}
+\end{equation}
+$68.27\%$ 置信限对应 $\Delta\chi^2 = 1$；$95.45\%$ 对应 $\Delta\chi^2 = 4$。
+
+\subsection{证明骨架（二阶 Taylor 展开）}
+\label{sec:partIb:wilks:proof}
+
+\begin{theorem}[Wilks 1938，弱形式]
+\label{thm:partIb:wilks}
+若似然 $L$ 满足 §\ref{sec:partIb:wilks:cond} 列出的正则条件，
+则 \eqref{eq:partIb:wilks:thm} 在 $H_0$ 下成立。
+\end{theorem}
+
+\begin{proof}[证明骨架]
+不失一般性把 $H_0$ 写为 $\vec{\alpha}_{(2)} = \vec{0}$，
+其中 $\vec{\alpha}=(\vec{\alpha}_{(1)},\vec{\alpha}_{(2)})$，
+$\vec{\alpha}_{(2)}\in\mathbb R^{k}$。
+记 $\ell(\vec{\alpha})\equiv \ln L(\vec{\alpha}\mid D)$、
+$\vec{s}\equiv\nabla\ell(\hat{\vec{\alpha}})=\vec{0}$ (定义)、
+$\mathcal H\equiv -\nabla^2\ell(\hat{\vec{\alpha}})$ 为观测 Fisher 信息。
+
+\textbf{步骤 1.}\,在 $\hat{\vec{\alpha}}$ 周围作二阶 Taylor 展开：
+\begin{equation}
+  \ell(\vec{\alpha})
+  =\ell(\hat{\vec{\alpha}})
+   -\tfrac12(\vec{\alpha}-\hat{\vec{\alpha}})^\top
+            \mathcal H\,
+            (\vec{\alpha}-\hat{\vec{\alpha}})
+   +O(\|\vec{\alpha}-\hat{\vec{\alpha}}\|^{3}).
+  \label{eq:partIb:wilks:taylor}
+\end{equation}
+
+\textbf{步骤 2.}\,设 $\hat{\vec{\alpha}}_0$ 为 $H_0$ 下的 MLE。
+对 \eqref{eq:partIb:wilks:taylor} 关于 $\vec{\alpha}_{(1)}$ 求极小，
+由 Schur 余子式得
+\begin{equation}
+  \ell(\hat{\vec{\alpha}})-\ell(\hat{\vec{\alpha}}_0)
+  =\tfrac12\,
+   \hat{\vec{\alpha}}_{(2)}^{\top}
+   (\mathcal H/\mathcal H_{11})\,
+   \hat{\vec{\alpha}}_{(2)}
+   +o_p(1),
+  \label{eq:partIb:wilks:schur}
+\end{equation}
+其中 $\mathcal H/\mathcal H_{11}=\mathcal H_{22}-\mathcal H_{21}\mathcal H_{11}^{-1}\mathcal H_{12}$
+是 $\mathcal H$ 关于 $\vec{\alpha}_{(2)}$ 块的 Schur 补，恰为 $\Sigma_{22}^{-1}$
+($\Sigma\equiv\mathcal H^{-1}$)。
+
+\textbf{步骤 3.}\,由极大似然渐近性
+$\sqrt{N}(\hat{\vec{\alpha}}-\vec{\alpha}^{*})\xrightarrow{d}\mathcal N(\vec 0,\,I^{-1}_{\vec{\alpha}^{*}})$，
+当 $\vec{\alpha}^{*}\in H_0$ 时
+$\sqrt{N}\,\hat{\vec{\alpha}}_{(2)}\xrightarrow{d}\mathcal N(\vec 0,\Sigma_{22})$。
+代入 \eqref{eq:partIb:wilks:schur}：
+\begin{equation}
+  -2[\ell(\hat{\vec{\alpha}}_0)-\ell(\hat{\vec{\alpha}})]
+  =N\,\hat{\vec{\alpha}}_{(2)}^{\top}\Sigma_{22}^{-1}\hat{\vec{\alpha}}_{(2)}+o_p(1)
+  \xrightarrow{d}\chi^2_{k},
+  \label{eq:partIb:wilks:final}
+\end{equation}
+因 $\vec X^{\top}\Sigma^{-1}\vec X\sim\chi^2_{k}$ 当
+$\vec X\sim\mathcal N(\vec 0,\Sigma)$。\qedhere
+\end{proof}
+
+可见 Wilks 定理本质上是“$\chi^2$ 极小邻域呈二次形 $\Rightarrow$ 似然比统计量
+等同于平方分”的结论；其核心是 \emph{Score 的 CLT} 与 \emph{Hessian 的弱稳定性}。
+
+\subsection{正则条件}
+\label{sec:partIb:wilks:cond}
+
+定理 \ref{thm:partIb:wilks} 需要下列假设同时成立：
+\begin{enumerate}[label=(R\arabic*)]
+  \item $\ell$ 关于 $\vec{\alpha}$ 三阶连续可微，且 $\vec{\alpha}^{*}$ 是参数空间内点；
+  \item Fisher 信息 $I(\vec{\alpha}^{*})$ 有限、正定；
+  \item $H_0$ 把 $\vec{\alpha}$ 限制在一个光滑子流形 $\mathcal M_0$ 上，
+        其法向投影矩阵满秩 (无识别性退化)；
+  \item 数据对参数的依赖在 $\vec{\alpha}^{*}$ 邻域内一致；
+  \item 不存在不可分辨参数 (nuisance pathology)。
+\end{enumerate}
+
+R1 排斥参数边界 (例如 $\sigma\geq 0$ 取到 $\sigma=0$ 时分布不再是 $\chi^2_{k}$
+而是\emph{ chi-bar squared}\,)。
+R2 排斥 Fisher 矩阵奇异 (即似然在某方向上对参数不敏感)。
+R3 排斥退化几何 (例如把 5 维参数限制到一个不光滑的代数簇)。
+
+\subsection{失败模式}
+\label{sec:partIb:wilks:fail}
+
+下列情形下 \eqref{eq:partIb:wilks:thm} 失效：
+
+\paragraph{(a) 边界参数 (boundary case)。}
+若 $H_0$ 处于参数空间边界 (如方差非负、概率非负)，
+$\hat{\vec{\alpha}}_0$ 以正概率被边界“卡住”；
+渐近分布是若干 $\chi^2$ 的混合 (Self \& Liang 1987)。
+对本重建问题：$p > 0$ 是物理边界，
+但 $\hat p\sim 635\,\mathrm{MeV}/c$ 远离零，故 (a) 不触发。
+
+\paragraph{(b) 识别性丧失。}
+若 $\partial\ell/\partial\alpha_k$ 在某方向恒为零，Fisher 矩阵秩亏，
+\eqref{eq:partIb:wilks:final} 中 $\Sigma_{22}^{-1}$ 不存在。
+重建中的征兆：Fisher SVD 出现接近零的奇异值；
+\StatusReport\ §方法一 已要求条件数检查并在病态时返回失败。
+
+\paragraph{(c) 多模态。}
+LM 收敛至局部极小而非全局，导致 $\chi^2_{\min}$ 偏大；
+此时 \eqref{eq:partIb:wilks:profile} 中的 $\Delta\chi^2$ 高估。
+重建中的对策：multistart 网格 + 选 $\chi^2$ 全局最小 (\StatusReport\ §LM 流程)。
+
+\paragraph{(d) 小样本。}
+$\chi^2_{k}$ 是渐近极限；$N_{\mathrm{dof}}$ 很小时，二阶 Taylor 展开
+\eqref{eq:partIb:wilks:taylor} 的余项 $O(\|\Delta\vec{\alpha}\|^3)$ 不能被忽略。
+本重建 $N_{\mathrm{dof}} = 1$ (4 残差 $-$ 3 自由参数)
+正处于这一边界——见 §\ref{sec:partIb:wilks:tie}。
+
+\subsection{与 $N_{\mathrm{dof}}=1$ 重建问题的关联}
+\label{sec:partIb:wilks:tie}
+
+\StatusReport\ Table “聚合误差对比” 给出全 run 中位数：
+\begin{equation}
+  \sigma^{\mathrm{Fisher}}_{|\vec p|} = 48.20\,\mathrm{MeV}/c,
+  \quad
+  \sigma^{\mathrm{Profile}}_{|\vec p|}
+   \!\equiv\!\tfrac12(\,q^{+}\!-q^{-})
+   = 76.91\,\mathrm{MeV}/c,
+  \label{eq:partIb:wilks:numbers}
+\end{equation}
+即 Profile 区间比 Fisher 半宽宽约 $60\%$。
+此差异不是数值误差，而是 \emph{Wilks 渐近近似的有效性破缺}：
+
+\begin{itemize}[leftmargin=2em]
+  \item Fisher 用最优点处的 $\nabla^2\chi^2$ (二阶导数) 推出对称 $\sigma$；
+  \item Profile 直接读取 $\Delta\chi^2 = 1$ 等高线，与曲面真实形状一致；
+  \item 二者不一致 $\Rightarrow$ $\chi^2$ 曲面非二次。
+\end{itemize}
+
+事件 \#399 (\StatusReport\ Table “Profile vs Fisher/Laplace”) 把这一图像放大到单事件层面：
+$|\vec p|$ 上 Profile 区间 $[660.73,\,667.77]\,\mathrm{MeV}/c$ 极度非对称
+($\hat p - q^- = 7.02$，$q^+ - \hat p = 0.02$)。
+朝 $|\vec p|$ 增大方向 $\chi^2$ 极陡 ($\chi^2_{\mathrm{red}}=20.4$ 已经偏离物理)；
+朝减小方向有较深低 $\chi^2$ 阱。
+Fisher 取最优点附近的曲率，无法察觉远端的非对称性，故给出对称的 $\pm 2.84\,\mathrm{MeV}/c$。
+Profile 才是真实置信限的代表。
+
+\paragraph{物理来源诊断。}
+$\chi^2_{\mathrm{red}}=20.4$ 远大于 1 的事实本身说明数据与模型不相容
+——在此重建中最可能的根源是 §第 8 章详细讨论的
+\emph{未建模 $dE/dx$ 偏置}：模型中 PDC1$\to$PDC2 的动量被视为常数，
+但 6\,m 空气损失 $\sim 5$–$15\,\mathrm{MeV}/c$，
+拟合通过把 $|\vec p|$ 推向偏小数值来部分补偿，
+但残差仍累积 $\Rightarrow$ $\chi^2$ 在最优处仍偏大。
+
+\subsection{warm-start 扫描策略}
+\label{sec:partIb:wilks:warmstart}
+
+Profile 扫描在每个固定 $\alpha_k^{(i)}$ 处都需独立 LM 优化
+(只优化其余参数)。若每次都从全局 MLE 出发，
+当 $\alpha_k^{(i)}$ 距 $\hat\alpha_k$ 较远时，LM 步数显著增加。
+\StatusReport\ §方法三 实际算法采用 warm-start：
+\begin{equation}
+  \vec\alpha_{\mathrm{warm}}^{(i)} = \arg\min_{\vec\alpha_{(1)}}
+     \chi^2(\vec\alpha\,;\,\alpha_k=\alpha_k^{(i)}),
+  \quad
+  \vec\alpha_{\mathrm{warm}}^{(0)} = \hat{\vec\alpha},
+  \label{eq:partIb:wilks:warm}
+\end{equation}
+即把上一扫描点的收敛态作为下一点的初值。
+
+\begin{proposition}[warm-start 不改变 Profile 估计的渐近性]
+\label{prop:partIb:warmstart}
+若每个 $\alpha_k^{(i)}$ 上 LM 仍收敛到全局 (子) 极小，
+warm-start 仅改变路径而不改变终值；
+\eqref{eq:partIb:wilks:profile} 给出的 $\Delta\chi^2$ 不变，
+Wilks 渐近不受影响。
+\end{proposition}
+
+\begin{proof}[证明]
+LM 的收敛终值由所在 basin of attraction 决定。
+对相邻 $\alpha_k^{(i)},\alpha_k^{(i+1)}$，若步长 $|\Delta\alpha_k|$ 足够小，
+两点的 basin 几何连续，warm-start 起点位于同一 basin。
+因 LM 必须满足 $\nabla_{\vec\alpha_{(1)}}\chi^2 = 0$ 才停止，
+两种初值给出同一极小点，证毕。\qedhere
+\end{proof}
+
+实际工程意义：本重建的 $N_{\mathrm{scan}}=17$ 步、
+扫描范围 $\pm 2.5\sigma_{\mathrm{Fisher}}$、
+平均每步 $\Delta\alpha_k \sim 0.3\sigma$，
+warm-start 把每步 LM 迭代数从 $\sim 10$ 降到 $\sim 1$–$2$，
+全 Profile 计算成本由 $\mathcal O(170)$ 次 RK 传播降到 $\mathcal O(30)$。
+对 815 条 track + 5 个参数槽位，
+总成本从 $\sim 70\times 10^4$ RK 降到 $\sim 12\times 10^4$ RK，
+是 Profile 扫描在生产代码中可负担的关键。
+
+\section{Laplace 方法与 Bernstein--von Mises 定理}
+\label{sec:partIb:laplace}
+
+\subsection{Laplace 公式}
+\label{sec:partIb:laplace:formula}
+
+\paragraph{动机。}
+贝叶斯框架下，参数的后验密度为
+\begin{equation}
+  \pi(\vec\alpha\mid D)
+  = \frac{L(\vec\alpha\mid D)\,\pi_0(\vec\alpha)}{Z(D)},
+  \qquad
+  Z(D)=\!\!\int\!\! L(\vec\alpha\mid D)\pi_0(\vec\alpha)\,d^n\alpha.
+  \label{eq:partIb:laplace:bayes}
+\end{equation}
+将其写成指数形式 $\pi(\vec\alpha\mid D)\propto e^{-\Phi(\vec\alpha)}$，
+其中
+\begin{equation}
+  \Phi(\vec\alpha)
+  \;=\;
+  -\ln L(\vec\alpha\mid D)-\ln\pi_0(\vec\alpha)
+  \;=\;
+  \tfrac12\chi^2(\vec\alpha)-\ln\pi_0(\vec\alpha)+\mathrm{const}.
+  \label{eq:partIb:laplace:phi}
+\end{equation}
+设最大后验估计 (MAP) $\hat{\vec\alpha}_{\mathrm{MAP}}=\arg\min_{\vec\alpha}\Phi(\vec\alpha)$，
+在 $\hat{\vec\alpha}_{\mathrm{MAP}}$ 处作二阶 Taylor 展开：
+\begin{equation}
+  \Phi(\vec\alpha)
+  \approx
+  \Phi(\hat{\vec\alpha}_{\mathrm{MAP}})
+  +\tfrac12 (\vec\alpha-\hat{\vec\alpha}_{\mathrm{MAP}})^{\top}
+            \mathcal H_{\mathrm{post}}\,
+            (\vec\alpha-\hat{\vec\alpha}_{\mathrm{MAP}}),
+  \label{eq:partIb:laplace:taylor}
+\end{equation}
+其中 $\mathcal H_{\mathrm{post}}=\nabla^2\Phi(\hat{\vec\alpha}_{\mathrm{MAP}})$。
+代入 \eqref{eq:partIb:laplace:bayes} 得 \emph{Laplace 近似后验}：
+\begin{equation}
+  \boxed{
+  \pi^{\mathrm{Laplace}}(\vec\alpha\mid D)
+  \;\sim\;
+  \mathcal N\!\bigl(\hat{\vec\alpha}_{\mathrm{MAP}},
+                   \;\Sigma_{\mathrm{post}}\bigr),
+  \quad
+  \Sigma_{\mathrm{post}}=\mathcal H_{\mathrm{post}}^{-1}.
+  }
+  \label{eq:partIb:laplace:posterior}
+\end{equation}
+归一化常数也有渐近形式 (Laplace 积分公式)：
+\begin{equation}
+  Z(D)
+  \;\approx\;
+  e^{-\Phi(\hat{\vec\alpha}_{\mathrm{MAP}})}
+  \,(2\pi)^{n/2}
+  \,\bigl|\det \mathcal H_{\mathrm{post}}\bigr|^{-1/2}.
+  \label{eq:partIb:laplace:Z}
+\end{equation}
+这正是 Bayes Factor 计算中常用的 \emph{Bayesian information criterion} 的来源。
+
+\subsection{扁平先验下退化为 Fisher}
+\label{sec:partIb:laplace:flat}
+
+若先验 $\pi_0(\vec\alpha)=\mathrm{const}$ (improper flat prior，仅在感兴趣区域内被 $L$ 控制)：
+\begin{equation}
+  \Phi(\vec\alpha) = \tfrac12 \chi^2(\vec\alpha)+\mathrm{const},
+  \qquad
+  \mathcal H_{\mathrm{post}}
+  = \nabla^2\bigl(\tfrac12\chi^2\bigr)
+  = J^{\top}J,
+  \label{eq:partIb:laplace:flat}
+\end{equation}
+其中 $J$ 是白化残差关于参数的 Jacobian。
+此时 MAP 等同于 MLE，
+\begin{equation}
+  \Sigma_{\mathrm{post}}^{\mathrm{flat}}
+  = (J^{\top}J)^{-1}
+  \;=\;\Sigma_{\mathrm{Fisher}}.
+  \label{eq:partIb:laplace:eq_fisher}
+\end{equation}
+
+\paragraph{数值证据 (\StatusReport)。}
+本 run 未启用动量先验 (\texttt{MomentumPrior::enabled = false})，故应触发
+\eqref{eq:partIb:laplace:eq_fisher}。
+事实上 \StatusReport\ §汇总观察到：
+\begin{equation}
+  \sigma^{\mathrm{Fisher}}_{|\vec p|} = 48.20\,\mathrm{MeV}/c,
+  \qquad
+  \sigma^{\mathrm{Laplace}}_{|\vec p|}=48.14\,\mathrm{MeV}/c,
+  \label{eq:partIb:laplace:numbers}
+\end{equation}
+差异 $0.06\,\mathrm{MeV}/c$ ($0.12\%$) 全部来自数值实现细节
+(白化策略、SVD 截断阈值、$|\vec p|$ 经验分位 vs 高斯投影)，
+与 \eqref{eq:partIb:laplace:eq_fisher} 一致。
+事件 \#399 上 Fisher 半宽 / Laplace 半宽 $=1.00$ 比值精确等于 1
+是这一退化关系最尖锐的验证。
+
+\subsection{含动量高斯先验的显式表达}
+\label{sec:partIb:laplace:prior}
+
+为压制 LM basin 漂移问题 (\StatusReport\ §LM 收敛失败)，
+在算法中已经预留了动量高斯先验：
+\begin{equation}
+  \pi_0(\vec\alpha)
+  =\frac{1}{\sqrt{2\pi}\,\sigma_{p}}
+   \exp\!\Bigl[-\tfrac{(p-p_0)^2}{2\sigma_p^2}\Bigr]
+   \cdot\pi_0^{\mathrm{flat}}(u,v),
+  \label{eq:partIb:laplace:gauss_prior}
+\end{equation}
+即 $u,v$ 用 flat prior，$p$ 用以 $p_0$ 为中心、宽度 $\sigma_p$ 的高斯。
+代入 \eqref{eq:partIb:laplace:phi}：
+\begin{equation}
+  \Phi(\vec\alpha)
+  = \tfrac12\chi^2(\vec\alpha)
+   +\tfrac{(p-p_0)^2}{2\sigma_p^2}+\mathrm{const}.
+  \label{eq:partIb:laplace:phi_prior}
+\end{equation}
+其 Hessian：
+\begin{equation}
+  \mathcal H_{\mathrm{post}}
+  = J^{\top}J + \Lambda_{\mathrm{prior}},
+  \qquad
+  \Lambda_{\mathrm{prior}}
+  = \mathrm{diag}\Bigl(0,\,0,\,\tfrac{1}{\sigma_p^2}\Bigr).
+  \label{eq:partIb:laplace:H_with_prior}
+\end{equation}
+启用先验后 ($\sigma_p<\infty$)，$\Sigma_{\mathrm{post}}=\mathcal H_{\mathrm{post}}^{-1}$
+比 $(J^{\top}J)^{-1}$ 更小——先验起到正则化作用。
+
+\paragraph{$3{\times}3$ 显式公式。}
+若把 $J^{\top}J$ 写成块形式
+$J^{\top}J=\begin{pmatrix} A_{2\times 2} & \vec b\\ \vec b^{\top} & c\end{pmatrix}$
+($u,v$ 子块为 $A$, $p$ 对角元 $c$)，则
+\begin{equation}
+  \mathcal H_{\mathrm{post}}
+  =\begin{pmatrix} A & \vec b\\ \vec b^{\top} & c+1/\sigma_p^2\end{pmatrix},
+  \;\;
+  (\Sigma_{\mathrm{post}})_{pp}
+  = \frac{1}{c+1/\sigma_p^2-\vec b^{\top}A^{-1}\vec b}.
+  \label{eq:partIb:laplace:p_var}
+\end{equation}
+极限 $\sigma_p\to\infty$ 退化为 Fisher 的 $p$-边际方差
+$1/(c-\vec b^{\top}A^{-1}\vec b)$；
+极限 $\sigma_p\to 0$ 把 $p$ 完全锁定于 $p_0$。
+这给出了 $\sigma_p$ 调参的几何直观。
+
+\subsection{Bernstein--von Mises 定理}
+\label{sec:partIb:laplace:bvm}
+
+\begin{theorem}[Bernstein--von Mises]
+\label{thm:partIb:bvm}
+设 $\hat{\vec\alpha}_N$ 为基于 $N$ 个独立观测的 MLE，
+真实参数 $\vec\alpha^{*}$ 为参数空间内点。
+若 (a) 似然满足正则条件 R1--R5；
+(b) 先验 $\pi_0(\vec\alpha)$ 在 $\vec\alpha^{*}$ 处连续、严格为正；
+(c) 后验密度可积，
+则后验分布 $\pi(\vec\alpha\mid D_N)$ 在 $\sqrt{N}$-缩放下渐近收敛到
+$\mathcal N(\hat{\vec\alpha}_N,\,N^{-1}I^{-1}(\vec\alpha^{*}))$，
+且与先验 $\pi_0$ 无关。形式化：
+\begin{equation}
+  \sup_{B\subset\mathbb R^n}
+  \Bigl|\,P(\vec\alpha\in B\mid D_N)
+        -\mathcal N(\hat{\vec\alpha}_N,N^{-1}I^{-1})(B)\Bigr|
+  \;\xrightarrow{p}\;0.
+  \label{eq:partIb:bvm:thm}
+\end{equation}
+\end{theorem}
+
+\paragraph{物理意义。}
+渐近极限下，先验信息在样本量 $N\to\infty$ 时被数据“淹没”——
+后验只取决于 $\hat{\vec\alpha}_N$ 与 Fisher 信息 $I$。
+Laplace 近似 \eqref{eq:partIb:laplace:posterior}
+正是 \eqref{eq:partIb:bvm:thm} 的有限样本版本。
+
+\paragraph{有限样本与 $N_{\mathrm{dof}}=1$ 的边界。}
+重建中“样本量” $N$ 不是事件数，而是 \emph{每条 track 的残差数 $N_r=4$}
+(对应 $N_{\mathrm{dof}} = 4-3 = 1$)。
+单 track 上 BvM 渐近的 leading 项是 $\mathcal O(1/N_r)$；
+$N_r=4$ 时余项不可忽略，这正是
+Laplace/Fisher 给出对称区间，
+而 Profile 与 MCMC 揭示非对称尾部 (§\ref{sec:partIb:wilks:tie}) 的根源。
+
+\paragraph{结论：何时该信任 Laplace。}
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+  \item 当 $\chi^2_{\mathrm{red}}\sim 1$ 且 Profile 区间近对称——可信。
+  \item 当 $\chi^2_{\mathrm{red}}\gg 1$ (例 \#399 = 20.4) 或
+        Profile/Fisher 半宽比 $> 1.3$——不可信，应取 Profile 或 MCMC。
+  \item 当含强先验 ($\sigma_p$ 与数据驱动 $\sigma_p^{\mathrm{data}}$ 相当) ——
+        必须计算 Hessian \eqref{eq:partIb:laplace:H_with_prior}，
+        不可直接使用 Fisher。
+\end{enumerate}
+
+\subsection{高阶修正 (Tierney--Kadane) 概述}
+\label{sec:partIb:laplace:tk}
+
+Laplace 方法的二阶 Taylor 截断带来 $\mathcal O(1/N)$ 的相对误差。
+若需要更高精度地估计后验期望
+$\mathbb E[g(\vec\alpha)\mid D]=\int g\,\pi\,d\vec\alpha$，
+Tierney \& Kadane (1986) 给出 \emph{完全 Laplace} 形式：
+\begin{equation}
+  \mathbb E[g\mid D]
+  \;\approx\;
+  \frac{|\mathcal H^*|^{-1/2}\,e^{-\Phi^*(\hat{\vec\alpha}^*)}}
+       {|\mathcal H |^{-1/2}\,e^{-\Phi(\hat{\vec\alpha})}}
+  \,\bigl[1+\mathcal O(N^{-2})\bigr],
+  \label{eq:partIb:laplace:tk}
+\end{equation}
+其中 $\Phi^*=\Phi-\ln g$，$\hat{\vec\alpha}^*=\arg\min\Phi^*$，
+$\mathcal H^* = \nabla^2\Phi^*(\hat{\vec\alpha}^*)$。
+关键巧思：\emph{对分子分母分别做 Laplace}，
+让 $\mathcal O(N^{-1})$ 误差项相互抵消。
+
+本重建当前实现仅使用一阶 Laplace
+\eqref{eq:partIb:laplace:posterior}；
+若未来需要后验中央矩 (skewness、kurtosis) 用以诊断非对称性，
+\eqref{eq:partIb:laplace:tk} 是首选闭式公式。
+完整推导超出本节范围，参见 Tierney \& Kadane (1986)、Schervish (1995, Ch.\,7)。
+
+\section{MCMC 理论：Metropolis-Hastings, 详细平衡、最优 acceptance、收敛诊断}
+\label{sec:partIb:mcmc}
+
+\subsection{Markov 链基础与平稳性}
+\label{sec:partIb:mcmc:basics}
+
+设状态空间 $\mathcal X\subseteq\mathbb R^n$，
+\emph{Markov 链}是序列 $\{\vec X^{(t)}\}_{t\geq 0}$，
+其转移核 $K(\vec x,\vec y)$ 给出
+$P(\vec X^{(t+1)}\in A\mid\vec X^{(t)}=\vec x)=\int_A K(\vec x,\vec y)\,d\vec y$。
+分布 $\pi$ 为 \emph{平稳分布} 当且仅当
+\begin{equation}
+  \pi(\vec y)=\int_{\mathcal X}\pi(\vec x)\,K(\vec x,\vec y)\,d\vec x.
+  \label{eq:partIb:mcmc:stationary}
+\end{equation}
+MCMC 的目的：构造 $K$ 使其平稳分布恰为目标后验
+$\pi(\vec\alpha\mid D)$ \eqref{eq:partIb:laplace:bayes}。
+
+\subsection{详细平衡与 Metropolis--Hastings 接受概率}
+\label{sec:partIb:mcmc:db}
+
+\begin{definition}[详细平衡]
+\label{def:partIb:db}
+转移核 $K$ 关于 $\pi$ 满足详细平衡 (detailed balance)：
+\begin{equation}
+  \pi(\vec x)\,K(\vec x,\vec y)\;=\;\pi(\vec y)\,K(\vec y,\vec x),
+  \quad \forall\,\vec x,\vec y\in\mathcal X.
+  \label{eq:partIb:mcmc:db}
+\end{equation}
+\end{definition}
+
+\begin{lemma}
+\label{lem:partIb:db_implies_stat}
+若 $K$ 满足 \eqref{eq:partIb:mcmc:db}，则 $\pi$ 为 $K$ 的平稳分布。
+\end{lemma}
+
+\begin{proof}
+对 \eqref{eq:partIb:mcmc:db} 关于 $\vec x$ 积分：
+$\int\pi(\vec x)K(\vec x,\vec y)d\vec x = \pi(\vec y)\int K(\vec y,\vec x)d\vec x = \pi(\vec y)$，
+即 \eqref{eq:partIb:mcmc:stationary}。\qedhere
+\end{proof}
+
+Metropolis--Hastings (MH) 通过组合 \emph{提议核} $Q(\vec x,\vec y)$ 与
+\emph{接受概率} $\alpha(\vec x,\vec y)$ 构造满足 \eqref{eq:partIb:mcmc:db} 的 $K$：
+\begin{equation}
+  K(\vec x,\vec y)
+  = Q(\vec x,\vec y)\,\alpha(\vec x,\vec y)
+   +\delta(\vec y-\vec x)\,r(\vec x),
+  \label{eq:partIb:mcmc:K_mh}
+\end{equation}
+其中 $r(\vec x)=1-\int Q(\vec x,\vec y)\alpha(\vec x,\vec y)\,d\vec y$ 为拒绝概率。
+\eqref{eq:partIb:mcmc:db} 在 $\vec x\neq\vec y$ 时给出
+\begin{equation}
+  \pi(\vec x)\,Q(\vec x,\vec y)\,\alpha(\vec x,\vec y)
+  = \pi(\vec y)\,Q(\vec y,\vec x)\,\alpha(\vec y,\vec x).
+  \label{eq:partIb:mcmc:db_mh}
+\end{equation}
+取 $\alpha$ 形式 $\alpha(\vec x,\vec y)=\min(1,\,r_{xy})$，$\alpha(\vec y,\vec x)=\min(1,\,r_{yx})$，
+不失一般性设 $r_{xy}\leq 1\leq r_{yx}$ ($r_{yx}=1/r_{xy}$)，
+代入 \eqref{eq:partIb:mcmc:db_mh}：
+$\pi(\vec x)Q(\vec x,\vec y)r_{xy}=\pi(\vec y)Q(\vec y,\vec x)\cdot 1$，
+解出
+\begin{equation}
+  \boxed{
+  \alpha_{\mathrm{MH}}(\vec x,\vec y)
+  = \min\!\Bigl(1,\;
+    \frac{\pi(\vec y)\,Q(\vec y,\vec x)}{\pi(\vec x)\,Q(\vec x,\vec y)}\Bigr).
+  }
+  \label{eq:partIb:mcmc:alpha_mh}
+\end{equation}
+
+\paragraph{对称提议 (Random-Walk MH)。}
+若 $Q(\vec x,\vec y)=Q(\vec y,\vec x)$ (例如各向异性高斯
+$\vec y=\vec x+\Sigma_{\mathrm{prop}}^{1/2}\vec\xi$, $\vec\xi\sim\mathcal N(\vec 0,I)$)，
+\eqref{eq:partIb:mcmc:alpha_mh} 退化为
+\begin{equation}
+  \alpha_{\mathrm{RW}}(\vec x,\vec y)
+  = \min\!\Bigl(1,\;\frac{\pi(\vec y)}{\pi(\vec x)}\Bigr)
+  = \min\!\Bigl(1,\;e^{-\Delta\Phi}\Bigr),
+  \label{eq:partIb:mcmc:alpha_rw}
+\end{equation}
+其中 $\Delta\Phi=\Phi(\vec y)-\Phi(\vec x)$
+即 \eqref{eq:partIb:laplace:phi} 的差值。
+\StatusReport\ §方法五 实现的正是这种对称随机游走 MH，
+提议协方差由 Laplace $\Sigma_{\mathrm{post}}$ 缩放给出：
+\begin{equation}
+  \Sigma_{\mathrm{prop}} = s^2\cdot\Sigma_{\mathrm{post}},
+  \label{eq:partIb:mcmc:sprop}
+\end{equation}
+$s$ 为待自适应的标量步长因子。
+
+\subsection{遍历性条件}
+\label{sec:partIb:mcmc:ergodic}
+
+要使链的样本均值收敛到后验期望，需要 \emph{遍历性}：
+
+\begin{enumerate}[label=(E\arabic*)]
+  \item 不可约 (irreducible)：从任意状态出发，正概率到达任意正密度区域；
+  \item 非周期 (aperiodic)：不存在周期 $d>1$ 使返回时间被锁定为 $d$ 的倍数；
+  \item 正常返 (positive recurrent)：每个正密度区域被无限次访问，且平均返回时间有限。
+\end{enumerate}
+
+对连续状态空间，更合适的提法是 \emph{Harris 遍历性}：
+若 $K$ 关于 $\pi$ 满足详细平衡 + 不可约 + 非周期，且 $\pi$ 是不变测度，
+则对任意 $\pi$-可积函数 $g$ 和几乎所有初值 $\vec x_0$，
+\begin{equation}
+  \frac{1}{N}\sum_{t=1}^{N}g(\vec X^{(t)})
+  \;\xrightarrow{a.s.}\;
+  \int g(\vec\alpha)\,\pi(\vec\alpha)\,d\vec\alpha,
+  \label{eq:partIb:mcmc:ergodic}
+\end{equation}
+即遍历定理。
+对本重建：$\pi$ 在 $\mathbb R^3$ ($u,v,p$ 子空间) 上正密度，
+高斯随机游走核显然不可约且非周期，故 \eqref{eq:partIb:mcmc:ergodic} 适用。
+
+\subsection{最优接受率 0.234}
+\label{sec:partIb:mcmc:opt_accept}
+
+\begin{theorem}[Roberts--Gelman--Gilks 1997, 简化版]
+\label{thm:partIb:rgg}
+设目标分布 $\pi$ 为 $n$ 维独立同分布 $\mathcal N(\vec 0, I_n)$，
+随机游走 MH 提议核 $\vec\xi\sim\mathcal N(\vec 0,(\ell^2/n)I_n)$，
+$\ell>0$ 为缩放因子。
+当 $n\to\infty$，链的第一坐标缩放后弱收敛到 Langevin SDE：
+\begin{equation}
+  d X_t = -\tfrac12 h(\ell)\,X_t\,dt + \sqrt{h(\ell)}\,d W_t,
+  \quad
+  h(\ell)=2\ell^2\,\Phi(-\ell/2),
+  \label{eq:partIb:mcmc:rgg_speed}
+\end{equation}
+其中 $\Phi(\cdot)$ 是标准正态 CDF。
+$h(\ell)$ 在 $\ell^{*}\approx 2.38$ 处最大，
+对应的渐近接受率
+\begin{equation}
+  \alpha^{*}=2\Phi(-\ell^{*}/2)\;\approx\;0.234.
+  \label{eq:partIb:mcmc:0234}
+\end{equation}
+\end{theorem}
+
+\paragraph{解读。}
+\eqref{eq:partIb:mcmc:0234} 给出了\emph{ 在高维高斯目标 + 各向同性随机游走 + 渐近极限}下
+最优接受率。它平衡两件事：
+\begin{itemize}[leftmargin=2em]
+  \item 步子太小 ($\alpha\to 1$): 几乎全部被接受，但走得慢，自相关高；
+  \item 步子太大 ($\alpha\to 0$): 几乎全部被拒绝，链停滞。
+\end{itemize}
+最优 $\ell^{*}\approx 2.38$ 即 $\Sigma_{\mathrm{prop}}=(2.38^2/n)\Sigma_{\mathrm{post}}$，
+此时积分自相关时间最小化。
+
+\paragraph{实证经验。}
+对 $n\geq 5$，$\alpha^{*}=0.234$ 是相当鲁棒的目标
+(对偏离高斯、轻度耦合的目标依旧近似有效)。
+$n=1$ 时最优 $\alpha^{*}\approx 0.44$；
+本重建有效维度 (启用 MCMC 的参数) 为 $n=3$ ($u,v,p$)
+或 $n=5$ ($\delta x,\delta y,u,v,p$)，
+处于 $\alpha^{*}\in[0.23,0.44]$ 过渡区。
+\StatusReport\ §方法五 取 $0.23$ 作为自适应阈值，是合理的。
+
+\subsection{自适应步长与“收敛后停止自适应”}
+\label{sec:partIb:mcmc:adapt}
+
+为把接受率拉到目标 $\alpha^{*}$，
+\StatusReport\ §方法五 在 burn-in 期间使用 Robbins--Monro 风格更新：
+\begin{equation}
+  s^{(t+1)}
+  \;=\;
+  \begin{cases}
+    s^{(t)}\cdot 1.1, & \text{若最近窗口接受率 } > 0.23,\\
+    s^{(t)}\cdot 0.9, & \text{否则}.
+  \end{cases}
+  \label{eq:partIb:mcmc:rm}
+\end{equation}
+
+\paragraph{为什么自适应破坏 Markov 性？}
+$\Sigma_{\mathrm{prop}}^{(t+1)}$ 依赖于历史接受序列 (而不仅是当前态)，
+故 $\{\vec X^{(t)}\}$ 不再是 (时间齐次) Markov 链——
+详细平衡 \eqref{eq:partIb:mcmc:db} 在自适应期间不严格成立，
+此期间样本不应纳入后验估计。
+
+\paragraph{合法化途径。}
+\StatusReport\ 算法在 burn-in 结束后\emph{ 冻结} $s$。
+此后 $\Sigma_{\mathrm{prop}}$ 为常数，链恢复时间齐次 Markov 性，
+详细平衡与 \eqref{eq:partIb:mcmc:ergodic} 都生效。
+此即 \emph{“diminishing adaptation + containment”} 的简化版本
+(Roberts \& Rosenthal 2007)：
+只要自适应在采样阶段停止，最终样本即可视为来自正确平稳分布。
+
+\subsection{Geweke z-score：收敛性的频率学派检验}
+\label{sec:partIb:mcmc:geweke}
+
+\begin{proposition}[Geweke 1992]
+\label{prop:partIb:geweke}
+设链 $\{\vec X^{(t)}\}_{t=1}^{N}$ 在某起始燃尽期之后已平稳。
+取前 10\% (索引 $1$ 至 $N_A=\lfloor 0.1 N\rfloor$) 的均值 $\bar X_A$
+与后 50\% (索引 $N_B^{\mathrm{lo}}=\lceil 0.5 N\rceil$ 至 $N$) 的均值 $\bar X_B$。
+则
+\begin{equation}
+  z_{\mathrm{Geweke}}
+  \;=\;
+  \frac{\bar X_A - \bar X_B}
+       {\sqrt{\widehat{\mathrm{Var}}(\bar X_A)
+              +\widehat{\mathrm{Var}}(\bar X_B)}}
+  \;\xrightarrow{d}\;\mathcal N(0,1),
+  \label{eq:partIb:mcmc:geweke}
+\end{equation}
+当 $N\to\infty$ 且链平稳时。
+方差用 spectral density at 0 估计：
+$\widehat{\mathrm{Var}}(\bar X_A)\approx \widehat{S_X}(0)/N_A$。
+\end{proposition}
+
+\paragraph{使用规则。}
+$|z|<2$ 视为通过 (95\% 显著性)；$|z|>2$ 拒绝平稳假设。
+事件 \#399 上 $|z|=4.17$ (\StatusReport\ Table “Event \#399 MCMC 链诊断”)
+强烈拒绝平稳，说明前 10\% 与后 50\% 有显著系统差异——
+链仍处于燃尽残留状态。
+
+\paragraph{$z$ 的几何含义。}
+若链已平稳，$\bar X_A$ 与 $\bar X_B$ 都是同一个后验均值的无偏估计；
+其差除以联合标准差服从渐近 $\mathcal N(0,1)$。
+若链漂移 (例如尚未到达高密度区域)，
+两段的均值估计来自不同分布，$|z|$ 显著偏离 0。
+
+\subsection{有效样本量 (ESS) 与积分自相关时间}
+\label{sec:partIb:mcmc:ess}
+
+\begin{definition}
+\label{def:partIb:tau}
+平稳链 $\{X^{(t)}\}$ 的 lag-$k$ 自相关
+$\rho_k=\mathrm{Cov}(X^{(t)},X^{(t+k)})/\mathrm{Var}(X^{(t)})$。
+\emph{积分自相关时间}
+\begin{equation}
+  \tau \;=\; 1+2\sum_{k=1}^{\infty}\rho_k.
+  \label{eq:partIb:mcmc:tau}
+\end{equation}
+\emph{有效样本量}
+\begin{equation}
+  \mathrm{ESS}\;=\;\frac{N}{\tau}.
+  \label{eq:partIb:mcmc:ess_def}
+\end{equation}
+\end{definition}
+
+\paragraph{物理含义。}
+若 $N$ 个高度相关的样本只携带 ESS 个独立信息单元，
+后验均值的标准误差为
+$\mathrm{SE}(\bar X)=\sqrt{\mathrm{Var}(X)/\mathrm{ESS}}$
+而非 $\sqrt{\mathrm{Var}(X)/N}$。
+因此 ESS 正比于“等效独立样本”。
+
+\paragraph{估计器。}
+\eqref{eq:partIb:mcmc:tau} 中的级数发散 (奇偶 $\rho_k$ 噪声相消)，
+实际估计需在某 lag 处截断。
+\StatusReport\ §方法五 实现：
+\begin{equation}
+  \widehat\tau = 1+2\sum_{k=1}^{K}\hat\rho_k,
+  \quad
+  K = \min\{k:|\hat\rho_k|<0.05\}.
+  \label{eq:partIb:mcmc:tau_estim}
+\end{equation}
+
+\paragraph{量级估算 (\StatusReport)。}
+本 ensemble (\texttt{ensemble\_n50\_targetframe/.../summary.csv})：
+\begin{itemize}[leftmargin=2em]
+  \item 中位接受率 $\bar\alpha = 0.333$；
+  \item 中位 $\mathrm{ESS} = 12.6$；
+  \item 配置 $N=160$ 样本、$N_b=80$ burn-in。
+\end{itemize}
+由 \eqref{eq:partIb:mcmc:ess_def}：
+\begin{equation}
+  \tau \approx \frac{N}{\mathrm{ESS}}
+       =\frac{160}{12.6}
+       \approx 12.7,
+  \label{eq:partIb:mcmc:tau_value}
+\end{equation}
+即每 $\sim 13$ 个原始样本仅相当于 1 个独立样本。
+若目标是 $\sim 1000$ 个有效样本 (足以稳定经验 16\%/84\% 分位)，
+原始样本数应至少 $1000\times\tau\approx 1.3\times 10^4$，
+比当前配置高约 $80\times$。
+
+\subsection{当前 MCMC 配置诊断与改进建议}
+\label{sec:partIb:mcmc:diag}
+
+\paragraph{诊断。}
+\begin{enumerate}[leftmargin=2em,label=(\arabic*)]
+  \item \textbf{接受率 0.333 高于 0.234}：
+    \eqref{eq:partIb:mcmc:0234} 表明应增大步长。
+    Robbins--Monro 规则 \eqref{eq:partIb:mcmc:rm} 在 $\alpha>0.23$ 时
+    把 $s$ 放大 $1.1$ 倍是正确方向，但 burn-in $N_b=80$ 太短，
+    自适应未达稳态即被冻结。
+  \item \textbf{ESS 12.6 远低于阈值 50}：链尚未充分混合。
+  \item \textbf{Geweke $|z|=4.17$ (事件 \#399)}：早段与晚段均值显著不同，
+    链未到达平稳分布。
+  \item \textbf{多数 \texttt{converged=0}}：内置判据
+    (ESS$\geq 50 \wedge |z|<2$) 自动触发不可信标记，
+    \StatusReport\ §汇总 已据此声明 MCMC 区间不可信。
+\end{enumerate}
+
+\paragraph{改进建议。}
+\begin{itemize}[leftmargin=2em]
+  \item 把 $N_s$ 从 160 增至 $\geq 1.6\times 10^4$ 
+        (即 \eqref{eq:partIb:mcmc:tau_value} 的 100$\times$ 安全裕度)；
+  \item 把 $N_b$ 从 80 增至 $\geq 5000$，让 \eqref{eq:partIb:mcmc:rm} 充分自适应；
+  \item 将 $s$ 初值从 $1.0$ 提高到 $\sim 2.4/\sqrt{n}$
+        ($n\!=\!3$ 时 $\sim 1.4$，$n\!=\!5$ 时 $\sim 1.07$)，
+        靠近 RGG 的 $\ell^{*}/\sqrt{n}$；
+  \item Thinning factor 5 已合理 (与 $\tau\approx 13$ 同量级)，可保持。
+\end{itemize}
+预计调整后 ESS 提升至 $\sim 1000$，
+\eqref{eq:partIb:mcmc:geweke} $|z|<2$ 通过，
+MCMC 区间可与 Profile 直接比较。
+
+\subsection{未来方向：HMC/NUTS}
+\label{sec:partIb:mcmc:hmc}
+
+随机游走 MH 的本质瓶颈：链以 $\sqrt{N}$ 速度扩散，
+混合时间正比于 $\tau$ 而 $\tau$ 又随相关结构增大。
+\emph{Hamiltonian Monte Carlo} (HMC) 引入辅助动量 $\vec p_{\mathrm{aux}}$
+与 Hamiltonian
+\begin{equation}
+  H(\vec\alpha,\vec p_{\mathrm{aux}})
+  =\Phi(\vec\alpha)+\tfrac12\vec p_{\mathrm{aux}}^{\top}M^{-1}\vec p_{\mathrm{aux}},
+  \label{eq:partIb:mcmc:hamilton}
+\end{equation}
+用 leapfrog 积分器沿等能量曲线移动 $L$ 步，
+随后做 Metropolis 校正。
+关键优势：步长正比于 $L\cdot\epsilon$ 而非 $\sqrt{\epsilon}$，
+混合速度可达 $\mathcal O(L)$ 加速。
+NUTS (No-U-Turn Sampler, Hoffman \& Gelman 2014) 自动选 $L$。
+
+\paragraph{为何 HMC 适合本重建？}
+\begin{itemize}[leftmargin=2em]
+  \item $\nabla\Phi=\nabla(\tfrac12\chi^2)=J^{\top}\vec r$ 已经在 LM 实现中现成可得，
+        无需额外开发自动微分；
+  \item $M=\Sigma_{\mathrm{post}}^{-1}=\mathcal H_{\mathrm{post}}$ 是标准选择，
+        直接用 Laplace Hessian 即可；
+  \item 事件 \#399 类似的“低 $\chi^2$ 阱” (§\ref{sec:partIb:wilks:tie}) 
+        对随机游走是陷阱、对 HMC 反而是优势 (动能驱动跨越浅势垒)。
+\end{itemize}
+
+实施成本：HMC 每步需 $L\sim 10$ 次梯度评估，
+即 $L\sim 10$ 次 RK 传播；
+ESS 提升至 $\sim N$ 量级 (HMC 接近独立采样)，
+单事件计算成本与现实施 $\sim 5.5\,\mathrm s$ 相当或更低。
+列入 future work。
+
+% =============================================================================
+% End of Part Ib (Chapters 4–6)
+% Continued in: rk_deep_dive_part1c_math_ch7to9_zh.tex (Glückstern, Bethe-Bloch, Highland)
+% =============================================================================

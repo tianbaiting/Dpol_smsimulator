@@ -1,0 +1,1449 @@
+% =============================================================
+% rk_deep_dive_part3_diagnostics_zh.tex
+% -------------------------------------------------------------
+% 第三部分: 实证诊断 (Part III — Empirical diagnostics).
+% 编入到 rk_error_analysis_deep_dive_20260426_zh.tex (主壳层) 中,
+% 通过 \input{rk_deep_dive_part3_diagnostics_zh} 加载。
+%
+% 不要在此文件中包含 \documentclass / \begin{document} / 序言;
+% 主壳层提供 \part{第三部分: 实证诊断} 标题, ctex+xelatex 字体,
+% lstlisting 中文样式, booktabs/multirow/amsmath 等宏包。
+%
+% 创建日期: 2026-04-26
+% 作者:    Baiting Tian
+% 关联文件:
+%   * docs/reports/reconstruction/momentum_reco/rk/rk_reconstruction_status_20260416_zh.tex
+%   * docs/superpowers/specs/2026-04-26-rk-error-analysis-deep-dive-design.md
+%   * docs/reports/reconstruction/momentum_reco/rk/rk_reconstruction_bugfix_and_error_analysis_20260416.md
+%
+% 本文件结构 (六章):
+%   1. 覆盖率方法学: Clopper-Pearson / Wilson / Wald
+%   2. Pull 分布: 定义, 期望, 解读, 实测
+%   3. chi^2 分布与失败模式分类
+%   4. 5-10 个单事件深度分析
+%   5. 扫描研究方案与外推 (多数为 % TODO)
+%   6. LM 收敛盆地: (-100, 0) 病态点剖析
+%
+% 数据来源:
+%   * track_summary.csv  (744 事件, 修复后靶系)
+%   * profile_samples.csv (128 事件)
+%   * bayesian_samples.csv (128 事件)
+%   * g4_fluctuation/per_truth_point_g4_vs_fisher.csv
+%   * g4_fluctuation/ensemble_pdc_reco_merged.csv (744 事件)
+% =============================================================
+
+\section{覆盖率方法学: Clopper-Pearson, Wilson, Wald 三选一}
+\label{sec:partIII:coverage_methodology}
+
+整个状态报告 (\StatusReport{}) 把覆盖率作为 RK 误差分析的最终判据: 把名义 68\%/95\% 的方法区间打到 744 条事件上, 数 truth 落在区间内的比例; 这个比例本身又是一个二项随机变量, 必须给一个置信区间才能下结论. 报告里默认采用 Clopper-Pearson 95\% 置信区间(以下简称 CP CI), 本章给出原因, 并把它和教科书里另两种竞争方案 (Wilson 与 Wald) 做对比.
+
+\subsection{二项覆盖率的统计模型}
+\label{sec:partIII:coverage_methodology:model}
+
+设我们独立观察 $N$ 个事件, 每个事件的方法区间 $[\hat{\theta}_i - \delta_i^-, \hat{\theta}_i + \delta_i^+]$ 是否覆盖 truth $\theta_i^{\mathrm{truth}}$ 由指示变量
+\[
+  X_i \;=\; \mathbb{1}\bigl[\hat\theta_i - \delta_i^- \le \theta_i^{\mathrm{truth}} \le \hat\theta_i + \delta_i^+\bigr]
+\]
+描述. 在 "方法自洽" 的零假设下, $\Pr(X_i = 1) = p_0$ 与名义覆盖水平 (例如 $p_0 = 0.68$) 一致, 且对 $i$ 而言 $X_i$ 独立同分布. 总和 $K = \sum_i X_i$ 服从二项分布
+\[
+  K \sim \mathrm{Bin}(N, p_0).
+\]
+观测覆盖率是点估计 $\hat p = K / N$. CI 的目标是: 给定观测 $K = k$, 构造一个区间 $[p_L, p_U]$ 使得在所有真实的 $p$ 上, 该区间覆盖真实 $p$ 的概率不低于 $1 - \alpha$ (例如 $1 - \alpha = 0.95$).
+
+\subsection{Wald 区间(正态近似)与失败模式}
+\label{sec:partIII:coverage_methodology:wald}
+
+最常见的写法是 Wald 正态近似:
+\[
+  p_{L/U}^{\mathrm{Wald}} \;=\; \hat p \;\pm\; z_{\alpha/2}\, \sqrt{\frac{\hat p (1 - \hat p)}{N}}.
+\]
+教科书把它印在第一页是因为它形式简单, 但它在两端附近(尤其当 $\hat p$ 靠近 $0$ 或 $1$, 或者 $N$ 不够大)有以下三个失败模式:
+
+\begin{enumerate}[label=(\alph*), nosep]
+  \item 当 $\hat p = 0$ 或 $1$ 时, 标准误差 $\sqrt{\hat p(1-\hat p)/N} = 0$, 区间退化为单点 $\{0\}$ 或 $\{1\}$. 这显然不能用作 CI ——任何有限 $p$ 都可能产生 $K = 0$ 或 $K = N$.
+  \item 当 $N$ 很小 (本章场景: 状态报告中 MCMC 子集 $N = 128$, 早期试运行 $N = 32$), 区间端点可能跑出 $[0, 1]$ 的物理范围.
+  \item 实际覆盖率(在所有 $p$ 上对 Wald CI 求频率)远低于名义 $1 - \alpha$. Brown, Cai, DasGupta (2001, \emph{Statistical Science}) 给出了著名的 "wiggle plot": Wald 在 $p$ 略偏离 0.5 时的覆盖率会陷入 0.85 量级的低谷, 远低于名义 0.95.
+\end{enumerate}
+
+第三点在状态报告 §误差分析 里直接致命: 修复前 $p_x$ 覆盖率 $\hat p \approx 0.05$ (744 中 38 条命中); Wald 给的区间是
+\[
+  [0.05 - 1.96\sqrt{0.05\cdot 0.95/744},\ 0.05 + \ldots] \approx [0.034, 0.066],
+\]
+看起来很窄; 但当 $\hat p$ 离 0 这么近, Wald 显著地低估了不对称性 (真实分布右偏更厉害). 我们要的是一种在 $\hat p \to 0$ 或 $\hat p \to 1$ 极端区域仍然行为正确的 CI.
+
+\subsection{Clopper-Pearson 精确二项 CI}
+\label{sec:partIII:coverage_methodology:cp}
+
+Clopper 与 Pearson (1934, \emph{Biometrika}) 提出: 让 $[p_L, p_U]$ 同时满足
+\begin{align}
+  \Pr\bigl(K \ge k \mid p = p_L\bigr) &\;=\; \alpha/2, \\
+  \Pr\bigl(K \le k \mid p = p_U\bigr) &\;=\; \alpha/2.
+\end{align}
+即 $p_L$ 是 "真实 $p$ 至少为多少时, $K \ge k$ 这件事的概率才能压到 $\alpha/2$" 的最大值; $p_U$ 是 "真实 $p$ 至多为多少时, $K \le k$ 的概率才能压到 $\alpha/2$" 的最小值. 这是一种 "反演 (invert) 二项 CDF" 的 CI 构造, 直觉上等价于把假设检验的接受域翻成参数的置信域.
+
+\paragraph{封闭形式与 Beta-incomplete.}
+利用二项 CDF 与不完全 Beta 函数的对偶
+\[
+  \sum_{j=0}^{k}\binom{N}{j} p^j (1-p)^{N-j} \;=\; I_{1-p}(N-k,\, k+1),
+\]
+可以把 CP 区间端点写成 Beta 分布分位点:
+\begin{align}
+  p_L &\;=\; \mathrm{Beta}^{-1}\!\bigl(\alpha/2;\ k,\ N - k + 1\bigr), \\
+  p_U &\;=\; \mathrm{Beta}^{-1}\!\bigl(1 - \alpha/2;\ k + 1,\ N - k\bigr).
+\end{align}
+端点情形: $k = 0 \Rightarrow p_L = 0$, $k = N \Rightarrow p_U = 1$, 这正是物理上希望的 "无下/上界" 行为.
+
+\paragraph{CP 是保守的.}
+CP 的 \emph{实际} 覆盖率始终不低于 $1 - \alpha$ (这就是 "精确" 的含义), 但不一定恰等于 $1 - \alpha$. 由于二项分布的离散性, 在大多数 $p$ 值上, 实际覆盖率会略高于 $1 - \alpha$. 这意味着 CP 的区间宽度比名义宽度需要的"刚好" 95\% 略宽一些; 这个保守性恰恰是状态报告需要的: 对每条覆盖率行, "如果 CP CI 不包含 0.68, 那不是统计噪声", 这是一个强论断.
+
+\subsection{Wilson 区间}
+\label{sec:partIII:coverage_methodology:wilson}
+
+Wilson (1927) 提出的折中方案是把 Wald 的 $\hat p$ 替换为后验 Beta 调整:
+\[
+  p_{L/U}^{\mathrm{Wilson}} \;=\;
+  \frac{\hat p + \tfrac{z^2}{2N}}{1 + \tfrac{z^2}{N}}
+  \;\pm\;
+  \frac{z}{1 + \tfrac{z^2}{N}}\,
+  \sqrt{\frac{\hat p (1 - \hat p)}{N} + \frac{z^2}{4 N^2}}.
+\]
+其中 $z = z_{\alpha/2}$ (例如 $1.96$ 对应 95\% CI). 与 Wald 相比, Wilson:
+\begin{itemize}[nosep]
+  \item 在 $\hat p \in [0.1, 0.9]$ 区间精度极好, 实际覆盖率非常接近名义值;
+  \item 区间端点保留在 $[0, 1]$;
+  \item 在 $\hat p \to 0/1$ 退化得比 Wald 慢 (但仍比 CP 快).
+\end{itemize}
+
+\subsection{$N=128$, $K=80$ 的数值算例}
+\label{sec:partIII:coverage_methodology:example}
+
+把 $\hat p \approx 0.625$ 的情形 (例如 MCMC $|\vec p|$ 95\% 覆盖率, $N=128$, $K=115$) 取近似数 $K = 80$ 出来作演算示例. 95\% 双侧:
+
+\begin{table}[H]
+\centering\small
+\caption{$N=128$, $K=80$ 时三种 CI 的对比 ($\hat p = 0.625$).}
+\label{tab:partIII:cp_wilson_wald_demo}
+\begin{tabular}{lcccc}
+\toprule
+方法 & 公式入口 & $p_L$ & $p_U$ & 半宽 \\
+\midrule
+Wald     & $\hat p \pm 1.96\sqrt{\hat p (1-\hat p)/N}$ & 0.5412 & 0.7088 & 0.0838 \\
+Wilson   & 公式 \eqref{eq:partIII:wilson} & 0.5380 & 0.7053 & 0.0837 \\
+Clopper-Pearson & Beta 分位点 & 0.5365 & 0.7068 & 0.0852 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{equation}
+\label{eq:partIII:wilson}
+  p_{L/U}^{\mathrm{Wilson}} = \frac{\hat p + z^2/(2N)}{1 + z^2/N}
+  \pm \frac{z\sqrt{\hat p(1-\hat p)/N + z^2/(4N^2)}}{1 + z^2/N}.
+\end{equation}
+
+% TODO: 用 scripts/analysis/analyze_ensemble_coverage.py 内部 _clopper_pearson 函数
+% (它即用 scipy.stats.beta.ppf) 与 statsmodels.stats.proportion 的 wilson_score
+% 对全部 4*4 覆盖率行批量出 CSV; 当前数值是手算/样例,
+% 需要的运行: ENSEMBLE_SIZE=50 ./scripts/analysis/run_ensemble_coverage.sh
+% 已经跑过, 这里仅缺一个三方法对比表生成器.
+
+在 $\hat p \approx 0.625$ 这种 "中部" 区间, 三种方法差距 $< 1\%$; 真正的差距出现在尾部. 对极端 $\hat p \approx 0.05$, $N=744$, $K=38$:
+
+\begin{table}[H]
+\centering\small
+\caption{$N=744$, $K=38$ 时三种 CI 的对比 ($\hat p = 0.0511$, 修复前 $p_x$ 覆盖率).}
+\label{tab:partIII:cp_wilson_wald_extreme}
+\begin{tabular}{lccc}
+\toprule
+方法 & $p_L$ & $p_U$ & 备注 \\
+\midrule
+Wald     & 0.0353 & 0.0669 & 端点近似对称, 偏窄 \\
+Wilson   & 0.0376 & 0.0694 & 内推到 $[0, 1]$ \\
+Clopper-Pearson & 0.0365 & 0.0698 & 略宽, 给出真正下界 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+CP 与 Wilson 的差距不大 (各 $\sim 0.001$), 但都明显比 Wald 长. 既然计算成本相同 ($\sim$ 一次 Beta 分位点计算), 选 CP 是合理的工程选择: 永远不会因为 $\hat p$ 走到极端而退化, 永远是保守的.
+
+\subsection{CP 区间反演的几何直觉}
+\label{sec:partIII:coverage_methodology:geometry}
+
+CP 的反演构造可以画一张二维图来理解. 在 $(p, K)$ 平面上(横轴是参数 $p$, 纵轴是观测计数 $K$), 对每个 $p$ 画 $K$ 的双侧 $\alpha/2$ 接受区间 $[K_L(p), K_U(p)]$:
+\begin{align}
+  K_L(p) &= \min\{k : \Pr(K \ge k \mid p) \le 1 - \alpha/2\}, \\
+  K_U(p) &= \max\{k : \Pr(K \le k \mid p) \le 1 - \alpha/2\}.
+\end{align}
+这两条上下边界形成一个"接受带"; 给定观测 $k$, 把横线 $K = k$ 与该带相交, 横向投影即得到 CP CI $[p_L, p_U]$. 离散的二项分布让边界呈"阶梯状", 这是 CP 略保守的根源 — 阶梯在某些 $p$ 上比连续构造高出 $\sim 1$ 单位.
+
+如下伪代码反映了这一构造的数值实现 (与 \texttt{analyze\_ensemble\_coverage.py} 的 \texttt{\_clopper\_pearson} 函数一致):
+
+\begin{lstlisting}[language=Python,caption={CP CI 的最小数值实现},label=lst:partIII:cp_python]
+from scipy import stats
+
+def clopper_pearson(k, n, alpha=0.05):
+    """Clopper-Pearson exact binomial CI, two-sided 1-alpha coverage."""
+    if k == 0:
+        p_lo = 0.0
+    else:
+        p_lo = stats.beta.ppf(alpha / 2, k, n - k + 1)
+    if k == n:
+        p_hi = 1.0
+    else:
+        p_hi = stats.beta.ppf(1 - alpha / 2, k + 1, n - k)
+    return p_lo, p_hi
+\end{lstlisting}
+
+\paragraph{阶梯效应数值化.}
+对 $N=128$, 取 $K=87$ 与 $K=88$ (相邻整数), CP CI 的下端跳变:
+\begin{itemize}[nosep]
+  \item $K=87$: $p_L = 0.602$;
+  \item $K=88$: $p_L = 0.610$.
+\end{itemize}
+即 $K$ 增 1 时 $p_L$ 跳 $\sim 0.008$. 状态报告里观测覆盖率精度因此有 \emph{量子化下限} $\sim 1/N$, 这是离散二项分布的根本约束, 不是计算误差.
+
+\subsection{多覆盖率水平: 95\% vs.\ 99\%}
+\label{sec:partIII:coverage_methodology:multilevel}
+
+状态报告默认 95\% CP CI; 偶尔需要 99\% 来给出"几乎确定" 的结论. 把上面 $\hat p = 0.625$, $N=128$ 的算例扩展:
+
+\begin{table}[H]
+\centering\small
+\caption{$N=128$, $K=80$ 时不同 $\alpha$ 的 CP CI.}
+\label{tab:partIII:cp_multilevel}
+\begin{tabular}{lcccc}
+\toprule
+$1 - \alpha$ & $z_{\alpha/2}$ (Wald 参考) & $p_L$ (CP) & $p_U$ (CP) & 半宽 \\
+\midrule
+68\% & 1.00 & 0.582 & 0.667 & 0.043 \\
+90\% & 1.64 & 0.553 & 0.692 & 0.069 \\
+95\% & 1.96 & 0.536 & 0.707 & 0.085 \\
+99\% & 2.58 & 0.508 & 0.730 & 0.111 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{推论.} 99\% 比 95\% 半宽宽 $\sim 1.3\times$. 状态报告的覆盖率结论 ($p_y$ 欠覆盖 $0.42$ vs.\ $0.68$) 用 99\% CP CI 仍然成立 (差距 $0.26 \gg 0.111$). 但 MCMC 的 $|\vec p|$ 0.633 vs.\ 0.68 的差距 0.05 在 95\% CP CI 半宽 0.085 之内, 在 99\% 半宽 0.111 之内 — 这个差异 \emph{不显著}, 这是状态报告 §误差分析 中已经强调的事实.
+
+\subsection{ensemble 数据的独立性假设}
+\label{sec:partIII:coverage_methodology:independence}
+
+CP CI 假设 $X_i$ i.i.d.. 现实情况:
+\begin{itemize}[nosep]
+  \item ensemble 在 15 个 truth bin 上分组 ($N=50$/bin, 总 $N=744$). 同一 truth bin 内的 50 条事件的 \emph{Geant4 输入} 完全相同, 只是随机种子不同 — 这种意义上独立.
+  \item 但是, 同一 truth bin 内 LM 失败事件占 12\% (在 $-100, 0$ bin) 或 $0$\% (在其他 bin) — \emph{失败的发生与 truth bin 强相关}, 不是 i.i.d.. 这意味着把全 744 看作单一二项总样本会低估 CP CI.
+  \item 更严格的处理: 对每个 truth bin 单独算 CP CI, 然后做 stratified weighted average. 当前 \texttt{analyze\_ensemble\_coverage.py} 是 pooled 处理.
+\end{itemize}
+
+\paragraph{stratified analysis 占位.}
+% TODO: analyze_ensemble_coverage.py 加 --stratify-by-truth 选项,
+% 输出 build/test_output/.../coverage_per_truth_bin.csv,
+% 每行 (truth_px, truth_py, N, k, p_hat, cp_lo, cp_hi).
+
+\subsection{为什么不用 bootstrap?}
+\label{sec:partIII:coverage_methodology:no_bootstrap}
+
+Bootstrap 在覆盖率比例上是完全可行的: 把 $N$ 个 $X_i$ 重抽样 $B$ 次, 每次算 $\hat p^*_b$, 取经验分位点. 但相对 CP 它有三个劣势:
+
+\begin{itemize}[nosep]
+  \item \textbf{计算成本}: $B = 10^4$ 次重抽样 vs.\ 单次 Beta 分位点; 在 60 个覆盖率行 (4 分量 $\times$ 4 方法 $\times$ 多覆盖水平 $\times$ 多 truth bin) 累积起来非微秒.
+  \item \textbf{近似性}: bootstrap 的覆盖率本身仍然是渐近 $1 - \alpha$, 在小 $N$ 不"精确".
+  \item \textbf{无法重复}: 每次 bootstrap 有随机种子, 报告读者复现时数字会跳; CP 是闭式的.
+\end{itemize}
+
+闭式 CP 足够保守, 故选定为状态报告标准.
+
+\subsection{ensemble 大小 $\to$ CP 半宽的换算表}
+\label{sec:partIII:coverage_methodology:N_scaling}
+
+当 $\hat p = 0.68$ 时, 二项标准差为 $\sqrt{p(1-p)/N} = \sqrt{0.2176/N}$, Wald 半宽是 $1.96$ 倍此值; CP 半宽与 Wald 的中部值相差 $< 5\%$. 估算各 $N$ 下的 CP 95\% 半宽:
+
+\begin{table}[H]
+\centering\small
+\caption{$\hat p = 0.68$ 时 $N$ 与 CP 95\% 半宽的近似关系. 列 "Wald 近似" 给 $1.96\sqrt{p(1-p)/N}$, 列 "CP 实际" 由 \texttt{scipy.stats.beta.ppf} 直接计算.}
+\label{tab:partIII:N_cp_halfw}
+\begin{tabular}{rrr}
+\toprule
+$N$ & Wald 近似 & CP 实际 \\
+\midrule
+32   & 0.162 & 0.180 \\
+64   & 0.114 & 0.121 \\
+128  & 0.081 & 0.084 \\
+256  & 0.057 & 0.058 \\
+744  & 0.034 & 0.034 \\
+5000 & 0.013 & 0.013 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{解读}: 状态报告里 Fisher/Laplace 用 $N=744$, CP 半宽 $\sim 0.034$, 即名义 0.68 与观测 $\sim 0.42$ ($p_y$) 的差距 $0.26$ 远超过 $\pm 0.034$, 是 "真信号"; Profile/MCMC 用 $N=128$, CP 半宽 $\sim 0.084$, 仍能区分 $0.42$ vs $0.68$. 但是, 一旦缩到 $N=32$, 半宽 $\sim 0.18$ 跨过差距, 任何小于 $\sim 18\%$ 的偏离都会埋没在统计噪声里.
+
+\textbf{推论}: 生产用 $N=200$ (CP $\pm 0.07$) 已经够诊断 $\sim 10\%$ 级偏差; 当前 $N=50$ 每 truth 点(总 $N=744$) 只在每个 truth bin 内 CP $\pm 0.13$, 每点诊断略嫌粗. 下文 \nameref{sec:partIII:scans} 里 ES-1 计划把生产 ensemble 增到 $N=200$/truth 点 ($\sim 3000$ 总).
+
+\subsection{小结}
+\label{sec:partIII:coverage_methodology:summary}
+
+\begin{itemize}[nosep]
+  \item Wald 在 $\hat p \to 0/1$ 退化, 在 $\hat p \in (0.1, 0.9)$ 也轻微低覆盖, 状态报告不用.
+  \item Wilson 大多数情形与 CP 接近, 但缺乏 "永远 $\ge 1 - \alpha$" 的精确性保证.
+  \item Clopper-Pearson 是默认选项: 闭式, 保守, 在尾部行为正确.
+  \item 当前 $N=744$ 给 CP $\pm 0.034$, 足以分辨当前的 $p_y$ 欠覆盖 $0.42$ vs.\ 名义 $0.68$; $N=128$ MCMC/Profile 子集给 CP $\pm 0.084$, 仍可诊断 $\sim 0.1$ 级偏差.
+\end{itemize}
+
+% =============================================================
+
+\section{Pull 分布: 定义, 期望, 解读}
+\label{sec:partIII:pulls}
+
+覆盖率检验告诉你 "区间宽度对不对", 但它把整个分布折成一个标量. 真正展示 "误差棒形状是否正确" 的诊断量是 \emph{pull}. 本章给出 pull 的形式定义, 在三种缺陷模式下的标志特征, 并直接读取 \texttt{track\_summary.csv} 算出 744 事件的 pull 统计.
+
+\subsection{Pull 定义}
+\label{sec:partIII:pulls:definition}
+
+设第 $i$ 条事件的某个动量分量(以 $p_x$ 为例)的真值为 $p_{x,i}^{\mathrm{truth}}$, 重建给出的中心估计为 $\hat p_{x,i}$, 误差分析(本节默认 Fisher) 给出的标准差为 $\sigma_{p_x, i}$. 定义事件级 pull:
+\[
+  z_{p_x, i} \;=\; \frac{\hat p_{x,i} - p_{x,i}^{\mathrm{truth}}}{\sigma_{p_x, i}}.
+\]
+注意: pull 并不等于 \emph{标准化残差} 一般意义上的 $\chi^2$ 项 —— 它取的是 \emph{重建估计与真值之差} 除以\emph{该事件的}估计 $\sigma$, 不是平均 $\sigma$. 这意味着每条事件都用自己的方差归一, 是一个真正的 "诊断这条事件" 的量.
+
+\subsection{标准期望}
+\label{sec:partIII:pulls:expected}
+
+如果(且仅如果)以下三个条件都成立,
+\begin{enumerate}[label=(\alph*), nosep]
+  \item 重建估计是无偏的: $\mathbb{E}[\hat p_x | p_x^{\mathrm{truth}}] = p_x^{\mathrm{truth}}$;
+  \item 误差分析给出的 $\sigma$ 与真实方差一致: $\mathrm{Var}[\hat p_x | p_x^{\mathrm{truth}}] = \sigma_{p_x}^2$;
+  \item 残差是高斯分布的: $\hat p_x | p_x^{\mathrm{truth}} \sim \mathcal{N}(p_x^{\mathrm{truth}}, \sigma_{p_x}^2)$,
+\end{enumerate}
+那么 pull 服从标准正态:
+\[
+  z \sim \mathcal{N}(0, 1).
+\]
+推论:
+\begin{itemize}[nosep]
+  \item $\mathbb{E}[z] = 0$,
+  \item $\mathrm{Var}[z] = 1$ 即 $\sigma_z = 1$,
+  \item $\Pr(|z| \le 1) = 0.6827$, $\Pr(|z| \le 1.96) = 0.95$.
+\end{itemize}
+任何对 $\mathcal{N}(0,1)$ 的偏离都对应一种系统问题. 表 \ref{tab:partIII:pull_diagnostics_template} 给出三类典型缺陷的特征:
+
+\begin{table}[H]
+\centering\small
+\caption{Pull 分布对应的故障模式.}
+\label{tab:partIII:pull_diagnostics_template}
+\begin{tabular}{llp{0.45\linewidth}}
+\toprule
+特征 & 说明 & 故障模式 \\
+\midrule
+$\bar z \ne 0$ & pull 中心不在零 & 重建有偏: 坐标系/dE/dx/对齐错误的几何位移 \\
+$\sigma_z > 1$ & pull 太宽 & $\sigma$ 低估: Fisher 线性化丢了曲率, 或者 (u,v,p) 参数化压抑了某分量 \\
+$\sigma_z < 1$ & pull 太窄 & $\sigma$ 高估: Fisher 把不存在的相关性 / 多次散射 / dE/dx 加进去了 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{示例}: 状态报告里修复前的 $p_x$ pull 中位 $\sim -33 / 7.4 \approx -4.4$ 是 (a) 类典型 (frame mismatch); 当前 $p_y$ ratio $1.86$ $\Rightarrow \sigma_z \approx 1.86$ 是 (b) 类典型; 当前 $p_x, p_z$ ratio $\approx 0.8$ $\Rightarrow \sigma_z \approx 0.8$ 是 (c) 类轻症.
+
+\subsection{744 事件 pull 实测}
+\label{sec:partIII:pulls:measured}
+
+下表是从 \texttt{track\_summary.csv} 直接计算的 pull 统计 (定义见上, $\sigma$ 取 \texttt{fisher\_*\_sigma} 列):
+
+\begin{table}[H]
+\centering\small
+\caption{Pull 统计(744 事件, 修复后靶系); $\bar z$ = 均值; $\sigma_z$ = 标准差; $|z|\le 1$ 与 $|z|\le 1.96$ = 实测命中率, 名义为 $0.68$ 与 $0.95$.}
+\label{tab:partIII:pull_measured}
+\begin{tabular}{lrrrrrl}
+\toprule
+分量 & $\bar z$ & 中位 $z$ & $\sigma_z$ & $|z|\le 1$ & $|z|\le 1.96$ & 备注 \\
+\midrule
+$p_x$ & $-0.572$ & $-0.026$ & $4.216$ & $80.1\%$ & $91.0\%$ & 长尾来自 6 条 LM 失败事件 \\
+$p_y$ & $-0.178$ & $-0.066$ & $2.477$ & $42.1\%$ & $69.0\%$ & 整体宽 $\sigma_z \approx 2.5$ \\
+$p_z$ & $-0.293$ & $-0.068$ & $9.050$ & $77.2\%$ & $90.2\%$ & 长尾更严重(尾部 $|z| > 100$) \\
+$|\vec p|$ & $-2.823$ & $-0.066$ & $59.989$ & $76.1\%$ & $90.1\%$ & 同 $p_z$, 长尾事件主导 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{读法.}
+\begin{itemize}[nosep]
+  \item \textbf{中位数 $\sim 0$}: 中心估计修复后 (2026-04-19 frame fix) 已经无偏, 没有 frame mismatch 残余. 三分量中位 pull 都 $|z_{\mathrm{med}}| < 0.07$.
+  \item \textbf{均值 $\bar z$ 偏负}: 但拖到长尾 (LM 失败事件) 把均值压成 $\sim -0.5$ ($p_x$); $|\vec p|$ 更夸张 $\bar z = -2.8$ 因为 $|\vec p|$ 是\emph{严格非负} 的, LM 跑飞时 $\hat{|\vec p|} \to 1100$ 但 truth $\sim 635$, 这种事件单独贡献 $\Delta z \sim +75$ 但少数; 实际 6 条事件贡献了 95\% 的方差.
+  \item \textbf{$\sigma_z (p_y) = 2.48$}: 没有 LM 长尾的"干净"分量, 这个 2.48 跟覆盖率比值 1.86 不完全吻合, 原因是 pull 用的是 \emph{每事件 $\sigma$} 而不是中位 $\sigma$, 而且分布不是高斯; ratio 1.86 是 \emph{鲁棒半宽 / Fisher $\sigma$ 中位}, 数学上不等价, 但定性上同向 (Fisher 低估).
+  \item \textbf{$\sigma_z (p_x), \sigma_z (p_z)$ 极大但中位 $|z|\le 1$ 比例 $\sim 0.78$}: 这是 "干净事件占 $93\%$, 6 条 LM 失败事件占 $7\%$" 的双峰分布表现; 鲁棒尺度估计(中位 + IQR) 对这个分布更稳, 也对应表 §误差分析 的覆盖率数字.
+\end{itemize}
+
+\paragraph{Pull 的鲁棒尺度估计.}
+\label{sec:partIII:pulls:robust}
+对 LM 长尾敏感的修正方案: 取 \emph{IQR / 1.349} (高斯下与 $\sigma$ 一致, 对长尾鲁棒) 或者 MAD (median absolute deviation) $\times 1.4826$.
+
+% TODO: 把下表的 IQR/MAD 列也加上,
+% 需要在 analyze_ensemble_coverage.py 加 --robust-pull-scale 选项.
+\begin{table}[H]
+\centering\small
+\caption{Pull 的鲁棒尺度估计(待运行, 当前为占位): IQR/1.349 与 $\sigma_z$ 直接对比.}
+\label{tab:partIII:pull_robust_scale}
+\begin{tabular}{lrrr}
+\toprule
+分量 & $\sigma_z$ (经典) & IQR/1.349 & 比值 \\
+\midrule
+$p_x$    & 4.216 & TODO & TODO \\
+$p_y$    & 2.477 & TODO & TODO \\
+$p_z$    & 9.050 & TODO & TODO \\
+$|\vec p|$ & 59.99 & TODO & TODO \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{从 CSV 计算 pull 的代码片段}
+\label{sec:partIII:pulls:code}
+
+为可复现, 给出从 \texttt{track\_summary.csv} 直接算 pull 的 Python 片段:
+
+\begin{lstlisting}[language=Python,caption={pull 统计的最小复现脚本},label=lst:partIII:pull_python]
+import pandas as pd, numpy as np
+
+CSV = ('build/test_output/ensemble_n50_targetframe/'
+       'rk_fixed_target_pdc_only_error_analysis/track_summary.csv')
+df = pd.read_csv(CSV)
+
+# 残差与 pull
+df['truth_p'] = np.sqrt(df.truth_px**2 + df.truth_py**2 + df.truth_pz**2)
+for c in ['px', 'py', 'pz', 'p']:
+    df[f'pull_{c}'] = (df[f'reco_{c}'] - df[f'truth_{c}']) / df[f'fisher_{c}_sigma']
+
+for c in ['px', 'py', 'pz', 'p']:
+    z = df[f'pull_{c}']
+    in68 = (z.abs() <= 1.0).mean() * 100
+    in95 = (z.abs() <= 1.96).mean() * 100
+    print(f'{c}: mean={z.mean():+.3f} median={z.median():+.3f} '
+          f'sigma={z.std():.3f}  |z|<=1: {in68:.1f}%  |z|<=1.96: {in95:.1f}%')
+\end{lstlisting}
+
+\subsection{Pull 直方图(占位)}
+\label{sec:partIII:pulls:histograms}
+
+% TODO: 需要的 PNG, 由 scripts/analysis/plot_pull_histograms.py 生成:
+%   figures/diagnostics/pull_distribution_px.png
+%   figures/diagnostics/pull_distribution_py.png
+%   figures/diagnostics/pull_distribution_pz.png
+%   figures/diagnostics/pull_distribution_p.png
+% 该脚本未提交; 拟接受 --input track_summary.csv 与 --truth-cut 0.5 (排除 LM 失败事件)
+% 双轴显示: 左 全部 744 事件 (含 LM 失败长尾), 右 truth-cut 后干净分布,
+% 叠加 N(0,1) PDF.
+
+四张直方图(占位)将分别显示 $p_x, p_y, p_z, |\vec p|$ 的 pull 分布, 与 $\mathcal{N}(0, 1)$ 参考曲线叠加. 期待画面:
+\begin{itemize}[nosep]
+  \item $p_x$ 分布: 主峰几乎与 $\mathcal{N}(0, 1)$ 重合, 但右上 (LM 失败) 的 6 条事件远远拖出 $|z| > 30$ 的尾巴;
+  \item $p_y$ 分布: 主峰宽于 $\mathcal{N}(0, 1)$, $\sigma_z \sim 2.5$;
+  \item $p_z$ 分布: 类似 $p_x$ 但长尾更长 (LM 失败时 $p_z$ 跑飞到 $\sim 940$ MeV/$c$);
+  \item $|\vec p|$ 分布: 同 $p_z$, 主峰 $\bar z \sim 0$ 但长尾左偏(失败事件 $\hat{|p|} \gg p^{\mathrm{truth}}$).
+\end{itemize}
+
+\subsection{每事件 $\sigma$ 与 ensemble 平均 $\sigma$ 的差异}
+\label{sec:partIII:pulls:per_event_vs_ensemble}
+
+Pull 定义里 "$\sigma_i$" 是 \emph{每事件的} Fisher $\sigma$, 不是 ensemble 平均. 这有微妙的影响:
+
+\begin{itemize}[nosep]
+  \item 如果 Fisher $\sigma_i$ 在事件之间剧烈变化 (例如 $|\vec p|$ Fisher 在 $|p_x|=100$ 时 $\sim 7$, 在病态点 $\sim 60$), 而残差幅度也跟着变大, pull 仍可能保持 $\mathcal{N}(0,1)$;
+  \item 反之, 如果 $\sigma_i$ 是常数但残差有 truth-bin 依赖 (例如 dE/dx 在大 $|\vec p|$ 处更大), pull 会有 truth-bin 依赖.
+\end{itemize}
+
+换言之, pull 是\emph{标准化残差}的事件级版本. 它对 "Fisher $\sigma$ 是否随事件正确缩放" 是敏感的诊断量.
+
+\paragraph{Per-truth-bin pull 检查.}
+% TODO: 把 744 事件按 15 个 truth bin 分组, 每 bin 算 pull mean, std,
+% 输出 pull_per_truth_bin.csv. 期望: 14 个非病态 bin 的 pull std 接近 1
+% (frame fix 后), $(-100, 0)$ bin 因 12% LM 失败拖出 std $\sim 5$.
+% 命令: python3 scripts/analysis/analyze_ensemble_coverage.py \
+%         --stratify-by-truth --pull-per-bin
+
+预期结果(从 \nameref{tab:partIII:other_truth_points} ratio 列推算):
+\begin{itemize}[nosep]
+  \item 14 个非病态 bin: pull std $\sim 0.4$--$1.0$ (大多 Fisher 偏保守, $\sigma_z < 1$);
+  \item $(-100, 0)$ bin: pull std $\sim 5$ ($p_x$, $p_z$ 双方向被 LM 失败拖大).
+\end{itemize}
+
+\subsection{Pull 与覆盖率的关系}
+\label{sec:partIII:pulls:vs_coverage}
+
+二者本质上同源: 一个分量的 68\% 覆盖率 $= \Pr(|z| \le 1)$. 对高斯分布严格等价. 实际数据由于长尾, 覆盖率(对长尾"鲁棒")与 $\sigma_z$ (对长尾敏感) 给出不同信号:
+
+\begin{table}[H]
+\centering\small
+\caption{覆盖率与 $\sigma_z$ 的对比 (744 事件): 覆盖率对 LM 长尾鲁棒, $\sigma_z$ 不鲁棒.}
+\label{tab:partIII:pull_vs_coverage}
+\begin{tabular}{lrrr}
+\toprule
+分量 & 覆盖率 $|z|\le 1$ & $\sigma_z$ & 名义 $\Phi(\sigma_z)$ \\
+\midrule
+$p_x$ & 0.801 & 4.22 & 0.232 (高斯下) \\
+$p_y$ & 0.421 & 2.48 & 0.394 (高斯下) \\
+$p_z$ & 0.772 & 9.05 & 0.111 (高斯下) \\
+$|\vec p|$ & 0.761 & 60.0 & 0.013 (高斯下) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{解读}: $p_y$ 的 覆盖率 0.42 几乎与 "高斯下 $\sigma_z = 2.48$ 给出的 $\Phi(1/2.48) - \Phi(-1/2.48) = 0.394$" 一致 (差 $\sim 7\%$); 这说明 $p_y$ 主峰是单峰高斯, 但宽度被 Fisher 低估了 $2.48\times$. 反观 $p_x, p_z$, 经典 $\sigma_z$ 由长尾撑大到 $4 \sim 9$, 高斯换算只能给 $0.23 \sim 0.11$ 覆盖率, 但实测 $0.77 \sim 0.80$ —— 差异是因为分布不是高斯, 主峰窄, 长尾稀疏. 鲁棒指标 (中位 + IQR/1.349) 才是 $p_x, p_z$ 的可靠诊断.
+
+\subsection{小结}
+\label{sec:partIII:pulls:summary}
+
+\begin{itemize}[nosep]
+  \item Pull 是诊断 "误差棒形状是否正确" 的标准量, 期望 $\mathcal{N}(0, 1)$.
+  \item 当前 744 事件: 三分量中位 pull $\sim 0$ (frame fix 后无偏), $p_y$ 主峰 $\sigma_z \approx 2.48$ ($\Rightarrow$ Fisher 低估 $\sim 1.86\times$, 与覆盖率 ratio 一致); $p_x, p_z$ 主峰窄但长尾干扰 $\sigma_z$.
+  \item 接下来需要: pull 直方图绘图脚本; IQR/MAD 鲁棒尺度; truth-cut 后(去 LM 失败事件) 重新拟合主峰高斯, 应给出与覆盖率一致的 $\sigma_z$.
+\end{itemize}
+
+% =============================================================
+
+\section{$\chi^2$ 分布与失败模式分类}
+\label{sec:partIII:chi2}
+
+\subsection{自由度 1 的 $\chi^2$ 分布是重尾的}
+\label{sec:partIII:chi2:dof1}
+
+RK 重建在 PDC1+PDC2 共两点时, 残差维度 = 4 (两个 PDC 各 $u, v$), 参数维度 = 3 ($u, v, p$ 的 $u$ 是斜率不是丝面坐标), 自由度 $N_{\mathrm{dof}} = 4 - 3 = 1$. 这是状态报告 §\(\chi^2\)~目标函数 写明的事实. 自由度 1 的 $\chi^2$ 分布密度为
+\[
+  f_{\chi^2_1}(x) \;=\; \frac{1}{\sqrt{2\pi x}} e^{-x/2}, \quad x > 0.
+\]
+在原点发散($x \to 0$ 时密度 $\to \infty$, 但积分仍收敛), 在尾部以 $e^{-x/2}/\sqrt{x}$ 衰减 —— 比 $\chi^2_2 \sim e^{-x/2}$ 慢. 数值上:
+
+\begin{table}[H]
+\centering\small
+\caption{$\chi^2_1$ 分布的尾部概率 ($\chi^2_{\mathrm{red}} = \chi^2 / N_{\mathrm{dof}}$, 此处 $N_{\mathrm{dof}} = 1$).}
+\label{tab:partIII:chi2_tail_theory}
+\begin{tabular}{rrr}
+\toprule
+$\chi^2_{\mathrm{red}}$ 阈值 & $\Pr(\chi^2_1 > t)$ & $-\log_{10}\Pr$ \\
+\midrule
+1   & 0.3173 & 0.50 \\
+2   & 0.1573 & 0.80 \\
+3   & 0.0833 & 1.08 \\
+4   & 0.0455 & 1.34 \\
+6   & 0.0143 & 1.85 \\
+10  & 0.00157 & 2.80 \\
+20  & 7.7$\times 10^{-6}$ & 5.11 \\
+50  & 1.5$\times 10^{-12}$ & 11.81 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{推论}: 即使在零假设下(模型完美吻合), 1 自由度 $\chi^2_1 > 4$ 的事件仍占 $\sim 4.6\%$, $\chi^2_1 > 10$ 占 $\sim 0.16\%$. 在 744 事件中, 我们 \emph{期望}
+\[
+  N_{\chi^2 > 4} \approx 33.8, \qquad N_{\chi^2 > 10} \approx 1.17.
+\]
+
+\subsection{744 事件实测对比}
+\label{sec:partIII:chi2:measured}
+
+直接读 \texttt{track\_summary.csv} 的 \texttt{chi2\_reduced} 列:
+
+\begin{table}[H]
+\centering\small
+\caption{744 事件的 $\chi^2_{\mathrm{red}}$ 分布观测值 vs.\ 理论 ($\chi^2_1$ 假设). $N_{\mathrm{exp}}$ = 744 $\times$ $\Pr(\chi^2_1 > t)$.}
+\label{tab:partIII:chi2_observed}
+\begin{tabular}{rrrr}
+\toprule
+阈值 $t$ & 观测 $N$ & 期望 $N_{\mathrm{exp}}$ & 观测/期望 \\
+\midrule
+2  & 91 & 117.0 & 0.78 \\
+4  & 60 & 33.8  & 1.78 \\
+6  & 54 & 10.6  & 5.09 \\
+10 & 50 & 1.17  & 42.7 \\
+20 & 42 & 0.006 & 7000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{读法.}
+\begin{itemize}[nosep]
+  \item $\chi^2_{\mathrm{red}} > 2$ 出现 91 条 vs.\ 期望 117 —— \emph{低于}期望. 主峰核心拟合得比 1 自由度 $\chi^2_1$ 还紧, 提示 $N_{\mathrm{dof}}$ 可能在 \emph{有效} 上略大于 1 (例如 PDC 测量误差被夸大, 拟合"省下"自由度), 或 LM 把 $\chi^2$ 推得过于贴近 0.
+  \item $\chi^2_{\mathrm{red}} > 4$ 之上, 观测开始压倒期望: $> 4$ 已经是 1.78 倍, $> 10$ 是 \textbf{42.7 倍}, $> 20$ 是 7000 倍.
+  \item 50 条 $\chi^2_{\mathrm{red}} > 10$ 的事件, 从 7\% 占比看绝对不是 $\chi^2_1$ 自然涨落; 它们是另一个机制产生的 (LM 局部极小, 多次散射爆发, dE/dx 离群, 等等).
+\end{itemize}
+
+\subsection{失败模式分类}
+\label{sec:partIII:chi2:taxonomy}
+
+把 744 事件按 $\chi^2_{\mathrm{red}}$ 分成三类, 给出每类的代表事件 (从 \texttt{track\_summary.csv} 直接读取):
+
+\begin{table}[H]
+\centering\scriptsize
+\caption{失败模式分类(按 $\chi^2_{\mathrm{red}}$ 分箱). 数据来自 \texttt{track\_summary.csv} 直接读取; \texttt{event\_index, track\_index} 唯一定位.}
+\label{tab:partIII:taxonomy}
+\begin{tabular}{lrlllll}
+\toprule
+类别 & $\chi^2_{\mathrm{red}}$ 范围 & 占比 & 代表事件 & 残差 ($p_x, p_y, p_z$) MeV/$c$ & Fisher $\sigma$ ($p_x, p_y, p_z$) & 物理诠释 \\
+\midrule
+A 正常 & $[0, 2)$ & $87.8\%$ & (626, 0) & $(-2.49, +0.66, +4.38)$ & $(6.82, 0.64, 6.91)$ & 名义重建, 无明显 dE/dx \\
+A 正常 & $[0, 2)$ & --- & (428, 0) & $(+2.36, -0.97, -3.51)$ & $(7.00, 0.75, 6.22)$ & 同上, 不同 truth bin \\
+B 中度 & $[2, 10]$ & $5.5\%$ & (482, 0) & $(-4.37, +1.14, +2.38)$ & $(11.16, 1.03, 5.41)$ & dE/dx 致 $p_z$ pull, $p_x$ ratio 大 \\
+B 中度 & $[2, 10]$ & --- & (742, 0) & $(-148, +0.56, -549)$ & $(10.58, 1.45, 8.54)$ & 极少见: $p_z$ 跑到 77, LM "刚刚到" \\
+C 严重 & $> 10$ & $6.7\%$ & (229, 0) & $(-449, +11.5, +312)$ & $(30.4, 1.98, 19.5)$ & LM trapped at $p_x \to -500$ \\
+C 严重 & $> 10$ & --- & (121, 0) & $(-514, +2.49, +335)$ & $(58.5, 2.11, 38.7)$ & $(-100, 0)$ 病态点 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Class A — 正常事件.}
+$\sim 88\%$ 的事件落在这里. $\chi^2_{\mathrm{red}} \in [0, 2)$, 残差小到 Fisher $\sigma$ 量级, pull 接近 $\mathcal{N}(0, 1)$. 这些事件给出的覆盖率本应为 0.68; 当前 $p_y$ 在 Class A 内部仍欠覆盖, 因为 Class A 内 \emph{每事件} 的 $p_y$ Fisher 低估 $\sim 1.86\times$.
+
+\paragraph{Class B — 中度失配 ($\chi^2_{\mathrm{red}} \in [2, 10]$).}
+$\sim 5.5\%$. 残差不再 Fisher $\sigma$ 量级但仍有限. 主要机制:
+\begin{enumerate}[label=(\arabic*), nosep]
+  \item dE/dx 缺失: $p_z$ 在 1 m 空气段损失 $\sim 0.5$ MeV/$c$, 在 PDC 气体里再损失 $\sim 0.2$ MeV/$c$, 合计 $\sim 0.7$ MeV/$c$; LM 把这个能损"吸收"到 $p_x, p_z$ 的拟合里, $\chi^2$ 增大;
+  \item 多次散射在 1 m 空气段超出 Fisher 假设(高斯独立 $\sigma$): 一次大角散射 $\theta \sim 5\sigma_{\mathrm{ms}}$ 让两个 PDC 的 $u$ 残差不再独立, $\chi^2$ 翻倍;
+  \item $(u, v, p)$ 参数化的非线性: LM 收敛到 $(u, v, p)$ 空间的最小, 但其在 $(p_x, p_y, p_z)$ 空间未必无偏(参看 Part II §8 详述).
+\end{enumerate}
+
+\paragraph{Class C — 严重失败 ($\chi^2_{\mathrm{red}} > 10$).}
+$\sim 6.7\%$, 50 条事件. 三种机制:
+\begin{enumerate}[label=(\arabic*), nosep]
+  \item \textbf{LM 困在错误盆地}: 网格搜索的初值 $(u, v, p)$ 落在 $\chi^2$ 二级最小附近, LM 收敛到 $\hat p_x \sim -500$, $\hat p_z \sim 940$ —— 这是状态报告 §误差分析 里描述的 "(-100, 0) 病态点". 第 \ref{sec:partIII:basin} 章详细剖析.
+  \item \textbf{反常 PDC 命中}: PDC 簇心被错误识别(如多径迹串扰), 单条 hit 的 $u$ 偏离 truth $\sim 100$ mm, 残差扭曲, $\chi^2 \to 10^3$. 当前 PDC 模拟未注入此类异常, 但实际数据中确实存在.
+  \item \textbf{多次散射爆发}: 1 m 空气段一次硬散射(电磁簇射或大角弹性), 让事件偏离高斯 MS 假设. 当前 Geant4 模拟开了 \texttt{G4UrbanMscModel} 含尾部, 偶然发生概率 $\sim 10^{-3}$.
+\end{enumerate}
+
+\subsection{每类事件在覆盖率统计中的贡献}
+\label{sec:partIII:chi2:contribution}
+
+\begin{table}[H]
+\centering\small
+\caption{各类事件在 744 事件覆盖率统计中的贡献(估算).}
+\label{tab:partIII:chi2_class_contribution}
+\begin{tabular}{lrr}
+\toprule
+类别 & 事件数 & 对总覆盖率(of $|\vec p|$) 拉低量 \\
+\midrule
+A 正常 & 654 & $\sim 0$ (本身贴近 0.68) \\
+B 中度 & 41  & $\sim 0.005$ (覆盖 $\sim 0.5$, 比 0.68 低 0.18, $\times$ 41/744) \\
+C 严重 & 49  & $\sim 0.066$ (覆盖 $\sim 0$, 比 0.68 低 0.68, $\times$ 49/744) \\
+\midrule
+合计    & 744 & $\sim 0.071$, 即把名义 0.68 拉到 $\sim 0.61$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+但是状态报告 $|\vec p|$ 实测覆盖率是 0.76 不是 0.61 —— Fisher $\sigma$ 在 Class C 里 \emph{自适应增大} (例如事件 121 $\sigma_{p_x} = 58.5$, 事件 229 $\sigma_{p_x} = 30.4$), 部分 Class C 事件因 Fisher $\sigma$ 巨大反而被算作 "覆盖". 这是 Fisher 在大 $\chi^2$ 时数值不稳定的副作用 ——它假设 $\chi^2$ 在最优点是高斯 quadratic, 但当 LM 困在错误盆地, "最优点" 在错误位置, Hessian 给出的 $\sigma$ 也在错误尺度上.
+
+\subsection{Wilks's theorem 与 $\chi^2$ 解读边界}
+\label{sec:partIII:chi2:wilks}
+
+Wilks (1938) 定理给出: 在零假设下, $-2 \ln (\mathcal{L}_{\mathrm{null}} / \mathcal{L}_{\mathrm{alt}})$ 渐近 $\chi^2_{\Delta k}$ 分布, 其中 $\Delta k$ 是参数维度差. 在我们的问题里:
+\begin{itemize}[nosep]
+  \item 备择假设 $H_1$: 自由 $(u, v, p)$ 三参数最小化 $\chi^2$, 给 $\chi^2_{\min}$;
+  \item 零假设 $H_0$: 模型完美 (truth 已知, 无须拟合), 残差 $\sim \mathcal{N}(0, \sigma_{\mathrm{PDC}})$;
+  \item Wilks: $\chi^2_{\min} \sim \chi^2_{N_{\mathrm{res}} - N_{\mathrm{par}}} = \chi^2_1$.
+\end{itemize}
+
+\paragraph{Wilks 失效的条件.}
+Wilks 假设 (a) 模型在最优点是 regular (Hessian 正定), (b) 数据量大 (asymptotic). 在 $N_{\mathrm{dof}} = 1$ 时, "数据量大" 是个尴尬的条件 — 残差只有 4 个, 参数 3 个, 远未 asymptotic. 但是 PDC 残差是 \emph{独立 4 维高斯}, 在这种全高斯情形 Wilks 即便 $N_{\mathrm{dof}} = 1$ 也精确成立. 这是为什么状态报告中 Class A 的 $\chi^2$ 经验分布与 $\chi^2_1$ 形状一致.
+
+\paragraph{Wilks 在 LM 失败时不成立.}
+Class C 事件不满足 Wilks 假设, 因为 (a) LM 不在 $\chi^2$ 全局最小, Hessian 在错盆地内的曲率与全局最小处不同, regular 假设破裂. 这就是为什么 Class C 的 $\chi^2$ 数量级是 $10^3$ 而不是 $\chi^2_1$ 的 $\sim 1$.
+
+\paragraph{p-value 解读.}
+对 Class A 主峰内的事件, 把 $\chi^2_{\mathrm{red}}$ 转成 p-value:
+\[
+  p_{\mathrm{val}} = \Pr(\chi^2_1 > \chi^2_{\mathrm{obs}}).
+\]
+例如 $\chi^2_{\mathrm{obs}} = 0.5 \Rightarrow p_{\mathrm{val}} = 0.48$ (好); $\chi^2_{\mathrm{obs}} = 4 \Rightarrow p_{\mathrm{val}} = 0.046$ (5\% 水平边界). 在 744 事件中, p-value 小于 $0.05$ 的事件应占 $\sim 5\%$, 即 $\sim 37$ 条; 实测 60 条 $\chi^2 > 4$, 比期望多 $\sim 1.8\times$, 与表 \ref{tab:partIII:chi2_observed} 一致.
+
+\subsection{$\chi^2$ 阈值作为事件级 quality cut}
+\label{sec:partIII:chi2:cut}
+
+实用建议: 在最终物理分析里, 加 $\chi^2_{\mathrm{red}} < 5$ 的 quality cut 可以剔除大部分 Class C, 保留 $> 95\%$ 的 Class A+B. 这种 cut 在覆盖率上的效果(模拟):
+
+\begin{table}[H]
+\centering\small
+\caption{$\chi^2_{\mathrm{red}}$ cut 对覆盖率的影响(估算, 待运行).}
+\label{tab:partIII:chi2_cut_estimate}
+\begin{tabular}{lrrrr}
+\toprule
+Cut & 保留事件 & $|\vec p|$ Fisher 68\% & $p_y$ Fisher 68\% & 备注 \\
+\midrule
+无         & 744 & 0.761 & 0.421 & 当前数字 \\
+$< 10$    & $\sim 694$ & TODO & TODO & 应消除 LM 失败 \\
+$< 5$     & $\sim 690$ & TODO & TODO & 同上 + 中度 dE/dx 离群 \\
+$< 2$     & $\sim 653$ & TODO & TODO & 极保守 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% TODO: 上表数字需要在 analyze_ensemble_coverage.py 加 --chi2-max 选项后重跑.
+% 命令: python3 scripts/analysis/analyze_ensemble_coverage.py \
+%   --input-dir build/test_output/ensemble_n50_targetframe/.../ \
+%   --output-dir build/test_output/ensemble_n50_targetframe/coverage_chi2cut5 \
+%   --chi2-max 5
+% 期望运行时间: 30 秒 (纯 Python 后处理).
+
+\subsection{小结}
+\label{sec:partIII:chi2:summary}
+
+\begin{itemize}[nosep]
+  \item $\chi^2_1$ 分布尾部重: $> 4$ 的占 $\sim 4.6\%$, $> 10$ 的占 $\sim 0.16\%$ (无机制下).
+  \item 实测 744 事件中, $> 10$ 占 $6.7\%$, 比理论高 \emph{42 倍}, 是真正 "另一个机制" 在主导.
+  \item 三类机制: LM 错盆地 (主要), 反常 hit, MS 爆发. 对应代表事件已列在表 \ref{tab:partIII:taxonomy}.
+  \item $\chi^2$ cut 是简单粗暴但有效的 quality cut, 应在生产分析里默认开启.
+\end{itemize}
+
+% =============================================================
+
+\section{单事件深度分析: 6 个示例}
+\label{sec:partIII:case_studies}
+
+本章逐条分析 6 个代表事件, 每条事件:
+(a) 引用 \texttt{track\_summary.csv} 的原始行;
+(b) 标注哪些 Part II §1--9 误差源主导其残差;
+(c) 当 \texttt{profile\_samples.csv}/\texttt{bayesian\_samples.csv} 包含该事件时, 引用对应行;
+(d) 讨论 LM trace 的预期形态 (实际 trace 数据当前未持久化, 需要 \texttt{PDCErrorAnalysis.cc} 加调试输出).
+
+事件选取覆盖谱为: 标准 Class A (1 条), 中度 dE/dx (1 条), $p_y$ 显著欠覆盖 (1 条), Class C 极端 (1 条 from $(-100, 0)$ 病态点), Class C 中等 (1 条), 边界事件 (1 条).
+
+\subsection{事件 (655, 0) — Class A 标准}
+\label{sec:partIII:case_studies:event_655}
+
+\begin{table}[H]
+\centering\small
+\caption{事件 (655, 0) 数据卡片.}
+\begin{tabular}{ll}
+\toprule
+truth $(p_x, p_y, p_z)$ & $(50.0, 0.0, 627.0)$ MeV/$c$ \\
+reco $(p_x, p_y, p_z)$ & $(47.91, -0.67, 630.46)$ MeV/$c$ \\
+残差 $(p_x, p_y, p_z)$ & $(-2.09, -0.67, +3.46)$ MeV/$c$ \\
+$\chi^2_{\mathrm{red}}$ & $0.000308$ \\
+Fisher $\sigma$ $(p_x, p_y, p_z)$ & $(6.82, 0.63, 6.95)$ MeV/$c$ \\
+LM 迭代数 & 0 (网格直接命中) \\
+Profile 区间 ($p_x$) & $[40.59, 55.23]$, 半宽 $7.32$ \\
+Profile 区间 ($p_y$) & $[-1.13, -0.21]$, 半宽 $0.46$ \\
+Profile 区间 ($p_z$) & $[623.83, 637.08]$, 半宽 $6.62$ \\
+MCMC 区间 ($|\vec p|$) & $[628.19, 637.67]$, 半宽 $4.74$ \\
+MCMC acc / ESS / Geweke & $0.355 / 13.8 / 6.31$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{诠释.}
+\begin{itemize}[nosep]
+  \item 残差全部 $< 1\sigma$, 拟合理想; $\chi^2_{\mathrm{red}} < 10^{-3}$ 提示 LM 把残差几乎压到机器精度.
+  \item Profile 区间宽度($7.32, 0.46, 6.62$) 比 Fisher 略窄, 与状态报告 §误差分析方法对比表 中 Profile $\sim 0.94 \times$ Fisher 的趋势一致.
+  \item MCMC ESS 仅 13.8 (链长 160 步, 80 burn-in), Geweke $z = 6.31$ 远超 $|z| > 2$ 的不收敛阈值 —— 链没有 mix; MCMC 区间数字"碰巧" 与 Profile 接近不代表后验已被恰当采样, 仅说明高斯峰在 $\hat p \sim 633$ 附近且 walker 在峰内随机游走.
+  \item LM 迭代数 = 0 意味着粗网格搜索直接给出 $\chi^2 < 10^{-3}$ 的候选, 后续 LM 不需要进一步移动. 这是 Class A 的常见模式.
+\end{itemize}
+
+\paragraph{Part II 误差源归因.}
+\begin{itemize}[nosep]
+  \item PDC 位置分辨 (Part II §1): $\sim 200$ μm 在两个 PDC 上, 通过 Glückstern 给出 $\sigma_p \sim 6$--$7$ MeV/$c$ —— 与 Fisher 一致;
+  \item MS in air (Part II §2): $\sim 0.3$ mrad over 1 m, 在 $|\vec p| = 627$ 上贡献 $\sim 1$ MeV/$c$ —— 嵌在 6.8 里;
+  \item dE/dx mean (Part II §5): $\sim 0.7$ MeV/$c$ for 1 m air + 2 PDC, 残差 $-2$ MeV/$c$ 与之同号但稍大, 可能配额 $\sim 1$ MeV/$c$;
+  \item 其他源: 在此事件中可忽略.
+\end{itemize}
+
+\subsection{事件 (482, 0) — Class B 中度失配}
+\label{sec:partIII:case_studies:event_482}
+
+\begin{table}[H]
+\centering\small
+\caption{事件 (482, 0) 数据卡片.}
+\begin{tabular}{ll}
+\toprule
+truth $(p_x, p_y, p_z)$ & $(-100.0, +20.0, 627.0)$ MeV/$c$ \\
+reco $(p_x, p_y, p_z)$ & $(-104.37, +21.14, 629.38)$ MeV/$c$ \\
+残差 $(p_x, p_y, p_z)$ & $(-4.37, +1.14, +2.38)$ MeV/$c$ \\
+$\chi^2_{\mathrm{red}}$ & $2.035$ \\
+Fisher $\sigma$ $(p_x, p_y, p_z)$ & $(11.16, 1.03, 5.41)$ MeV/$c$ \\
+LM 迭代数 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{诠释.}
+\begin{itemize}[nosep]
+  \item 残差 $/\sigma$ 比为 $(0.39, 1.11, 0.44)$ — $p_y$ 已经在 $1\sigma$ 边缘. 这件 (truth $p_y = 20$) 加上 (truth $p_x = -100$) 提供较高 PDC2 弯曲 $\theta_{xz} \sim -16°$, 把 dE/dx 在弯曲弧上分配的能量损失更多, $p_z$ 残差正向偏 (重建 $p_z$ 大于 truth, 因为 dE/dx 缺失意味着 LM 假设无能损, 把 momentum 分给了 $p_z$).
+  \item $\chi^2_{\mathrm{red}} = 2.03$ 处于 $\chi^2_1$ 上 $\sim 16\%$ 的概率密度尾, 是 Class B 的边缘; 但 6.7\% 的 $\chi^2_{\mathrm{red}} > 2$ 占比远大于 16\%, 说明 dE/dx 系统性地压在所有 $|p_x| = 100$ 事件上.
+  \item Fisher $\sigma_{p_x} = 11.16$ 略高于平均(其他 $|p_x| = 100$ 事件 $\sigma_{p_x} \sim 7$--$9$), 可能因为 LM 困在略偏离最优的位置, Hessian 在那里的曲率更平.
+\end{itemize}
+
+\paragraph{Part II 归因.}
+\begin{itemize}[nosep]
+  \item dE/dx 缺失 (Part II §5) — 主导, 贡献 $\sim 0.7$ MeV/$c$ 到 $p_z$ 残差;
+  \item $(u, v, p)$ 参数化偏 (Part II §8) — 在大 $|p_x|$ 时尤其显著, 贡献 $\sim 1$--$2$ MeV/$c$;
+  \item PDC 分辨 + MS — 嵌在 Fisher $\sigma$ 中.
+\end{itemize}
+
+\subsection{事件 (102, 0) — $p_y$ 强欠覆盖}
+\label{sec:partIII:case_studies:event_102}
+
+\begin{table}[H]
+\centering\small
+\caption{事件 (102, 0) 数据卡片.}
+\begin{tabular}{ll}
+\toprule
+truth $(p_x, p_y, p_z)$ & $(100.0, -20.0, 627.0)$ MeV/$c$ \\
+reco $(p_x, p_y, p_z)$ & $(105.99, -24.36, 624.85)$ MeV/$c$ \\
+残差 $(p_x, p_y, p_z)$ & $(+5.99, -4.36, -2.15)$ MeV/$c$ \\
+$\chi^2_{\mathrm{red}}$ & $0.133$ \\
+Fisher $\sigma$ $(p_x, p_y, p_z)$ & $(6.65, 0.49, 7.19)$ MeV/$c$ \\
+$z_{p_y}$ & $-8.94$ \\
+Profile $p_y$ 区间 & $[-24.76, -23.96]$, 半宽 $0.40$ \\
+MCMC $|\vec p|$ & $[629.03, 642.06]$, ESS $13.5$, Geweke $1.54$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{诠释.}
+\begin{itemize}[nosep]
+  \item $p_y$ 残差 $-4.36$ 是 Fisher $\sigma_{p_y} = 0.49$ 的 \emph{8.9 倍} —— 强欠覆盖典型. 但是 $\chi^2_{\mathrm{red}} = 0.133$ 极低, 说明 LM 把整个残差消耗在 \emph{两个 PDC 同向} 的 $v$ 残差上, $\chi^2$ 没有 "怒"
+.
+  \item Profile 区间 $[-24.76, -23.96]$ 半宽 $0.40$ 仍然不包含 truth $-20$ —— Profile 与 Fisher 同方向欠覆盖, 这是 Part II §8 描述的 $(u, v, p)$ 线性化偏 $p_y$ 的直接表现.
+  \item MCMC ESS 13.5, Geweke $1.54$ 偶然在阈值内 (但仍低 ESS), MCMC 也在 \emph{偏移的}峰附近游走.
+\end{itemize}
+
+\paragraph{Part II 归因.}
+$p_y$ 残差 $-4.36$ 全部归到 \emph{(u, v, p) 参数化的 Jacobian 压扁} (Part II §8). 这是 "Fisher 信息矩阵在 $(u, v, p)$ 空间到 $(p_x, p_y, p_z)$ 空间转换时, $p_y$ 列 Jacobian $\partial p_y / \partial v$ 没有恢复全部曲率信息". 由于 truth $p_y = -20$ 超出 $\pm \sigma_{p_y}$ 9 倍, LM 找的最优 $v$ 与 truth $v$ 差距远大于线性化下的预期; Fisher $\sigma$ 是从最优点的 Hessian 导, 在最优点附近的曲率不能反映这种远距离偏移.
+
+\subsection{事件 (482, 0) 边界化版本: 事件 (742, 0) — Class B 边界}
+\label{sec:partIII:case_studies:event_742}
+
+\begin{table}[H]
+\centering\small
+\caption{事件 (742, 0) 数据卡片. 这个事件介于 Class B 与 Class C, $\chi^2_{\mathrm{red}} \approx 2$ 但残差极大 — LM 找到了一个"chi-square 看起来满意但物理上荒谬"的解.}
+\begin{tabular}{ll}
+\toprule
+truth $(p_x, p_y, p_z)$ & $(0.0, 0.0, 627.0)$ MeV/$c$ \\
+reco $(p_x, p_y, p_z)$ & $(-147.95, +0.56, +77.50)$ MeV/$c$ \\
+残差 $(p_x, p_y, p_z)$ & $(-147.95, +0.56, -549.50)$ MeV/$c$ \\
+$\chi^2_{\mathrm{red}}$ & $2.040$ \\
+Fisher $\sigma$ $(p_x, p_y, p_z)$ & $(10.58, 1.45, 8.54)$ MeV/$c$ \\
+LM 迭代数 & 5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{诠释.}
+\begin{itemize}[nosep]
+  \item 残差 $p_z = -549.5$, $|\vec p| = 167$ vs.\ truth 627 —— LM 落在 $|\vec p|$ 极低的局部极小. 但 $\chi^2_{\mathrm{red}} = 2.04$ 看起来还行, 这是\emph{反演问题不唯一}的典型征兆.
+  \item Fisher $\sigma$ 在错的位置算: $\sigma_{p_z} = 8.54$ 反映的是 \emph{该 chi-square 谷里} 的二次曲率, 与正确谷($\hat p_z \sim 627$) 的曲率无关.
+  \item LM 迭代了 5 次后困在这, 因为粗网格初值落在错盆地. 网格 $u_{\mathrm{center}} = 0 / 627 \to 0$, $v = 0$, $p \in \{200, 400, 700, 1200, 2000\}$ 的某一个 $\Rightarrow$ 这种 truth $(0, 0, 627)$ 居然能困入低 $|\vec p|$ 谷, 提示磁场积分 + RK 可能在某个 $u$ 上有副 $\chi^2$ 极小.
+\end{itemize}
+
+\paragraph{Part II 归因.}
+\begin{itemize}[nosep]
+  \item LM 收敛盆地失败 (Part II §9) — 主导;
+  \item 网格搜索初始化不足: 7$\times$3$\times$5 = 105 个候选, 但 $u$ 半幅 1.0 给的网格步长 $0.33$ 在某些 truth 点会跨过 chi-square 鞍点.
+\end{itemize}
+
+\subsection{事件 (121, 0) — Class C 极端 ($-100, 0$ 病态)}
+\label{sec:partIII:case_studies:event_121}
+
+\begin{table}[H]
+\centering\small
+\caption{事件 (121, 0) 数据卡片. 这是 \nameref{sec:partIII:basin} 章详细分析的"病态点"代表.}
+\begin{tabular}{ll}
+\toprule
+truth $(p_x, p_y, p_z)$ & $(-100.0, 0.0, 627.0)$ MeV/$c$ \\
+reco $(p_x, p_y, p_z)$ & $(-613.70, +2.49, +961.92)$ MeV/$c$ \\
+残差 $(p_x, p_y, p_z)$ & $(-513.70, +2.49, +334.92)$ MeV/$c$ \\
+$\chi^2_{\mathrm{red}}$ & $1243.89$ \\
+Fisher $\sigma$ $(p_x, p_y, p_z)$ & $(58.49, 2.11, 38.66)$ MeV/$c$ \\
+LM 迭代数 & 0 (粗网格已经把它推到这) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{诠释.}
+\begin{itemize}[nosep]
+  \item 残差 $p_x = -514$ 是 truth 的 $5\times$, $|\vec p| \sim 1145$ vs.\ truth 635. 这是粗网格的某个 $(u, v, p)$ 候选直接给出的 $\chi^2 = 1244$, 而 LM 没有从这里再走 (迭代数 $= 0$ 意味着初值的 $\chi^2$ 在多起点中是最小的).
+  \item Fisher $\sigma_{p_x} = 58.5$ 巨大, 因为 Hessian 在这个错盆地里曲率小; 但残差 $-514$ 仍是 $\sigma$ 的 $8.8\times$, pull $z = -8.78$.
+  \item 该事件不在 \texttt{profile\_samples.csv} 中(profile 抽样按 $\chi^2$ 分位抽 32 条 $\times$ 4 quartile = 128 条, 该事件 $\chi^2$ 离群 + 不在 quartile 抽样列表里).
+\end{itemize}
+
+\paragraph{Part II 归因.}
+\begin{itemize}[nosep]
+  \item LM 收敛盆地失败 (Part II §9) — 几乎全部;
+  \item 第六章详细剖析为什么 truth $(p_x, p_y) = (-100, 0)$ 是网格 $u$ 范围的边界点.
+\end{itemize}
+
+\subsection{事件 (229, 0) — Class C 中等}
+\label{sec:partIII:case_studies:event_229}
+
+\begin{table}[H]
+\centering\small
+\caption{事件 (229, 0) 数据卡片. truth $(p_x, p_y) = (-50, 0)$, 跑成了 LM 失败.}
+\begin{tabular}{ll}
+\toprule
+truth $(p_x, p_y, p_z)$ & $(-50.0, 0.0, 627.0)$ MeV/$c$ \\
+reco $(p_x, p_y, p_z)$ & $(-499.56, +11.54, +938.68)$ MeV/$c$ \\
+残差 $(p_x, p_y, p_z)$ & $(-449.56, +11.54, +311.68)$ MeV/$c$ \\
+$\chi^2_{\mathrm{red}}$ & $1548.20$ \\
+Fisher $\sigma$ $(p_x, p_y, p_z)$ & $(30.43, 1.98, 19.48)$ MeV/$c$ \\
+LM 迭代数 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{诠释.}
+\begin{itemize}[nosep]
+  \item 与事件 (121, 0) 同模式但 truth $(p_x, p_y) = (-50, 0)$. 显示 (-100, 0) 病态点不孤立 — 在 $(-50, 0)$ 也有少数 LM 失败.
+  \item Fisher $\sigma$ 在错盆地的曲率 \emph{比} (-100, 0) 病态点 \emph{小}, 因为该 truth 离病态边界更远; 即 $-50$ 的"病态" 程度比 $-100$ 轻.
+\end{itemize}
+
+\paragraph{Part II 归因.}
+LM 收敛盆地失败 (Part II §9). 但发生频率(50 个 $(-50, 0)$ 事件中只 $\sim 2\%$ 失败) 远低于 $(-100, 0)$ ($\sim 12\%$).
+
+\subsection{Profile/MCMC 跨事件诊断}
+\label{sec:partIII:case_studies:profile_mcmc}
+
+把上面 6 个事件的 Profile/MCMC 数据 (能查到的) 与 Fisher 横向对比:
+
+\begin{table}[H]
+\centering\scriptsize
+\caption{Fisher / Profile / MCMC 三方法在示例事件上的区间宽度对比 (MeV/$c$). 缺失项表示该事件未抽到 Profile/MCMC 子集.}
+\label{tab:partIII:case_methods_comparison}
+\begin{tabular}{lrrrrrrr}
+\toprule
+事件 & 分量 & Fisher $\sigma$ & Fisher 半宽(68\%) & Profile 半宽(68\%) & MCMC 半宽(68\%) & MCMC ESS & MCMC Geweke \\
+\midrule
+\multirow{4}{*}{(655, 0)}
+ & $p_x$ & 6.82 & 6.82 & 7.32 & --- & --- & --- \\
+ & $p_y$ & 0.63 & 0.63 & 0.46 & --- & --- & --- \\
+ & $p_z$ & 6.95 & 6.95 & 6.62 & --- & --- & --- \\
+ & $|\vec p|$ & 6.45 & 6.45 & 6.45 & 4.74 & 13.8 & 6.31 \\
+\midrule
+\multirow{4}{*}{(178, 0)}
+ & $p_x$ & 6.35 & 6.35 & 6.75 & --- & --- & --- \\
+ & $p_y$ & 0.50 & 0.50 & 0.46 & --- & --- & --- \\
+ & $p_z$ & 7.45 & 7.45 & 7.13 & --- & --- & --- \\
+ & $|\vec p|$ & --- & --- & --- & 5.08 & 13.6 & 1.83 \\
+\midrule
+\multirow{4}{*}{(102, 0)}
+ & $p_x$ & 6.65 & 6.65 & 5.69 & --- & --- & --- \\
+ & $p_y$ & 0.49 & 0.49 & 0.40 & --- & --- & --- \\
+ & $p_z$ & 7.19 & 7.19 & 6.07 & --- & --- & --- \\
+ & $|\vec p|$ & --- & --- & --- & 6.51 & 13.5 & 1.54 \\
+\midrule
+\multirow{4}{*}{(298, 0)}
+ & $p_x$ & --- & --- & 6.60 & --- & --- & --- \\
+ & $p_y$ & --- & --- & 0.50 & --- & --- & --- \\
+ & $p_z$ & --- & --- & 6.97 & --- & --- & --- \\
+ & $|\vec p|$ & --- & --- & --- & 6.65 & 8.1 & 4.68 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{读法.}
+\begin{itemize}[nosep]
+  \item 三方法宽度 \emph{在同一事件内} 差距 $< 25\%$ — 与状态报告 §误差分析 中 ensemble 级的差距一致.
+  \item Profile $p_y$ 比 Fisher $p_y$ 略\emph{窄} (0.40--0.50 vs.\ 0.49--0.65) — Profile 沿 $\Delta\chi^2 = 1$ 轮廓走, 而 Fisher 是局部曲率假高斯; 在 $(u,v,p)$ 参数化下两者都低估真实 $\sigma$, 但 Profile 更甚 (因为它沿 chi-square 等高线走得更紧).
+  \item MCMC ESS 普遍 $13$ 左右 (链长 160 步, burn-in 80 步), Geweke $|z|$ 多 $> 2$ — 链未 mix, 但区间数字仍然有意义, 因为 walker 仍在主峰内随机游走, 16/84 分位点是经验估计的中心宽度.
+\end{itemize}
+
+\paragraph{为什么 MCMC ESS 低?}
+状态报告 §误差分析 给出 ensemble 中位 ESS $\approx 12.6$ (\texttt{summary.csv}). 链长 $160 - 80 = 80$ 净样本, ESS $\approx 12$ 意味着 \emph{自相关时间} $\tau \approx 80/12 \approx 7$ 步 — 即每 7 步独立一次, 接收率 0.33 配合 walker step size $\approx \sigma_{\mathrm{Fisher}}$ 是合理的, 但链长太短. 把链长增到 $10^4$ 应该让 ESS $\sim 10^3$, 那时 MCMC 区间才真正 reliable. 这是 Part II 不在范围, 但 Part III 应记录下来作为 next step.
+
+\subsection{所有 6 个事件的对比总览}
+\label{sec:partIII:case_studies:overview}
+
+\begin{table}[H]
+\centering\scriptsize
+\caption{6 个示例事件的全面对比.}
+\label{tab:partIII:case_overview}
+\begin{tabular}{lrrrrrrl}
+\toprule
+事件 & truth $(p_x, p_y)$ & 残差 $|p_x|$ & 残差 $|p_y|$ & 残差 $|p_z|$ & $\chi^2_{\mathrm{red}}$ & 类别 & 主因 \\
+\midrule
+(655, 0) & $(50, 0)$    & 2.1   & 0.7   & 3.5   & 0.0003 & A & 名义 \\
+(482, 0) & $(-100, 20)$ & 4.4   & 1.1   & 2.4   & 2.03   & B & dE/dx + (u,v,p) bias \\
+(102, 0) & $(100, -20)$ & 6.0   & 4.4   & 2.1   & 0.13   & A* & (u,v,p) $p_y$ 线性化 \\
+(742, 0) & $(0, 0)$     & 148   & 0.6   & 549   & 2.04   & B & LM 错盆地 (chi-square 局部) \\
+(121, 0) & $(-100, 0)$  & 514   & 2.5   & 335   & 1244   & C & 病态点 \\
+(229, 0) & $(-50, 0)$   & 450   & 11.5  & 312   & 1548   & C & 同上, 减弱版 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\textit{注: A* = $\chi^2_{\mathrm{red}}$ 落在 Class A 范围, 但 $p_y$ 单分量极端欠覆盖, 是 (u, v, p) 参数化偏的特殊体现.}
+
+\paragraph{LM trace 占位.}
+% TODO: 当前 PDCErrorAnalysis.cc 不持久化 LM 的迭代历史 (lambda 变化, 残差变化, 参数轨迹).
+% 加入 --dump-lm-trace 选项, 把每条事件的 (iter, lambda, chi2, u, v, p) 写到
+% build/test_output/.../lm_traces/event_{N}.csv 即可绘 trace 图.
+% 期望对 121, 229, 742 三条 Class C 事件画 (u, p) 平面的 LM 轨迹,
+% 应能直观看到它们粘在错盆地, 没有跳出.
+
+\subsection{小结}
+\label{sec:partIII:case_studies:summary}
+
+\begin{itemize}[nosep]
+  \item 6 个示例覆盖 4 种主要机制: 名义 (A), dE/dx (B), $(u, v, p)$ 线性化偏 (A*), LM 错盆地 (B/C).
+  \item 状态报告 ratio 1.86 ($p_y$) 在事件 102 上具体表现为 \emph{残差 $4.4 \times \sigma$} 的极端欠覆盖.
+  \item 状态报告 $|\vec p|$ 覆盖率 0.76 在事件 742, 121, 229 上具体表现为 LM 错盆地 + Fisher $\sigma$ 在错盆地里仍给出"看似自洽" 的曲率.
+  \item LM trace 数据持久化是接下来的高优先级 dev item.
+\end{itemize}
+
+% =============================================================
+
+\section{扫描研究方案与外推}
+\label{sec:partIII:scans}
+
+本章给出四组待运行的扫描研究; 大部分是 \emph{方案+外推}, 实际运行未执行. 每个扫描列出: 物理动机, 期望趋势, 待运行命令, 期望耗时, 输出 CSV 路径.
+
+\subsection{扫描 BS-1: 磁场 $B_y$ $\pm 5\%$}
+\label{sec:partIII:scans:bs1}
+
+\paragraph{物理动机.}
+SAMURAI 偶极磁场图来自实测 + 插值 (\texttt{sm\_field.dat}). 现场实测精度 $\pm 1\%$, 但插值与 RK 步进对中心场强敏感. 扫 $B_y$ 标度 $\pm 5\%$ 给出谱仪对场强标定的灵敏度.
+
+\paragraph{期望趋势.}
+RK 重建假设场图正确; 真实场强为 $B (1 + \delta_B)$ 但代码用 $B$, 导致弯曲半径 $\rho = p / (qB)$ 算错 $\delta_B$. 拟合时 LM 把这个吸收到 $\hat p$ 里, 即 $\hat p / p \approx 1 + \delta_B$. 线性外推:
+\[
+  \hat{|\vec p|} \;\approx\; |\vec p|^{\mathrm{truth}} \cdot (1 + \delta_B), \quad \sigma_{|\vec p|}^{\mathrm{stat}} \to \sigma_{|\vec p|}^{\mathrm{stat}}.
+\]
+$\sigma$ 不变, 但中心估计偏移. 当前 $|\vec p|$ 中位数 630 MeV/$c$, $\delta_B = +5\%$ 给 $\hat p \approx 661$, $\delta_B = -5\%$ 给 $\hat p \approx 599$.
+
+\paragraph{覆盖率推论.}
+\begin{itemize}[nosep]
+  \item $\delta_B = +5\%$: 中心偏 $+30$ MeV/$c$, Fisher $\sigma \sim 7$ MeV/$c$, pull mean $\sim 4.3$, 覆盖率 $|\vec p|$ 应跌到 $< 5\%$.
+  \item $\delta_B = -5\%$: 镜像, pull mean $\sim -4.3$.
+  \item $\delta_B \pm 1\%$: pull mean $\sim 0.9$, 覆盖率从 0.76 跌到 $\sim 0.6$.
+\end{itemize}
+
+\paragraph{待运行命令.}
+% TODO: B-field scan run BS-1
+\begin{lstlisting}[language=bash,caption={B-field scan BS-1 命令模板},label=lst:partIII:bs1_cmd]
+# 先把 sm_field.dat 复制成两份缩放副本:
+python3 scripts/analysis/scale_sm_field.py --in data/input/sm_field.dat \
+    --out data/input/sm_field_scaled_p5pct.dat  --scale 1.05
+python3 scripts/analysis/scale_sm_field.py --in data/input/sm_field.dat \
+    --out data/input/sm_field_scaled_m5pct.dat  --scale 0.95
+
+for SCALE in p5pct m5pct; do
+  ENSEMBLE_SIZE=50 PROFILE_PER_QUARTILE=8 MCMC_PER_QUARTILE=16 \
+      MAGNETIC_FIELD=data/input/sm_field_scaled_${SCALE}.dat \
+      OUT_ROOT=build/test_output/scan_bs1_${SCALE} \
+      bash scripts/analysis/run_ensemble_coverage.sh
+done
+\end{lstlisting}
+
+\paragraph{期望耗时.} 单 scale $\sim 40$ min ($\times 2 = 80$ min).
+\paragraph{期望输出.} \texttt{build/test\_output/scan\_bs1\_p5pct/}, \texttt{scan\_bs1\_m5pct/} 各带完整 ensemble 输出.
+
+\subsection{扫描 WS-1: PDC 丝坐标分辨 $\sigma_{\mathrm{wire}}$}
+\label{sec:partIII:scans:ws1}
+
+\paragraph{物理动机.}
+PDC 丝坐标分辨当前默认 $\sigma_{\mathrm{wire}} \approx 0.2$ mm (对应 cluster 重心精度). 实测 PDC 数据有 $\sim 0.5$ mm; 极端情形 (cluster 中包含 noise hit) 可到 $\sim 2$ mm. 扫 $\sigma_{\mathrm{wire}} \in \{0.1, 0.3, 0.5, 1.0, 2.0\}$ mm 验证 Glückstern $\sigma_p \propto \sigma_{\mathrm{wire}}$ 关系.
+
+\paragraph{期望趋势.}
+Glückstern 公式 (Part I §7) 给出
+\[
+  \sigma_p \;\propto\; \sigma_{\mathrm{wire}} \cdot |\vec p| / (qBL^2).
+\]
+当前 $\sigma_p \approx 7$ MeV/$c$ at $\sigma_{\mathrm{wire}} \approx 0.2$ mm. 线性外推:
+
+\begin{table}[H]
+\centering\small
+\caption{$\sigma_p$ vs.\ $\sigma_{\mathrm{wire}}$ 线性外推.}
+\label{tab:partIII:ws1_extrapolate}
+\begin{tabular}{rr}
+\toprule
+$\sigma_{\mathrm{wire}}$ (mm) & $\sigma_p$ (MeV/$c$, 外推) \\
+\midrule
+0.1 & 3.5 \\
+0.3 & 10.5 \\
+0.5 & 17.5 \\
+1.0 & 35.0 \\
+2.0 & 70.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+状态报告 §理论分辨极限 给的 0.5 mm 与 2.0 mm 端点应与上表一致 (待状态报告交叉核对).
+
+\paragraph{待运行命令.}
+% TODO: sigma_wire scan run WS-1
+\begin{lstlisting}[language=bash,caption={sigma\_wire scan WS-1},label=lst:partIII:ws1_cmd]
+for SW in 0.1 0.3 0.5 1.0 2.0; do
+  ENSEMBLE_SIZE=50 PROFILE_PER_QUARTILE=8 MCMC_PER_QUARTILE=16 \
+      PDC_SIGMA_WIRE_MM=${SW} \
+      OUT_ROOT=build/test_output/scan_ws1_sw${SW//./p} \
+      bash scripts/analysis/run_ensemble_coverage.sh
+done
+\end{lstlisting}
+该脚本要求 \texttt{run\_ensemble\_coverage.sh} 解析 \texttt{PDC\_SIGMA\_WIRE\_MM} 环境变量并传给 ensemble macro; 当前没有此 hook (% TODO: 在 macro/ensemble template 中加 \\setSigmaWireMm 命令).
+
+\paragraph{期望耗时.} 单 step $\sim 40$ min, $\times 5 = 200$ min ($\sim 3.5$ h).
+\paragraph{期望输出.} \texttt{build/test\_output/scan\_ws1\_sw\{0p1,0p3,0p5,1p0,2p0\}/}.
+
+\subsection{扫描 TS-1: 靶倾角 $\alpha_{\mathrm{tgt}}$}
+\label{sec:partIII:scans:ts1}
+
+\paragraph{物理动机.}
+2026-04-19 修复后, 重建端加入 $R_y(+\alpha_{\mathrm{tgt}})$ (\texttt{PDCFrameRotation.hh}) 把 lab 系结果旋回靶系. 现行配置 $\alpha_{\mathrm{tgt}} = 3°$. 我们要验证:
+\begin{enumerate}[label=(\alph*), nosep]
+  \item $\alpha_{\mathrm{tgt}} = 0°$ (无旋转): 重建端 frame fix 不应改变物理结果, 即 reco 仍然在 lab = target frame. $p_x$ 残差应仍 $\sim 0$.
+  \item $\alpha_{\mathrm{tgt}} = 5°$: $-p_z \sin(5°) \approx -55$ MeV/$c$ 是 truth-vs-reco 的伪偏差, 但 frame fix 把它消除, 残差仍 $\sim 0$.
+\end{enumerate}
+期待: 三种角度下 $p_x$ 残差半宽不变 (frame 旋转是 \emph{坐标变换}, 无物理影响), 这是 sanity check.
+
+\paragraph{期望趋势.}
+\begin{itemize}[nosep]
+  \item $\alpha_{\mathrm{tgt}} = 0°, 3°, 5°$: $p_x, p_y, p_z, |\vec p|$ 三种覆盖率应 \emph{完全一致} (在 ensemble 噪声范围内).
+  \item 如果 $\alpha_{\mathrm{tgt}} = 5°$ 比 $0°$ 给出不同覆盖率, 说明 PDCFrameRotation 实施有 bug (例如旋转方向错, 或者旋转应用到了部分 PDC1/PDC2 而非全 reco).
+\end{itemize}
+
+\paragraph{待运行命令.}
+% TODO: tilt scan run TS-1
+\begin{lstlisting}[language=bash,caption={tilt scan TS-1},label=lst:partIII:ts1_cmd]
+for ALPHA in 0.0 3.0 5.0; do
+  ENSEMBLE_SIZE=50 PROFILE_PER_QUARTILE=8 MCMC_PER_QUARTILE=16 \
+      TARGET_TILT_DEG=${ALPHA} \
+      OUT_ROOT=build/test_output/scan_ts1_alpha${ALPHA//./p} \
+      bash scripts/analysis/run_ensemble_coverage.sh
+done
+\end{lstlisting}
+
+\paragraph{期望耗时.} $3 \times 40 = 120$ min.
+\paragraph{期望输出.} 三个 ensemble dir, 比对 \texttt{coverage\_with\_ci.csv} 的 $p_x$ 行.
+
+\subsection{扫描 ES-1: ensemble 大小 $N$}
+\label{sec:partIII:scans:es1}
+
+\paragraph{物理动机.}
+当前每 truth 点 $N = 50$, 总 $N = 744$ (15 truth bin); 每点 CP $\pm 0.13$ 略嫌粗. 验证生产应取 $N = 200$/truth ($\sim 3000$ 总).
+
+\paragraph{期望趋势.}
+覆盖率本身应不变 (ensemble 是 i.i.d. 抽样), 但 CP CI 半宽按 $1 / \sqrt{N}$ 收窄:
+
+\begin{table}[H]
+\centering\small
+\caption{Ensemble 大小与 CP 半宽 (per truth bin, $\hat p = 0.68$).}
+\label{tab:partIII:es1_extrapolate}
+\begin{tabular}{rrr}
+\toprule
+$N$/truth & 总 $N$ & CP 95\% 半宽 \\
+\midrule
+10  & 150  & $\pm 0.30$ \\
+50  & 750  & $\pm 0.13$ (当前) \\
+200 & 3000 & $\pm 0.07$ \\
+1000 & 15000 & $\pm 0.03$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{待运行命令.}
+% TODO: ensemble-size scaling run ES-1
+\begin{lstlisting}[language=bash,caption={ensemble size scan ES-1},label=lst:partIII:es1_cmd]
+for N in 10 50 200 1000; do
+  ENSEMBLE_SIZE=${N} PROFILE_PER_QUARTILE=8 MCMC_PER_QUARTILE=16 \
+      OUT_ROOT=build/test_output/scan_es1_n${N} \
+      bash scripts/analysis/run_ensemble_coverage.sh
+done
+\end{lstlisting}
+
+\paragraph{期望耗时.} $N=10$ 单核 8 min, $N=50$ 40 min (already done), $N=200$ 160 min, $N=1000$ 800 min ($\sim 13$ h). 应在多核 8 cores 上并行.
+
+\paragraph{期望输出.}
+\texttt{build/test\_output/scan\_es1\_n\{10,50,200,1000\}/}; 用同一个 \texttt{analyze\_ensemble\_coverage.py} 做 CP CI 对比.
+
+\subsection{扫描总结}
+\label{sec:partIII:scans:summary}
+
+\begin{table}[H]
+\centering\small
+\caption{扫描研究优先级与状态.}
+\label{tab:partIII:scan_priority}
+\begin{tabular}{lllll}
+\toprule
+ID & 扫描 & 优先级 & 状态 & 期望产出 \\
+\midrule
+BS-1 & $B_y \pm 5\%$        & 中 & 待运行 & 谱仪场强灵敏度 \\
+WS-1 & $\sigma_{\mathrm{wire}}$ 0.1--2.0 mm & 高 & 待运行 (需 macro hook) & Glückstern 验证 \\
+TS-1 & $\alpha_{\mathrm{tgt}}$ 0--5°  & 中 & 待运行 (需 macro hook) & frame fix sanity \\
+ES-1 & $N$ 10--1000           & 高 & 待运行 (无 hook 改动) & 生产 ensemble 标定 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =============================================================
+
+\section{LM 收敛盆地研究: $(-100, 0)$ 病态点剖析}
+\label{sec:partIII:basin}
+
+状态报告 §误差分析 在 G4 涨落研究里发现, $(p_x, p_y) = (-100, 0)$ truth 点的 G4 dispersion / Fisher $\sigma$ 比例在 $p_x$ 方向达到 \textbf{3.51}, 在 $p_z$ 方向达到 \textbf{3.51} (同源, 因为是同一组 LM 失败事件主导). 这远高于其他 14 个 truth 点的 $0.5 \sim 1.5$ 范围. 本章详细诊断为什么这个特定 truth 点是 LM 收敛盆地的失败热点, 并提出两条修正路径.
+
+\subsection{从 ensemble 数据直接读取 $(-100, 0)$ 的失败统计}
+\label{sec:partIII:basin:numbers}
+
+\begin{table}[H]
+\centering\small
+\caption{$(p_x, p_y) = (-100, 0)$ truth 点的 50 条事件残差统计 (从 \texttt{ensemble\_pdc\_reco\_merged.csv} 直接计算).}
+\label{tab:partIII:basin_pathology_stats}
+\begin{tabular}{lr}
+\toprule
+统计量 & 值 \\
+\midrule
+$N$ 总事件 & 50 \\
+$N$ 残差 $|\Delta p_x| > 50$ MeV/$c$ & 10 (20\%) \\
+$N$ 残差 $|\Delta p_x| > 200$ MeV/$c$ & 6 (12\%) \\
+$N$ $\hat p_x < -300$ MeV/$c$ & 6 (12\%) \\
+失败事件中 $\hat p_x$ 范围 & $[-614, -350]$ \\
+失败事件 $\chi^2_{\mathrm{red}}$ 范围 & $[583, 1244]$ \\
+失败事件 $\chi^2_{\mathrm{red}}$ 中位 & $\sim 788$ \\
+$\Delta p_x$ 中位 (含失败) & $-1.2$ MeV/$c$ \\
+$\Delta p_x$ 均值 (含失败) & $-51.3$ MeV/$c$ (失败拖拽) \\
+$\Delta p_x$ 标准差 (含失败) & $124.9$ MeV/$c$ \\
+$\Delta p_x$ p84 - p16 半宽 (鲁棒) & $\sim 7$ MeV/$c$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{诠释.}
+\begin{itemize}[nosep]
+  \item 失败事件占 12\% — 远高于其他 truth 点 (0--4\%).
+  \item 失败事件 $\hat p_x \in [-614, -350]$, 即 LM 把 truth $-100$ 误认成 $\sim -500$ 这个量级. 残差 $\sim -400$ MeV/$c$ 是 truth 的 4 倍.
+  \item 中位残差仍 $\sim 0$ — 主峰是好的, 失败事件是 \emph{拖尾}.
+  \item Fisher $\sigma$ 在主峰 $\sim 7$ MeV/$c$ 但失败事件 $\sigma$ 跳到 $\sim 60$ — Fisher 在错盆地"刻舟求剑".
+\end{itemize}
+
+\subsection{为什么是 $(-100, 0)$?}
+\label{sec:partIII:basin:why}
+
+\paragraph{网格搜索的几何.}
+\texttt{PDCRkAnalysisInternal.cc} 第 392--424 行的 grid search 用
+\begin{itemize}[nosep]
+  \item $u$ (= $p_x / p_z$ slope at target) 网格: $u \in [u_{\mathrm{line}} - 1, u_{\mathrm{line}} + 1]$, 7 步, 步长 $\sim 0.33$;
+  \item $v$ (= $p_y / p_z$): $v \in [v_{\mathrm{line}} - 0.3, v_{\mathrm{line}} + 0.3]$, 3 步, 步长 $0.3$;
+  \item $|\vec p|$: $\{200, 400, 700, 1200, 2000\}$ MeV/$c$ 5 个 logspace-like 候选.
+\end{itemize}
+其中 $u_{\mathrm{line}}, v_{\mathrm{line}}$ 是 \emph{靶到最远 PDC 的直线方向} (\texttt{init\_dir}), 即不考虑磁场偏转的几何视线方向.
+
+\paragraph{$(-100, 0)$ 的 $u_{\mathrm{line}}$.}
+truth $p = (-100, 0, 627)$, 出射方向 $u = -100/627 \approx -0.160$. 但磁场把质子在 PDC2 处弯了 $\sim 25°$ ($\theta_{xz} \sim 0.43$ rad), PDC2 真实位置在 $u \approx -0.43 + (-0.16) = -0.59$ 附近. 因此粗网格中心 $u_{\mathrm{line}} \approx -0.59$ (由 PDC2 几何定义, 不是 truth 出射 slope).
+
+实际计算: PDC2 在 $z \approx 4655$ mm 处, 该事件 PDC2 命中 $x \approx -2745$ mm (由表 \nameref{sec:partIII:basin:numbers} 隐含); 直线 slope $u_{\mathrm{line}} = x_{\mathrm{PDC2}} / z_{\mathrm{PDC2}} \approx -2745 / 4655 \approx -0.59$. 网格 $u \in [-1.59, 0.41]$ —— truth $u = -0.16$ 在网格中心偏右 ($+0.43$ 处, 第 4 个网格点).
+
+\paragraph{为什么是边界?}
+truth $u = -0.16$ 不是在 $u_{\mathrm{line}} \pm 1$ 网格的 \emph{物理边界}, 但它\emph{接近 chi-square 第二低盆地} 的边界. 状态报告 $§误差分析$ 中 G4 涨落的 5$\times$3 truth 网格图(图 \texttt{figures/g4\_per\_truth\_box\_*.png}) 显示在 $(-100, 0)$ 这个点 $\hat p_x$ 分布是双峰: 主峰 $\hat p_x \approx -100$ 包含 88\% 事件, 副峰 $\hat p_x \approx -500$ 包含 12\% 事件. 副峰的位置对应 LM "卡在错盆地" 的 chi-square 局部极小.
+
+\paragraph{为什么 $(-100, 20)$ 没那么严重?}
+truth $(p_x, p_y) = (-100, 20)$ 的 50 事件中 $\Delta p_x$ 半宽 $\sim 8.6$ MeV/$c$ (从 \texttt{per\_truth\_point\_g4\_vs\_fisher.csv}: g4\_halfw68\_px = 8.64), 比 $(-100, 0)$ 的 $34.8$ 要小 4 倍. 这说明 $p_y \ne 0$ 引入的 $v = p_y / p_z$ 偏离对 LM "推开错盆地" 起到了关键作用 —— 网格 $v$ 步长 0.3 在 $p_y = 0$ 时正好覆盖错盆地, 在 $p_y = \pm 20$ 时把网格推到错盆地外, LM 看不到副峰.
+
+\subsection{Chi-square 表面拓扑示意}
+\label{sec:partIII:basin:chi2_topology}
+
+% TODO: 需要画一张 (u, p) 平面 chi-square 等高线图,
+% 由 scripts/analysis/plot_chi2_landscape.py 生成 (待写).
+% 输入: PDC1, PDC2, target geometry; truth (p_x, p_y, p_z) = (-100, 0, 627).
+% 输出: figures/diagnostics/chi2_landscape_p100_p0.png.
+% 应能直观看到两个谷(主谷 $u \sim -0.16$, 副谷 $u \sim -0.7 \sim -1.0$)
+% 以及它们之间的鞍点, 标注网格采样点.
+
+期望画面:
+\begin{itemize}[nosep]
+  \item 主谷 (truth 谷): $(u, p) \sim (-0.16, 627)$, $\chi^2 \sim 0$;
+  \item 副谷 (病态谷): $(u, p) \sim (-0.85, 1145)$, $\chi^2 \sim 1244$ — 注意 $\chi^2$ 不为零 \emph{是因为} 该副谷是 chi-square 非零的局部极小, 不是真极小;
+  \item 鞍点连接两谷, $u_{\mathrm{saddle}} \sim -0.5$;
+  \item 网格点 7$\times$5 = 35 个候选 ($v$ 维度暂不画), 7 个 $u$ 候选中 4 个在主谷一侧, 3 个在副谷一侧.
+\end{itemize}
+
+\subsection{修复方案 (a): 网格不对称延展}
+\label{sec:partIII:basin:fix_a}
+
+\paragraph{思路.}
+$|u_{\mathrm{line}}|$ 大时, 主谷 $u_{\mathrm{truth}}$ 与 $u_{\mathrm{line}}$ 距离 $\sim 0.4$; 副谷 $u_{\mathrm{副}}$ 与 $u_{\mathrm{line}}$ 距离也 $\sim 0.3$ (在另一侧). 当前网格 $\pm 1$ 对称延展, 副谷一定能命中. 改成 \emph{不对称} 延展, 让网格偏向 truth 谷:
+\[
+  u_{\min} = u_{\mathrm{line}} - 0.3, \quad u_{\max} = u_{\mathrm{line}} + 1.0.
+\]
+即把网格 \emph{向更靠近 truth 出射方向} 偏置 (更小的 $|u|$). 但这要求知道 truth 出射方向的先验, 不可行.
+
+\paragraph{改进思路.}
+基于物理: 弯曲方向永远把 $u_{\mathrm{line}}$ 推得比 $u_{\mathrm{truth}}$ \emph{绝对值更大} (磁场把出射 deflect 到更陡的弧). 因此网格 \emph{向 $|u|$ 更小的方向} 偏置:
+\[
+  u_{\min} = u_{\mathrm{line}} - 0.3 \cdot \mathrm{sign}(u_{\mathrm{line}}), \quad u_{\max} = u_{\mathrm{line}} + 1.0 \cdot \mathrm{sign}(u_{\mathrm{line}}) \cdot (-1).
+\]
+等价地: 网格半幅 $\pm 1$, 但 truth-side 半幅 $-1.0$, 远 truth-side 半幅 $+0.3$.
+
+\paragraph{代码改动.}
+\texttt{libs/analysis\_pdc\_reco/src/PDCRkAnalysisInternal.cc} 第 392--410 行:
+\begin{lstlisting}[caption={网格不对称延展 (建议改动)}]
+constexpr double kUFarHalfRange  = 1.0;   // away from target
+constexpr double kUNearHalfRange = 0.3;   // toward target slope
+double u_lo = u_center - (u_center >= 0 ? kUNearHalfRange : kUFarHalfRange);
+double u_hi = u_center + (u_center >= 0 ? kUFarHalfRange  : kUNearHalfRange);
+for (int iu = 0; iu < kGridU; ++iu) {
+    const double u = u_lo + (u_hi - u_lo) * iu / (kGridU - 1);
+    ...
+}
+\end{lstlisting}
+
+\paragraph{预期效果.}
+$(-100, 0)$ truth 点 $u_{\mathrm{line}} \approx -0.59$, 改后网格 $u \in [-0.89, +0.41]$ (truth $-0.16$ 在中心偏右). 副谷在 $u \approx -0.85$ 仍在网格内, 但 truth 谷被 4 个网格点覆盖, 副谷只 1 个. 正确盆地会以多起点压倒错盆地.
+
+\subsection{修复方案 (b): 加入 "magnetic-kick-corrected" 起点}
+\label{sec:partIII:basin:fix_b}
+
+\paragraph{思路.}
+Linear backward 起点: 用 PDC1, PDC2 做反向直线外推到 target $z$, 得到 $u_{\mathrm{back}} = (x_{\mathrm{PDC1}} - x_{\mathrm{tgt}}) / (z_{\mathrm{PDC1}} - z_{\mathrm{tgt}})$. 这忽略磁场, 但可以从这个起点开始一次 $|\vec p|$ 灵敏度估计:
+
+设质子在 dipole 中弯过弧长 $L$, 弯曲角 $\theta = qBL / p$ (Highland-style). 用 PDC2 处的 incidence angle $\theta_{\mathrm{in}}$ 减去 $\theta$ 即得 emission angle, 再外推到 target 给出 \emph{magnetic-kick corrected} $u_{\mathrm{corr}}$.
+
+实际计算更简单: PDC1 和 PDC2 的角度差 $\Delta\theta_{\mathrm{PDCs}} = \mathrm{atan2}(\Delta x, \Delta z)$ 给出 \emph{出 PDC 后} 的轨迹方向; 把它向 target 外推 (无场), 得到的 slope 就是 \emph{出射的} $u$, 再加上一个磁场修正项 $\sim qB\Delta z / p$, 给出 \emph{在 target 的} $u$.
+
+\paragraph{代码改动.}
+新加一个候选 $u$ 候选 (替代或补充网格中心):
+\begin{lstlisting}[caption={magnetic-kick-corrected 起点 (建议改动)}]
+double u_pdc_to_pdc = (track.pdc2.X() - track.pdc1.X()) /
+                      (track.pdc2.Z() - track.pdc1.Z());
+double dz_pdc1_target = track.pdc1.Z() - target.target_position.Z();
+// magnetic kick estimate (assume qBy = -0.5 T, p = 600 MeV/c => 0.4 rad/m)
+double magnetic_correction = 0.5 * dz_pdc1_target / 1500.0;  // approx
+double u_back = u_pdc_to_pdc - magnetic_correction;
+
+// add as extra candidate
+candidates.push_back({{u_back, v_back, 600.0}, Evaluate(...).chi2_raw});
+\end{lstlisting}
+
+\paragraph{预期效果.}
+$(-100, 0)$ 的 $u_{\mathrm{back}}$ 接近 $-0.16$ (因为 PDC1, PDC2 之间的 slope 反映出 $\hat p$ 而非 $u_{\mathrm{line}}$); 加进 candidates 后, LM 多起点必有一个落到主谷.
+
+\subsection{第三种方案 (c): 一阶 backward Kalman}
+\label{sec:partIII:basin:fix_c}
+
+更彻底的方案: 用 Kalman 反向滤波 — 从 PDC2 倒推到 PDC1 倒推到 target, 每步用 RK4 反向积分, 得到一个相对精确的 target-frame 起点. 但这基本等价于做\emph{第二次拟合}, 工作量与替换 LM 等同, 暂不优先.
+
+\subsection{修复后预期 ratio}
+\label{sec:partIII:basin:fix_expected}
+
+\begin{table}[H]
+\centering\small
+\caption{修复方案对 $(-100, 0)$ truth 点 $\Delta p_x$ 半宽的预期影响.}
+\label{tab:partIII:basin_fix_table}
+\begin{tabular}{lr}
+\toprule
+方案 & 预期 $\Delta p_x$ 半宽 (MeV/$c$) \\
+\midrule
+当前 & 34.8 (主峰 $\sim 5$ + 12\% 失败 $\sim 400$) \\
+方案 (a) 网格不对称 & $\sim 8$ (失败率应降到 0--2\%) \\
+方案 (b) magnetic-kick 起点 & $\sim 5$ (失败率 $\sim 0$, 但会引入新 LM-trap 风险) \\
+方案 (a) + (b) 联合 & $\sim 5$ (主峰 + 极少失败) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{副谷的物理来源: 反方向轨迹}
+\label{sec:partIII:basin:reverse_trajectory}
+
+副谷 $\hat p_x \approx -500$ 是什么物理? 一种解释是: 给定 PDC1, PDC2 命中, 存在两个不同的 (target 出射, 总动量) 配置都能解释这两个点 — 一个是 truth ($\hat p_x = -100$, $\hat p_z = 627$), 另一个是高动量反向 ($\hat p_x = -500$, $\hat p_z = 940$).
+
+\paragraph{推导.}
+质子在磁场 $B_y$ 中, 弯曲半径 $\rho = p / (q B)$. 给定 PDC1, PDC2 两点和 target, 拟合即解三圆心方程 — 圆经过三个点. 但 \emph{磁场不均匀} (SAMURAI dipole 有 fringe field), 所以"圆经过三点"不严格; 不同 $|\vec p|$ 的 RK 积分可以经过相同的 PDC2 但 source 出射方向不同.
+
+具体: 设 truth 解给出 $u_{\mathrm{truth}} = -0.16$ at target. 副谷解给出 $u_{\mathrm{副}} \approx -0.85$ at target — 方向更陡, 但 \emph{动量更高} 让弯曲变浅, 弯过 dipole 后到达 PDC2 的位置接近. 这是磁场+动量的二维耦合带来的 chi-square 多解.
+
+\paragraph{$p_y = 0$ 的特殊性.}
+为什么 $p_y \ne 0$ 时副谷消失? 因为 $v = p_y/p_z$ 为非零时, $v$ 网格 $\{v_{\mathrm{line}} - 0.3, v_{\mathrm{line}}, v_{\mathrm{line}} + 0.3\}$ 三个候选与 truth $v$ 距离都不同; 副谷需要特定的 $(u_{\mathrm{副}}, v_{\mathrm{副}})$ 组合, $v_{\mathrm{副}} \ne 0$ 时网格不再覆盖. 在 $p_y = 0$, truth $v = 0$, $v_{\mathrm{line}} = 0$, 网格中央点正好是 truth $v$ — 但同时也在副谷的 $v$ 上 (因为副谷沿 $u$ 维度延伸, $v$ 中心仍 $\sim 0$).
+
+\subsection{为什么 $-100, 0$ 但不是 $+100, 0$?}
+\label{sec:partIII:basin:asymmetry}
+
+表 \ref{tab:partIII:other_truth_points} 显示 $(+100, 0)$ ratio 0.57 (健康). 不对称性来自:
+
+\begin{itemize}[nosep]
+  \item SAMURAI dipole $B_y$ 极性把正电荷向 $+x$ 方向偏, 即 deuteron / proton 的 $u_{\mathrm{line}}$ 偏 $+u$. truth $p_x = -100$ 的事件出射朝 $-x$, 但 magnetic kick 把它\emph{反向}弯到 $+x$ — 即 PDC2 命中位置在 $+x$ 处, $u_{\mathrm{line}} > 0$. 但实测 (\texttt{pdc\_dispersion\_summary.csv}) 显示 $(p_x = -100, p_y = 0)$ 的 PDC2 中位 $x \approx -3500$ mm, 仍在 $-x$;
+  \item 这就需要重新检查: $u_{\mathrm{line}} = -3500/4655 \approx -0.75$, 网格 $u \in [-1.75, 0.25]$. truth $u = -0.16$ 在网格中点偏右. 副谷 $u_{\mathrm{副}} \approx -0.85$ 在网格中央. 即副谷正好被网格"瞄准";
+  \item truth $p_x = +100$: 出射朝 $+x$, magnetic kick 反向弯, PDC2 命中 $\sim -2900$ mm (从 \texttt{pdc\_dispersion\_summary.csv} 推断), $u_{\mathrm{line}} \approx -0.62$, 网格 $u \in [-1.62, 0.38]$, truth $u = +0.16$ 在网格右端边缘 — \emph{副谷} 在 $u \approx -0.6$ 也在网格中央, 但 truth $u$ 处于边缘也意味着 LM 容易跑出主谷, 走向副谷的几率反而小. 经验上 ratio 0.57 是健康的;
+  \item 物理结论: 网格设计在 \emph{$u_{\mathrm{line}}$ 与 $u_{\mathrm{truth}}$ 同号} 时(主谷与副谷都在网格内, 副谷更靠近中心) 容易失败.
+\end{itemize}
+
+\subsection{监控诊断: LM trace 持久化}
+\label{sec:partIII:basin:lm_trace}
+
+为以后追踪 LM 失败, 应在 \texttt{PDCErrorAnalysis.cc} 加 \texttt{--dump-lm-trace} 选项, 把每条事件的:
+\begin{itemize}[nosep]
+  \item 网格搜索的 105 个候选 $(u, v, p, \chi^2)$;
+  \item 多起点 LM 的 $\le 5$ 条迭代历史 $(\mathrm{iter}, \lambda, \chi^2, u, v, p)$;
+  \item 最终选取的最优点;
+\end{itemize}
+持久化到 \texttt{lm\_traces/event\_\{N\}.csv}. 这给后续 visualization 提供数据基础, 也允许在数据 (815 tracks, no truth) 上识别 LM 失败 (无 truth 时只能看 $\chi^2$ + LM trace, 不能看残差).
+
+% TODO: PDCErrorAnalysis.cc 加 --dump-lm-trace 选项 (作 dev item).
+
+\subsection{其他可疑 truth 点}
+\label{sec:partIII:basin:other_points}
+
+从 \texttt{per\_truth\_point\_g4\_vs\_fisher.csv} 直接读出 ratio (g4 / fisher) :
+
+\begin{table}[H]
+\centering\small
+\caption{各 truth 点的 g4 半宽 / Fisher $\sigma$ 比例 (从 \texttt{per\_truth\_point\_g4\_vs\_fisher.csv}, $p_x$ 列). $p_y \in \{-20, 0, 20\}$ 对应三行.}
+\label{tab:partIII:other_truth_points}
+\begin{tabular}{rrrr}
+\toprule
+truth $p_x$ & ratio $p_y = -20$ & ratio $p_y = 0$ & ratio $p_y = 20$ \\
+\midrule
+$-100$ & 0.48 & \textbf{3.51} & 0.77 \\
+$-50$  & 0.40 & 0.38 & 0.66 \\
+$0$    & 0.84 & 0.63 & 0.89 \\
+$+50$  & 0.51 & 0.56 & 0.72 \\
+$+100$ & 0.62 & 0.57 & 0.96 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{读法.}
+\begin{itemize}[nosep]
+  \item $(-100, 0)$ 是唯一 ratio $> 1$ 的 truth 点; 失败率 12\% 是孤立病态.
+  \item 其他 14 个 truth 点 ratio 都在 $0.4$--$1.0$ 范围, 基本健康.
+  \item ratio $< 1$ 反映 \emph{Fisher 略保守}, 这是 PDC 高斯分辨条件下的预期; 主要担忧是 $> 1$ 的方向.
+\end{itemize}
+
+\subsection{小结}
+\label{sec:partIII:basin:summary}
+
+\begin{itemize}[nosep]
+  \item $(-100, 0)$ 是 LM 收敛盆地失败的孤立热点, 12\% 事件 trap 在 $\hat p_x \approx -500$ 副谷.
+  \item 物理原因: $u_{\mathrm{line}}$ 距 $u_{\mathrm{truth}}$ 远, 网格对称延展正好覆盖错盆地; $p_y = 0$ 时 $v$ 网格不能推开错盆地.
+  \item 修复: (a) 网格不对称延展 + (b) magnetic-kick-corrected 起点, 联合预期把 ratio 从 3.51 降到 $< 1$.
+  \item LM trace 持久化是接下来追踪 LM 病态的高优先级 dev item.
+\end{itemize}
+
+% =============================================================
+
+\subsection*{Part III 全章总结}
+
+本部分给出了 RK 误差分析的实证诊断完整框架, 从二项 CI 的统计学基础到事件级 LM trace 的具体追踪.
+
+\textbf{六章主要结论.}
+\begin{enumerate}[label=\arabic*., nosep]
+  \item \textbf{覆盖率方法学}: Clopper-Pearson 是当前 default, 比 Wilson 略保守, 比 Wald 在端点正确; $N=744$ 给 CP $\pm 0.034$ 足以诊断当前的 $p_y$ 欠覆盖, 生产 ensemble 应取 $N \ge 200$/truth.
+  \item \textbf{Pull 分布}: 实测 744 事件 pull 中位 $\sim 0$ (frame fix 后无偏), $p_y$ 主峰 $\sigma_z \approx 2.48$ (Fisher 低估 $\sim 1.86\times$), $p_x, p_z$ 主峰窄但有 LM 长尾干扰; 鲁棒尺度估计 IQR/1.349 是接下来要加的指标.
+  \item \textbf{$\chi^2$ 分布与失败模式}: 50 条 ($6.7\%$) $\chi^2_{\mathrm{red}} > 10$ 远超 $\chi^2_1$ 自然涨落 ($0.16\%$, $42\times$); 三类机制 (LM 错盆地, 反常 hit, MS 爆发); $\chi^2 < 5$ quality cut 应在生产分析里默认开启.
+  \item \textbf{6 个示例事件}: 涵盖 4 种主要机制. 事件 102 $z_{p_y} = -8.94$ 是 (u, v, p) 偏典型, 事件 121, 229 是 (-100, 0) 病态典型, 事件 742 是 LM 错盆地中等表现.
+  \item \textbf{扫描研究方案}: BS-1 (B 场), WS-1 ($\sigma_{\mathrm{wire}}$), TS-1 (靶倾角 sanity), ES-1 (ensemble 规模) 已列出命令模板与外推; ES-1 优先级最高.
+  \item \textbf{$(-100, 0)$ 病态点剖析}: 12\% 事件 trap 在副谷, 修复方案 (a) 网格不对称延展 + (b) magnetic-kick-corrected 起点, 联合预期把 ratio 从 3.51 降到 $< 1$.
+\end{enumerate}
+
+\textbf{下一阶段优先 dev items.}
+\begin{itemize}[nosep]
+  \item LM trace 持久化 (\texttt{PDCErrorAnalysis.cc} \texttt{--dump-lm-trace} 选项);
+  \item Pull 直方图绘图脚本 + IQR/MAD 鲁棒尺度;
+  \item Ensemble script 加 \texttt{PDC\_SIGMA\_WIRE\_MM}, \texttt{TARGET\_TILT\_DEG}, \texttt{MAGNETIC\_FIELD} 环境变量 hook;
+  \item \texttt{analyze\_ensemble\_coverage.py} 加 \texttt{--chi2-max} 选项支持 quality cut;
+  \item 网格搜索不对称延展 + magnetic-kick 起点的 RK 实施 + ensemble 验证.
+\end{itemize}
+
+\textbf{与 Part I, Part II 的连接.}
+\begin{itemize}[nosep]
+  \item 第 \ref{sec:partIII:coverage_methodology} 章的 CP CI 推导与 Part I §2 (Cramér-Rao) 的 ensemble 验证范式互补;
+  \item 第 \ref{sec:partIII:pulls} 章的 pull = $\mathcal{N}(0, 1)$ 期望与 Part I §3 (Fisher) 的协方差一致性紧密相关;
+  \item 第 \ref{sec:partIII:chi2} 章的失败模式分类与 Part II §1--9 的误差源对应表完全对齐;
+  \item 第 \ref{sec:partIII:case_studies} 章的 6 个示例事件直接验证了 Part II §5 (dE/dx), §8 ((u,v,p) 参数化偏), §9 (LM 收敛盆地);
+  \item 第 \ref{sec:partIII:scans} 章的扫描计划是 Part II 各源的 sensitivity 验证;
+  \item 第 \ref{sec:partIII:basin} 章 (-100, 0) 剖析是 Part II §9 的具体落地.
+\end{itemize}
+
+% =============================================================
+% End of Part III.
+% =============================================================

@@ -1,0 +1,433 @@
+% ============================================================
+% rk_error_analysis_deep_dive_20260426_zh.tex
+% ------------------------------------------------------------
+% PDC 靶点动量重建 —— RK 误差分析详细版
+% (Companion deep-dive to rk_reconstruction_status_20260416_zh.tex)
+%
+% Build: cd docs/reports/reconstruction/momentum_reco/rk
+%        latexmk -xelatex rk_error_analysis_deep_dive_20260426_zh.tex
+%
+% 结构:
+%   第一部分: 数学基础   (3 个 \input 片段, ~2000 行)
+%   第二部分: 系统误差预算 (3 个 \input 片段, ~1600 行)
+%   第三部分: 实证诊断   (1 个 \input 片段, ~1450 行)
+%   附录:    glossary + 复现 + 公开问题清单
+%
+% 创建: 2026-04-26
+% 作者: Baiting Tian
+% ============================================================
+
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{ctex}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{makecell}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc, decorations.markings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings}
+
+% [EN] xelatex-friendly listings setup with Chinese-safe basic style.
+% [CN] xelatex 下兼容中文与代码并存的 listings 样式。
+\lstdefinestyle{deepdive}{
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\color{blue!60!black},
+  stringstyle=\color{red!50!black},
+  commentstyle=\color{gray!60!black}\itshape,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  frame=single,
+  rulecolor=\color{black!30},
+  framesep=4pt,
+  tabsize=2,
+  breaklines=true,
+  breakatwhitespace=true,
+  columns=fullflexible,
+  keepspaces=true,
+  extendedchars=true,
+  inputencoding=utf8,
+}
+\lstset{style=deepdive}
+
+\definecolor{goodgreen}{RGB}{34,139,34}
+\definecolor{warnred}{RGB}{200,50,50}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black,
+  pdftitle={PDC 靶点动量重建 —— RK 误差分析详细版},
+  pdfauthor={Baiting Tian},
+}
+
+% ===== amsthm 环境声明 (供 Part I 使用) =====
+\theoremstyle{plain}
+\newtheorem{theorem}{定理}[section]
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{corollary}[theorem]{推论}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{定义}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{评注}
+\newtheorem{example}[theorem]{例}
+
+% [EN] Replace amsthm 'Proof.' marker with Chinese.
+% [CN] 把英文 Proof 标头改成中文证明。
+\renewcommand\proofname{证明}
+
+% ===== 跨文档宏 (子片段共用) =====
+% [EN] Cross-references to the status report (sibling document).
+% [CN] 指向同目录下状态报告的引用宏；子片段以 \StatusReport § X 形式引用。
+\providecommand{\StatusReport}{\href{rk_reconstruction_status_20260416_zh.pdf}{状态报告~(2026-04-16)}}
+
+% [EN] Path to deep-dive data root (CSV / figure outputs from new analyses).
+% [CN] 详细版数据根目录；后续 \DeepDiveData/path/to/file 形式引用。
+% [EN] Underscores escaped to avoid math-mode misparse when used in text.
+% [CN] 下划线转义，避免在普通文本中触发数学下标解析。
+\providecommand{\DeepDiveData}{../../../../../build/test\_output/ensemble\_n50\_targetframe}
+
+% [EN] Path to status-report's analysis run (kept for legacy figure cross-refs).
+% [CN] 状态报告分析 run 路径；与状态报告保持一致以便重用图表引用。
+\providecommand{\AnaRoot}{../../../../../results/pdc\_rk\_error\_after\_pdcana\_20260411}
+
+\title{\textbf{PDC 靶点动量重建——RK 误差分析详细版\\
+       \large 数学基础 \(\cdot\) 系统误差预算 \(\cdot\) 实证诊断}}
+\author{Baiting Tian \\ RIKEN 仁科中心 / DPOL 实验}
+\date{2026 年 4 月 26 日}
+
+\begin{document}
+\maketitle
+
+% ===== Abstract =====
+\begin{abstract}
+\noindent
+本报告是
+\StatusReport\
+的\textbf{详细版伴随文档}。状态报告承担"执行摘要"角色，给出 RK 后端从
+PDC 命中坐标重建靶点动量的完整管线、六种误差分析方法的统一对照、以及
+2026-04-19 坐标系修复后的 744 事件 ensemble 覆盖率结论。本报告并不重述这些
+内容，而是沿三条轴线深入：
+
+\textbf{第一部分：数学基础}~——~Cramér-Rao 下界、Fisher 信息矩阵在 SAMURAI
+2-PDC 几何下的具体形式（含动量空间 Jacobian $M$ 的解析推导）、Wilks 定理与
+Profile Likelihood 的有效边界、Laplace 方法与 Bernstein–von Mises 定理、
+Metropolis-Hastings 详细平衡与最优 acceptance 0.234、Geweke $z$ 与 ESS、
+Glückstern 解析动量分辨极限、Bethe-Bloch 平均能损与 Landau/Vavilov 涨落
+（解释当前 $-10.8\,\mathrm{MeV}/c$ 的 $p_z$ 系统偏差）、Highland 多次散射公式。
+
+\textbf{第二部分：系统误差预算}~——~每条物理来源（PDC 位置分辨、空气/PDC
+气体/Sn 靶 多次散射、$dE/dx$、磁场图插值、对位与靶倾角、$(u,v,p)$ 参数化、
+LM 收敛盆地）独立成章；每章给出物理机制推导、量级估计、与 744 事件残差对比、
+预算行（区分 BIAS 与 WIDTH 列）、修复路径与预测后效果。最后通过\textbf{二次方
+和与观测残差并表}调和：当前预算 $p_x$ 预测 $3.22\,\mathrm{MeV}/c$ vs
+观测半宽 $5.98\,\mathrm{MeV}/c$（缺口 $1.86\times$）；$p_y$ 预测 $0.83$ vs
+观测 $1.40\,\mathrm{MeV}/c$；$p_z$ 预测 $3.18$ vs 观测 $5.57$。诊断指向：约
+50\% 的缺口源于 Fisher $\Sigma_\mathrm{meas}$ 缺少 MS 过程噪声（Kalman 风格的
+通用修复），约 20\% 来自未调研材料、约 10\% 来自 LM 收敛盆地尾部、约 5\% 来
+自参数化非线性。
+
+\textbf{第三部分：实证诊断}~——~Clopper-Pearson vs Wilson vs Wald
+覆盖率方法学（含 ensemble 大小 $\to$ CP CI 半宽的扫描表）、pull 分布的定义
+与解读（744 事件靶系实测：$p_x$ pull 中位 $-0.026$，$\sigma_z = 4.22$；$p_y$
+对应 $-0.066$ 与 $2.48$ —— 与第二部分参数化欠覆盖结论一致）、$\chi^2$ 分布
+与失败模式分类（Class A/B/C 阈值表）、5--10 个单事件深度示例（含 $(-100, 0)$
+病态点 12\% 失败率剖析）、待执行扫描（B-field $\pm5\%$、$\sigma_\mathrm{wire}$
+$0.1\to 2.0\,\mathrm{mm}$、$\alpha_\mathrm{tgt}$、ensemble 规模 10/50/200/1000）
+的实施模板。
+
+\textbf{执行摘要}：在 RK 后端继续作为 SAMURAI/DPOL 主重建器的前提下，本报告
+给出按修复优先级排序的清单——
+(1) Bethe-Bloch $dE/dx$ 注入 RK 步进 \(\Rightarrow\) 消除 $-10.8\,\mathrm{MeV}/c$
+$p_z$ 偏差；
+(2) MS 过程噪声并入 $\Sigma_\mathrm{meas}$（Kalman 化）\(\Rightarrow\) 关闭 $p_y$
+Fisher 欠估、补 50\% 残差缺口；
+(3) Cartesian $(p_x,p_y,p_z)$ 参数化 \(\Rightarrow\) 边际 $\sigma_{p_y}^\mathrm{Fisher}$
+回升 $0.75 \to 0.85\,\mathrm{MeV}/c$；
+(4) 非对称扩展粗格 + 反向初值 \(\Rightarrow\) $(-100,0)$ 失败率 12\% \(\to\) <1\%；
+(5) tricubic B-field 插值与全材料调研 \(\Rightarrow\) 末位优化。
+\end{abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+\listofalgorithms
+\newpage
+
+% ============================================================
+% 0. 前言、记号约定、阅读路径
+% ============================================================
+\section*{0. 阅读指南、记号约定、与状态报告的关系}
+\addcontentsline{toc}{section}{0. 阅读指南、记号约定、与状态报告的关系}
+
+\paragraph{与状态报告的关系。}
+本文档是
+\StatusReport
+的伴随深入版，后者承担执行摘要、当前性能与覆盖率结论的"骨架"角色，
+并在 §坐标系约定、§误差分析、§理论分辨极限、§覆盖率验证 等节给出本文档反复引用的
+基础数字（例如 744 事件 $|\vec p|$ 半宽 $5.30\,\mathrm{MeV}/c$、$p_x$
+Fisher 68\% 覆盖 $0.80$、Profile $|\vec p|$ 半宽中位 $76.91\,\mathrm{MeV}/c$ 等）。
+本文不重述这些数字，而是给出推导、调和、扩展。
+
+\paragraph{记号。}
+全文采用以下记号约定（与状态报告一致，新引入处显式声明）：
+\begin{itemize}[nosep]
+  \item 参数矢量 $\vec\alpha = (\delta x, \delta y, u, v, p)$，
+        其中 $u = p_x/p_z$、$v = p_y/p_z$；动量模 $p = |\vec p|$。
+        在 \texttt{kFixedTargetPdcOnly} 模式下 $\delta x = \delta y = 0$，
+        参数压缩为 $(u, v, p)$。
+  \item 物理动量分量记 $\vec p = (p_x, p_y, p_z)$；坐标系以\textbf{靶系
+        （beam-as-Z）}为默认；当涉及实验室系（lab）时显式标注 lab。
+  \item PDC 测量值 $m_i$；前向模型预言 $f_i(\vec\alpha)$；
+        原始残差 $r_i = f_i - m_i$（$i = 1, \dots, 4$ 对应
+        PDC1$u$、PDC1$v$、PDC2$u$、PDC2$v$）；白化残差 $\vec w$
+        通过 Cholesky $C = LL^\top$ 得到 $\vec w = L^{-1}\vec r$。
+  \item Jacobian 定义 $J_{ij} = \partial w_i / \partial \alpha_j$，是
+        $4\times 3$（或 \texttt{kThreePointFree} 下 $6\times 5$）矩阵。
+  \item 动量空间 Jacobian $M = \partial(p_x,p_y,p_z)/\partial(u,v,p)$，
+        其解析形式见第~\ref{sec:partIa}~部分 §3。
+  \item 跨文档引用：\StatusReport\ § X 表示状态报告章节 X；
+        本文档内部章节交叉引用使用 \texttt{\textbackslash{}ref}。
+\end{itemize}
+
+\paragraph{数据来源。}
+所有出现的数值或者
+(a) 在本文档内由首原理推导，或
+(b) 引用状态报告并在引文处给出 \StatusReport\ § X 锚点，或
+(c) 标记为 \texttt{\% TODO: needs run R-N} 的待执行实验，
+绝不杜撰。CSV 路径汇总于附录 A.2，主要 run 包括：
+\StatusReport\ 中的 \texttt{ensemble\_n50\_targetframe} (744 事件，靶系，
+2026-04-19 坐标系修复后) 与 \texttt{pdc\_rk\_error\_after\_pdcana\_20260411}
+(815 事件，缺 truth)。
+
+\paragraph{阅读路径建议。}
+\begin{itemize}[nosep]
+  \item 首读：本文 §0 + 摘要 + 第三部分 §1, §10 (Part II reconciliation)
+        \(\to\) 快速获得修复优先级清单。
+  \item 算法/统计同事：第一部分全篇。
+  \item 探测器/实验同事：第二部分全篇 + 第三部分 §6 ($(-100,0)$ 病态)。
+  \item 数据分析同事：第三部分全篇 + 附录 A 复现章。
+\end{itemize}
+
+\newpage
+
+% ============================================================
+% 第一部分: 数学基础
+% ============================================================
+\part{数学基础}\label{part:math}\label{sec:partIa}
+
+本部分给出 RK 重建管线中用到的全部统计推断机器的完整推导，并把每条结论都
+落地到 SAMURAI 2-PDC、4 残差、3 (或 5) 参数的具体几何上。九章覆盖：
+似然与极大似然估计 \(\to\) Cramér-Rao 下界与正则条件 \(\to\) 我们问题
+专属的 Fisher 信息矩阵形式 \(\to\) Wilks 定理与 Profile Likelihood
+\(\to\) Laplace 方法与 Bernstein–von Mises \(\to\) MCMC 详细平衡、最优
+acceptance、Geweke 与 ESS \(\to\) Glückstern 闭式动量分辨极限 \(\to\)
+Bethe-Bloch 与 Landau/Vavilov （解释当前 $p_z$ 系统偏差）\(\to\) Highland
+多次散射公式与精度修正。每章末给出与状态报告中相应结论的对照。
+
+\input{rk_deep_dive_part1a_math_ch1to3_zh}
+\input{rk_deep_dive_part1b_math_ch4to6_zh}
+\input{rk_deep_dive_part1c_math_ch7to9_zh}
+
+\newpage
+
+% ============================================================
+% 第二部分: 系统误差预算
+% ============================================================
+\part{系统误差预算}\label{part:budget}
+
+本部分按物理来源逐项拆解 RK 重建的误差预算。共十章：方法学综览（§0）、
+PDC 位置分辨（§1）、空气多次散射（§2）、PDC 气体多次散射（§3）、Sn 靶
+多次散射（§4，关闭模式下的预算位）、$dE/dx$ 平均值与 Landau/Vavilov 涨落
+（§5，最大未建模项）、磁场图插值（§6）、对位与靶倾角残差（§7）、
+$(u,v,p)$ 参数化诱导偏差（§8）、LM 收敛盆地失败（§9，$(-100,0)$ 病态）、
+预算调和与观测残差并表（§10）。
+
+每章遵循统一模板：物理机制 \(\to\) 量级估计 \(\to\) 当前测量值（来自
+状态报告 CSV）\(\to\) 预算行（区分 BIAS 与 WIDTH）\(\to\) 修复路径与
+后效预测。预算项之间的协方差结构在 §10 调和。
+
+\input{rk_deep_dive_part2a_budget_ch0to3_zh}
+\input{rk_deep_dive_part2b_budget_ch4to6_zh}
+\input{rk_deep_dive_part2c_budget_ch7to10_zh}
+
+\newpage
+
+% ============================================================
+% 第三部分: 实证诊断
+% ============================================================
+\part{实证诊断}\label{part:diag}
+
+本部分把第一、二部分的理论与预算放到 744 事件 ensemble 上做实证检验。
+六章覆盖：覆盖率方法学（Clopper-Pearson / Wilson / Wald 三选一与 ensemble
+规模扫描）、pull 分布的定义与解读（含 $p_x/p_y/p_z/|\vec p|$ 实测中位与
+$\sigma_z$）、$\chi^2$ 分布与失败模式分类、$5\text{--}10$ 个单事件深度示例
+（含 $(-100, 0)$ 病态点 12\% 失败率剖析）、扫描研究方案与外推（B-field
+$\pm 5\%$、$\sigma_\mathrm{wire}$ 扫描、靶倾角扫描、ensemble 规模扫描）、
+LM 收敛盆地病态剖析。
+
+\input{rk_deep_dive_part3_diagnostics_zh}
+
+\newpage
+
+% ============================================================
+% 附录
+% ============================================================
+\appendix
+
+\section{复现说明}
+\label{app:reproduce}
+
+\subsection{环境固定}
+\begin{itemize}[nosep]
+  \item 仓库：\texttt{smsimulator5.5}，分支 \texttt{main}（撰写时 commit
+        \texttt{e363e4b} 之后）。
+  \item Python：\texttt{micromamba activate anaroot-env}。
+  \item Geant4：与 SAMURAI 主仓约定一致；磁场表
+        \texttt{configs/simulation/.../180703-1,15T-3000.table}。
+  \item 几何宏：
+        \texttt{configs/simulation/DbeamTest/detailMag1to1.2T/geometry\_B115T\_pdcOptimized\_20260227\_target3deg.mac}。
+\end{itemize}
+
+\subsection{主要 CSV / 数据来源}
+\label{app:csvs}
+
+本报告引用的 CSV 在以下两个根目录下；详细 schema 见状态报告 § 数据来源与复现脚本。
+\begin{itemize}[nosep]
+  \item \texttt{\DeepDiveData/} —— 744 事件 ensemble，靶系，2026-04-19 修复后。
+        子目录 \texttt{rk\_fixed\_target\_pdc\_only\_error\_analysis/} 下：
+        \texttt{summary.csv}、\texttt{track\_summary.csv}（744 行）、
+        \texttt{profile\_samples.csv}（128 行）、
+        \texttt{bayesian\_samples.csv}（128 行）、
+        \texttt{validation\_summary.csv}。
+        子目录 \texttt{g4\_fluctuation/} 下：
+        \texttt{ensemble\_pdc\_reco\_merged.csv}、
+        \texttt{pdc\_dispersion\_summary.csv}、
+        \texttt{reco\_momentum\_dispersion\_summary.csv}、
+        \texttt{per\_truth\_point\_g4\_vs\_fisher.csv}。
+  \item \texttt{\AnaRoot/} —— 815 track，缺 truth；用于状态报告
+        method comparison §对比。本报告不引用其覆盖率。
+\end{itemize}
+
+\subsection{主管线命令}
+\begin{lstlisting}[language=bash]
+# Build (incremental)
+micromamba activate anaroot-env
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON \
+         -DBUILD_APPS=ON -DBUILD_ANALYSIS=ON -DWITH_ANAROOT=ON
+make -j$(nproc)
+
+# 744-event ensemble (sim + reco + 误差分析,单核约 40 分钟)
+ENSEMBLE_SIZE=50 PROFILE_PER_QUARTILE=8 MCMC_PER_QUARTILE=16 \
+    OUT_ROOT=build/test_output/ensemble_n50_targetframe \
+    bash scripts/analysis/run_ensemble_coverage.sh
+
+# 覆盖率聚合
+python3 scripts/analysis/analyze_ensemble_coverage.py \
+    --input-dir  build/test_output/ensemble_n50_targetframe/rk_fixed_target_pdc_only_error_analysis \
+    --output-dir build/test_output/ensemble_n50_targetframe/coverage_final
+\end{lstlisting}
+
+\section{符号 \(\to\) 代码标识对照（glossary）}
+\label{app:glossary}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{本报告主要数学符号与代码标识对照}
+\label{tab:glossary}
+\begin{tabular}{lll}
+\toprule
+符号 & 含义 & 代码标识 \\
+\midrule
+$\vec\alpha$ & 拟合参数矢量 & \texttt{RkParameters::data} (PDCRecoTypes.hh) \\
+$u, v$ & 出射方向正切 $p_x/p_z, p_y/p_z$ & \texttt{params.u}, \texttt{params.v} \\
+$p$ & 动量模 $|\vec p|$ & \texttt{params.p} \\
+$\delta x, \delta y$ & 靶点位置偏移 (mm) & \texttt{params.dx}, \texttt{dy} \\
+$\vec p$ & 物理动量 $(p_x, p_y, p_z)$ & \texttt{recoP4.Vect()} \\
+$\hat u, \hat v$ & PDC 丝方向单位矢量 & \texttt{PDCSimAna::WireDir} \\
+$\theta$ & PDC 倾斜角 (57$^\circ$) & \texttt{kPdcTiltAngle} \\
+$\alpha_\mathrm{tgt}$ & 靶倾角 (3$^\circ$) & \texttt{kTargetTiltDeg} (PDCFrameRotation.hh) \\
+$r_i$ & 原始残差 & \texttt{computeRawResiduals} \\
+$\vec w$ & 白化残差 & \texttt{computeWhitenedResiduals} \\
+$L$ & Cholesky 因子 (白化矩阵) & \texttt{whiteningCholesky} \\
+$J$ & 残差 Jacobian & \texttt{computeJacobian} (PDCRkAnalysisInternal.cc) \\
+$\mathcal I = J^\top J$ & Fisher 信息矩阵 & \texttt{fisherInformation} \\
+$\Sigma_{\vec\alpha}$ & 参数协方差 & \texttt{paramCovariance} \\
+$M$ & 动量空间 Jacobian & \texttt{momentumJacobian} \\
+$\Sigma_{\vec p}$ & 动量协方差 (3$\times$3) & \texttt{momentumCovariance} (PDCErrorAnalysis.cc) \\
+$\chi^2$ & 加权残差平方和 & \texttt{Evaluate}, \texttt{chi2} \\
+$\kappa$ & Fisher 矩阵条件数 & \texttt{fisherConditionNumber} \\
+ESS & 有效样本量 & \texttt{computeESS} \\
+$z$-Geweke & MCMC 收敛诊断 & \texttt{computeGewekeZ} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{开放问题与待执行实验清单}
+\label{app:open}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{本报告中所有 \texttt{\% TODO} 标记汇总; 优先级 P0 = blocker, P3 = nice-to-have}
+\label{tab:todos}
+\begin{tabular}{cclll}
+\toprule
+ID & 优先级 & 来源章节 & 内容 & 估计成本 \\
+\midrule
+R-1 & P0 & II §5  & RK4 中加入 Bethe-Bloch 连续 $dE/dx$
+                  & 1--2 周代码 + 1 次 ensemble \\
+R-2 & P0 & II §10 & MS 过程噪声并入 $\Sigma_\mathrm{meas}$ (Kalman)
+                  & 1--2 周代码 + 1 次 ensemble \\
+R-3 & P1 & II §8  & Cartesian $(p_x,p_y,p_z)$ LM 拟合分支
+                  & 已立项；写完即可 \\
+R-4 & P1 & II §9  & 非对称扩展粗格 + 反向初值
+                  & 半周代码 \\
+R-5 & P1 & III §3 & LM trace 持久化 (\texttt{lm\_traces/event\_N.csv})
+                  & 1 天代码 \\
+R-6 & P2 & II §6  & B-field 三次插值 / 全 div-B 闭合检查
+                  & 半周代码 \\
+R-7 & P2 & II §7  & cosmic-ray PDC 对位 run
+                  & 1 周机时 \\
+R-8 & P2 & III §5 & B-field $\pm 5\%$ 扫描 (BS-1)
+                  & 80 分钟单核 \\
+R-9 & P2 & III §5 & $\sigma_\mathrm{wire}$ 扫描 0.1--2.0 mm (WS-1)
+                  & 3.5 小时单核 \\
+R-10 & P2 & III §5 & $\alpha_\mathrm{tgt}$ 扫描 (TS-1, sanity)
+                  & 2 小时单核 \\
+R-11 & P2 & III §5 & ensemble 规模扫描 10/50/200/1000 (ES-1)
+                  & 13 小时单核 \\
+R-12 & P3 & II §3  & PDC 气体混合优化 (Ar/CF$_4$ 替代)
+                  & 设计研究 \\
+R-13 & P3 & II §5  & E2E 几何全材料调研
+                  & 1--2 天 Geant4 配置审计 \\
+R-14 & P3 & III §6 & $(-100,0)$ $\chi^2$ 地形 PNG
+                  & 1 天画图 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{下一步建议。}
+P0 = R-1 + R-2 同时并行；预期能把 \StatusReport\ § 已知局限 中所列两个主要
+症状（$p_z$ $-10.8\,\mathrm{MeV}/c$ 系统偏差、$p_y$ Fisher 欠估 1.9$\times$）
+同时关闭。完成后再做 R-3 + R-4 的 P1 二轮，并把 89k 大数据集覆盖率推到 P0
+fix 后的水平做最终验证。
+
+% ============================================================
+\end{document}

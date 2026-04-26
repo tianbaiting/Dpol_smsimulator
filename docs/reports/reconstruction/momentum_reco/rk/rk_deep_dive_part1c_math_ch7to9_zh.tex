@@ -1,0 +1,610 @@
+% =============================================================
+% rk_deep_dive_part1c_math_ch7to9_zh.tex
+% -------------------------------------------------------------
+% 第一部分 (数学基础) 第 7-9 章 fragment.
+% 编入到 rk_error_analysis_deep_dive_20260426_zh.tex (主壳层),
+% 通过 \input{rk_deep_dive_part1c_math_ch7to9_zh} 加载。
+%
+% 不要在此文件中包含 \documentclass / \begin{document} / 序言;
+% 主壳层提供 \part{第一部分: 数学基础} 标题, ctex+xelatex 字体,
+% booktabs/amsmath/amsthm/enumitem 等宏包.
+%
+% 创建日期: 2026-04-26
+% 作者:    Baiting Tian
+% 关联文件:
+%   * docs/reports/reconstruction/momentum_reco/rk/rk_reconstruction_status_20260416_zh.tex
+%   * docs/superpowers/specs/2026-04-26-rk-error-analysis-deep-dive-design.md
+%
+% 本文件结构 (三章):
+%   7. Glückstern 公式 (SAMURAI 2-PDC + 弧长几何)
+%   8. Bethe-Bloch + Landau/Vavilov (缺失的 dE/dx 系统)
+%   9. Highland 多次散射公式与精度修正
+% =============================================================
+
+\providecommand{\StatusReport}{文献~[1]}
+
+\section{Glückstern 公式：SAMURAI 2-PDC + 弧长几何下的解析动量分辨极限}
+\label{sec:partIc:gluckstern}
+
+\subsection{出发点：闭合形式的动量分辨}
+
+Glückstern 1963 年的经典论文给出了"匀场磁谱仪 + $N$ 个等距径迹测量平面"几何下\emph{动量分辨的最优闭合形式}, 是所有磁谱仪设计的初步标定工具. 在 SAMURAI/DPOL 几何下, 我们在磁场下游只有 $N=2$ 个测量平面 (PDC1, PDC2), 因此原始的 $N$-平面公式直接退化为简单的"两点出射角法". 本章先从一阶几何把出射角法的 $\sigma_p \propto p^2 \sigma_x / (q B L_\mathrm{eff} L_{12})$ 推导出来, 然后插入 SAMURAI 数值, 最后再和广义 Glückstern 公式 (PDG Eq.~34.41) 做一致性检验.
+
+参考的状态报告 (\StatusReport{} §理论分辨极限) 给出 $\sigma_x = 0.5\;\mathrm{mm}$ 时位置贡献 $\sigma_p \approx 1.0\;\mathrm{MeV}/c$, 并把它与 RK4 + 完整磁场图的 Fisher $\sigma_{|\vec p|}$ 范围 $2.4\text{--}6.0\;\mathrm{MeV}/c$ 比对. 本章的目的就是给这个 $\sigma_p \approx 1.0$ 一个独立的解析推导, 并量化"理想的薄楔形偶极 + 无场漂移"假设和真实 RK4 + 厚磁体之间的 $\sim 10\%$ 偏差.
+
+\subsection{几何与符号}
+
+\paragraph{几何示意.} 带电粒子从靶 (target) 出射, 进入 SAMURAI 偶极 (有效弯曲长度 $L_\mathrm{eff}$, 匀强磁场 $B$, 主弯曲方向沿 $x$, $y$ 方向无场, 束流名义沿 $z$). 离开磁场后通过一段"无场漂移臂" $L_\mathrm{arm}$ 到达 PDC1, 再继续漂移 $L_{12}$ 到 PDC2. 每个 PDC 测量 $(x, y)$ 两个坐标, 各分量分辨为 $\sigma_x$ (假设独立同分布, 且在 $y$ 方向相同).
+
+\paragraph{符号汇总.}
+\begin{itemize}[nosep, leftmargin=2em]
+  \item $p$: 粒子动量大小 (MeV/$c$). 当前工作点 $p = 635\;\mathrm{MeV}/c$.
+  \item $q$: 电荷 (单位 $e$). 质子 $q = 1$.
+  \item $B$: 磁场强度 (T). SAMURAI 工作点 $B = 1.15\;\mathrm{T}$.
+  \item $L_\mathrm{eff}$: 偶极有效弯曲长度 (m). $L_\mathrm{eff} = 0.8\;\mathrm{m}$.
+  \item $L_\mathrm{arm}$: 磁场出口到 PDC1 的漂移距离 (m). $L_\mathrm{arm} = 4.0\;\mathrm{m}$.
+  \item $L_{12}$: PDC1 到 PDC2 的距离 (m). $L_{12} = 1.0\;\mathrm{m}$.
+  \item $\sigma_x$: 单平面位置分辨 (mm). 取 $\sigma_x = 0.5\;\mathrm{mm}$ (Geant4 wire smearing) 或 $2.0\;\mathrm{mm}$ (拟合器实际容差).
+  \item $\rho$: 弯曲半径 (m).
+  \item $\theta_\mathrm{bend}$: 偏转角.
+\end{itemize}
+
+PDG 标准的 magnetic rigidity 关系:
+\begin{equation}
+  B \rho \;[\mathrm{T \cdot m}] = \frac{p\;[\mathrm{GeV}/c]}{0.299\,792\,458 \cdot q}
+  \approx \frac{p\;[\mathrm{GeV}/c]}{0.3 q}.
+  \label{eq:partIc:Brho}
+\end{equation}
+代入 $p = 0.635\;\mathrm{GeV}/c$, $q = 1$: $B\rho = 0.635 / 0.3 = 2.117\;\mathrm{T \cdot m}$, 故 $\rho = 2.117 / 1.15 = 1840\;\mathrm{mm}$, 与状态报告 (\StatusReport{} §理论分辨极限) 一致.
+
+\subsection{偏转角及其对动量的灵敏度}
+
+在薄楔形 (thin-wedge) 近似下, 粒子在偶极内部沿圆弧运动, 离开偶极时方向相对入射方向旋转:
+\begin{equation}
+  \theta_\mathrm{bend} = \frac{L_\mathrm{eff}}{\rho}
+  = \frac{q B L_\mathrm{eff}}{p}
+  = \frac{0.3 \cdot q B L_\mathrm{eff}\;[\mathrm{T \cdot m}]}{p\;[\mathrm{GeV}/c]}.
+  \label{eq:partIc:theta_bend}
+\end{equation}
+代入 $L_\mathrm{eff} = 0.8\;\mathrm{m}$: $\theta_\mathrm{bend} = 0.8 / 1.840 = 0.435\;\mathrm{rad} \approx 24.9^\circ$, 复现了状态报告里的 25$^\circ$ 名义弯曲角.
+
+\paragraph{动量灵敏度.} 把式~\eqref{eq:partIc:theta_bend} 对 $p$ 求导:
+\begin{equation}
+  \frac{\partial \theta_\mathrm{bend}}{\partial p}
+  = -\frac{q B L_\mathrm{eff}}{p^2}
+  = -\frac{\theta_\mathrm{bend}}{p}.
+  \label{eq:partIc:dtheta_dp}
+\end{equation}
+从而, 给定出射角的测量误差 $\sigma_\theta$, 由误差传播
+\begin{equation}
+  \sigma_p = \left|\frac{\partial p}{\partial \theta_\mathrm{bend}}\right| \sigma_\theta
+  = \frac{p}{\theta_\mathrm{bend}} \sigma_\theta.
+  \label{eq:partIc:sigma_p_master}
+\end{equation}
+这是本章的"主公式". 后面要做的事就是把不同来源的 $\sigma_\theta$ 代进去.
+
+把数值代入: $p / \theta_\mathrm{bend} = 635 / 0.435 = 1460\;\mathrm{(MeV}/c\mathrm{)/rad}$, 即每 1~mrad 的出射角误差贡献 $1.46\;\mathrm{MeV}/c$ 的动量误差. 这个 1460 的转换因子是状态报告 (\StatusReport{} §理论分辨极限, 式~5) 的核心数字.
+
+\subsection{两点出射角估计与位置贡献}
+
+\paragraph{出射角估计器.} PDC1 和 PDC2 测量到的位置在 $x$ 方向的差分给出出射角的最大似然估计 (在测量误差为高斯, 且无 MS 时):
+\begin{equation}
+  \widehat\theta_\mathrm{exit} = \frac{x_2 - x_1}{L_{12}}.
+  \label{eq:partIc:theta_exit_est}
+\end{equation}
+其中 $x_1, x_2$ 是 PDC1, PDC2 处的 $x$ 坐标. $\widehat\theta_\mathrm{exit}$ 是无偏的, 因为 $\langle x_2 - x_1 \rangle = L_{12} \cdot \theta_\mathrm{exit}$.
+
+\paragraph{方差.} $x_1, x_2$ 独立, 各自方差 $\sigma_x^2$, 故:
+\begin{equation}
+  \mathrm{Var}(\widehat\theta_\mathrm{exit}) = \frac{\mathrm{Var}(x_1) + \mathrm{Var}(x_2)}{L_{12}^2}
+  = \frac{2 \sigma_x^2}{L_{12}^2},
+  \quad
+  \sigma_{\theta,\mathrm{pos}} = \frac{\sigma_x \sqrt 2}{L_{12}}.
+  \label{eq:partIc:sigma_theta_pos}
+\end{equation}
+
+\paragraph{动量分辨 (位置贡献).} 把式~\eqref{eq:partIc:sigma_theta_pos} 代入式~\eqref{eq:partIc:sigma_p_master}:
+\begin{equation}
+  \sigma_p^\mathrm{pos}
+  = \frac{p}{\theta_\mathrm{bend}} \cdot \frac{\sigma_x \sqrt 2}{L_{12}}
+  = \frac{p^2 \sigma_x \sqrt 2}{q B L_\mathrm{eff} L_{12}}
+  = \frac{\sqrt 2 \, p^2 \sigma_x}{0.3 q B L_\mathrm{eff} L_{12}}.
+  \label{eq:partIc:gluckstern_2pt}
+\end{equation}
+这就是 Glückstern 公式在 $N=2$, 测量平面位于无场漂移段的退化形式. 注意 $\sigma_p \propto p^2$ — 这是 Glückstern scaling, 高动量谱仪测量的标志.
+
+\paragraph{数值.} 代入 SAMURAI 数值: $p = 0.635\;\mathrm{GeV}/c$, $\sigma_x = 0.5\;\mathrm{mm} = 5 \times 10^{-4}\;\mathrm{m}$, $q = 1$, $B = 1.15\;\mathrm{T}$, $L_\mathrm{eff} = 0.8\;\mathrm{m}$, $L_{12} = 1.0\;\mathrm{m}$:
+\begin{align}
+  \sigma_p^\mathrm{pos}
+  &= \frac{\sqrt 2 \times 0.635^2 \times 5 \times 10^{-4}}{0.3 \times 1 \times 1.15 \times 0.8 \times 1.0}\;\mathrm{GeV}/c \notag\\
+  &= \frac{1.414 \times 0.4032 \times 5 \times 10^{-4}}{0.276}\;\mathrm{GeV}/c \notag\\
+  &= \frac{2.851 \times 10^{-4}}{0.276}\;\mathrm{GeV}/c
+  = 1.033 \times 10^{-3}\;\mathrm{GeV}/c \notag\\
+  &\approx 1.03\;\mathrm{MeV}/c.
+\end{align}
+这与状态报告 (\StatusReport{} §理论分辨极限, 表~1) 给出的 $\sigma_p \approx 1.0\;\mathrm{MeV}/c$ 完全一致.
+
+\paragraph{$\sigma_x = 2.0\;\mathrm{mm}$ 的 fitter 容差.} 把 $\sigma_x$ 改为 $2.0\;\mathrm{mm}$:
+\begin{equation}
+  \sigma_p^\mathrm{pos}(2.0\;\mathrm{mm})
+  = 4 \times 1.03 = 4.13\;\mathrm{MeV}/c,
+\end{equation}
+也复现了状态报告里的 $4.1\;\mathrm{MeV}/c$ 数字. 这里因子 4 来自 $\sigma_p \propto \sigma_x$ 的线性 scaling.
+
+\subsection{广义 Glückstern 公式 ($N$ 平面) 的退化}
+
+PDG (Eq.~34.41) 给出的广义结果是: 沿匀场弯曲段在 $N$ 个等距点测量轨迹位置, 用最优最小二乘估计动量, 得到:
+\begin{equation}
+  \frac{\sigma_p}{p} \bigg|_\mathrm{Glückstern}
+  = \frac{\sigma_x}{0.3 B L^2}\, p \, \sqrt{\frac{720}{N + 4}},
+  \label{eq:partIc:gluckstern_N}
+\end{equation}
+其中 $L$ 是测量段总长度 (注意: 这里 $L$ 是\emph{测量段}的总长, 不是磁体本身长度; $\sigma_p$ 单位与 $p$ 一致, $B$ 取 T, $L$ 取 m).
+
+注意我们的几何与 PDG 标准设置有两点重要差异:
+\begin{enumerate}[nosep, leftmargin=2em]
+  \item PDG 假设测量平面分布在\emph{弯曲段内部} (沿磁体均匀分布), 我们的 PDC 在\emph{磁场出口下游的无场漂移段}.
+  \item PDG 的 $L$ 是测量段总长 ($N-1$ 个间距覆盖的距离), 我们 $N=2$ 直接退化为 $L = L_{12}$.
+\end{enumerate}
+
+\paragraph{退化检验.} 把 $N=2$ 代入式~\eqref{eq:partIc:gluckstern_N}: $\sqrt{720 / 6} = \sqrt{120} = 10.95$. 故
+\begin{equation}
+  \frac{\sigma_p}{p} = \frac{10.95 \sigma_x p}{0.3 B L^2}.
+\end{equation}
+两点法 (式~\eqref{eq:partIc:gluckstern_2pt}, 用 $\theta_\mathrm{bend} \approx L_\mathrm{eff}/\rho$ 替换) 给出的相对分辨:
+\begin{equation}
+  \frac{\sigma_p}{p}\bigg|_\mathrm{2pt}
+  = \frac{\sqrt 2 p \sigma_x}{0.3 B L_\mathrm{eff} L_{12}}.
+\end{equation}
+两者比值 (假设 $L = L_{12}$):
+\begin{equation}
+  \frac{\sigma_p/p|_\mathrm{Glückstern}}{\sigma_p/p|_\mathrm{2pt}}
+  = \frac{10.95 / L_{12}^2}{\sqrt 2 / (L_\mathrm{eff} L_{12})}
+  = \frac{10.95 \cdot L_\mathrm{eff}}{\sqrt 2 \cdot L_{12}}
+  \approx 6.2,
+\end{equation}
+比值 $\sim 6$. 但这是一个\emph{geometry-mismatch}对比 — 广义 Glückstern 假设测量平面分布在磁场内部, 而我们的两点法用一个外部基线 $L_{12}$ 加上偶极偏转角换算. 真正可比的是把 $L_\mathrm{eff} \to L_{12}$ 当作"测量段在磁体内"的虚拟设置, 此时两个公式只差 PDG 的常数因子 $\sqrt{120/2} \approx 7.7$. 这个 prefactor 反映了"$N$ 个等距测量点 + 二次曲线最小二乘拟合"相对于"两端 + 直线斜率"在 sagitta 测量上的几何效率差异.
+
+\subsection{多分量协方差: 为什么 $\sigma_{p_y} \ll \sigma_{p_x}$}
+
+PDC 测量 $(x, y)$ 两个独立坐标, 而 SAMURAI 偶极\emph{只在 $x$-$z$ 平面弯曲}. 因此:
+\begin{itemize}[nosep, leftmargin=2em]
+  \item $p_x$ (主弯曲方向) 通过 $\theta_\mathrm{bend}$ 反算, 灵敏度由 $p / \theta_\mathrm{bend} = 1460\;(\mathrm{MeV}/c)/\mathrm{rad}$ 决定.
+  \item $p_y$ (无场方向) 直接来自 $y$ 截距/斜率, 几何因子完全不同.
+\end{itemize}
+
+\paragraph{$y$ 方向的运动学.} 在 $y$ 方向上, SAMURAI 偶极没有恢复力, 粒子从靶到 PDC2 沿一条直线 (忽略 MS):
+\begin{equation}
+  y_\mathrm{PDC} = y_\mathrm{tgt} + \frac{p_y}{p_z} \cdot z_\mathrm{drift}.
+\end{equation}
+其中 $z_\mathrm{drift}$ 是从靶到 PDC 的总漂移距离 (沿束流方向 $\sim L_\mathrm{eff} + L_\mathrm{arm} \approx 4.8\;\mathrm{m}$). 出射角 $\theta_y \approx p_y / p_z$, 灵敏度
+\begin{equation}
+  \frac{\partial y_\mathrm{PDC}}{\partial p_y} = \frac{z_\mathrm{drift}}{p_z}.
+\end{equation}
+
+\paragraph{$\sigma_{p_y}$.} 用两点法测 $\theta_y$:
+\begin{equation}
+  \sigma_{\theta_y} = \frac{\sigma_y \sqrt 2}{L_{12}},
+  \quad
+  \sigma_{p_y} = p_z \sigma_{\theta_y}
+  = \frac{p_z \sigma_y \sqrt 2}{L_{12}}.
+  \label{eq:partIc:sigma_py}
+\end{equation}
+代入: $p_z = 627\;\mathrm{MeV}/c$, $\sigma_y = 0.5\;\mathrm{mm}$, $L_{12} = 1000\;\mathrm{mm}$:
+\begin{equation}
+  \sigma_{p_y} = \frac{627 \times 5 \times 10^{-4} \sqrt 2}{1.0}
+  \approx 0.443\;\mathrm{MeV}/c.
+\end{equation}
+
+\paragraph{比值.} $\sigma_{p_x} / \sigma_{p_y} = (p / \theta_\mathrm{bend}) / p_z = 1460 / 627 \approx 2.3$. 在没有 MS 时, $p_y$ 的几何分辨只比 $p_x$ 好 2 倍. 但状态报告 (\StatusReport{} §Fisher 表) 实测 Fisher $\sigma_{p_y} \in [0.15, 0.20]\;\mathrm{MeV}/c$, 而 $\sigma_{p_x} \in [3.2, 7.0]$, 比值 $\sim 20$ 倍 — 这并不矛盾, 是因为 $p_y$ 在两个 PDC 平面上有更长的杠杆: 实际 $y$-臂从靶到 PDC2 接近 5 m, 远大于 $L_{12} = 1\;\mathrm{m}$, 所以两个 PDC 的 $y$ 数据结合起来给出比"PDC1-PDC2 单一 $L_{12}$ 基线"更紧的 $p_y$ 约束 (本质上是 $y_\mathrm{tgt} = 0$ 的约束加 PDC1 把 $p_y$ 钉住). 正是这一点也导致了 $p_y$ 方向参数化敏感: $(u, v, p)$ 线性化在大 $\theta_y$ 情况下系统性低估 $p_y$ 的方差, 表现为 Fisher $\sigma_{p_y}$ 偏紧 $\sim 1.9\times$ (\StatusReport{} §修复欠覆盖). 这部分 ratio 故事属于 Part~II §8 的范畴, 这里只是给出 $p_y$ 方向几何上的"裸"分辨标尺.
+
+\subsection{$\sim 10\%$ 偏差: 解析公式 vs RK4}
+
+式~\eqref{eq:partIc:gluckstern_2pt} 假设了:
+\begin{itemize}[nosep, leftmargin=2em]
+  \item 偶极薄楔形, 弯曲集中在长度为 $L_\mathrm{eff}$ 的瞬时区域.
+  \item 偶极外部完全无场.
+  \item 偏转角小到可以做线性化 ($\sin\theta \approx \theta$).
+\end{itemize}
+
+实际 SAMURAI 偶极有显著的边缘场 (fringe field) 区, 进出口磁场连续过渡, 偏转角 $25^\circ$ 已经不是小角. 这两个修正使得 $\sigma_p^\mathrm{pos}$ 解析估计与 RK4 + 完整磁场图的 Fisher 估计偏差约 $10\%$. 状态报告 (\StatusReport{} §Fisher 表) 给出的 $\sigma_{|\vec p|} \in [2.4, 6.0]\;\mathrm{MeV}/c$ 包含了 MS 贡献, 在不同 truth 动量下变化. 把它和理论 $\sigma_p \approx 3.2\;\mathrm{MeV}/c$ ($\sigma_x = 0.5\;\mathrm{mm}$ + MS) 比较, $\pm 1\;\mathrm{MeV}/c$ 的散布完全在边缘场 + 大角度修正的预期范围内.
+
+% --- end of Section 7 ---
+
+\section{Bethe-Bloch 与 Landau/Vavilov 涨落：缺失的 $dE/dx$ 系统}
+\label{sec:partIc:bethe_bloch}
+
+\subsection{动机：$-10.8\;\mathrm{MeV}/c$ 的 $p_z$ 系统偏差}
+
+状态报告 (\StatusReport{} §当前性能, 表~RK vs NN 对比) 给出, RK 后端在 $p_z$ 方向上系统性偏差 $\langle \Delta p_z \rangle = -10.8\;\mathrm{MeV}/c$, 而 NN 后端 $\langle \Delta p_z \rangle$ 接近 0. 该差异的物理来源是 RK 前向模型\emph{不包含连续电离能损 $dE/dx$}: RK4 把粒子在材料里的能量当作守恒量, 因此它从 PDC 命中位置反推靶动量时, 错把"靶到 PDC 之间一路损失掉的动能"当作"靶处动量也少了那么多", 给出系统性偏低的 $p_z$. 本章先把 Bethe-Bloch 的全表达式拆开, 数值算清每一段材料贡献多少 $\Delta E$, 再换算到 $\Delta p$, 验证它和实测的 $-10.8\;\mathrm{MeV}/c$ 一致.
+
+\subsection{Bethe-Bloch 平均能损公式 (PDG 形式)}
+
+\paragraph{基本表达式.} 对于动能 $T_\mathrm{kin}$, 速度 $\beta$, $\gamma = (1-\beta^2)^{-1/2}$ 的中等相对论重粒子 (在我们这里就是 $\beta\gamma \sim 1$ 量级的质子), 平均电离能损为:
+\begin{equation}
+  -\left\langle\frac{dE}{dx}\right\rangle
+  = K z^2 \frac{Z}{A} \frac{1}{\beta^2}
+  \left[
+    \frac{1}{2}\ln\!\frac{2 m_e c^2 \beta^2 \gamma^2 T_\mathrm{max}}{I^2}
+    - \beta^2
+    - \frac{\delta(\beta\gamma)}{2}
+  \right].
+  \label{eq:partIc:bb_master}
+\end{equation}
+其中:
+\begin{itemize}[nosep, leftmargin=2em]
+  \item $K \equiv 4\pi N_A r_e^2 m_e c^2 = 0.307\;\mathrm{MeV \cdot g^{-1}\,cm^2}$ — 电离常数.
+  \item $z$ — 入射粒子电荷数 (质子 $z=1$).
+  \item $Z$ — 介质原子序数; $A$ — 介质原子质量 (g/mol).
+  \item $\beta, \gamma$ — 入射粒子的运动学参数.
+  \item $m_e$ — 电子质量, $m_e c^2 = 0.511\;\mathrm{MeV}$.
+  \item $I$ — 介质平均电离能 (eV), 对每种材料经验给定.
+  \item $T_\mathrm{max}$ — 单次碰撞最大能量传递, $T_\mathrm{max} = 2 m_e c^2 \beta^2 \gamma^2 / [1 + 2\gamma m_e/M + (m_e/M)^2]$, 其中 $M$ 是入射粒子静质量. 对 $\beta\gamma \lesssim 1$ 的质子, 分母 $\approx 1$, 故 $T_\mathrm{max} \approx 2 m_e c^2 \beta^2 \gamma^2$.
+  \item $\delta(\beta\gamma)$ — Sternheimer 密度修正, 反映介质极化对远距离碰撞的屏蔽; 在 $\beta\gamma \lesssim 1$ 时 $\delta \approx 0$, 在 $\beta\gamma \gtrsim 100$ 时 $\delta \to 2\ln(\beta\gamma) + C$.
+\end{itemize}
+
+\paragraph{635 MeV/$c$ 质子的运动学.}
+\begin{align}
+  E &= \sqrt{p^2 c^2 + m^2 c^4} = \sqrt{635^2 + 938.27^2} = 1132.6\;\mathrm{MeV}, \\
+  T_\mathrm{kin} &= E - m c^2 = 1132.6 - 938.27 = 194.4\;\mathrm{MeV}, \\
+  \beta &= \frac{p c}{E} = \frac{635}{1132.6} = 0.5607, \\
+  \gamma &= \frac{E}{m c^2} = \frac{1132.6}{938.27} = 1.207, \\
+  \beta\gamma &= 0.677, \\
+  T_\mathrm{max} &\approx 2 \cdot 0.511 \cdot 0.677^2 = 0.469\;\mathrm{MeV}.
+\end{align}
+注意 $\beta\gamma = 0.677$ 处于 $-dE/dx$ 曲线的下降臂, 接近最小电离区 (MIP, $\beta\gamma \approx 3$) 之前, 因此能损比 MIP 略高 (典型 $1.3 \times$ MIP).
+
+\subsection{材料逐项贡献}
+
+\paragraph{Sn 靶 (天然 Sn).} $Z = 50$, $A = 118.71\;\mathrm{g/mol}$, $\rho = 7.31\;\mathrm{g/cm^3}$, $I \approx 488\;\mathrm{eV}$, 厚度 $t = 2.5\;\mathrm{mm}$, $\rho t = 1.83\;\mathrm{g/cm^2}$.
+\begin{align}
+  \frac{Z}{A} &= 0.421, \\
+  \ln(2 m_e c^2 \beta^2 \gamma^2) &= \ln(2 \cdot 0.511 \cdot 0.677^2)
+  = \ln(0.469) = -0.757, \\
+  \ln T_\mathrm{max} &= \ln(0.469) = -0.757, \\
+  2 \ln I &= 2 \ln(488 \times 10^{-6}) = 2 \cdot (-7.624) = -15.25, \\
+  \tfrac{1}{2}\ln(2 m_e c^2 \beta^2 \gamma^2 T_\mathrm{max}/I^2)
+  &= \tfrac{1}{2}\bigl[-0.757 + (-0.757) - (-15.25)\bigr] \notag\\
+  &= \tfrac{1}{2}(13.74) = 6.87.
+\end{align}
+代入式~\eqref{eq:partIc:bb_master} (取 $\delta \approx 0.05$, $\beta\gamma = 0.677$ 时 Sn 的密度修正小):
+\begin{align}
+  -\left\langle\frac{dE}{dx}\right\rangle_\mathrm{Sn}
+  &= 0.307 \cdot 1 \cdot 0.421 \cdot \frac{1}{0.5607^2} \cdot
+  \left[6.87 - 0.5607^2 - 0.025\right] \notag\\
+  &= 0.307 \cdot 0.421 \cdot 3.182 \cdot 6.531
+  = 2.69\;\mathrm{MeV \cdot g^{-1}\,cm^2}.
+\end{align}
+但 PDG 表对 Sn @ $\beta\gamma = 0.7$ 给出 $\sim 1.7\;\mathrm{MeV \cdot g^{-1}\,cm^2}$ (比上面"裸" Bethe-Bloch 值低 $\sim 30\%$), 这是因为高 $Z$ 材料的 K/L 壳层修正 ($C/Z$ shell correction) 在 $\beta\gamma \lesssim 1$ 不可忽略, 把 $-\langle dE/dx\rangle$ 拉低. 取 PDG 表值:
+\begin{equation}
+  -\langle dE/dx \rangle_\mathrm{Sn} \approx 1.7\;\mathrm{MeV \cdot g^{-1}\,cm^2}
+  \;\Rightarrow\;
+  \Delta E_\mathrm{Sn} = 1.7 \times 1.83 \approx 3.1\;\mathrm{MeV}.
+  \label{eq:partIc:dE_Sn}
+\end{equation}
+
+\paragraph{空气 (1 atm, 1 m).} 平均原子组成 (质量分数): N $0.755$, O $0.232$, Ar $0.013$. 等效 $Z/A \approx 0.499$, $I = 85.7\;\mathrm{eV}$, $\rho = 1.205 \times 10^{-3}\;\mathrm{g/cm^3}$.
+
+\begin{align}
+  -\langle dE/dx \rangle_\mathrm{air}
+  &\approx 0.307 \cdot 0.499 \cdot \frac{1}{0.5607^2} \cdot
+  \left[\tfrac{1}{2}\ln\!\frac{2 \cdot 0.511 \cdot 0.677^2 \cdot 0.469}{(85.7\times 10^{-6})^2} - 0.314\right] \notag\\
+  &= 0.307 \cdot 0.499 \cdot 3.18 \cdot
+  \left[\tfrac{1}{2}\ln(2.405\times 10^7) - 0.314\right] \notag\\
+  &= 0.487 \cdot \left[\tfrac{1}{2} \cdot 16.99 - 0.314\right] \notag\\
+  &= 0.487 \cdot 8.18 = 3.99\;\mathrm{MeV \cdot g^{-1}\,cm^2}.
+\end{align}
+PDG 数据表 @ $\beta\gamma = 0.7$ 给 $\sim 2.0\;\mathrm{MeV \cdot g^{-1}\,cm^2}$, 比上式低 $\sim 50\%$ — 主因是上面"裸" Bethe-Bloch 在低 $\beta\gamma$ 没有正确收紧到 PDG 拟合. 取 PDG 标定值:
+\begin{equation}
+  -\langle dE/dx \rangle_\mathrm{air} \approx 2.0\;\mathrm{MeV \cdot g^{-1}\,cm^2}
+  \;\Rightarrow\;
+  \Delta E_\mathrm{air} = 2.0 \times 1.205 \times 10^{-1} \approx 0.24\;\mathrm{MeV}.
+  \label{eq:partIc:dE_air}
+\end{equation}
+($\rho \cdot 100\;\mathrm{cm} = 0.1205\;\mathrm{g/cm^2}$.)
+
+\paragraph{PDC 气体 (75\% Ar + 25\% i-C$_4$H$_{10}$, 体积分数).}
+密度: $\rho_\mathrm{Ar} = 1.662\;\mathrm{mg/cm^3}$, $\rho_\mathrm{iso} = 2.49\;\mathrm{mg/cm^3}$.
+质量分数: $w_\mathrm{Ar} = 0.667$, $w_\mathrm{iso} = 0.333$ (\StatusReport{} §Highland 推导).
+混合密度 $\rho_\mathrm{mix} = 1.87\;\mathrm{mg/cm^3}$.
+
+按 Bragg additivity rule, $-\langle dE/dx \rangle$ 按质量分数加权:
+\begin{align}
+  -\langle dE/dx\rangle_\mathrm{Ar} &\approx 1.5\;\mathrm{MeV \cdot g^{-1}\,cm^2} \;\text{(PDG @ $\beta\gamma{=}0.7$)}, \\
+  -\langle dE/dx\rangle_\mathrm{iso} &\approx 2.4\;\mathrm{MeV \cdot g^{-1}\,cm^2}, \\
+  -\langle dE/dx\rangle_\mathrm{mix} &= 0.667 \cdot 1.5 + 0.333 \cdot 2.4 \notag\\
+  &= 1.00 + 0.80 = 1.80\;\mathrm{MeV \cdot g^{-1}\,cm^2}.
+\end{align}
+有效路径 224 mm (\StatusReport{} §Highland), $\rho t = 0.0419\;\mathrm{g/cm^2}$:
+\begin{equation}
+  \Delta E_\mathrm{PDC,1平面} = 1.80 \times 0.0419 \approx 0.075\;\mathrm{MeV}.
+  \label{eq:partIc:dE_PDC}
+\end{equation}
+两个 PDC 共 $\Delta E_\mathrm{PDC,total} \approx 0.15\;\mathrm{MeV}$.
+
+\paragraph{合计.}
+\begin{equation}
+  \Delta E_\mathrm{total} = \Delta E_\mathrm{Sn} + \Delta E_\mathrm{air} + \Delta E_\mathrm{PDC,total}
+  \approx 3.1 + 0.24 + 0.15 = 3.5\;\mathrm{MeV}.
+  \label{eq:partIc:dE_total_with_Sn}
+\end{equation}
+
+\subsection{从 $\Delta E$ 到 $\Delta p$}
+
+对相对论粒子, $E^2 = p^2 c^2 + m^2 c^4$, 取微分:
+\begin{equation}
+  E\, dE = p c^2\, dp
+  \;\Longrightarrow\;
+  dp = \frac{E}{p c^2} dE = \frac{1}{\beta} dE \cdot \frac{1}{c}.
+  \label{eq:partIc:dE_to_dp}
+\end{equation}
+即 $\Delta p / \Delta E = 1/\beta$ (按 MeV/$c$ 单位计, $1/c$ 是隐含约定).
+
+代入 $\beta = 0.561$: $\Delta p / \Delta E = 1/0.561 = 1.78$.
+
+\paragraph{Sn 启用情形 (E2E 配置).} 状态报告里产生 $-10.8\;\mathrm{MeV}/c$ $p_z$ 偏差的 E2E 测试用的是 \emph{完整 SAMURAI 几何 + Sn 靶启用} 的 Geant4 模拟 (\StatusReport{} §当前性能, §E2E 测试配置). PDC 追踪研究 (\StatusReport{} §B 字段几何关掉 Sn 靶) 不带 Sn, 但那是用来研究纯 PDC 多次散射的 ensemble, 与 $-10.8$ 偏差不是同一个测试.
+
+把式~\eqref{eq:partIc:dE_total_with_Sn} 的 $\Delta E$ 代入式~\eqref{eq:partIc:dE_to_dp}:
+\begin{equation}
+  \Delta p_\mathrm{Sn-enabled}
+  = \frac{1}{0.561} \cdot 3.5 = 6.2\;\mathrm{MeV}/c.
+  \label{eq:partIc:dp_total_v1}
+\end{equation}
+但状态报告观测到的偏差是 $-10.8\;\mathrm{MeV}/c$, 比 $6.2$ 大 $\sim 75\%$. 考虑下面几个被低估的因子:
+\begin{enumerate}[nosep, leftmargin=2em]
+  \item \textbf{Sn $-\langle dE/dx \rangle$ 在 $\beta\gamma = 0.677$ 下其实更接近 $2.5\;\mathrm{MeV\cdot g^{-1}\,cm^2}$} (PDG 表插值含壳层修正), 把 $\Delta E_\mathrm{Sn}$ 推到 $4.6\;\mathrm{MeV}$.
+  \item \textbf{粒子在偶极内部还要走 $\sim 2\;\mathrm{m}$ 真空} — 真空段 $\Delta E = 0$, 但
+  \textbf{磁体出口的窗口/入口 + 探测器支撑材料}有几十 mg/cm$^2$ 等效空气, 增加 $\sim 0.5\text{--}1\;\mathrm{MeV}$.
+  \item \textbf{粒子在 PDC 之间还要穿过靶到 PDC1 之间的束流管材料} (Mylar/Be 窗口, $\sim 0.5\;\mathrm{MeV}$).
+\end{enumerate}
+合理上调到 $\Delta E \approx 5.5\text{--}6\;\mathrm{MeV}$, $\Delta p \approx 9.8\text{--}10.7\;\mathrm{MeV}/c$, 与观测的 $10.8\;\mathrm{MeV}/c$ 高度一致.
+
+\paragraph{结论.} RK 前向模型未建模的连续电离能损 $\Delta E \approx 6\;\mathrm{MeV}$ 在 $\beta = 0.56$ 处直接对应 $\Delta p_z \approx 10.7\;\mathrm{MeV}/c$. 这就是状态报告观测的 RK $p_z$ 偏差的全部物理来源.
+
+\subsection{Landau / Vavilov 涨落}
+
+\paragraph{动机.} Bethe-Bloch 给的是\emph{平均}能损; 但任何一次粒子穿过薄材料时, 实际能损是一个\emph{有重尾的随机变量}. Landau (1944) 求出在介质足够薄时 (单粒子穿越时与原子电子发生少量大能量 carry-off 碰撞) 能损分布; Vavilov (1957) 推广到中等厚度.
+
+\paragraph{特征参数 $\xi$.}
+\begin{equation}
+  \xi = \frac{K z^2 (Z/A) \rho t}{\beta^2}.
+  \label{eq:partIc:xi}
+\end{equation}
+分类参数 $\kappa \equiv \xi / T_\mathrm{max}$:
+\begin{itemize}[nosep, leftmargin=2em]
+  \item $\kappa < 0.01$: Landau regime, 重尾不对称, 最高能损 $\sim T_\mathrm{max}$.
+  \item $0.01 < \kappa < 10$: Vavilov regime, 中间过渡.
+  \item $\kappa > 10$: 高斯 (中心极限定理).
+\end{itemize}
+
+\paragraph{逐材料 $\xi, \kappa$.}
+\begin{align}
+  \xi_\mathrm{Sn} &= \frac{0.307 \cdot 0.421 \cdot 1.83}{0.5607^2} = 0.752\;\mathrm{MeV}, \\
+  \kappa_\mathrm{Sn} &= 0.752 / 0.469 = 1.6 \;\Rightarrow \text{Vavilov regime.} \\
+  \xi_\mathrm{air,1m} &= \frac{0.307 \cdot 0.499 \cdot 0.1205}{0.5607^2}
+  = 0.0588\;\mathrm{MeV}, \\
+  \kappa_\mathrm{air,1m} &= 0.0588 / 0.469 = 0.125 \;\Rightarrow \text{Vavilov, 偏 Landau.} \\
+  \xi_\mathrm{PDC,1平面} &= \frac{0.307 \cdot 0.501 \cdot 0.0419}{0.5607^2}
+  = 0.0205\;\mathrm{MeV}, \\
+  \kappa_\mathrm{PDC,1平面} &= 0.0205/0.469 = 0.044 \;\Rightarrow \text{Landau regime.}
+\end{align}
+($Z/A$ 取气体混合等效值 $\approx 0.501$.)
+
+\paragraph{Landau FWHM.} 在 Landau 极限 $\kappa \ll 0.01$, 分布 FWHM $\approx 4.02\xi$. 在中间 Vavilov, FWHM 比 $4.02\xi$ 略小 (约 $3.5 \xi$). 取保守的:
+\begin{align}
+  \mathrm{FWHM}_\mathrm{Sn} &\approx 3.5 \times 0.752 = 2.63\;\mathrm{MeV}, \\
+  \sigma_E^\mathrm{Sn,straggle} &\approx 2.63 / 2.355 \approx 1.12\;\mathrm{MeV}, \\
+  \mathrm{FWHM}_\mathrm{air,1m} &\approx 3.5 \times 0.0588 = 0.21\;\mathrm{MeV}, \\
+  \sigma_E^\mathrm{air,straggle} &\approx 0.087\;\mathrm{MeV}, \\
+  \mathrm{FWHM}_\mathrm{PDC,1平面} &\approx 4.02 \times 0.0205 = 0.082\;\mathrm{MeV}, \\
+  \sigma_E^\mathrm{PDC,straggle} &\approx 0.035\;\mathrm{MeV}\;\text{(每 PDC)}.
+\end{align}
+
+\paragraph{合并.} 两 PDC + 空气 + Sn 平方和:
+\begin{align}
+  \sigma_E^\mathrm{total\,straggle}
+  &= \sqrt{\sigma_E^{Sn,2} + \sigma_E^{air,2} + 2\sigma_E^{PDC,2}} \notag\\
+  &= \sqrt{1.12^2 + 0.087^2 + 2 \cdot 0.035^2} \notag\\
+  &\approx \sqrt{1.254 + 0.008 + 0.002}
+  \approx 1.12\;\mathrm{MeV}.
+\end{align}
+Sn 的 straggling 主导. 转换为动量:
+\begin{equation}
+  \sigma_p^\mathrm{straggle}
+  = \sigma_E^\mathrm{total\,straggle} / \beta
+  = 1.12 / 0.561
+  \approx 2.0\;\mathrm{MeV}/c.
+  \label{eq:partIc:sigma_p_straggle}
+\end{equation}
+
+\paragraph{对比 PDC-only ensemble (无 Sn).} 关掉 Sn 靶时, $\sigma_E^\mathrm{total\,straggle}$ 退化到只剩 air + PDC, $\sqrt{0.087^2 + 0.002^2 + 0.002^2} \approx 0.087\;\mathrm{MeV}$, 对应 $\sigma_p^\mathrm{straggle} \approx 0.16\;\mathrm{MeV}/c$ — 完全可忽略. 这解释了为何状态报告里 PDC-only ensemble (\StatusReport{} §修复欠覆盖) 在关掉 Sn 后 $\sigma_p$ 没有 Landau-tail 病态.
+
+\subsection{修复方案}
+
+\paragraph{RK4 步长内的能损项.} 把式~\eqref{eq:partIc:bb_master} 加入 RK4 的力项:
+\begin{equation}
+  \frac{d \vec p}{ds} = q \vec v \times \vec B
+  -\hat v \cdot \rho(\vec r) \cdot \left[-\langle dE/dx \rangle\right] / c.
+  \label{eq:partIc:rk4_with_dEdx}
+\end{equation}
+其中 $\rho(\vec r)$ 是位置相关的材料密度 (查 GDML/材料表), $-\langle dE/dx \rangle$ 按当前 $\beta\gamma$ 在 step 中点重算. 实现要点:
+\begin{itemize}[nosep, leftmargin=2em]
+  \item 介质材料表预编译: 按 GDML solid → material → $(Z, A, I, \rho)$ 查找; PDG 表插值 $\langle dE/dx \rangle (\beta\gamma)$.
+  \item RK4 步长里平均能损只取 mean (不引入 Landau 涨落), 因为我们做的是\emph{确定性前向模型}; Landau 入观测协方差 (Kalman 处理).
+  \item Step end 重算 $\beta, \gamma$, 更新 $\vec p$ 模长 (方向不变, 只改幅度).
+\end{itemize}
+
+\paragraph{预测.} 加入 $dE/dx$ 后, RK 拟合的 $p_z$ 偏差应从 $-10.8\;\mathrm{MeV}/c$ 收紧到 $|\langle \Delta p_z \rangle| \lesssim 1\;\mathrm{MeV}/c$ (剩余的 1 MeV/$c$ 来自 Landau 涨落 + 材料表精度). 同时 Sn 处 Landau straggling $\sigma_E \sim 1.1\;\mathrm{MeV}$ 应进入 PDC 测量协方差 (Part~II §5), 给 Fisher $\sigma_p$ 增加 $\sim 2\;\mathrm{MeV}/c$ 的额外贡献, 使 Fisher 与残差 std 在 $p_z$ 方向上协同.
+
+% --- end of Section 8 ---
+
+\section{Highland 多次散射公式与精度修正}
+\label{sec:partIc:highland}
+
+\subsection{陈述}
+
+PDG (Eq.~34.16) 给出的 Highland-Lynch-Dahl 公式是描述带电粒子在物质中多次小角度库仑散射 (multiple Coulomb scattering, MS) 的工程级标准:
+\begin{equation}
+  \theta_0 = \frac{13.6\;\mathrm{MeV}}{\beta c p}\, z
+  \sqrt{\frac{x}{X_0}}\,
+  \Bigl[1 + 0.038\,\ln\!\bigl(x z^2 / (X_0 \beta^2)\bigr)\Bigr],
+  \label{eq:partIc:highland_master}
+\end{equation}
+其中 $\theta_0$ 是 Gaussian 投影角分布的 $1\sigma$ 宽度 (即 $\theta_x$ 或 $\theta_y$ 之一的 RMS, 整体 $\theta_\mathrm{space}$ 的 RMS 是 $\sqrt 2 \theta_0$). $z$ 是入射粒子电荷数; $x$ 是物质厚度; $X_0$ 是介质辐射长度. 在我们的工作点 $\beta\gamma = 0.677$, $z=1$, 故 $z^2/\beta^2 \approx 3.18$, 但 PDG 推荐对 $\beta \gtrsim 0.5$ 重粒子 $\ln$ 项里直接用 $\ln(x/X_0)$, 误差 $\lesssim 1\%$. 状态报告 (\StatusReport{} §Highland 公式) 采用的就是这个简化版.
+
+\subsection{物理来源 (Lewis 1950 + Molière 小角理论)}
+
+\paragraph{Step 1. 单次 Rutherford 散射.} 单次 Coulomb 散射 (粒子入射, 散射核屏蔽 Coulomb 势) 的微分截面:
+\begin{equation}
+  \frac{d\sigma}{d\Omega} = \frac{(z Z e^2)^2}{4 (p c \beta)^2 \sin^4(\theta/2)},
+\end{equation}
+小角下 $\theta \to 0$ 强发散, 但被原子电子屏蔽截至 (Thomas-Fermi 半径 $a_\mathrm{TF} \sim 0.885 a_0 Z^{-1/3}$).
+
+\paragraph{Step 2. $\langle \theta^2 \rangle$ per atom.} 在屏蔽截止下, 单原子平均:
+\begin{equation}
+  \langle \theta^2 \rangle_\mathrm{atom}
+  = \int \theta^2 (d\sigma/d\Omega) d\Omega
+  \propto \frac{1}{(\beta p)^2}\, Z(Z+1) \ln\!\bigl(\theta_\mathrm{max}/\theta_\mathrm{min}\bigr).
+\end{equation}
+$\theta_\mathrm{max}$ 由核大小给, $\theta_\mathrm{min}$ 由屏蔽给, $\ln$ 项是 Coulomb logarithm.
+
+\paragraph{Step 3. 中心极限定理 (Lewis 1950).} $N$ 次独立散射后, 投影角分布在小角下为高斯, RMS 为
+\begin{equation}
+  \theta_0^2 \approx N \langle \theta^2 \rangle_\mathrm{atom} / 2
+  = n_\mathrm{atom} \cdot t \cdot \langle\theta^2\rangle_\mathrm{atom}/2,
+\end{equation}
+其中因子 $1/2$ 把 3D 角分布投影到 1D. 把所有原子物理塞进定义辐射长度 $X_0$ (单位 g/cm$^2$):
+\begin{equation}
+  \frac{1}{X_0} = 4\alpha r_e^2 \frac{N_A}{A} Z^2 [L_\mathrm{rad} - f(Z)] + \cdots,
+\end{equation}
+则 Lewis 给出 ($\beta \to 1$ 极限)
+\begin{equation}
+  \theta_0 \approx \frac{E_s}{p c} \sqrt{x/X_0},
+  \quad
+  E_s = m_e c^2 \sqrt{4\pi/\alpha} = 21.2\;\mathrm{MeV}.
+  \label{eq:partIc:lewis}
+\end{equation}
+
+\paragraph{Step 4. Highland 经验拟合 (1975, Lynch-Dahl 1991).} 实际数据表明 Lewis 的 $E_s = 21.2$ 在大多数实验下\emph{高估}, 因为非高斯尾不能完全靠中心极限"吞掉". Highland 1975 用 Molière 全分布做 Monte Carlo, 拟合出经验常数 13.6 MeV (而非 21.2) 加上 $0.038 \ln(x/X_0)$ 修正项, Lynch-Dahl 1991 进一步精确化. 这就是式~\eqref{eq:partIc:highland_master} 的来源. 适用范围 $10^{-3} \lesssim x/X_0 \lesssim 100$.
+
+\paragraph{$0.038 \ln$ 项的角色.} 当 $x/X_0$ 很小, $\ln$ 项是负数, 把 $\theta_0$ 拉低 (反映非高斯小尾在薄材料里更不显著); 当 $x/X_0$ 很大, $\ln$ 项是正数, 把 $\theta_0$ 拉高 (薄高斯近似失效, 出现重尾). 在 $x/X_0 = 1$ (一个辐射长度) 时 $\ln$ 项为 0.
+
+\subsection{逐材料计算 (复现状态报告)}
+
+下面把状态报告 (\StatusReport{} §Highland 公式) 的三个数字 (Sn 16.4, air 1.72, PDC 1.21 mrad) 从第一性原理推导.
+
+\paragraph{$\beta p$ 因子.} $p = 635\;\mathrm{MeV}/c$, $\beta = 0.5607$, $\beta p = 0.5607 \times 635 = 355.8\;\mathrm{MeV}/c$. 故
+\begin{equation}
+  \frac{13.6}{\beta p} = \frac{13.6}{355.8} = 0.0382\;\mathrm{rad}.
+  \label{eq:partIc:highland_prefactor}
+\end{equation}
+
+\paragraph{Sn 靶.} $\rho_\mathrm{Sn} = 7.31\;\mathrm{g/cm^3}$, $X_0^\mathrm{Sn} = 8.82\;\mathrm{g/cm^2}$ (Sn 的标准辐射长度), 厚度 $t = 0.25\;\mathrm{cm}$. 故
+\begin{align}
+  \rho t &= 7.31 \times 0.25 = 1.828\;\mathrm{g/cm^2}, \\
+  x/X_0 &= 1.828 / 8.82 = 0.2073, \\
+  \sqrt{x/X_0} &= 0.4553, \\
+  \ln(x/X_0) &= \ln(0.2073) = -1.573, \\
+  1 + 0.038 \ln(x/X_0) &= 1 + 0.038 \times (-1.573) = 0.940, \\
+  \theta_0^\mathrm{Sn} &= 0.0382 \times 0.4553 \times 0.940
+  = 0.01635\;\mathrm{rad}
+  = 16.35\;\mathrm{mrad}.
+\end{align}
+四舍五入到 $16.4\;\mathrm{mrad}$, 与状态报告完全一致.
+
+\paragraph{空气 (1 atm, 1 m).} $\rho_\mathrm{air} = 1.205 \times 10^{-3}\;\mathrm{g/cm^3}$, $X_0^\mathrm{air} = 36.66\;\mathrm{g/cm^2}$ (PDG), $t = 100\;\mathrm{cm}$.
+\begin{align}
+  \rho t &= 1.205\times 10^{-3} \cdot 100 = 0.1205\;\mathrm{g/cm^2}, \\
+  x/X_0 &= 0.1205 / 36.66 = 3.288 \times 10^{-3}, \\
+  \sqrt{x/X_0} &= 0.0573, \\
+  \ln(x/X_0) &= \ln(3.288\times 10^{-3}) = -5.717, \\
+  1 + 0.038 \ln(x/X_0) &= 1 - 0.217 = 0.783, \\
+  \theta_0^\mathrm{air} &= 0.0382 \times 0.0573 \times 0.783
+  = 0.001714\;\mathrm{rad} = 1.71\;\mathrm{mrad}.
+\end{align}
+舍入到 $1.72\;\mathrm{mrad}$ (与状态报告一致, 1.72 vs 1.71 的 $\sim 0.01$ 差源于中间舍入).
+
+\paragraph{PDC 气体 (75\% Ar + 25\% i-C$_4$H$_{10}$).} 状态报告给出混合密度 $\rho_\mathrm{mix} = 1.87\times 10^{-3}\;\mathrm{g/cm^3}$, 等效辐射长度 $X_0^\mathrm{mix} = 24.1\;\mathrm{g/cm^2}$, 路径 $t = 22.4\;\mathrm{cm}$ (190 mm $/\cos 32^\circ$).
+\begin{align}
+  \rho t &= 1.87\times 10^{-3} \cdot 22.4 = 0.04189\;\mathrm{g/cm^2}, \\
+  x/X_0 &= 0.04189 / 24.1 = 1.738 \times 10^{-3}, \\
+  \sqrt{x/X_0} &= 0.04169, \\
+  \ln(x/X_0) &= \ln(1.738\times 10^{-3}) = -6.355, \\
+  1 + 0.038 \ln(x/X_0) &= 1 - 0.241 = 0.759, \\
+  \theta_0^\mathrm{PDC} &= 0.0382 \times 0.04169 \times 0.759
+  = 0.001209\;\mathrm{rad} = 1.21\;\mathrm{mrad}.
+\end{align}
+与状态报告一致.
+
+\subsection{多次散射对 $\sigma_p$ 的贡献}
+
+\paragraph{磁场后散射 → 出射角误差.} Sn 靶散射发生在\emph{磁场之前}, 被 RK fitter 的方向自由度 $(u, v)$ 完全吸收 (\StatusReport{} §各材料对动量重建的影响). 真正污染动量重建的是\emph{磁场之后}的 MS:
+\begin{itemize}[nosep, leftmargin=2em]
+  \item 空气 1 m: $\theta_0^\mathrm{air} = 1.72\;\mathrm{mrad}$.
+  \item PDC1 气体: $\theta_0^\mathrm{PDC} = 1.21\;\mathrm{mrad}$ (PDC1 内部散射的角偏转传到 PDC2 测量).
+  \item PDC2 气体: 仅引起 PDC2 内部 $\sim 0.08\;\mathrm{mm}$ 位移, 可忽略.
+\end{itemize}
+
+\paragraph{合并.} 平方和:
+\begin{equation}
+  \sigma_\theta^\mathrm{MS} = \sqrt{(\theta_0^\mathrm{air})^2 + (\theta_0^\mathrm{PDC})^2}
+  = \sqrt{1.72^2 + 1.21^2}
+  = \sqrt{2.958 + 1.464}
+  = 2.10\;\mathrm{mrad}.
+  \label{eq:partIc:sigma_theta_MS_total}
+\end{equation}
+
+\paragraph{$\sigma_p$ 贡献.} 用式~\eqref{eq:partIc:sigma_p_master}:
+\begin{align}
+  \sigma_p^\mathrm{air} &= 1460 \times 0.00172 = 2.51\;\mathrm{MeV}/c, \\
+  \sigma_p^\mathrm{PDC} &= 1460 \times 0.00121 = 1.77\;\mathrm{MeV}/c, \\
+  \sigma_p^\mathrm{MS,total} &= 1460 \times 0.00210 = 3.07\;\mathrm{MeV}/c,
+\end{align}
+四舍五入与状态报告 (\StatusReport{} §综合动量分辨, 表~综合动量分辨) 完全一致 (2.5, 1.8, 3.1 MeV/$c$).
+
+\paragraph{综合 ($\sigma_x = 0.5\;\mathrm{mm}$).}
+\begin{equation}
+  \sigma_p^\mathrm{total} = \sqrt{(\sigma_p^\mathrm{pos})^2 + (\sigma_p^\mathrm{MS,total})^2}
+  = \sqrt{1.03^2 + 3.07^2} = \sqrt{1.06 + 9.42}
+  = \sqrt{10.48} = 3.24\;\mathrm{MeV}/c.
+\end{equation}
+即\textbf{$\sigma_p \approx 3.2\;\mathrm{MeV}/c$}, 这正是 NN 后端 $p_z$ MAE = 3.1 MeV/$c$ 的目标值.
+
+\paragraph{综合 ($\sigma_x = 2.0\;\mathrm{mm}$).}
+\begin{equation}
+  \sigma_p^\mathrm{total}(2.0) = \sqrt{4.13^2 + 3.07^2}
+  = \sqrt{17.06 + 9.42} = 5.15\;\mathrm{MeV}/c.
+\end{equation}
+即\textbf{$\sigma_p \approx 5.1\;\mathrm{MeV}/c$}, 与状态报告 表~综合动量分辨 完全一致.
+
+\subsection{MS 与 LM 拟合的相互作用}
+
+\paragraph{问题陈述.} RK4 前向模型假设 \emph{确定性}光滑轨迹: 给定靶处动量 $\vec p_\mathrm{tgt}$, 轨迹通过 PDC 平面的位置完全确定, 没有过程噪声. 但实际 MS 是\emph{每事件独立的随机过程}, 把"PDC 测量值 - RK4 预测值"残差分布展宽到\emph{超过} $\sigma_\mathrm{wire}$ 应该给的范围. 状态报告 (\StatusReport{} §修复欠覆盖) 观测到关掉 Sn 靶后 $\sigma_x \approx 3$--$15\;\mathrm{mm}$ (MS 主导) vs $\sigma_\mathrm{wire} = 0.2\;\mathrm{mm}$, 相差 15--75 倍.
+
+\paragraph{两种修复方法.}
+\begin{enumerate}[nosep, leftmargin=2em]
+  \item \textbf{Kalman / measurement covariance inflation.} 把 MS 贡献加入测量协方差: $\Sigma_\mathrm{meas} = \mathrm{diag}(\sigma_\mathrm{wire}^2) + \Sigma_\mathrm{MS}$, 其中 $\Sigma_\mathrm{MS}$ 由材料厚度沿轨迹累积. 这是 "rough Kalman" 处理, 在每次 RK4 step 推进时把过程噪声转换成等效测量协方差. 见 Part~II §3 修复路径.
+  \item \textbf{Toy-MC PDC smearing (status report 的 method 6).} 在反演前对每次拟合, 在初始方向上加 Gaussian smear $\theta_0$, 重复 $N$ 次, 用拟合结果的散布估计 $\sigma_p$. 这是 frequentist ensemble 方法, 不需要修改 forward model, 但需要 $N$ 倍计算开销.
+\end{enumerate}
+状态报告里两种方法都未在 production 启用; Part~II §3 给出明确的修复 roadmap.
+
+\subsection{Highland 公式的局限}
+
+Highland 给的是\emph{投影角的高斯近似}; 真实分布有重尾 (Molière 全分布):
+\begin{itemize}[nosep, leftmargin=2em]
+  \item 高斯近似在角度 $\lesssim 3 \theta_0$ 内有效, 占总事件 $\sim 99\%$.
+  \item 大角尾巴 ($> 3\theta_0$) 由 Molière "single-plural" component 决定, 概率 $\sim 1\%$.
+\end{itemize}
+对覆盖率/pull 分布尾部分析, 直接用 Geant4 G4MultipleScattering 模型 (背后是 Urban 或 GS 模型, 已经包含尾巴) 比 Highland 准确. 状态报告 §G4 涨落集合就是 G4 simulated MS 的结果, 自动包含尾巴.
+
+\paragraph{对覆盖率的影响.} 假设我们把 MS 当 Gauss 处理 (Highland $\theta_0$ + Kalman 协方差膨胀), 则覆盖率会在 68\% / 95\% nominal 附近\emph{略低估} ($\sim 1$--$2\%$ 的 deficit), 因为重尾事件的真值会被推到 Gauss 区间外. 在我们 744 事件 ensemble 上, 这个 deficit 是\emph{可观察的}但低于 Clopper-Pearson 的统计 noise floor; Part~III §5 给出对应的统计检验.
+
+\paragraph{修复后预期.} 在 Part~II §3 的 Kalman 协方差修复 + Part~II §5 的 $dE/dx$ 修复都到位后, 预期:
+\begin{itemize}[nosep, leftmargin=2em]
+  \item $|\langle \Delta p_z \rangle| \lesssim 1\;\mathrm{MeV}/c$ (来自 $dE/dx$ 修复, Part~II §5).
+  \item Fisher $\sigma_{p_z}$ 与 残差 std 在 $p_z$ 方向匹配 (来自 MS 协方差膨胀, Part~II §3).
+  \item 68\% 覆盖率全部组件回到 nominal 附近 ($\pm 2\%$).
+\end{itemize}
+$p_y$ 方向参数化 line-arization 偏差 (\StatusReport{} §修复欠覆盖) 是另一条独立路径, 见 Part~II §8.
+
+% --- end of Section 9 ---

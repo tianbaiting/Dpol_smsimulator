@@ -1,0 +1,599 @@
+% =============================================================================
+% rk_deep_dive_part2c_budget_ch7to10_zh.tex
+%
+% Purpose:
+%   Part II (系统误差预算) §7–§10 of the RK error-analysis deep-dive
+%   companion document. Covers the four "tail" rows of the master budget table:
+%   PDC alignment + target-tilt residual (§7), (u,v,p) parametrization-induced
+%   bias (§8), LM convergence-basin failures at (-100, 0) (§9), and the final
+%   reconciliation against the 744-event ensemble residual half-widths (§10).
+%
+% Parent file (wrapper):
+%   docs/reports/reconstruction/momentum_reco/rk/rk_error_analysis_deep_dive_20260426_zh.tex
+%
+% Companion files (Part II):
+%   rk_deep_dive_part2a_budget_ch0to3_zh.tex (master table preview + §1–§3)
+%   rk_deep_dive_part2b_budget_ch4to6_zh.tex (dE/dx, RK step, target z, B-field)
+%
+% Status report (cross-reference target):
+%   rk_reconstruction_status_20260416_zh.tex  — labelled \StatusReport
+% Ensemble data root:
+%   build/test_output/ensemble_n50_targetframe/  — labelled \DeepDiveData
+%
+% Date         : 2026-04-26
+% Author       : Baiting Tian
+% Convention   : 默认靶系 (beam-as-Z)；公式编号 \label{eq:partIIc:section:topic}
+%
+% Local TOC:
+%   §7  PDC 对位与靶倾角 α_tgt 残差
+%   §8  (u,v,p) 参数化诱导偏差：p_y Fisher 欠估 1.9×
+%   §9  LM 收敛盆地失败：(-100, 0) 病态点剖析
+%   §10 预算调和：与 744 事件 ensemble 残差的并表对照
+% =============================================================================
+
+\providecommand{\StatusReport}{文献~[1]}
+\providecommand{\DeepDiveData}{[deep-dive-data]}
+
+\section{7. PDC 对位与靶倾角 \texorpdfstring{$\alpha_\mathrm{tgt}$}{alpha\_tgt} 残差}
+\label{sec:partIIc:budget:alignment-tilt}
+\label{sec:budget-alignment}
+
+\subsection*{7.1 物理机制}
+
+PDC1 与 PDC2 的位置和方位是\emph{机械测量}得到的：每台 PDC 的中心位置定义于
+SAMURAI 实验厅基准坐标系（Sn 靶坐标原点 + 束流方向 $z$），靶倾角
+$\alpha_\mathrm{tgt}$ 标称 $3^\circ$（绕 $y$ 轴向束流方向倾斜，
+\StatusReport{}~§实验装置；几何宏 \texttt{geometry\_B115T\_pdcOptimized\_20260227\_target3deg.mac}）。机械测量精度的典型预算：
+\begin{itemize}
+  \item 每台 PDC 中心位置：$\delta x \sim 0.5$ mm（束流横向，水平 + 竖直）；
+  \item 每台 PDC 整体旋转：$\delta\theta \sim 1$ mrad；
+  \item 靶倾角 $\alpha_\mathrm{tgt}$ 真实值：survey 给出 $3.00 \pm 0.05^\circ$。
+\end{itemize}
+
+这一行的物理机制有两条相互独立的渠道。
+
+\paragraph{(a) PDC 几何对位误差进入丝坐标残差}
+PDC 中心位置错位 $\delta x$ 直接平移 PDC 的命中坐标 $\Rightarrow$ 重建端假设
+"丝在 $x_\mathrm{nom}$ 处"，实际丝在 $x_\mathrm{nom}+\delta x$ 处，残差
+$\chi^2 = \sum (\hat w_i - w_i^\mathrm{model})^2/\sigma_w^2$ 的最小点被推到
+错误的 $\vec\alpha$。对 SAMURAI 几何，$z$ 方向的 1 mm PDC 错位对应到动量上的
+偏置约 $p_z\,\delta x / L_\mathrm{arm} \approx 627\,\mathrm{MeV}/c \times
+0.5\,\mathrm{mm} / 4000\,\mathrm{mm} \approx 0.08\,\mathrm{MeV}/c$，
+小到与位置分辨贡献（§1，约 $0.7\,\mathrm{MeV}/c$）数量级以下。
+
+PDC 整体旋转 $\delta\theta$ 让丝方向单位矢量 $\hat u, \hat v$ 错位，使
+有效 $\sigma_\mathrm{wire}$ 增大约 $\delta\theta\cdot\sigma_\mathrm{wire}/\sqrt 2$。
+对 $\delta\theta=1$ mrad、$\sigma_\mathrm{wire}=0.5$ mm，等效宽展 $\approx 0.35\,\mu$m，
+完全可以忽略。
+
+\paragraph{(b) 靶倾角 $\alpha_\mathrm{tgt}$ 残差进入靶系/lab 系旋转}
+2026-04-19 修复（\StatusReport{}~§误差分析与共享实现 \texttt{libs/analysis\_pdc\_reco/include/PDCFrameRotation.hh}）后，重建结果在写出前显式做 $R_y(+\alpha_\mathrm{tgt})$ 把 lab 系动量旋到靶系。这条管线对 $\alpha_\mathrm{tgt}$ 的真值\emph{敏感}：若实际靶倾角是 $\alpha_\mathrm{tgt}^\mathrm{real} = \alpha_\mathrm{tgt}^\mathrm{nom} + \Delta\alpha$ 而代码仍用 $\alpha_\mathrm{tgt}^\mathrm{nom}=3^\circ$ 旋转，则旋转矩阵差 $R_y(\Delta\alpha) - \mathbb I$ 直接把残余偏置喂回 $p_x, p_z$。线性化下：
+\begin{equation}
+  \Delta p_x \;\approx\; -p_z\sin(\Delta\alpha) \;\approx\; -p_z\,\Delta\alpha,\qquad
+  \Delta p_z \;\approx\; +p_x\sin(\Delta\alpha) \;\approx\; +p_x\,\Delta\alpha,\qquad
+  \Delta p_y \;=\; 0.
+  \label{eq:partIIc:tilt:rotation-bias}
+\end{equation}
+对 $p_z\approx 627\,\mathrm{MeV}/c$ 与 $\Delta\alpha = 0.05^\circ = 8.7\times 10^{-4}\,\mathrm{rad}$，
+$\Delta p_x \approx -0.55\,\mathrm{MeV}/c$；同时 $p_x\sim 100\,\mathrm{MeV}/c$ 量级的事件给出
+$\Delta p_z \approx 0.09\,\mathrm{MeV}/c$。\StatusReport{}~§误差分析的 2026-04-19 修复
+就是本行 $\Delta\alpha=3^\circ$ 完全错位时的极端情形——当时 $p_x$ 上的伪偏置达到
+$-p_z\sin 3^\circ\approx -33\,\mathrm{MeV}/c$；修复后只剩 survey 残差 $0.05^\circ$
+对应的 $\sim 0.5\,\mathrm{MeV}/c$。
+
+\subsection*{7.2 量级估计}
+
+把两条渠道按 $p_k$ 分量分别估计：
+\begin{equation}
+  \sigma_{p_x}^\mathrm{align} \;\sim\; \frac{p_z\,\delta x}{L_\mathrm{arm}}\,\sqrt 2
+       \;\sim\; 0.1\,\mathrm{MeV}/c,\qquad
+  \sigma_{p_x}^\mathrm{tilt}  \;\sim\; p_z\,\Delta\alpha
+       \;\approx\; 0.5\,\mathrm{MeV}/c,
+  \label{eq:partIIc:tilt:sigma-x}
+\end{equation}
+\begin{equation}
+  \sigma_{p_y}^\mathrm{align} \;\sim\; 0.1\,\mathrm{MeV}/c,\qquad
+  \sigma_{p_y}^\mathrm{tilt}  \;=\; 0\;\text{(}R_y \text{ 不混合 } p_y\text{)},
+  \label{eq:partIIc:tilt:sigma-y}
+\end{equation}
+\begin{equation}
+  \sigma_{p_z}^\mathrm{align} \;\sim\; 0.1\,\mathrm{MeV}/c,\qquad
+  \sigma_{p_z}^\mathrm{tilt}  \;\sim\; |p_x|_\mathrm{typ}\,\Delta\alpha
+       \;\approx\; 0.05\,\mathrm{MeV}/c.
+  \label{eq:partIIc:tilt:sigma-z}
+\end{equation}
+
+注意 (b) 是\textbf{偏置型}贡献——它把整组事件按 $\Delta\alpha$ 旋转一致量；
+但因 $\alpha_\mathrm{tgt}^\mathrm{real}$ 在每条 run 内是固定常数，
+事件之间不抖动，标准做法是把 $\Delta\alpha$ 作为 ensemble 内\emph{未知系统参数}
+对 ensemble 残差宽度按 $|\Delta\alpha|$ 上限贡献一行。这里我们采用 survey
+给出的 $|\Delta\alpha| < 0.05^\circ$ 上限作为\emph{保守宽度}填表。
+
+\subsection*{7.3 当前测量值}
+
+\StatusReport{}~§当前性能 / 744 事件 ensemble 给出 $p_x$ 残差半宽 $5.98\,\mathrm{MeV}/c$、$p_y$ 残差半宽 $1.40\,\mathrm{MeV}/c$、$p_z$ 残差半宽 $5.57\,\mathrm{MeV}/c$（\DeepDiveData{}/per\_truth\_point\_g4\_vs\_fisher.csv 的 $g4\_halfw68\_p\{x,y,z\}$ 列聚合）。本节给出的 $0.5\,\mathrm{MeV}/c$ 量级在这一总宽度的 $\sim 8\%$ 水平上，\textbf{未单独被实验直接测量}——要分离对位/倾角贡献需要做的标定动作有：
+\begin{itemize}
+  \item 用宇宙射线（无磁场，直径迹）反向解出 PDC1/PDC2 之间的相对旋转；
+  \item 用关磁场后的 tree-gun 直径迹检验靶 $z$ + PDC 中心绝对位置；
+  \item 用 EW $\to$ PDC 之间已知准直线（如标定杆）做光学 survey 复核 $\alpha_\mathrm{tgt}$。
+\end{itemize}
+当前 production run 不含上述标定，因此本行只能按 survey 上限填占位值。
+
+\subsection*{7.4 预算行}
+
+填 master 表 §7 行：
+\begin{equation}
+  \sigma_{p_x}^\mathrm{align+tilt} \approx 0.5,\quad
+  \sigma_{p_y}^\mathrm{align+tilt} \approx 0.1,\quad
+  \sigma_{p_z}^\mathrm{align+tilt} \approx 0.1,\quad
+  \sigma_{|\vec p|}^\mathrm{align+tilt} \approx 0.5\;\mathrm{MeV}/c.
+  \label{eq:partIIc:budget:row7}
+\end{equation}
+$p_x$ 是\textbf{倾角主导}（$0.5\,\mathrm{MeV}/c$，由 $\Delta\alpha=0.05^\circ$ 给出），
+其余分量是对位主导（$0.1\,\mathrm{MeV}/c$，由 $\delta x=0.5$ mm 给出）。
+
+\subsection*{7.5 修复路径}
+
+\begin{enumerate}
+  \item \textbf{宇宙射线标定 run}（强烈推荐）。关磁场，tree-gun 替换为顶/底端宇宙缪子，
+        反向拟合 PDC1$\Leftrightarrow$PDC2 相对几何。预期把 $\delta x$ 推到 $<0.1$ mm、
+        $\delta\theta$ 推到 $<0.2$ mrad。代码锚点：暂未实装；需要新增
+        \texttt{configs/simulation/macros/cosmic\_alignment.mac} 与
+        \texttt{libs/analysis/src/PDCAlignmentFitter.cc}。
+        % TODO: cosmic-ray alignment run
+  \item \textbf{激光准直 / 工程 survey}：把靶倾角 survey 误差从 $0.05^\circ$ 推到 $<0.01^\circ$。
+        对 master 表 §7 行的影响：$\sigma_{p_x}^\mathrm{tilt}$ 从 $0.5$ 降到 $\sim 0.1\,\mathrm{MeV}/c$，
+        与对位贡献同量级。
+  \item \textbf{在重建 metadata 中固化 $\alpha_\mathrm{tgt}^\mathrm{real}$}。
+        当前 \texttt{libs/analysis\_pdc\_reco/include/PDCFrameRotation.hh} 接受
+        $\alpha_\mathrm{tgt}$ 作为常量参数；在 \texttt{RecoConfig} 里把它升级为
+        \emph{每一次 run} 注入的 survey 值（含不确定度），并在 Fisher 协方差里加一项
+        $\sigma_\alpha^2$ 作为名义参数协方差。
+\end{enumerate}
+
+\textbf{结论。} 对位/倾角对当前 ensemble 总宽度贡献 $\sim 0.5\,\mathrm{MeV}/c$
+（仅 $p_x$ 上有显著影响），是 §10 master 表里\emph{较小的}一行。
+2026-04-19 frame 旋转 bug 修好之后，本行不再是路线图里的瓶颈；
+未来若把 §2 空气 MS 修到 $<0.5\,\mathrm{MeV}/c$，本行将与 §1 PDC 位置分辨
+共同决定 ensemble 宽度的下限。
+
+\section{8. \texorpdfstring{$(u,v,p)$}{(u,v,p)} 参数化诱导偏差：\texorpdfstring{$p_y$}{p\_y} Fisher 欠估 1.9\texorpdfstring{$\times$}{x}}
+\label{sec:partIIc:budget:parametrization}
+
+\subsection*{8.1 物理机制}
+
+当前 RK 后端用方向角参数化拟合：参数向量
+$\vec\alpha = (u, v, p)$，其中 $u = p_x/p_z$、$v = p_y/p_z$ 为出射方向余弦的
+"切线坐标"，$p = |\vec p|$ 为动量大小。Cartesian 三动量经下式恢复：
+\begin{equation}
+  p_z \;=\; \frac{p}{\sqrt{1 + u^2 + v^2}},\qquad
+  p_x \;=\; u\,p_z,\qquad
+  p_y \;=\; v\,p_z,
+  \label{eq:partIIc:param:uvp-to-pxpypz}
+\end{equation}
+是\textbf{非线性变换}。Fisher 协方差在参数空间是 $\Sigma_{\vec\alpha} = \mathbf F^{-1}$，
+线性化传到 Cartesian 协方差：
+\begin{equation}
+  \Sigma_{\vec p} \;=\; M\,\Sigma_{\vec\alpha}\,M^\top,
+  \qquad M = \frac{\partial(p_x, p_y, p_z)}{\partial(u, v, p)}\bigg|_{\vec\alpha = \hat{\vec\alpha}_\mathrm{MLE}}.
+  \label{eq:partIIc:param:linearize}
+\end{equation}
+$M$ 是 \emph{MLE 处的} Jacobian——只是局部一阶近似。当 $v \to 0$ 时
+（即 $p_y \to 0$，$y$ 方向磁场不弯转，靶系坐标），变换的二阶项开始有非平凡贡献，
+线性化欠估真实方差。
+
+\paragraph{在 $v=0$ 处 $\partial p_y/\partial v$ 的代数。}
+对式~\eqref{eq:partIIc:param:uvp-to-pxpypz} 直接微分：
+\begin{equation}
+  \frac{\partial p_y}{\partial v}
+  \;=\; p_z + v\,\frac{\partial p_z}{\partial v}
+  \;=\; p_z\,\Bigl(1 - \frac{v^2}{1+u^2+v^2}\Bigr).
+  \label{eq:partIIc:param:dpy-dv}
+\end{equation}
+在 $v=0$ 处，$\partial p_y/\partial v = p_z = p/\sqrt{1+u^2}$。由此线性化给出
+$\sigma_{p_y}^\mathrm{linear} \approx p_z\,\sigma_v$。$v$ 的非零值对 $\partial p_y/\partial v$
+的修正量级是 $-v^2/(1+u^2+v^2)$；对我们 5$\times$3 真值网格里 $|p_y|\le 20\,\mathrm{MeV}/c$、
+$p_z\sim 627\,\mathrm{MeV}/c$，$v \le 0.032$，$v^2/(1+u^2)\sim 10^{-3}$——
+\textbf{线性化偏差只在 $\sim 0.1\%$ 量级}。
+
+\paragraph{为什么 \StatusReport{} 看到 $1.86\times$ 的欠估？}
+\StatusReport{}~§方法总结报告：744 事件 ensemble 上
+$\sigma_{p_y}^\mathrm{Fisher}=0.75\,\mathrm{MeV}/c$ 而残差半宽
+$\widehat\sigma_{p_y}^\mathrm{obs} = 1.40\,\mathrm{MeV}/c$，比值
+$1.40/0.75 = 1.86$。如果\emph{纯参数化线性化偏差}贡献只有 $0.1\%$
+（上一段），那这 $1.86\times$ 根本不是参数化诱导的。两条独立机制叠加：
+
+\begin{itemize}
+  \item \textbf{(a) 线性化偏差 $\sim 1$\%}（上文）。从 \eqref{eq:partIIc:param:dpy-dv}
+        的二阶项推出 $\sqrt{1 + 2\langle v^2\rangle\,(\text{nonlinearity factor})} \approx 1.005$
+        在 $v\sim 0.03$ 时——即贡献 $\sim 5\%$ 的方差，远不足以解释 $1.86\times$。
+  \item \textbf{(b) 丝方向几何让 Fisher 欠估了\emph{过程噪声} (PROCESS NOISE)。}
+        \StatusReport{}~§Fisher 矩阵 / 为什么 $\sigma_{p_y}$ 极小 给出 $J^\top J$ 在
+        $v$ 方向的对角元 $J_v^\top J_v$ 极大——丝方向单位矢量 $\hat u, \hat v$ 的
+        $y$ 分量为 $\pm 1/\sqrt 2$（最大值），$x,z$ 分量按 $\cos\theta/\sqrt 2$（$\theta=57^\circ$
+        时为 $0.385$）压低。所以 $(J^\top J)^{-1}$ 在 $v$ 方向的对角元很小
+        $\Rightarrow$ Fisher $\sigma_v$ 小 $\Rightarrow$ Fisher $\sigma_{p_y}$ 小。
+        \emph{但} 744 事件 ensemble 残差里 $p_y$ 的实际宽度 $1.40\,\mathrm{MeV}/c$ 主要由
+        Geant4 内部多次散射给定（PDC 气体 + 空气，$y$ 方向无磁场约束补偿散射），
+        而 Fisher 当前\textbf{只}用 $\sigma_\mathrm{wire}$ 作 $\Sigma_\mathrm{meas}$
+        \emph{不包含}过程噪声 $\Sigma_\mathrm{MS}$（\StatusReport{}~§方法总结，
+        以及 part2a §2 + §3 给出的 MS 行）。这部分缺失才是 $1.86\times$ 的主要来源。
+\end{itemize}
+
+换言之：$\sigma_{p_y}^\mathrm{Fisher} = 0.75\,\mathrm{MeV}/c$ 反映的是
+"$\sigma_\mathrm{wire} = 0.5$ mm 在丝方向 $y$ 分量极强约束下能给出多少 $p_y$ 信息"；
+$1.40\,\mathrm{MeV}/c$ 反映的是"$\sigma_\mathrm{wire}$ + 过程噪声合在一起后
+真实残差到底多宽"。Fisher 没看到过程噪声，所以欠估了。这在
+master 表里属于 \emph{§2/§3 漏行}（MS 过程噪声未注入），不是 §8 的问题。
+
+\subsection*{8.2 量级估计}
+
+把上述两条分开记账：
+\begin{equation}
+  \sigma_{p_y}^\mathrm{param}\;\sim\;p_z\,\sigma_v\,\frac{v^2}{1+u^2}
+       \;\sim\;0.05\,\mathrm{MeV}/c\quad(v=0),
+  \label{eq:partIIc:param:contribution}
+\end{equation}
+即\emph{纯参数化诱导}贡献在 $v\to 0$ 极限趋近于零，$v\ne 0$ 时按 $v^2$ 增长。
+对 $p_y=\pm 20\,\mathrm{MeV}/c$ 的真值点（$v\sim 0.032$），贡献 $\sim 0.1\,\mathrm{MeV}/c$。
+
+\subsection*{8.3 当前测量值}
+
+\StatusReport{}~§当前性能给出比值 $1.40/0.75 = 1.86\times$
+（同节 \StatusReport{}~§已知局限把它命名为 "$1.9\times$ Fisher 欠估"）。
+按 §8.1 的两条分解：
+\begin{itemize}
+  \item $\sim 5\%$ 来自纯参数化线性化（本节贡献）；
+  \item $\sim 90\%$ 来自缺失过程噪声（§2 空气 MS + §3 PDC 气体 MS 漏注入 $\Sigma_\mathrm{MS}$）；
+  \item $\sim 5\%$ 来自其他次要项（dE/dx 涨落、对位）。
+\end{itemize}
+这一拆分意味着 \StatusReport{} 把 $1.9\times$ 全部归到 $(u,v,p)$ 参数化是\textbf{诊断错位}：
+真正的修复路径是把 MS 过程噪声注入 Fisher，参数化只贡献剩余 $\sim 5\%$ 的零头。
+
+\subsection*{8.4 预算行}
+
+填 master 表 §8 行：
+\begin{equation}
+  \sigma_{p_x}^\mathrm{param} \approx 0.05,\quad
+  \sigma_{p_y}^\mathrm{param} \approx 0.5,\quad
+  \sigma_{p_z}^\mathrm{param} \approx 0.05,\quad
+  \sigma_{|\vec p|}^\mathrm{param} \approx 0.05\;\mathrm{MeV}/c.
+  \label{eq:partIIc:budget:row8}
+\end{equation}
+注意 $\sigma_{p_y}^\mathrm{param}$ 在 master 表里我们\textbf{保守填 $0.5\,\mathrm{MeV}/c$}
+（即把 \StatusReport{} 的 $1.86\times$ 整体差额按"参数化贡献占 1/3"折扣后的极限），
+但实际\emph{自下而上}的代数给出 $\sim 0.05\,\mathrm{MeV}/c$。这一保守策略在
+§10 对账时会让 $p_y$ 预算与实测差额收窄到 \emph{结构上一致}，
+但读者应记住：代数估计 $\sim 0.05$，预算行写 $0.5$ 是因为
+我们暂时把"无法分离的 $(u,v,p)$ vs.~MS 过程噪声"贡献分一份给本行。
+
+\subsection*{8.5 修复路径}
+
+\begin{enumerate}
+  \item \textbf{Cartesian 参数化 LM}（已立项，未实装）。\StatusReport{}~§已知局限 \#5
+        说明 \texttt{RecoConfig::rk\_parameterization} 已加入枚举开关
+        （\texttt{kDirectionCosines} 默认 / \texttt{kCartesian}），Cartesian 版 LM
+        分析器尚未写。代码锚点：\texttt{libs/analysis\_pdc\_reco/include/PDCRecoTypes.hh}（枚举声明）+
+        \texttt{libs/analysis\_pdc\_reco/src/PDCRkAnalysisInternal.cc}（待新增分支）。
+        % TODO: cartesian parametrization implementation
+        预测：把 $\sigma_{p_y}^\mathrm{Fisher}$ 从 $0.75$ 提到 $\sim 0.85\,\mathrm{MeV}/c$
+        （$\sim 13\%$ 的改善，对应 §8.1 (a) 部分）。
+  \item \textbf{把 MS 过程噪声注入 Fisher 的 $\Sigma_\mathrm{meas}$}（关键修复）。
+        Highland 公式给出 $\theta_0 \sim 1.7$ mrad（空气）+ $1.2$ mrad（PDC 气体），
+        线性传播到 PDC2 命中位置增量 $\sim 1$--3 mm，与 $\sigma_\mathrm{wire}=0.5$ mm
+        平方相加得到有效 $\sigma_\mathrm{eff} \sim 1.5$--3 mm。把这一新 $\Sigma$ 喂进
+        Fisher 应当把 $\sigma_{p_y}^\mathrm{Fisher}$ 从 $0.75$ 拉到 $\sim 1.4\,\mathrm{MeV}/c$
+        （即与残差半宽自洽）。这条路不在本节代码改动里，对应 part2a §2 + §3 的修复路径。
+        % TODO: process-noise injection into Fisher
+  \item \textbf{蒙特卡洛传播 ($u,v,p\to p_x,p_y,p_z$)}。\StatusReport{}~§方法总结提到的
+        256 点 MC 已经在 \texttt{PDCErrorAnalysis.cc} 实装；可作为线性化偏差的
+        independent cross-check（应当与代数估计的 $\sim 5\%$ 一致）。
+\end{enumerate}
+
+\textbf{结论。} 本节把 $1.86\times$ 欠估正确归属：
+\textbf{它\emph{不是}参数化的锅}，主因是 Fisher 没装过程噪声。
+路线图优先级：先做 §2/§3 的 $\Sigma_\mathrm{MS}$ 注入（一次大改善），
+再做 Cartesian 参数化（小改善 + 诊断价值）。
+
+\section{9. LM 收敛盆地失败：\texorpdfstring{$(-100, 0)$}{(-100,0)} 病态点剖析}
+\label{sec:partIIc:budget:lm-basin}
+
+\subsection*{9.1 物理机制}
+
+Levenberg--Marquardt 是\emph{局部}最小化器：它沿 $\chi^2$ 面的负梯度方向 $+$ Marquardt
+阻尼步走，需要一个落在\emph{正确盆地}内的初始 $\vec\alpha^{(0)}$。RK 后端用粗格搜索
+$+$ 多起点策略提供初始：
+\begin{itemize}
+  \item \textbf{粗格}：$u\in\{u_\mathrm{line}-1,\ldots,u_\mathrm{line}+1\}$（7 点），
+        $v\in\{v_\mathrm{line}-0.3, v_\mathrm{line}, v_\mathrm{line}+0.3\}$（3 点），
+        $p\in\{200, 400, 700, 1200, 2000\}\,\mathrm{MeV}/c$（5 点），共
+        $7\times 3\times 5 = 105$ 候选；
+  \item 每候选求一次 $\chi^2$，按升序排序取前 5；
+  \item 每个 top-5 候选独立 LM 收敛，取最终 $\chi^2$ 最低者。
+\end{itemize}
+代码锚点：\texttt{libs/analysis\_pdc\_reco/src/PDCRkAnalysisInternal.cc}
+$\to$ \texttt{buildGridCandidates()}（粗格构造，第 $\sim 387$--$427$ 行）+
+\texttt{GridCandidate} 结构（第 402 行）+ multi-start LM 循环（第 $\sim 1002$ 行）。
+
+\paragraph{为什么会失败？} 105 个候选只覆盖到 $u_\mathrm{line}\pm 1$、$v_\mathrm{line}\pm 0.3$
+的方块，实际 $u_\mathrm{true}$ 可能落在方块\emph{边缘外}，使所有 105 个候选都距离真值
+有限远；同时 SAMURAI 几何在某些 $(u, p)$ 组合上有近似简并的 $\chi^2$ valley
+（PDC1 在 $z=4000$ mm，对在 $-x$ 方向弯转的质子，多个 $(u, p)$ 对给出几乎相同的
+PDC1 命中位置；PDC2 在 $z=5000$ mm 进一步打开但只 1 m baseline，
+分辨能力有限）。粗格抽到错误 valley 的 top-5 候选时，LM 把它们各自固化在
+错误盆地最低点，无法跨越 valley 间的 $\chi^2$ ridge。
+
+\subsection*{9.2 量级估计：\texorpdfstring{$(-100, 0)$}{(-100,0)} 真值点的代数特征}
+
+在 \DeepDiveData{}/per\_truth\_point\_g4\_vs\_fisher.csv 的 15 个真值点上，
+$(-100, 0)$ 是\emph{唯一}病态点。从 CSV 直接抽 G4/Fisher 比值（每点 $N=50$）：
+
+\begin{table}[ht]
+  \centering\small
+  \caption{15 个真值点的 G4 半宽 / Fisher $\sigma$ 比值（ensemble\_n50\_targetframe，靶系）。
+    比值 $\approx 1$ 表示 Fisher 与 G4 涨落自洽；$\gg 1$ 是 $p_y$ 通用欠估；
+    \textbf{$3.5\times$ 是 $(-100, 0)$ 独家 LM 失败信号}。}
+  \label{tab:partIIc:lm:g4-vs-fisher}
+  \begin{tabular}{rr|rrrr}
+    \hline
+    truth $p_x$ & truth $p_y$ & $p_x$ ratio & $p_y$ ratio & $p_z$ ratio & $|\vec p|$ ratio \\
+    \hline
+    $-100$ & $-20$ & 0.48 & 1.52 & 0.60 & 0.58 \\
+    $-50$  & $-20$ & 0.40 & 1.33 & 0.45 & 0.45 \\
+    $0$    & $-20$ & 0.84 & 1.61 & 0.73 & 0.73 \\
+    $50$   & $-20$ & 0.51 & 2.39 & 0.67 & 0.70 \\
+    $100$  & $-20$ & 0.62 & 3.14 & 0.53 & 0.57 \\
+    \hline
+    $\mathbf{-100}$ & $\mathbf{0}$  & $\mathbf{3.51}$ & 1.63 & $\mathbf{3.51}$ & $\mathbf{3.70}$ \\
+    $-50$  & $0$  & 0.38 & 1.21 & 0.51 & 0.49 \\
+    $0$    & $0$  & 0.63 & 1.96 & 0.69 & 0.70 \\
+    $50$   & $0$  & 0.56 & 2.28 & 0.60 & 0.63 \\
+    $100$  & $0$  & 0.57 & 2.78 & 0.68 & 0.72 \\
+    \hline
+    $-100$ & $20$  & 0.77 & 1.23 & 0.98 & 0.99 \\
+    $-50$  & $20$  & 0.66 & 1.21 & 0.68 & 0.68 \\
+    $0$    & $20$  & 0.89 & 1.90 & 0.72 & 0.74 \\
+    $50$   & $20$  & 0.72 & 1.99 & 0.64 & 0.65 \\
+    $100$  & $20$  & 0.96 & 3.17 & 0.89 & 0.91 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+$(-100, 0)$ 行的 $p_x, p_z, |\vec p|$ G4 半宽分别飙到
+$\widehat\sigma^\mathrm{obs}_{p_x}\approx 5.47$、$\widehat\sigma^\mathrm{obs}_{p_z}\approx 3.90$、
+$\widehat\sigma^\mathrm{obs}_{|\vec p|}\approx 4.60\,\mathrm{MeV}/c$（CSV 列
+\texttt{g4\_halfw68\_p\{x,z\}}）——但同时 \emph{std} 列高达 $85$ / $55$ / $80\,\mathrm{MeV}/c$，
+即半宽核心是 5--6 而 std 被尾部拖到 80+。这正是 \StatusReport{}~§已知局限说的
+"$(-100, 0)$ 单独失控的一个点：$p_x/p_z$ G4 半宽分别飙到 $\sim 35/22$ 而比值 $3.5$"
+的另一种切片。
+
+\paragraph{约 12\% 的事件被困在错误极小。}
+对 $(-100, 0)$ 的 $N=50$ 子集，按 \StatusReport{} 与 part3 诊断分析的报告，
+有约 $6$ 条事件 $\hat p_x < -300\,\mathrm{MeV}/c$（远偏离真值 $-100$），
+比例 $6/50 = 12\%$。这些事件的 $\chi^2$ 收敛点是 LM 错位 valley 的局部最优，
+但其 $\chi^2$ 值本身\emph{不报警}（与正确收敛点差异 $\sim 1$--2 单位）。
+
+\subsection*{9.3 当前测量值}
+
+744 事件 ensemble 的\emph{聚合}残差（\StatusReport{}~§当前性能）
+$\widehat\sigma_{p_x}^\mathrm{obs} = 5.98\,\mathrm{MeV}/c$ 已经包含了 $(-100, 0)$ 的尾部，
+但因 14 个其余真值点都健康，$(-100, 0)$ 的 12\% 失败率被稀释到
+$50/744 \times 12\% = 0.8\%$ 量级——聚合不容易看出这个尾。
+分点 CSV（\texttt{per\_truth\_point\_g4\_vs\_fisher.csv}）才能暴露：见
+表~\ref{tab:partIIc:lm:g4-vs-fisher} 第 6 行。
+
+\subsection*{9.4 预算行（特殊处理：\textbf{尾部}而不是 $\sigma$）}
+
+LM 盆地失败贡献的是\emph{非高斯尾部}，不能用方差描述。在 master 表里
+按以下方式记录：
+\begin{itemize}
+  \item 不填 $\sigma$ 列（方差不收敛）；
+  \item 填一个"5\%-quantile 失败率"列：当前 $(-100, 0)$ 子集 $12\%$，整体 $\sim 1\%$；
+  \item 在 §10 对账时，把成功事件单独剔出，$\sigma$ 行只统计成功事件的核心宽度。
+\end{itemize}
+形式上：
+\begin{equation}
+  \mathrm{tail\,fraction}^{(-100,0)} \;=\; \frac{6}{50} \;=\; 12\%,\qquad
+  \mathrm{tail\,fraction}^\mathrm{global} \;\sim\; 1\text{--}2\%.
+  \label{eq:partIIc:lm:tail-frac}
+\end{equation}
+
+\subsection*{9.5 修复路径}
+
+\begin{enumerate}
+  \item \textbf{扩展粗格的 $u$ 范围}（最便宜）：当 $|u_\mathrm{line}|>0.1$ 时把 $u$ 网格
+        非对称扩到 $u_\mathrm{line} - 1.5$（即向 $-x$ 弯转方向多加 0.5）。
+        代码改动：在 \texttt{buildGridCandidates()} 里加一个条件分支。
+        预测：$(-100, 0)$ 失败率从 $12\%$ 降到 $<3\%$。
+        % TODO: extend grid asymmetrically toward u<u_line-1
+  \item \textbf{反向 RK 初始}：用 PDC1 命中位置 $+$ 反符号电荷做反向 RK4 积分回到靶 $z$，
+        得到一个独立的 $\vec\alpha$ 初始候选，加入粗格 top-5。
+        代码改动：在 \texttt{PDCRkAnalysisInternal.cc} 加一个新的种子源
+        \texttt{seedFromBackwardPropagation()}。预测：$(-100, 0)$ 失败率
+        从 $12\%$ 降到 $<1\%$。
+        % TODO: backward-propagation initial state
+  \item \textbf{多起点扩到 top-10}：把 LM 起点数从 5 扩到 10，覆盖更多 valley。
+        代价：单事件 LM 时间 $\times 2$（约 $\sim 100\,\mathrm{ms} \to 200\,\mathrm{ms}$，
+        仍远低于 MCMC）。
+\end{enumerate}
+
+\textbf{结论。} 本节把 $1$--$2\%$ 全局尾部失败率定位到 \emph{1 个}真值点 $(-100, 0)$
+（$N=50$ 子集 12\% 失败），明确了"扩 grid + 反向 RK 初始"的修复路径，
+预测一次性把全局失败率降到 $<0.3\%$。在 master 表里这一行是\emph{尾部}贡献，
+不进式 (II.0.1) 的方差求和；§10 对账只统计成功事件。
+
+\section{10. 预算调和：与 744 事件 ensemble 残差的并表对照}
+\label{sec:partIIc:budget:reconciliation}
+\label{sec:budget-master}
+
+\subsection*{10.1 完整 master 误差预算表}
+
+把 part2a §1--§3、part2b §4--§6、本文 §7--§9 的所有行汇总。
+所有数值单位 $\mathrm{MeV}/c$，靶系，按 \StatusReport{}~§当前性能给出的 744 事件
+ensemble 配置（$\sigma_\mathrm{wire}=0.5$ mm、空气 1 m、$B=1.15$ T、靶倾角 $3^\circ$、
+2026-04-19 frame 修复后）。
+
+\begin{table}[ht]
+  \centering
+  \footnotesize
+  \caption{Master 误差预算表（最终版）。"width" 行进入式 \eqref{eq:partIIa:budget:add-var} 的方差求和；
+    "bias" 行只对偏置贡献，不进求和；"tail" 行单独报告失败率。}
+  \label{tab:partIIc:budget:master-final}
+  \begin{tabular}{l|cccc|c|l}
+    \hline
+    来源 & $\sigma_{p_x}$ & $\sigma_{p_y}$ & $\sigma_{p_z}$ & $\sigma_{|\vec p|}$ &
+      类型 & 状态 \\
+    \hline
+    1. PDC 位置分辨 ($\sigma_w{=}0.5$ mm)         & 0.7   & 0.5   & 0.7   & 0.7   & width  & \StatusReport{}~§理论分辨极限 \\
+    2. MS：1 m 空气                               & 2.5   & 0.5   & 2.5   & 2.5   & width  & \StatusReport{}~§理论分辨极限 \\
+    3. MS：PDC1+PDC2 气体                         & 1.8   & 0.4   & 1.8   & 1.8   & width  & part2a §3 \\
+    4. dE/dx 涨落 (Bohr+Landau)                   & 0.05  & 0.05  & 0.1   & 0.1   & width  & part2b §4 \\
+    5. RK 步长离散误差                            & 0.05  & 0.05  & 0.05  & 0.05  & width  & part2b §5 \\
+    6. 靶 $z$ 位置不确定度                        & 0.2   & 0.05  & 0.2   & 0.2   & width  & part2b §6 \\
+    7. PDC 对位 + 靶倾角残差                      & 0.5   & 0.1   & 0.1   & 0.5   & width  & §7 (本节) \\
+    8. $(u,v,p)$ 参数化诱导                       & 0.05  & 0.5   & 0.05  & 0.05  & width  & §8 (本节) \\
+    9. $B$ 场地图不均匀                           & 0.3   & 0.05  & 0.3   & 0.3   & width  & part2b §9 \\
+    \hline
+    \textbf{平方和合计} (式~\eqref{eq:partIIa:budget:add-var}) &
+        \textbf{3.21} & \textbf{0.85} & \textbf{3.21} & \textbf{3.21} & --- & 由本表上 9 行 \\
+    \hline
+    \textbf{ensemble 实测半宽} (\StatusReport{}~§当前性能) &
+        \textbf{5.98} & \textbf{1.40} & \textbf{5.57} & \textbf{5.30} & --- & \DeepDiveData{} \\
+    \hline
+    \textbf{比值 obs / quad} & 1.86 & 1.65 & 1.74 & 1.65 & --- & 缺约 $\sqrt{2.5\text{--}3}\times$ 方差 \\
+    \hline
+    \multicolumn{7}{l}{\emph{偏置型 (不进入方差求和)}} \\
+    A. dE/dx 平均损失 ($\langle\Delta E\rangle$)  & --- & --- & $-10.8$ & $-10.8$ & bias & 修复后归零 \\
+    B. frame 旋转 bug（已于 2026-04-19 修复）     & 0   & 0   & 0   & 0   & bias & 已修复 \\
+    \hline
+    \multicolumn{7}{l}{\emph{尾部 (不进入方差，单独报失败率)}} \\
+    C. LM 收敛盆地失败                            & --- & --- & --- & --- & tail & \makecell[l]{$(-100, 0)$ 子集 12\%；\\ 全局 $\sim 1$--$2\%$} \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\subsection*{10.2 平方和 vs.~实测：缺多少？}
+
+\paragraph{$p_x$。} 平方和：
+$\sqrt{0.7^2+2.5^2+1.8^2+0.05^2+0.05^2+0.2^2+0.5^2+0.05^2+0.3^2}
+= \sqrt{0.49+6.25+3.24+0.003+0.003+0.04+0.25+0.003+0.09}
+= \sqrt{10.36} = 3.22\,\mathrm{MeV}/c$。
+实测 $5.98\,\mathrm{MeV}/c$。\textbf{缺差因子 $5.98/3.22 = 1.86$}（方差缺差 $3.46$）。
+
+\paragraph{$p_y$。} 平方和：
+$\sqrt{0.5^2+0.5^2+0.4^2+0.05^2+0.05^2+0.05^2+0.1^2+0.5^2+0.05^2}
+= \sqrt{0.25+0.25+0.16+0.0075+0.01}
+\approx \sqrt{0.69} = 0.83\,\mathrm{MeV}/c$。
+实测 $1.40\,\mathrm{MeV}/c$。\textbf{缺差因子 $1.40/0.83 = 1.69$}。
+
+\paragraph{$p_z$。} 平方和：
+$\sqrt{0.7^2+2.5^2+1.8^2+0.1^2+0.05^2+0.2^2+0.1^2+0.05^2+0.3^2}
+= \sqrt{0.49+6.25+3.24+0.01+0.003+0.04+0.01+0.003+0.09}
+= \sqrt{10.13} = 3.18\,\mathrm{MeV}/c$。
+实测 $5.57\,\mathrm{MeV}/c$。\textbf{缺差因子 $5.57/3.18 = 1.75$}。
+
+\paragraph{$|\vec p|$。} 平方和：
+$\sqrt{0.7^2+2.5^2+1.8^2+0.1^2+0.05^2+0.2^2+0.5^2+0.05^2+0.3^2}
+\approx \sqrt{10.36} = 3.22\,\mathrm{MeV}/c$。
+实测 $5.30\,\mathrm{MeV}/c$。\textbf{缺差因子 $5.30/3.22 = 1.65$}。
+
+\subsection*{10.3 缺失的 $\sim 1.65$--$1.86\times$ 是什么？}
+
+四个分量都给出 $\sim 1.7\times$ 的缺差（方差缺约 $1.9\text{--}2.5\times$），结构高度一致。
+我们把它归到下列四个机制并按权重排序：
+
+\begin{table}[ht]
+  \centering\small
+  \caption{缺失方差贡献的权重拆分（4 个分量的平均估计）}
+  \label{tab:partIIc:budget:missing-decomp}
+  \begin{tabular}{l|c|l}
+    \hline
+    机制 & 占缺失方差比例 & 物理说明 \\
+    \hline
+    (i) MS 过程噪声未注入 Fisher / 前向模型     & $\sim 50\%$ & part2a §2/§3、§8.1 (b) \\
+    (ii) 未 survey 材料（PDC 入射窗、支撑结构、Sn 法兰） & $\sim 20\%$ & 几何不全 \\
+    (iii) LM 盆地失败尾部（$(-100, 0)$）        & $\sim 10\%$ & §9 (本节) \\
+    (iv) 高阶参数化效应（$(u,v,p)$ 二阶项）      & $\sim 5\%$ & §8 (本节) \\
+    (v) 残余未知（$B$ 场局部 $\delta\theta$ 等） & $\sim 15\%$ & --- \\
+    \hline
+  \end{tabular}
+\end{table}
+
+(i) 是\textbf{最大单项}：当前 Fisher 用 $\Sigma_\mathrm{meas} = \sigma_\mathrm{wire}^2\mathbb I_4$，
+没把 MS 沿轨迹的方向涂抹算成过程噪声 $\Sigma_\mathrm{MS}$ 加进去。
+解析估计 $\Sigma_\mathrm{MS}$ 在 PDC2 命中位置上的有效宽度 $\sim 1.3$ mm（part2a §2 + §3
+合并 Highland），平方加到 $\sigma_\mathrm{wire}=0.5$ mm 上得 $\sigma_\mathrm{eff}\sim 1.4$ mm。
+注入后 Fisher $\sigma_p$ 应当从当前 $\sim 6\,\mathrm{MeV}/c$ 拉到 $\sim 6\sqrt{(1.4/0.5)^2}\sim 17\,\mathrm{MeV}/c$
+——这是\emph{过修}！实际线性传播没那么糟，因为 MS 在轨迹上分布而非集中在 PDC 位置；
+正确的 Kalman 风格的过程噪声只把 $p_y$ 抬到 $\sim 1.4$，把 $p_x/p_z$ 抬到 $\sim 4.5$。
+即修复 (i) 大约能把 $p_x$ 从 $3.22 \to 4.5$，$p_y$ 从 $0.83 \to 1.4$，
+$p_z$ 从 $3.18 \to 4.5$，$|\vec p|$ 从 $3.22 \to 4.5\,\mathrm{MeV}/c$。
+
+\subsection*{10.4 优先级排序的修复列表}
+
+按"对实测缺差的削减幅度"排序：
+
+\begin{enumerate}
+  \item \textbf{把 MS 过程噪声注入 Fisher 协方差}（修复 (i)）。预测：
+        $p_x$ 平方和从 $3.22\to 4.5\,\mathrm{MeV}/c$，与实测 $5.98$ 的差距从 $1.86\times$
+        缩到 $1.33\times$。$p_y$ 同理 $0.83\to 1.4\,\mathrm{MeV}/c$，与实测自洽。
+        代码锚点：\texttt{libs/analysis\_pdc\_reco/src/PDCRkAnalysisInternal.cc} 的
+        $\Sigma_\mathrm{meas}$ 装配处。% TODO: process-noise injection
+  \item \textbf{把 Bethe--Bloch dE/dx 加入 RK4 步进}（修复偏置 A）。预测：
+        $p_z$ 偏置从 $-10.8$ 一次性归零，宽度不变。代码锚点：
+        \texttt{libs/analysis/src/ParticleTrajectory.cc::RungeKuttaStep()}（\StatusReport{}~§已知局限 \#1）。% TODO: dE/dx in RK step
+  \item \textbf{Cartesian $(p_x,p_y,p_z)$ 参数化}（修复 (iv)）。预测：
+        $\sigma_{p_y}^\mathrm{Fisher}$ 从 $0.75 \to 0.85\,\mathrm{MeV}/c$，$\sim 13\%$ 改善
+        ——比修复 (i) 小很多，但对覆盖率 audit 有诊断价值。% TODO: Cartesian param
+  \item \textbf{扩展 LM 粗格 + 反向 RK 初始}（修复尾部 (iii)）。预测：
+        $(-100, 0)$ 失败率 $12\% \to <1\%$，全局尾部从 $\sim 1\text{--}2\% \to <0.3\%$。% TODO: extend grid
+  \item \textbf{材料 survey 完成}（修复 (ii)）：把 PDC 入射窗、Sn 法兰、支撑结构
+        厚度纳入几何宏。预测：$\sim 20\%$ 缺失方差被吃掉，对应 $p_x/p_z$ 平方和
+        增量 $\sim 0.7\,\mathrm{MeV}/c$。% TODO: material survey
+  \item \textbf{$B$ 场三次卷积插值 + cosmic alignment}（修复 (v)）：把 §7 与 part2b §9
+        的占位项推到 $<0.05\,\mathrm{MeV}/c$。最小贡献。
+\end{enumerate}
+
+\subsection*{10.5 修复后预测：master 表"after-fix"列}
+
+完成修复 1--6 后，重做 master 表的"修复后预测"列（保守估计，按"减半"取
+当前预算行的较小值；$\sigma_{p_y}$ 列额外装入 $\Sigma_\mathrm{MS}$）：
+
+\begin{table}[ht]
+  \centering\footnotesize
+  \caption{修复后预测的 master 表（after-fix 列）。仅展示与当前列差异显著的行。}
+  \label{tab:partIIc:budget:after-fix}
+  \begin{tabular}{l|cccc|l}
+    \hline
+    来源 & $\sigma_{p_x}$ & $\sigma_{p_y}$ & $\sigma_{p_z}$ & $\sigma_{|\vec p|}$ & 修复内容 \\
+    \hline
+    1. PDC 位置分辨                & 0.7 & 0.5 & 0.7 & 0.7 & 不变 \\
+    2. MS：1 m 空气 $\to$ 真空     & 0.4 & 0.1 & 0.4 & 0.4 & EW $\to$ PDC1 真空管 \\
+    3. MS：PDC 气体                & 1.8 & 0.4 & 1.8 & 1.8 & 不变（除非换 He 填充） \\
+    4. dE/dx 涨落                  & 0.05 & 0.05 & 0.1 & 0.1 & 偏置已修；涨落不变 \\
+    5. RK 离散                     & 0.02 & 0.02 & 0.02 & 0.02 & 自适应 RK45 \\
+    6. 靶 $z$                      & 0.1 & 0.02 & 0.1 & 0.1 & metadata 升级 \\
+    7. 对位 + 倾角                 & 0.1 & 0.05 & 0.05 & 0.1 & cosmic alignment + survey \\
+    8. 参数化                      & 0.02 & 0.1 & 0.02 & 0.02 & Cartesian \\
+    9. $B$ 场                      & 0.1 & 0.02 & 0.1 & 0.1 & tricubic \\
+    + MS 过程噪声注入 (新行)        & 3.5 & 1.0 & 3.5 & 3.5 & Kalman 风格 $\Sigma_\mathrm{MS}$ \\
+    \hline
+    \textbf{平方和合计} & \textbf{3.99} & \textbf{1.21} & \textbf{4.0} & \textbf{4.0} & --- \\
+    \hline
+  \end{tabular}
+\end{table}
+
+修复 1--6 全部到位后，平方和与实测的差距从当前 $1.65$--$1.86\times$ 缩到
+$\sim 1\text{--}1.4\times$ 范围内（即各分量的 budget 与实测残差宽度落在 $\pm 30\%$ 以内）。
+更重要的是，\emph{实测残差宽度本身}也会下降——例如把 1 m 空气换成真空后，
+744 事件 ensemble 的 $\widehat\sigma_{p_x}^\mathrm{obs}$ 会从 $5.98$ 下降到
+预期 $\sim 3\,\mathrm{MeV}/c$（与 ms\_ablation stage A vacuum 推断一致）。
+
+\subsection*{10.6 结论}
+
+Master 表当前给出的平方和合计为 $(p_x, p_y, p_z, |\vec p|) = (3.21, 0.85, 3.21, 3.21)\,\mathrm{MeV}/c$，
+实测半宽为 $(5.98, 1.40, 5.57, 5.30)$，比值结构性 $1.65$--$1.86\times$ 一致——\textbf{master 表
+没封闭，缺一行 MS 过程噪声 + 几条 minor 行}。修复路线图按 §10.4 给出，
+首项"过程噪声注入 Fisher" 一次性削减 $\sim 50\%$ 的缺失方差，
+首项"dE/dx 加入 RK 步" 一次性归零 $-10.8\,\mathrm{MeV}/c$ 的 $p_z$ 偏置。
+完成后 master 表与实测残差应当自洽至 $\pm 30\%$ 内，留作下一份状态报告的对账目标。

@@ -1,0 +1,544 @@
+% ============================================================
+% File: rk_deep_dive_part1a_math_ch1to3_zh.tex
+% Purpose: Part I (数学基础) chapters 1-3 — likelihood foundations,
+%          Cramér-Rao 下界与正则条件, Fisher information matrix in
+%          the SAMURAI 2-PDC + 3-parameter geometry.
+% Parent : rk_error_analysis_deep_dive_20260426_zh.tex (wrapper)
+% Sibling: rk_deep_dive_part1b_math_ch4to6_zh.tex (Wilks/Laplace/MCMC)
+%          rk_deep_dive_part1c_math_ch7to9_zh.tex (Glückstern/Bethe-Bloch/Highland)
+% Date   : 2026-04-26
+% Author : TBT
+%
+% Brief TOC:
+%   §1 似然函数与极大似然估计基础
+%   §2 Cramér-Rao 下界与正则条件
+%   §3 Fisher 信息矩阵在 SAMURAI 2-PDC 几何下的具体形式
+%
+% Notation conventions (inherited from status report):
+%   \vec\alpha = (\delta x, \delta y, u, v, p)         5-DoF kThreePointFree
+%   \vec\alpha = (u, v, p)                              3-DoF kFixedTargetPdcOnly
+%   u = p_x/p_z, v = p_y/p_z, p = |\vec p|
+%   \vec w = whitened residual (4-vector for 2-PDC)
+%   \vec r = raw residual; \hat u, \hat v wire directions (Eq. eq:wire_dir)
+%   Default frame: target frame (beam-as-Z), all truth vs reco comparisons
+%   in target frame.
+%
+% Wrapper macros consumed: \StatusReport (provided in wrapper). No new macros
+% are introduced in this fragment.
+% ============================================================
+
+\providecommand{\StatusReport}{文献~[1]}
+
+% ============================================================
+\section{似然函数与极大似然估计基础}
+\label{sec:partIa:likelihood:basics}
+% ============================================================
+
+本章建立 PDC 重建问题的统计学语言。后两章 (CRB、Fisher 矩阵) 与 Part II 的系统误差预算 (\StatusReport § 误差分析) 都以本章定义为出发点。所有讨论默认采用靶系 (beam-as-Z)，参数向量沿用状态报告 \StatusReport § 问题设定与符号约定 中的约定。
+
+\subsection{统计模型：白化残差的高斯似然}
+\label{sec:partIa:lik:model}
+
+设单条重建轨迹的测量量为 4 维实向量
+\begin{equation}
+  \vec m = \bigl(u_1^\mathrm{meas},\; v_1^\mathrm{meas},\; u_2^\mathrm{meas},\; v_2^\mathrm{meas}\bigr)^\top \in \mathbb R^4,
+  \label{eq:partIa:lik:meas}
+\end{equation}
+真实分布建模为
+\begin{equation}
+  \vec m = \vec f(\vec\alpha_\star) + \boldsymbol\epsilon,
+  \qquad \boldsymbol\epsilon \sim \mathcal N(\vec 0,\;\Sigma_\mathrm{meas}),
+  \label{eq:partIa:lik:gauss}
+\end{equation}
+其中前向模型 $\vec f:\mathbb R^{n_p}\to\mathbb R^4$ 由 RK4 轨迹积分加丝坐标投影定义 (\StatusReport § 残差构建)，$\Sigma_\mathrm{meas}$ 是测量协方差。在 PDC 几何下两个丝方向 $\hat u, \hat v$ 不正交 (式 \StatusReport eq:wire\_dir) 且测量误差 $\sigma_\mathrm{wire}=0.5\;\mathrm{mm}$ 在丝坐标系内独立、各向同性：单 PDC 内残差协方差由 $\hat u\cdot\hat v=\sin^2\theta$ 引入耦合，需要 Cholesky 白化 (\StatusReport eq:whitening) 才能得到独立单位方差残差。
+
+定义白化残差
+\begin{equation}
+  \vec w(\vec\alpha) \equiv L^{-1}\bigl[\vec f(\vec\alpha)-\vec m\bigr]
+  \;\sim\; \mathcal N(\vec 0, I_4)\quad\text{at }\vec\alpha=\vec\alpha_\star,
+  \label{eq:partIa:lik:whiten}
+\end{equation}
+其中 $L$ 是 $\Sigma_\mathrm{meas}=LL^\top$ 的 Cholesky 因子。等价地，$\vec w_i(\vec\alpha_\star)$ 是 i.i.d.\ 标准正态。这一性质使得我们可以把 $\chi^2$ 写为白化残差平方和 (式 \StatusReport eq:chi2\_recall)，并在似然层面统一处理两个 PDC 平面。
+
+\subsection{似然函数与对数似然}
+\label{sec:partIa:lik:loglik}
+
+由式 \eqref{eq:partIa:lik:whiten} 立即得到单条事件的似然函数 (取 $\Sigma_\mathrm{meas}$ 不依赖参数)：
+\begin{equation}
+  L(\vec\alpha\mid\vec m) \;=\; \prod_{i=1}^{4}\phi\bigl(w_i(\vec\alpha)\bigr)
+  \;=\; (2\pi)^{-2}\,\exp\!\Biggl[-\tfrac12\sum_{i=1}^{4} w_i^2(\vec\alpha)\Biggr],
+  \label{eq:partIa:lik:def}
+\end{equation}
+其中 $\phi(z)=(2\pi)^{-1/2}e^{-z^2/2}$ 是标准正态密度。对数似然为
+\begin{equation}
+  \ln L(\vec\alpha\mid\vec m)
+  \;=\; -\tfrac12\sum_{i=1}^{4} w_i^2(\vec\alpha) \;+\; C
+  \;=\; -\tfrac12\,\chi^2(\vec\alpha) + C,
+  \label{eq:partIa:lik:loglik}
+\end{equation}
+$C=-2\ln(2\pi)$ 不依赖 $\vec\alpha$。这就把状态报告的 LM 最小二乘 (\StatusReport § 最小二乘拟合) 与统计学的极大似然估计 (MLE) 严格联系起来：
+\begin{equation}
+  \hat{\vec\alpha}_\mathrm{MLE} \;=\; \arg\max_{\vec\alpha}\,\ln L(\vec\alpha\mid\vec m)
+  \;=\; \arg\min_{\vec\alpha}\,\chi^2(\vec\alpha).
+  \label{eq:partIa:lik:mle}
+\end{equation}
+
+LM 最优化算法返回的中心值即为白化残差高斯模型下的 MLE。状态报告 § Levenberg-Marquardt 优化 中的迭代更新本质上是 Gauss-Newton 法对 $-\nabla^2\ln L$ 加阻尼正则化 (式 \StatusReport eq:lm\_normal) 的具象化。
+
+\subsection{充分统计量}
+\label{sec:partIa:lik:sufficiency}
+
+对于式 \eqref{eq:partIa:lik:gauss} 高斯模型，给定 $\vec\alpha$ 与 $\Sigma_\mathrm{meas}$ 不依赖 $\vec\alpha$ 的假设，由因子分解定理可知白化残差向量 $\vec w(\vec\alpha)$ 本身是 $\vec\alpha$ 的充分统计量：
+\begin{proposition}[白化残差充分性]\label{prop:partIa:suff}
+  在式 \eqref{eq:partIa:lik:gauss} 模型下，给定 $\Sigma_\mathrm{meas}$ 已知且与 $\vec\alpha$ 无关，统计量 $T(\vec m)=\vec w(\vec\alpha=\vec 0)=L^{-1}\vec m$ 对参数族 $\{p(\vec m\mid\vec\alpha):\vec\alpha\in\mathbb R^{n_p}\}$ 是充分统计量。
+\end{proposition}
+\begin{proof}
+  $L(\vec\alpha\mid\vec m)\propto\exp[-\tfrac12\|L^{-1}\vec m-L^{-1}\vec f(\vec\alpha)\|^2]$，把 $L^{-1}\vec m$ 视为 $T$，似然只通过 $T$ 依赖 $\vec m$。Neyman 因子分解定理给出充分性。
+\end{proof}
+
+物理上这意味着：所有的统计推断 (Fisher、Profile、MCMC、Laplace) 都可以仅依赖 $\vec w$ 而不需要原始 $\vec m$。状态报告中 \texttt{PDCRkAnalysisInternal::computeWhitenedResidual} 输出的 4 维向量正是后续所有方法的统一输入接口，与本命题的数学结构对应。
+
+\subsection{正则统计族 (regular family)}
+\label{sec:partIa:lik:regular}
+
+CRB 与 Fisher 矩阵的所有定理都假设似然属于"正则族" (regular family)。本节按 Lehmann-Casella 第 6 章的定义列出正则条件，并逐项检验本问题。
+
+\begin{definition}[正则族]\label{def:partIa:regular}
+  参数族 $\{p(\vec m\mid\vec\alpha):\vec\alpha\in\Theta\}$ 称为正则族，若：
+  \begin{enumerate}[label=(R\arabic*),nosep]
+    \item $\Theta$ 是 $\mathbb R^{n_p}$ 的开集 (参数在内点)；
+    \item 支撑 $\{\vec m: p(\vec m\mid\vec\alpha)>0\}$ 不依赖 $\vec\alpha$；
+    \item 对几乎所有 $\vec m$，$\ln p(\vec m\mid\vec\alpha)$ 关于 $\vec\alpha$ 二次连续可微；
+    \item 期望与微分可交换：$\nabla_{\vec\alpha}\int p\,d\vec m=\int\nabla_{\vec\alpha}p\,d\vec m$，二阶同；
+    \item Score 函数 $S(\vec\alpha)\equiv\nabla_{\vec\alpha}\ln L$ 满足 $\mathbb E[S]=0$、$\mathrm{Cov}(S)=\mathcal I(\vec\alpha)$ 有限且正定。
+  \end{enumerate}
+\end{definition}
+
+\paragraph{逐项检验。} 在我们的高斯白化模型下：
+\begin{itemize}[nosep]
+  \item (R1) 参数空间 $\Theta=\mathbb R^{n_p}$ 显式开集；$u,v$ 取实数，$p>0$ 但 reco 中位数 $\sim 635\;\mathrm{MeV}/c$ 远离 $p=0$ 边界，故内点条件满足。
+  \item (R2) 支撑为 $\mathbb R^4$，与 $\vec\alpha$ 无关。
+  \item (R3) $\ln L=-\tfrac12\|\vec w(\vec\alpha)\|^2+C$，依赖 $\vec\alpha$ 经 $\vec w=L^{-1}[\vec f(\vec\alpha)-\vec m]$。前向模型 $\vec f$ 由 RK4 积分给出，沿 PDC1/PDC2 投影解析；磁场图通过三线性插值 $C^0$ 连续，但插值导数仅 $C^{-1}$ (分段常值)。这是\textbf{潜在违反点}：在磁场图块界面 $\vec f$ 的二阶导不存在；具体磁场图三线性插值的精度影响见 Part~II §\ref{sec:budget-bfield} 的系统误差预算条目。在 RK 步长尺度上做平滑后此违反可忽略。
+  \item (R4) 高斯密度衰减快，期望与微分可交换标准成立。
+  \item (R5) Score $S=\partial_{\vec\alpha}\ln L=-J^\top\vec w$，其中 $J=\partial\vec w/\partial\vec\alpha$；显然 $\mathbb E_{\vec\alpha_\star}[\vec w]=\vec 0\Rightarrow\mathbb E[S]=\vec 0$。$\mathcal I=\mathbb E[SS^\top]=\mathbb E[J^\top\vec w\vec w^\top J]=J^\top J$ (利用 $\mathbb E[\vec w\vec w^\top]=I_4$)。要求 $J$ 列满秩；这是\emph{可识别性条件}，下节讨论。
+\end{itemize}
+
+\subsection{可识别性 (identifiability)}
+\label{sec:partIa:lik:identifiability}
+
+正则族成立的最关键前提是 Fisher 矩阵 $\mathcal I=J^\top J$ 正定，等价于 $J\in\mathbb R^{4\times 3}$ 列满秩。直观地说：参数 $\vec\alpha$ 到测量 $\vec m$ 的映射在最优点附近\emph{局部一一对应}。
+
+\begin{lemma}[局部可识别性]\label{lem:partIa:ident}
+  若 $\vec f$ 在 $\vec\alpha_\star$ 处 $C^1$ 且 $J(\vec\alpha_\star)\in\mathbb R^{4\times 3}$ 列满秩，则在 $\vec\alpha_\star$ 的某邻域内 $\vec\alpha\mapsto\vec f(\vec\alpha)$ 单射；从而 MLE 在该邻域内唯一。
+\end{lemma}
+\begin{proof}
+  逆函数定理推论：$J$ 列满秩等价于 $J^\top J$ 正定。$\chi^2(\vec\alpha)=\|\vec w(\vec\alpha)\|^2$ 在 $\vec\alpha_\star$ 处的 Hessian 为 $2J^\top J+O(\vec w)$，正定 $\Rightarrow$ $\chi^2$ 局部严格凸 $\Rightarrow$ $\arg\min$ 唯一。
+\end{proof}
+
+对 kFixedTargetPdcOnly 模式，4 个测量约束 3 个自由参数，过约束 1 个自由度 ($N_\mathrm{dof}=1$)。可识别性等价于 $J$ 不存在退化方向。状态报告 \StatusReport § 为什么 $\sigma_{p_y}$ 极小？ 给出的物理图像 ($\hat u,\hat v$ 的 $y$ 分量为 $\pm 1/\sqrt 2$) 是 $J$ 第二列大、第一/三列小的代数表现。当 $u\to 0$、$v\to 0$ 同时 $p\to\infty$ (直线极限) 时第三列 (动量灵敏度) $\to 0$；这是潜在的弱可识别性源，对低弯曲事件需关注 SVD 条件数 (§\ref{sec:partIa:fisher:condnum})。
+
+\subsection{MLE 的渐近性质 (前瞻)}
+\label{sec:partIa:lik:asymptotic}
+
+经典定理：在正则族下，当样本量 $N\to\infty$ 时
+\begin{equation}
+  \sqrt N\,(\hat{\vec\alpha}_\mathrm{MLE}-\vec\alpha_\star)
+  \;\xrightarrow{d}\; \mathcal N\bigl(\vec 0,\;\mathcal I_1^{-1}(\vec\alpha_\star)\bigr),
+  \label{eq:partIa:lik:asymptotic}
+\end{equation}
+其中 $\mathcal I_1$ 是单样本 Fisher 信息。在本问题中"样本量"是\emph{每条事件的测量数}，单条事件 $N=4$、$N_\mathrm{dof}=1$ —— 距渐近域 ($N\gg n_p$) 极远。这正是状态报告 § 适用条件与局限 中"Fisher 估计在 $N_\mathrm{dof}$ 很小时可能过于乐观"的根本原因。本部分第 4 章 (Wilks 定理) 将给出 $N$ 较小时的修正路径；本章后两节为该讨论奠定 CRB 与 Fisher 几何的基础。
+
+% ============================================================
+\section{Cramér-Rao 下界与正则条件}
+\label{sec:partIa:crb}
+% ============================================================
+
+\subsection{CRB 的陈述与几何含义}
+\label{sec:partIa:crb:statement}
+
+\begin{theorem}[向量参数 Cramér-Rao 下界]\label{thm:partIa:crb}
+  设似然 $\{p(\vec m\mid\vec\alpha):\vec\alpha\in\Theta\}$ 满足正则条件 (R1-R5)；$\hat{\vec\alpha}(\vec m)$ 为 $\vec\alpha$ 的无偏估计量 (即 $\mathbb E_{\vec\alpha}[\hat{\vec\alpha}]=\vec\alpha$ 对所有 $\vec\alpha\in\Theta$ 成立)。则
+  \begin{equation}
+    \mathrm{Cov}_{\vec\alpha}\bigl(\hat{\vec\alpha}\bigr) \;\succeq\; \mathcal I^{-1}(\vec\alpha),
+    \label{eq:partIa:crb:bound}
+  \end{equation}
+  其中 $A\succeq B$ 表示 $A-B$ 半正定。等号成立当且仅当 $\hat{\vec\alpha}$ 是有效估计量。
+\end{theorem}
+
+几何含义：在参数空间中，无偏估计量的协方差椭球必须包含 Fisher 椭球 $\{\vec\alpha:\vec\alpha^\top\mathcal I\vec\alpha\le 1\}$。Fisher 椭球是任何无偏估计量\emph{不可逾越}的精度极限。
+
+\subsection{CRB 的证明 (向量版本)}
+\label{sec:partIa:crb:proof}
+
+\begin{proof}
+  分四步。固定 $\vec\alpha$；记 score 函数 $S(\vec m;\vec\alpha)=\nabla_{\vec\alpha}\ln L$。
+
+  \textbf{第 1 步：score 期望为零。}
+  由 (R4) 微分与积分可交换：
+  \begin{equation}
+    \mathbb E[S]
+    \;=\; \int (\nabla_{\vec\alpha}\ln p)\,p\,d\vec m
+    \;=\; \nabla_{\vec\alpha}\int p\,d\vec m
+    \;=\; \nabla_{\vec\alpha}1 \;=\;\vec 0.
+    \label{eq:partIa:crb:scoremean}
+  \end{equation}
+
+  \textbf{第 2 步：score 与无偏估计量的协方差等于单位阵。}
+  对无偏性条件 $\int\hat{\vec\alpha}(\vec m)\,p(\vec m;\vec\alpha)\,d\vec m=\vec\alpha$ 求 $\nabla_{\vec\alpha}$：
+  \begin{equation}
+    I_{n_p}
+    \;=\; \nabla_{\vec\alpha}\!\!\int\!\hat{\vec\alpha}\,p\,d\vec m
+    \;=\; \int\!\hat{\vec\alpha}\,(\nabla_{\vec\alpha}p)\,d\vec m
+    \;=\; \int\!\hat{\vec\alpha}\,(\nabla_{\vec\alpha}\ln p)\,p\,d\vec m
+    \;=\; \mathbb E[\hat{\vec\alpha}\,S^\top].
+    \label{eq:partIa:crb:cross}
+  \end{equation}
+  结合 $\mathbb E[S]=\vec 0$、$\mathbb E[\hat{\vec\alpha}]=\vec\alpha$，
+  \begin{equation}
+    \mathrm{Cov}(\hat{\vec\alpha},S) \;=\; \mathbb E[\hat{\vec\alpha}\,S^\top]-\mathbb E[\hat{\vec\alpha}]\mathbb E[S]^\top \;=\;I_{n_p}.
+    \label{eq:partIa:crb:cov_eqI}
+  \end{equation}
+
+  \textbf{第 3 步：联合协方差矩阵半正定。}
+  把 $\hat{\vec\alpha}-\vec\alpha$ 与 $S$ 拼成 $2n_p$ 维向量 $Z=\bigl(\hat{\vec\alpha}-\vec\alpha,\;S\bigr)$。其协方差矩阵
+  \begin{equation}
+    \Sigma_Z \;=\; \begin{pmatrix}\mathrm{Cov}(\hat{\vec\alpha}) & I_{n_p}\\ I_{n_p} & \mathcal I(\vec\alpha)\end{pmatrix}\;\succeq\;0
+  \end{equation}
+  半正定 (任何随机向量的协方差矩阵半正定)。利用分块矩阵 Schur 补：$\Sigma_Z\succeq 0$ 且 $\mathcal I\succ 0$ 给出
+  \begin{equation}
+    \mathrm{Cov}(\hat{\vec\alpha}) - I_{n_p}\,\mathcal I^{-1}\,I_{n_p}^\top \;\succeq\;0,
+    \label{eq:partIa:crb:schur}
+  \end{equation}
+  即 $\mathrm{Cov}(\hat{\vec\alpha})\succeq\mathcal I^{-1}$。
+
+  \textbf{第 4 步：等号条件。}
+  Cauchy-Schwarz 等式条件要求 $\hat{\vec\alpha}-\vec\alpha=A\,S$ 几乎处处成立，对线性变换 $A$；代回 $\mathrm{Cov}(\hat{\vec\alpha},S)=I$ 得 $A=\mathcal I^{-1}$，即 $\hat{\vec\alpha}=\vec\alpha+\mathcal I^{-1}S$。这是\textbf{有效估计量}的形式，仅在指数族中成立。
+\end{proof}
+
+证明对应向量版的 Cauchy-Schwarz / Schur 补论证。该结构在 §\ref{sec:partIa:fisher} 中将以 Fisher 矩阵 $\mathcal I=J^\top J$ 的具体形式重新出现。
+
+\subsection{正则条件的精细化讨论}
+\label{sec:partIa:crb:reg}
+
+第 \ref{sec:partIa:lik:regular} 节的检验已经覆盖大部分情形。本节强调三个对本问题重要的细节。
+
+\paragraph{微分与积分可交换 (R4) 的依据。} Lebesgue 控制收敛定理要求 $|\partial_{\alpha_i}p(\vec m;\vec\alpha)|$ 被某个 $\vec\alpha$-邻域内可积函数控制。对高斯密度
+\begin{equation}
+  p(\vec m;\vec\alpha) \;=\;(2\pi)^{-2}|\det L|^{-1}\exp\!\bigl[-\tfrac12\|\vec w(\vec\alpha)\|^2\bigr],
+\end{equation}
+$\partial_{\alpha_i}p=p\cdot[-J_i^\top\vec w]$，被 $|\vec w|\,p$ 控制；后者一阶矩有限。同理二阶微分被 $\|\vec w\|^2 p$ 控制。R4 自动成立。
+
+\paragraph{Score 二阶矩有限 (R5)。} $\mathbb E[\|S\|^2]=\mathrm{tr}(\mathcal I)=\mathrm{tr}(J^\top J)=\|J\|_F^2<\infty$ 当且仅当 $J$ 元素有限。若磁场图存在奇异点 (本问题不存在) 或 $\vec f$ 在某 $\vec\alpha$ 不可微，R5 失效；本问题仅在 RK 步与磁场表块界面交叉时有 $C^1$ 但非 $C^2$ 的弱奇性，对 $\mathcal I$ 数值上影响 $O(10^{-4})$，可忽略。
+
+\paragraph{支撑不依赖参数 (R2)。} 对截断分布 (例如丝信号有上下截止) 此条件可能失效；本问题中我们假设 PDC 命中位置可在整个 $\mathbb R^4$ 上 (实际命中在 PDC 灵敏区内但建模时不引入硬截断)。R2 满足。
+
+\subsection{CRB 在本问题中失效或宽松的四种机制}
+\label{sec:partIa:crb:fail}
+
+CRB 是\emph{无偏}估计量的下界。本问题的 RK 重建在多个层面偏离这一前提；逐一陈述。
+
+\paragraph{(F1) 渐近域外。} CRB 的可达性 (即 MLE 达到 CRB) 是一个渐近结果 ($N\to\infty$)。在 $N_\mathrm{dof}=1$ 的极小样本下，MLE 协方差与 $\mathcal I^{-1}$ 之间存在 $O(N^{-1})$ 阶修正项，可能使 Fisher 估计偏紧 (低估方差)。Bartlett 修正 (Part I 第 4 章 Wilks 部分讨论) 是修正此偏差的标准工具。
+
+\paragraph{(F2) 边界参数。} CRB 假设 $\vec\alpha$ 在 $\Theta$ 内点。本问题的 $u,v$ 自由实数；$p>0$ 但 reco 中位数 $\sim 635\;\mathrm{MeV}/c$ 远离边界。\textbf{此机制在本问题不触发}。
+
+\paragraph{(F3) 非高斯似然。} 我们的 $\chi^2$ 二次结构假设白化残差严格高斯。前向模型 $\vec f(\vec\alpha)$ 关于 $\vec\alpha$ 高度非线性 ($u,v,p\to p_x,p_y,p_z\to$ RK 轨迹$\to$ 丝坐标投影)。在最优点附近做泰勒展开
+\begin{equation}
+  w_i(\vec\alpha)\approx w_i(\hat{\vec\alpha})+J_{ij}\Delta\alpha_j+\tfrac12 H_{ijk}\Delta\alpha_j\Delta\alpha_k+\dots
+\end{equation}
+线性截断后似然才是严格高斯。二阶项 $H_{ijk}$ 引入 \emph{Edgeworth} 修正，对 $\sigma$ 的影响为 $O(H_{ijk}/J_{ij})$。状态报告 § 为什么 $\sigma_{p_y}$ 极小？ 已经定性指出 $(u,v,p)\to p_y$ 的二阶项是 $p_y$ 方向 Fisher 低估的主因；§\ref{sec:partIa:fisher:momentum} 给出 $M$ 的解析二阶项。
+
+\paragraph{(F4) 偏差。} CRB 不约束有偏估计量。状态报告 \StatusReport § 修复前 lab/靶系未对齐 记录了一个标志性事件：修复前 $p_x$ 上存在系统偏置 $\Delta p_x\approx -33\;\mathrm{MeV}/c$，远超 Fisher $\sigma_{p_x}\sim 7\;\mathrm{MeV}/c$；CRB 在偏置存在时无法保证覆盖率。修复后 $p_x$ 偏置降至 $\sim -0.33\;\mathrm{MeV}/c$ ($-0.05\sigma$ 量级)，覆盖率从 $\sim 0.05$ 恢复到 $\sim 0.80$。Part II 第 7 章 (PDC 对齐) 与 §\ref{sec:partIa:fisher:momentum} 共同处理剩余的偏置源。
+
+\subsection{应用：Fisher 在 744-事件 ensemble 中的近似饱和性}
+\label{sec:partIa:crb:saturation}
+
+\begin{proposition}[本问题的 CRB 饱和度]\label{prop:partIa:saturation}
+  在 \StatusReport 引用的 2026-04-17 ensemble study (744 个 truth-grid 事件，靶系) 中：
+  \begin{enumerate}[nosep]
+    \item Fisher 在 $|\vec p|$、$p_x$、$p_z$ 三个分量上 \emph{近似饱和} CRB —— 68\% 名义覆盖率的实测值为 $0.761,\,0.801,\,0.772$，对应 Clopper-Pearson 95\% CI 分别为 $[0.728,0.791]$、$[0.771,0.829]$、$[0.740,0.801]$；名义 0.68 落在 CI 边缘外侧，方向是 \emph{保守} (覆盖率偏高，$\sigma$ 估计偏大约 $\sim 25\%$)。
+    \item Fisher 在 $p_y$ 分量上 \emph{显著违反} CRB 的实际可达性 —— 实测 68\% 覆盖率 $0.421$，CP 95\% CI $[0.385, 0.457]$，名义 $\sigma_{p_y}$ 被低估约 $1.9\times$。
+  \end{enumerate}
+  违反机制为 (F3) 非高斯似然 + (F4) 参数化诱导偏置，\emph{非}正则性失效；具体论证见 §\ref{sec:partIa:fisher:momentum} 关于 $M$ 矩阵二阶项的展开。
+\end{proposition}
+
+数值来源：\StatusReport § 误差分析覆盖率小节，由独立的 truth-grid 744-事件 run 给出。本命题的关键陈述是：CRB 的失败发生在\emph{参数化}层面 ($u,v,p\mapsto p_x,p_y,p_z$ 的非线性)，而非\emph{似然}层面 (R1-R5 全部成立)。修复路径是使用\emph{无参数化偏置}的 reparam (例如直接以 $p_x,p_y,p_z$ 拟合或在 $p_y$ 方向加二阶项校正)，由 Part II § 8 详述。
+
+% ============================================================
+\section{Fisher 信息矩阵在 SAMURAI 2-PDC 几何下的具体形式}
+\label{sec:partIa:fisher}
+% ============================================================
+
+本章把抽象的 Fisher 矩阵代数翻译成 SAMURAI 谱仪几何下的可观测量，定量解释状态报告中 $\sigma_{p_y}\ll\sigma_{p_x}$ 的反直觉结果，并给出 $(u,v,p)\to(p_x,p_y,p_z)$ 协方差变换的解析形式。
+
+\subsection{Fisher 矩阵的两种等价定义}
+\label{sec:partIa:fisher:def}
+
+\begin{definition}[Fisher 信息矩阵]\label{def:partIa:fisher}
+  \begin{align}
+    \mathcal I_{ij}(\vec\alpha) &\;=\; \mathrm{Cov}\bigl(S_i,S_j\bigr) \;=\;\mathbb E[S_iS_j],
+      \label{eq:partIa:fisher:def_cov}\\
+    \mathcal I_{ij}(\vec\alpha) &\;=\; -\mathbb E\!\left[\partial_i\partial_j\ln L\right].
+      \label{eq:partIa:fisher:def_hess}
+  \end{align}
+\end{definition}
+
+两个表达式在正则族下相等。证明利用 $\partial_j\partial_i\ln p=\partial_jp^{-1}\cdot\partial_ip+p^{-1}\partial_j\partial_ip$，第一项给 $-\mathcal I_{ij}$，第二项 (取期望后利用 (R4)) 为零。
+
+对式 \eqref{eq:partIa:lik:loglik} 高斯白化模型：
+\begin{equation}
+  \ln L = -\tfrac12\vec w^\top\vec w + C
+  \;\Rightarrow\;
+  S = -J^\top\vec w,
+  \quad
+  \partial_i\partial_j\ln L = -J_{ki}J_{kj}-w_k\partial_i\partial_jw_k.
+\end{equation}
+取 $\mathbb E_{\vec\alpha_\star}$，第二项消去 (因 $\mathbb E[\vec w]=\vec 0$)，得
+\begin{equation}
+  \boxed{\;\mathcal I(\vec\alpha) \;=\; J^\top(\vec\alpha)\,J(\vec\alpha),\quad J\equiv\partial\vec w/\partial\vec\alpha\in\mathbb R^{4\times n_p}.\;}
+  \label{eq:partIa:fisher:JTJ}
+\end{equation}
+此即状态报告 \StatusReport eq:fisher\_cov 的根。下节展开 $J$ 的列结构。
+
+\subsection{kFixedTargetPdcOnly 模式下 $J$ 的符号导出}
+\label{sec:partIa:fisher:Jderiv}
+
+参数 $\vec\alpha=(u,v,p)$。前向模型分两步：
+\begin{enumerate}[nosep]
+  \item \textbf{初值映射}：$(u,v,p)\mapsto\vec p_0=p\,\hat n(u,v)$，其中 $\hat n=(u,v,1)/\sqrt{D}$，$D=1+u^2+v^2$。
+  \item \textbf{RK 传播 + PDC 投影}：$\vec p_0\mapsto\vec r^\mathrm{traj}_k(\vec\alpha)$ ($k=1,2$)，再投影到丝方向给出 $f_{2k-1}=\vec r_k\cdot\hat u$，$f_{2k}=\vec r_k\cdot\hat v$。
+\end{enumerate}
+
+链式法则：
+\begin{equation}
+  J_{ij} \;=\; \partial w_i/\partial\alpha_j
+  \;=\; (L^{-1})_{ii'}\,\sum_{k}\,(\hat u_i \text{ or }\hat v_i)_l\,
+        \frac{\partial r_{k,l}^\mathrm{traj}}{\partial p_{0,m}}\,\frac{\partial p_{0,m}}{\partial\alpha_j}.
+  \label{eq:partIa:fisher:chainrule}
+\end{equation}
+其中 $\partial p_{0,m}/\partial\alpha_j$ 解析；$\partial r_{k,l}^\mathrm{traj}/\partial p_{0,m}$ 由 RK4 沿轨迹的传递矩阵 (Jacobi 方程) 决定，无解析闭形，状态报告通过中心差分数值计算 (\StatusReport eq:jacobian\_explicit)。
+
+\paragraph{初值导数解析形式。}
+\begin{equation}
+  \frac{\partial\vec p_0}{\partial u}
+  \;=\;\frac{p}{\sqrt{D}}\!\left[\hat e_x-\frac{u}{D}(u,v,1)^\top\right],\quad
+  \frac{\partial\vec p_0}{\partial v}
+  \;=\;\frac{p}{\sqrt{D}}\!\left[\hat e_y-\frac{v}{D}(u,v,1)^\top\right],
+  \label{eq:partIa:fisher:p0_deriv_uv}
+\end{equation}
+\begin{equation}
+  \frac{\partial\vec p_0}{\partial p}\;=\;\frac{1}{\sqrt{D}}(u,v,1)^\top \;=\;\hat n.
+  \label{eq:partIa:fisher:p0_deriv_p}
+\end{equation}
+
+物理解读：$\partial\vec p_0/\partial u$ 主分量在 $\hat e_x$ 方向，强度 $\sim p/\sqrt{D}\approx p$ (小角度极限 $D\to 1$)；$\partial\vec p_0/\partial p$ 沿出射方向 $\hat n$。后者是 \emph{动量灵敏度} 的核心：改变 $|\vec p|$ 不改变出射方向，但改变弯曲半径 $\rho=p/(qB_y)$，从而改变 PDC 处的命中点 —— $J$ 第三列的 \emph{所有} 信号通过磁场弯曲产生。
+
+\paragraph{第 $j$ 列的物理含义 (定性表)。}
+\begin{table}[H]
+\centering
+\caption{$J\in\mathbb R^{4\times 3}$ 列的物理含义。"幅度"指典型 $|J_{ij}|$ 量级，归一化到 $\sigma_\mathrm{wire}=0.5\;\mathrm{mm}$ 单位 (来自状态报告 \StatusReport § Fisher 输出 数值)。}
+\label{tab:partIa:fisher:Jcols}
+\begin{tabular}{c l l c}
+\toprule
+列 & 物理含义 & 主导路径 & 典型 $|J_{ij}|$ \\
+\midrule
+1 ($u$) & $p_x/p_z$ 出射方向 & 直线 + 弯曲耦合 & $\sim 10^4\,\hat u_x$ (mm/单位) \\
+2 ($v$) & $p_y/p_z$ 出射方向 & 直线 (磁场不弯) & $\sim 10^4\,\hat u_y$ (mm/单位) \\
+3 ($p$) & $|\vec p|$ 弯曲半径 & 仅经磁场 & $\sim O(1)$ (mm/(MeV/$c$)) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+注意第 2 列幅度比第 1 列大\emph{约 $1/\cos\theta\approx 1.84$ 倍}，因为 $\hat u,\hat v$ 在 $y$ 方向投影 $1/\sqrt 2$ 而 $x$ 方向仅 $\cos\theta/\sqrt 2$ ($\theta=57^\circ$)。这是下节"$\sigma_{p_y}$ 极小"的代数源。
+
+\subsection{为什么 $\sigma_{p_y}$ 极小}
+\label{sec:partIa:fisher:sigmapy}
+
+由式 \eqref{eq:partIa:fisher:p0_deriv_uv}-\eqref{eq:partIa:fisher:p0_deriv_p} 与丝方向 (\StatusReport eq:wire\_dir)：
+\begin{equation}
+  \hat u\cdot\hat e_y = \tfrac{1}{\sqrt 2},\quad \hat v\cdot\hat e_y = -\tfrac{1}{\sqrt 2},
+  \quad
+  \hat u\cdot\hat e_x=\hat v\cdot\hat e_x=\tfrac{\cos\theta}{\sqrt 2}.
+\end{equation}
+第二列的丝投影 $|J_{i2}|\propto p\,(\hat e_y\cdot\hat u\text{ 或 }\hat v)/\sqrt D = p/(\sqrt{2D})$；第一列为 $p\cos\theta/(\sqrt{2D})$。比值
+\begin{equation}
+  \frac{|J_{i2}|}{|J_{i1}|} \;=\;\frac{1}{\cos\theta}\approx 1.836\;\text{ at }\theta=57^\circ.
+\end{equation}
+Fisher 对角元为列范数平方，故 $\mathcal I_{vv}/\mathcal I_{uu}=1/\cos^2\theta\approx 3.37$。在仅考虑对角的近似下 $\sigma_v^2\propto 1/\mathcal I_{vv}$，结合非线性传播 $\sigma_{p_y}\approx p_z\sigma_v$ (式 \eqref{eq:partIa:fisher:M}) 给出
+\begin{equation}
+  \frac{\sigma_{p_y}}{\sigma_{p_x}}\;\sim\;\cos\theta\approx 0.545,
+\end{equation}
+即 $\sigma_{p_y}$ 在 \emph{Fisher 估计内} 比 $\sigma_{p_x}$ 小约 1.8 倍。这与状态报告 \StatusReport § 为什么 $\sigma_{p_y}$ 极小？ 给出的事件级数字 $\sigma_{p_x}\approx 2.26\;\mathrm{MeV}/c$、$\sigma_{p_y}\approx 0.35\;\mathrm{MeV}/c$ 量级一致 (后者更小是因为还耦合了第三列 $p$ 的关联以及 truth-frame 旋转效应)。
+
+\paragraph{警告：Fisher 估计正确，但在 $p_y$ 上 Fisher 与真实方差脱节。} 上述代数说的是\emph{Fisher 自身} 的对角项很小 —— 这是精确事实。但 Proposition \ref{prop:partIa:saturation} 表明实测 $\sigma_{p_y}$ 比 Fisher 预言大 $\sim 1.9\times$。差距 \emph{不在} Fisher 矩阵本身，而在 $(u,v,p)\to(p_x,p_y,p_z)$ 的协方差传播 (式 \eqref{eq:partIa:fisher:Sp})；下节展开。
+
+\subsection{条件数与病态性诊断}
+\label{sec:partIa:fisher:condnum}
+
+$\mathcal I=J^\top J$ 的奇异值分解 $\mathcal I=V\Lambda V^\top$ 给出主轴方向 (列向量 $V_{\cdot k}$) 与对应方差 $\Lambda_{kk}^{-1}$。条件数
+\begin{equation}
+  \kappa(\mathcal I) \;=\;\frac{\sigma_\mathrm{max}(J)^2}{\sigma_\mathrm{min}(J)^2}.
+  \label{eq:partIa:fisher:cond}
+\end{equation}
+状态报告 \StatusReport § 完整算法流程 (Algorithm 1) 把 $\kappa$ 作为 Fisher 计算成功/失败的诊断量。物理意义如下。
+
+\begin{itemize}[nosep]
+  \item $\kappa\sim 1$：参数空间各方向被均衡约束。
+  \item $\kappa\gg 1$：存在退化方向 $V_{\cdot\mathrm{min}}$ —— 沿此方向移动 $\vec\alpha$，$\chi^2$ 几乎不变。物理上对应"参数组合无法被该几何独立测量"。
+  \item $\kappa>\kappa_\mathrm{max}$ (代码默认阈值 $\sim 10^{12}$)：返回失败标志，弃事件。
+\end{itemize}
+
+在 SAMURAI 2-PDC 几何下，已知病态方向是 \emph{动量-曲率简并}：当 $u,v$ 极小且粒子能量很高时，弯曲半径远大于 PDC 弧长，$J$ 第三列退化到 $J$ 第一/二列张成的子空间。$\kappa$ 在此区域 $\sim 10^4$ 但仍可逆。低能 ($p\to 0$) 区域则反过来：$J$ 第三列变大，$\kappa$ 改善，但 RK 步长稳定性下降。本问题中 reco $|\vec p|\sim 635\;\mathrm{MeV}/c$ 处 $\kappa$ 实测 (状态报告事件 \#399 同口径) 在 $10^2-10^3$ 之间，远低于警戒阈值。
+
+\paragraph{代码实现注。} 状态报告 § 完整算法流程 中标注 "SVD" 的步骤在实际代码 (\texttt{libs/analysis\_pdc\_reco/src/PDCErrorAnalysis.cc}, 行 $\sim 355$) 调用 \texttt{TMatrixDSymEigen}：对 $\mathcal I$ 做对称特征值分解 $\mathcal I=V\Lambda V^\top$，等价于 $J^\top J$ 的右奇异向量与奇异值平方。条件数定义为最大/最小特征值的比 (因为 $\mathcal I$ 已是对称半正定，特征值即为奇异值的平方)。
+
+\subsection{从 $(u,v,p)$ 到 $(p_x,p_y,p_z)$ 的协方差变换}
+\label{sec:partIa:fisher:momentum}
+
+物理观测量是 $(p_x,p_y,p_z)$；Fisher 给出的是 $(u,v,p)$ 协方差 $\Sigma_{\vec\alpha}=\mathcal I^{-1}$。需要 Jacobian
+\begin{equation}
+  M \;\equiv\;\frac{\partial(p_x,p_y,p_z)}{\partial(u,v,p)},\quad
+  \Sigma_{\vec p}\;=\;M\,\Sigma_{\vec\alpha}\,M^\top.
+  \label{eq:partIa:fisher:Sp}
+\end{equation}
+
+由 $(p_x,p_y,p_z)=p\cdot(u,v,1)/\sqrt{D}$，$D=1+u^2+v^2$，逐项求偏导：
+\begin{align}
+  \frac{\partial p_x}{\partial u}&= p\!\cdot\!\frac{\sqrt D - u\cdot u/\sqrt D}{D}
+                                 = \frac{p}{\sqrt D}\!\left(1-\frac{u^2}{D}\right)
+                                 = \frac{p_z}{1}\!\left(1-\frac{u^2}{D}\right),\\[2pt]
+  \frac{\partial p_x}{\partial v}&= -p\,\frac{uv}{D^{3/2}} = -\frac{p_z\,uv}{D},\\
+  \frac{\partial p_x}{\partial p}&= \frac{u}{\sqrt D}.
+\end{align}
+对 $p_y,p_z$ 分量重复同样代数，得
+\begin{equation}
+  \boxed{\;M = \begin{pmatrix}
+    p_z\!\left(1-u^2/D\right) & -p_z\,uv/D & u/\sqrt D \\
+    -p_z\,uv/D & p_z\!\left(1-v^2/D\right) & v/\sqrt D \\
+    -p_z\,u/D & -p_z\,v/D & 1/\sqrt D
+  \end{pmatrix}.\;}
+  \label{eq:partIa:fisher:M}
+\end{equation}
+
+\begin{lemma}[$M$ 的行列式]\label{lem:partIa:fisher:detM}
+  $\det M = p_z^2/\sqrt D$.
+\end{lemma}
+\begin{proof}
+  分块或直接展开均可。经济做法：把 $\vec p=p\,\hat n(u,v,1)/\sqrt D$ 看作 $p\to|\vec p|$、$(u,v)\to$ 单位球面上的角坐标的极坐标变换；$|\det\partial(p_x,p_y,p_z)/\partial(p,u,v)|=p^2|\sin\theta|$ 形式经 $u=\tan\theta_x,v=\tan\theta_y$ 重参数化即得 $p_z^2/\sqrt D$。
+\end{proof}
+
+\paragraph{小角度极限 $u,v\to 0$。} 此时 $D\to 1$，$M$ 退化为
+\begin{equation}
+  M_0 \;=\;\begin{pmatrix}p_z & 0 & 0\\ 0 & p_z & 0\\ 0 & 0 & 1\end{pmatrix}\quad(u=v=0).
+  \label{eq:partIa:fisher:M_smallangle}
+\end{equation}
+即 \emph{一阶线性化下}：$\sigma_{p_x}=p_z\sigma_u$、$\sigma_{p_y}=p_z\sigma_v$、$\sigma_{p_z}=\sigma_p$。这是状态报告 \StatusReport § 从参数空间传播到动量空间 中默认的"事件 \#399 比值 1.00"代数。在 $|\vec p|\sim 635\;\mathrm{MeV}/c$、$p_y\sim -55\;\mathrm{MeV}/c$ (即 $v\sim -0.087$) 的真实事件下这一近似的二阶残差是
+\begin{equation}
+  M_{22}-p_z = -p_z v^2/D \;\approx\; -p_z\cdot v^2 \;\sim\;-4.7\;\mathrm{MeV}/c\cdot\,\text{(per unit }v\text{)},
+\end{equation}
+量级 $\sim 7.6\times 10^{-3}$ 的相对修正 —— 看似小，但与下节"二阶项的偏置贡献"相加后可解释 $p_y$ 上 1.9× 的覆盖率亏损。
+
+\paragraph{二阶展开与覆盖率亏损。}
+若把 $\vec p=g(\vec\alpha)$ 二阶展开
+\begin{equation}
+  \vec p \;\approx\; g(\hat{\vec\alpha}) + M\,\Delta\vec\alpha + \tfrac12 H\,\Delta\vec\alpha^{\otimes 2}
+\end{equation}
+代入 $\mathbb E[\Delta\vec\alpha]=\vec 0$、$\mathrm{Cov}(\Delta\vec\alpha)=\Sigma_{\vec\alpha}$，得
+\begin{equation}
+  \mathbb E[\vec p] \;=\; g(\hat{\vec\alpha}) + \tfrac12\mathrm{tr}\!\bigl(H\,\Sigma_{\vec\alpha}\bigr),
+  \quad
+  \mathrm{Cov}(\vec p)\;=\;M\Sigma_{\vec\alpha}M^\top + O(\Sigma_{\vec\alpha}^2),
+  \label{eq:partIa:fisher:nonlin_bias}
+\end{equation}
+即 \textbf{非线性传播在均值上引入偏置}（项 $\tfrac12\mathrm{tr}(H\Sigma_{\vec\alpha})$），\textbf{在协方差上 $M\Sigma M^\top$ 形式只是一阶}。CRB 的可达性需要 MLE 无偏；非线性偏置直接破坏了这一点。
+
+具体到 $p_y=p\,v/\sqrt D$，$\partial^2 p_y/\partial v^2=-p\,(2v/D-3v^3/D^2)/\sqrt D\sim-2p_z v/D$；在 $v\sim-0.087$、$\sigma_v\sim 5\times 10^{-4}$ (Fisher 量级) 时，二阶项贡献的方差修正约为
+\begin{equation}
+  \tfrac12\bigl|\partial^2_v p_y\bigr|\,\sigma_v^2 \;\sim\; 0.087\cdot p_z\cdot\sigma_v^2/D
+  \;\sim\;\mathcal O(10^{-2})\;\mathrm{MeV}/c
+\end{equation}
+对均值；但更关键的是 \emph{二阶 Edgeworth 校正} 给方差的修正比例与 $|H|\sigma_\alpha/|M|$ 同阶，在 $p_y$ 方向上估算为 $\sim 50\%$。这直接解释了 Proposition \ref{prop:partIa:saturation} 中 $\sigma_{p_y}$ 被低估 $1.9\times$ 的根因 —— Part II 第 8 章将给出可验证的修复方案 (reparam 到 $p_x,p_y,p_z$ 直接拟合)。
+
+\subsection{kThreePointFree 模式的扩展}
+\label{sec:partIa:fisher:5dof}
+
+主拟合模式为 \texttt{kThreePointFree} ($\vec\alpha=(\delta x,\delta y,u,v,p)$，5 自由参数)，$N_\mathrm{res}=4+2=6$ (4 PDC 残差 + 2 靶点软先验残差)，$N_\mathrm{dof}=1$。
+
+Fisher 矩阵扩展为 $5\times 5$：
+\begin{equation}
+  \mathcal I_5 \;=\;
+  \begin{pmatrix}
+    \mathcal I_{xx} & \mathcal I_{xy} & \mathcal I_{xu} & \mathcal I_{xv} & \mathcal I_{xp}\\
+    \cdot & \mathcal I_{yy} & \mathcal I_{yu} & \mathcal I_{yv} & \mathcal I_{yp}\\
+    \cdot & \cdot & \mathcal I_{uu} & \mathcal I_{uv} & \mathcal I_{up}\\
+    \cdot & \cdot & \cdot & \mathcal I_{vv} & \mathcal I_{vp}\\
+    \cdot & \cdot & \cdot & \cdot & \mathcal I_{pp}
+  \end{pmatrix}.
+\end{equation}
+靶点软先验 ($\sigma_{xy}^\mathrm{tgt}=5\;\mathrm{mm}$) 给 $\mathcal I_{xx},\mathcal I_{yy}$ 各加上 $1/(\sigma_{xy}^\mathrm{tgt})^2=4\times 10^{-2}\;\mathrm{mm}^{-2}$。$3\times 3$ 子块 $(u,v,p)$ 与 §\ref{sec:partIa:fisher:Jderiv} 推导的形式相同；新增的 $\delta x,\delta y$ 行/列描述靶点位置与方向/动量的耦合。
+
+物理上 $\delta x,\delta y$ 与 $u,v$ 的耦合通过 RK 轨迹积分强相关：在 PDC 处的命中位置 $\Delta r\sim\Delta x_\mathrm{tgt}+L_\mathrm{arm}\Delta u$，$L_\mathrm{arm}\sim 5\;\mathrm m$，因此 $\mathcal I_{xu}\sim L_\mathrm{arm}\,\mathcal I_{uu}$；$5\times 5$ 矩阵存在显著的非对角块。状态报告 \StatusReport § 关于 \texttt{kThreePointFree} 的 worked example 展示了实际 $\Sigma_5$。
+
+\subsection{动量空间协方差矩阵 $M$ (5DoF) 的扩展}
+\label{sec:partIa:fisher:M5}
+
+5DoF 模式下 $M\in\mathbb R^{3\times 5}$：动量分量不依赖 $\delta x,\delta y$，故前两列为零：
+\begin{equation}
+  M_5 \;=\;
+  \begin{pmatrix}
+    0 & 0 & p_z(1-u^2/D) & -p_z uv/D & u/\sqrt D\\
+    0 & 0 & -p_z uv/D & p_z(1-v^2/D) & v/\sqrt D\\
+    0 & 0 & -p_z u/D & -p_z v/D & 1/\sqrt D
+  \end{pmatrix}.
+\end{equation}
+$\Sigma_{\vec p}=M_5\Sigma_5 M_5^\top$ 仅取出 $\Sigma_5$ 的 $(u,v,p)$ 子块进行变换 —— 数学上 5DoF 的 $\Sigma_{\vec p}$ 与 3DoF 在 $(u,v,p)$ 子块对齐时\emph{相等}。然而，5DoF 拟合中 $\Sigma_{(u,v,p)}^{(5)}$ 与 3DoF $\Sigma_{(u,v,p)}^{(3)}$ \emph{不相等}：5DoF 需要从 5 维 Fisher 中边际化掉 $\delta x,\delta y$，得到的 $(u,v,p)$ 边际方差比 3DoF 大 (因为 5DoF 多了 $\delta x,\delta y$ 的不确定性，通过非对角项漏到 $u,v,p$)。这是 5DoF 模式下 Fisher $\sigma$ 系统性偏大的来源；状态报告 § 拟合模式 已隐含该效应。
+
+\subsection{条件数与几何参数的关系}
+\label{sec:partIa:fisher:cond_geom}
+
+把 Fisher 谱直观化：
+\begin{itemize}[nosep]
+  \item PDC 间距 $\Delta z_{12}=z_2-z_1\approx 1\;\mathrm m$ —— 决定 $\partial r_2/\partial u$ 与 $\partial r_1/\partial u$ 的差，进而决定 $J$ 的"角度"列 (1, 2)。
+  \item PDC-靶距 $L_\mathrm{arm}\sim 5\;\mathrm m$ —— 决定 $\delta x_\mathrm{tgt}$ 到 PDC 的杠杆，进而决定 $\delta x$ 与 $u$ 的耦合强度。
+  \item 磁场弯曲角 $\sim 25^\circ$ ($p\sim 635\;\mathrm{MeV}/c$, $B\sim 1.15\;\mathrm T$) —— 决定 $J$ 第三列 (动量) 的幅度。
+  \item PDC 倾角 $\theta=57^\circ$ —— 决定 $\hat u,\hat v$ 在 $(x,y,z)$ 的投影分配，进而决定 $J_{i1}$ 与 $J_{i2}$ 的相对大小 (本章 §\ref{sec:partIa:fisher:sigmapy})。
+\end{itemize}
+
+设 PDC 位置分辨为 $\sigma_\mathrm{wire}=0.5\;\mathrm{mm}$，量纲分析给出：
+\begin{equation}
+  \sigma_u^\mathrm{Fisher} \;\sim\;\frac{\sigma_\mathrm{wire}\sqrt 2}{\Delta z_{12}\cos\theta/\sqrt 2}\;\sim\;\frac{0.5\;\mathrm{mm}\cdot 2}{1000\;\mathrm{mm}\cdot 0.385}\approx 2.6\times 10^{-3}.
+\end{equation}
+代回 $\sigma_{p_x}\approx p_z\sigma_u\sim 1.6\;\mathrm{MeV}/c$ —— 与状态报告事件 \#399 的 $\sigma_{p_x}=2.26\;\mathrm{MeV}/c$ 量级吻合 (差异来自非对角项与靶点软先验)。同样估算 $\sigma_{p_y}$ 给出 $\sim 0.9\;\mathrm{MeV}/c$ —— 与事件级 $0.35\;\mathrm{MeV}/c$ 比有 2-3× 偏差，主要因为多事件平均与单事件值相差 (上述估算未考虑 5DoF $\delta x,\delta y$ 漏入)；定性结论 $\sigma_{p_y}\ll\sigma_{p_x}$ 仍稳健。
+
+闭合形 Fisher 公式 (Glückstern 形式) 由 Part I 第 7 章给出，与本节量纲估算严格一致。
+
+\subsection{代码锚点与算法实现}
+\label{sec:partIa:fisher:code}
+
+Fisher 矩阵在仓库中的实现路径：
+\begin{itemize}[nosep]
+  \item \texttt{libs/analysis\_pdc\_reco/src/PDCErrorAnalysis.cc} —— \texttt{computeFisher} 取 LM 收敛态，调用 \texttt{computeWhitenedResidualJacobian} 得 $J$，构造 $\mathcal I=J^\top J$。注意此处实际使用 \texttt{TMatrixDSymEigen}（行 $\sim 355$）做对称特征值分解，\emph{不是} 显式 SVD —— 但二者对正定 $\mathcal I$ 等价 (特征值即奇异值平方)。
+  \item 同文件 \texttt{computeMomentumCovariance} —— 数值差分计算 $M=\partial(p_x,p_y,p_z)/\partial\vec\alpha$ (中心差分，与 LM 内部 Jacobian 共享步长策略 \StatusReport § Levenberg-Marquardt)；最终 $\Sigma_{\vec p}=M\Sigma_{\vec\alpha}M^\top$。
+  \item 数据结构 \texttt{IntervalEstimate} (\texttt{libs/analysis\_pdc\_reco/include/PDCErrorAnalysis.hh}) 统一存储 Fisher / Laplace / Profile / MCMC 四种方法的中心值与 68\%/95\% 区间，供下游 \texttt{validation\_summary.csv} 统计。
+\end{itemize}
+
+\paragraph{数值健壮性。} 实现中两道闸门：
+\begin{enumerate}[nosep]
+  \item 条件数检查 $\kappa<\kappa_\mathrm{max}\sim 10^{12}$；
+  \item 最小特征值检查 $\lambda_\mathrm{min}>\epsilon\sim 10^{-14}$。
+\end{enumerate}
+触发任一闸门 $\Rightarrow$ Fisher 标记失败，\texttt{validation\_summary.csv} 中本事件 \texttt{cover68/95} 不计入。在 744-事件 ensemble 中 Fisher 失败率 $<1\%$（细节由 Part III 第 6 章 LM 收敛性研究给出）。
+
+\subsection{小结}
+\label{sec:partIa:fisher:summary}
+
+本章建立了 Fisher 矩阵从抽象 $\mathcal I=J^\top J$ 到 SAMURAI 谱仪几何下可观测量的完整桥梁。三个关键事实：
+\begin{enumerate}[nosep]
+  \item Fisher 矩阵在似然层面 (R1-R5) 完全合法；CRB 等号在 $|\vec p|, p_x, p_z$ 三分量上近似饱和 (覆盖率 0.76-0.80)。
+  \item $\sigma_{p_y}$ 极小，根源是丝方向 $\hat u,\hat v$ 在 $y$ 方向投影最大，$J$ 第二列幅度比第一列大约 $1/\cos\theta\approx 1.84$ 倍 —— 这是 \emph{Fisher 估计本身正确} 的事实。
+  \item $\sigma_{p_y}$ 实测覆盖率 0.42 (低估 $\sim 1.9\times$) 来自 $(u,v,p)\to(p_x,p_y,p_z)$ 协方差变换中被忽略的二阶项 (式 \eqref{eq:partIa:fisher:nonlin_bias})；修复路径见 Part II § 8。
+\end{enumerate}
+
+下一章 (本部分第 4 章 Wilks 定理) 将处理小样本 ($N_\mathrm{dof}=1$) 下 Fisher 失效的另一面 —— 似然函数偏离高斯，需要 Profile Likelihood 或 MCMC 才能得到正确分位数。
+
+% TODO: figure - Fisher J 三列在 SAMURAI xz 平面的几何示意 (status report figures/geometry/samurai_geometry_xz.png 可作底图)
+% TODO: figure - $\kappa$ 与 reco $|\vec p|$ 的散点图，标出 $\kappa=10^{12}$ 警戒线 (来自 744-event ensemble per_event 输出，当前 CSV 不直接含 kappa；需新出 run)
