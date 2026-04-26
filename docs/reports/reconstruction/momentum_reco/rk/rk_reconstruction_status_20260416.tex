@@ -1,4 +1,4 @@
-% Build: cd docs/reports/reconstruction && latexmk -xelatex rk_reconstruction_status_20260416.tex
+% Build: cd docs/reports/reconstruction/momentum_reco/rk && latexmk -xelatex rk_reconstruction_status_20260416.tex
 \documentclass[aspectratio=169]{beamer}
 \usetheme{Madrid}
 \usecolortheme{default}
@@ -14,6 +14,10 @@
 
 \definecolor{goodgreen}{RGB}{34,139,34}
 \definecolor{warnred}{RGB}{200,50,50}
+
+% Path to the analysis run that produced all numerical results in
+% Section "Uncertainty Estimation".
+\newcommand{\AnaRoot}{../../../../../results/pdc_rk_error_after_pdcana_20260411}
 
 \title[RK Reconstruction \& Error Analysis]{PDC Target-Momentum Reconstruction:\\Algorithm, Physics, and Uncertainty}
 \subtitle{Current Status Report --- April 2026}
@@ -310,6 +314,27 @@ MC propagation captures nonlinear asymmetry in the $(u,v,p) \to (p_x,p_y,p_z)$ m
 \end{frame}
 
 % ============================================================
+\begin{frame}{Run Configuration for Numerical Results}
+\small
+Subsequent frames in this section quote numbers from two complementary runs.
+The default RK fit mode is \texttt{kThreePointFree} (5 free params $(\delta x, \delta y, u, v, p)$ with a soft target prior $\sigma_{xy}^\mathrm{tgt} = 5\;\mathrm{mm}$); all examples here use \texttt{kFixedTargetPdcOnly} ($\delta x, \delta y$ fixed at 0; only $(u, v, p)$ free), which matches the dataset prefixes shown below.
+
+\vspace{0.15cm}
+\begin{tabular}{@{}p{0.20\textwidth}p{0.36\textwidth}p{0.34\textwidth}@{}}
+\toprule
+Source & Path & Use \\
+\midrule
+Smoke (5 events) & \texttt{build/test\_output/error\_analysis\_rk/} & Per-event Fisher table (frame ``Error Analysis Results'') \\
+Ensemble (744 events) & \texttt{build/test\_output/ensemble\_n50\_targetframe/rk\_fixed\_target\_pdc\_only\_error\_analysis/} & Coverage validation across truth grid \\
+Realistic legacy (815 tracks) & \texttt{results/pdc\_rk\_error\_after\_pdcana\_20260411/} & Companion zh.\ report: per-track Fisher/Laplace + 32 Profile + 16 MCMC; no truth $\Rightarrow$ no coverage \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.15cm}
+The Chinese companion (\texttt{rk\_reconstruction\_status\_20260416\_zh.pdf}) contains a worked example, the per-method comparison plots from the realistic-data run, and a discussion of why MCMC is broader than Profile in that run.
+\end{frame}
+
+% ============================================================
 \begin{frame}{Fisher Information}
 \small
 At the MLE $\hat{\vec{\alpha}}$, the observed Fisher information matrix is:
@@ -332,6 +357,33 @@ Fisher confidence intervals (assuming Gaussian):
 \[
 p_i \pm z_\alpha \cdot \sqrt{(\Sigma_{\vec{p}})_{ii}}, \qquad z_{0.68} \approx 1.0,\quad z_{0.95} \approx 1.96.
 \]
+\end{frame}
+
+% ============================================================
+\begin{frame}{Fisher: Algorithm Outline and Cost}
+\small
+Per-event computation by \texttt{PDCErrorAnalysis::computeFisher} (\texttt{libs/analysis\_pdc\_reco/src/PDCErrorAnalysis.cc}):
+
+\begin{enumerate}\setlength{\itemsep}{0pt}
+\item \textbf{Jacobian} $J = \partial \vec{w}/\partial \vec{\alpha}$ via central differences;
+$2 n_\mathrm{params}$ RK trajectory propagations, step
+$h_u = \max(10^{-4}, 0.01|u|)$, $h_p = \max(0.5\;\mathrm{MeV}/c,\,10^{-3}p)$.
+\item \textbf{Information} $\mathcal{I} = J^T J$ ($3{\times}3$ for \texttt{kFixedTargetPdcOnly}, $5{\times}5$ for \texttt{kThreePointFree}).
+\item \textbf{SVD} $\mathcal{I} = U S V^T$; report condition $\kappa = S_\mathrm{max}/S_\mathrm{min}$, fail if $\kappa$ exceeds threshold.
+\item \textbf{Param covariance} $\Sigma_{\vec{\alpha}} = V S^{-1} U^T$.
+\item \textbf{Momentum Jacobian} $M = \partial(p_x,p_y,p_z)/\partial\vec{\alpha}$ (central differences).
+\item \textbf{Momentum covariance} $\Sigma_{\vec{p}} = M\,\Sigma_{\vec{\alpha}}\,M^T$.
+\end{enumerate}
+
+\textbf{Cost:} 1 Jacobian eval ($\sim\!6$ RK propagations) + 1 SVD $\approx 5\;\mathrm{ms}$ per event $\Rightarrow$ runs inline.
+
+\vspace{0.1cm}
+\textbf{Worked example} (event 0 from the smoke run, MLE point estimate
+$(p_x, p_y, p_z) = (-107.33,\, -13.35,\, 610.90)$~MeV/$c$):
+\[
+\sigma_{p_x} = 3.83,\ \sigma_{p_y} = 0.15,\ \sigma_{p_z} = 2.22\ \text{MeV}/c,\quad \chi^2_\mathrm{red} = 0.18.
+\]
+The order-of-magnitude difference between $\sigma_{p_y} \sim 0.15$ and $\sigma_{p_x},\sigma_{p_z} \sim 2\text{--}4$~MeV/$c$ is the geometric Jacobian effect: the wire direction has its largest projection on $\hat{y}$ ($\pm 1/\sqrt{2}$), so the wire residual most strongly constrains $v = p_y/p_z$, shrinking $\sigma_{p_y}$ in $(J^T J)^{-1}$. Same pattern persists across the 744-event ensemble (see ``Ensemble Coverage'' frame).
 \end{frame}
 
 % ============================================================
