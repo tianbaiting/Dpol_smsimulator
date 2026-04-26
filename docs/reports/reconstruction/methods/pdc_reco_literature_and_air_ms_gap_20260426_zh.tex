@@ -150,6 +150,29 @@ SAMURAI 质子臂的已发表参考重建链遵循四阶段主干。\textbf{(i)~
 我们的内部管线位于 \texttt{libs/analysis\_pdc\_reco/}（仓库级指南另见 \texttt{smsimulator5.5/CLAUDE.md}），沿用同样的 Runge--Kutta 反推主干，并提供多种可选 RK 拟合模式；一个具体示例是 \texttt{-{}-rk-fit-mode fixed-target-pdc-only}，见 MS 消融备忘录\footref{fn:msablation} §3。另有一个神经网络后端位于 \texttt{scripts/reconstruction/nn\_target\_momentum/}，并由 RK 几何过滤器（\texttt{libs/qmd\_geo\_filter/}，配套技能 \texttt{skills/smsim-rk-geometry-filter/}）在拟合前剔除明显出接收度的轨迹。本节不重新推导按方法分解的性能数字：完整状态——包含 MC、Profile、Laplace、MCMC 与 MC-PDC 变体——见 RK 状态备忘录 \texttt{docs/reports/reconstruction/momentum\_reco/rk/rk\_reconstruction\_status\_20260416\_zh.pdf} 与深入备忘录\footref{fn:rkdeepdive}。文献主干与内部管线之间逐算法的细致对照推迟至 §4.2（方法学）。
 
 \subsection{SAMURAI 各次实验中达到的性能}
+表~\ref{tab:performance-campaigns} 梳理了使用 PDC1/PDC2 链的公开 SAMURAI 论文，并只问一个问题：该论文是否给出可与我们重建直接对比的 PDC 端 $\sigma_p/p$ 数值？答案对几乎每一项都是“否”——公开论文报告的是物理可观测量（截面、衰变能、动量分布），而非上游径迹器分辨。因此各单元格被显式标注为“not reported”或“needs verification”；我们刻意不发明数字。
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \begin{tabular}{p{3.0cm} p{1.0cm} p{1.7cm} p{4.4cm} p{1.7cm} p{2.6cm}}
+    \toprule
+    Experiment & Year & Channel & $\sigma_p/p$ reported & Source flag & Citation \\
+    \midrule
+    Commissioning RI       & 2012 & RI ions       & $\sim 1/1500$                                              & reported            & Kobayashi 2013\footref{fn:kobayashi2013} \\
+    dp elastic (190 MeV/u) & 2013 & d+p elastic   & not reported in paper                                      & needs verification  & Sekiguchi PRC 89 (2014)\footnote{\label{fn:sekiguchi2014}K.~Sekiguchi et al., Phys. Rev. C \textbf{89}, 064007 (2014), DOI: \href{https://doi.org/10.1103/PhysRevC.89.064007}{10.1103/PhysRevC.89.064007}.} \\
+    dp elastic (294 MeV/u) & 2017 & d+p elastic   & not reported in paper                                      & needs verification  & Sekiguchi PRC 96 (2017)\footnote{\label{fn:sekiguchi2017}K.~Sekiguchi et al., Phys. Rev. C \textbf{96}, 064001 (2017), DOI: \href{https://doi.org/10.1103/PhysRevC.96.064001}{10.1103/PhysRevC.96.064001}.} \\
+    SEASTAR-III $^{28}$O   & 2017 & (p,2p)/(p,pn) & not reported (0.2~MeV FWHM decay-E $\leftrightarrow$ inferred $\sim 1\%$) & inferred & Kondo Nature 620 (2023)\footnote{\label{fn:kondo2023}Y.~Kondo et al., Nature \textbf{620}, 965--970 (2023), DOI: \href{https://doi.org/10.1038/s41586-023-06352-6}{10.1038/s41586-023-06352-6}.} \\
+    $^{52}$Ca(p,pn)$^{51}$Ca & 2017 & (p,pn)      & not reported                                               & needs verification  & Enciu PRL 129 (2022)\footnote{\label{fn:enciu2022}M.~Enciu et al., Phys. Rev. Lett. \textbf{129}, 262501 (2022), DOI: \href{https://doi.org/10.1103/PhysRevLett.129.262501}{10.1103/PhysRevLett.129.262501}.} \\
+    $^{30}$F study         & 2017 & (p,2p)        & not reported                                               & needs verification  & Kahlbow PRL 133 (2024)\footnote{\label{fn:kahlbow2024prl}J.~Kahlbow et al., Phys. Rev. Lett. \textbf{133} (2024); DOI not verified by document author --- cite by journal+volume only.} \\
+    $^{50}$Ar(p,pn)$^{49}$Ar & 2017 & (p,pn)      & not reported                                               & needs verification  & Linh PRC 109 (2024)\footnote{\label{fn:linh2024}B.~D.~Linh et al., Phys. Rev. C \textbf{109} (2024); DOI not verified by document author --- cite by journal+volume only.} \\
+    \bottomrule
+  \end{tabular}
+  \caption{公开 SAMURAI 论文中 PDC 端 $\sigma_p/p$ 的报告情况。标注为“needs verification”或“inferred”的单元格不应被填入虚构数值。当前最完整的公开 PDC 端性能数字见 Kahlbow 2019 博士论文（TUprints 9192）\footref{fn:kahlbow2019}。Storck 2023 博士论文（TUprints 23768）\footref{fn:storck2023phd} 涉及 SAMURAI 2016 年 12 月一次包含 PDC 分析的实验，但使用的是 W/Pt 靶而非 MINOS LH$_2$。}
+  \label{tab:performance-campaigns}
+\end{table}
+
+对表~\ref{tab:performance-campaigns} 的诚实解读是：几乎所有公开 SAMURAI 论文都报告物理可观测量（截面、衰变能）而非直接的 $\sigma_p/p$，因此标注为“needs verification”的单元格是有意保留的待补占位符，绝不应以虚构数值填充。Kondo 一行是唯一处于边界状态的条目：0.2~MeV FWHM 的衰变能分辨在量级上允许\emph{推断} $\sigma_p/p \sim 1\%$，但此数值属于推断值，并已如实标注。补齐其余单元格的推荐路径是阅读 Kahlbow 2019 博士论文\footref{fn:kahlbow2019}，其中收录了目前最完整的公开 PDC 端性能拆解；Storck 2023\footref{fn:storck2023phd} 部分相关，但覆盖的是不同的（W/Pt）靶。
 
 \section{Gap 分析}
 % [content from Tasks 7--8]

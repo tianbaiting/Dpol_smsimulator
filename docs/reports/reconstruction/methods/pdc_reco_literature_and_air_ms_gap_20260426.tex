@@ -150,6 +150,29 @@ The published reference reconstruction chain for the SAMURAI proton arm follows 
 Our internal pipeline lives in \texttt{libs/analysis\_pdc\_reco/} (see also \texttt{smsimulator5.5/CLAUDE.md} for the repo-level guide) and follows the same Runge--Kutta back-tracking spine, with multiple selectable RK fit modes; one concrete example is \texttt{-{}-rk-fit-mode fixed-target-pdc-only} as exercised in the MS ablation memo\footref{fn:msablation} §3. An alternative neural-network backend is provided under \texttt{scripts/reconstruction/nn\_target\_momentum/}, and an RK geometry filter (\texttt{libs/qmd\_geo\_filter/}, with the matching skill \texttt{skills/smsim-rk-geometry-filter/}) prunes obviously off-acceptance trajectories before the fit. We do not re-derive the per-method numerical performance here: the full status, including MC, Profile, Laplace, MCMC, and MC-PDC variants, is reported in the RK status memo at \texttt{docs/reports/reconstruction/momentum\_reco/rk/rk\_reconstruction\_status\_20260416\_zh.pdf} and the deep-dive\footref{fn:rkdeepdive}. A detailed algorithm-by-algorithm comparison between the literature spine and our internal pipeline is deferred to §4.2 (Methodology gap).
 
 \subsection{Performance achieved across SAMURAI campaigns}
+Table~\ref{tab:performance-campaigns} surveys the public SAMURAI papers that have used the PDC1/PDC2 chain and asks a single question: did the publication report a PDC-side $\sigma_p/p$ figure that we can directly compare against our reconstruction? The answer for almost every entry is no --- public papers report physics observables (cross sections, decay energies, momentum distributions) rather than the upstream tracker resolution. Cells are therefore explicitly marked ``not reported'' or ``needs verification''; we deliberately do not invent numbers.
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \begin{tabular}{p{3.0cm} p{1.0cm} p{1.7cm} p{4.4cm} p{1.7cm} p{2.6cm}}
+    \toprule
+    Experiment & Year & Channel & $\sigma_p/p$ reported & Source flag & Citation \\
+    \midrule
+    Commissioning RI       & 2012 & RI ions       & $\sim 1/1500$                                              & reported            & Kobayashi 2013\footref{fn:kobayashi2013} \\
+    dp elastic (190 MeV/u) & 2013 & d+p elastic   & not reported in paper                                      & needs verification  & Sekiguchi PRC 89 (2014)\footnote{\label{fn:sekiguchi2014}K.~Sekiguchi et al., Phys. Rev. C \textbf{89}, 064007 (2014), DOI: \href{https://doi.org/10.1103/PhysRevC.89.064007}{10.1103/PhysRevC.89.064007}.} \\
+    dp elastic (294 MeV/u) & 2017 & d+p elastic   & not reported in paper                                      & needs verification  & Sekiguchi PRC 96 (2017)\footnote{\label{fn:sekiguchi2017}K.~Sekiguchi et al., Phys. Rev. C \textbf{96}, 064001 (2017), DOI: \href{https://doi.org/10.1103/PhysRevC.96.064001}{10.1103/PhysRevC.96.064001}.} \\
+    SEASTAR-III $^{28}$O   & 2017 & (p,2p)/(p,pn) & not reported (0.2~MeV FWHM decay-E $\leftrightarrow$ inferred $\sim 1\%$) & inferred & Kondo Nature 620 (2023)\footnote{\label{fn:kondo2023}Y.~Kondo et al., Nature \textbf{620}, 965--970 (2023), DOI: \href{https://doi.org/10.1038/s41586-023-06352-6}{10.1038/s41586-023-06352-6}.} \\
+    $^{52}$Ca(p,pn)$^{51}$Ca & 2017 & (p,pn)      & not reported                                               & needs verification  & Enciu PRL 129 (2022)\footnote{\label{fn:enciu2022}M.~Enciu et al., Phys. Rev. Lett. \textbf{129}, 262501 (2022), DOI: \href{https://doi.org/10.1103/PhysRevLett.129.262501}{10.1103/PhysRevLett.129.262501}.} \\
+    $^{30}$F study         & 2017 & (p,2p)        & not reported                                               & needs verification  & Kahlbow PRL 133 (2024)\footnote{\label{fn:kahlbow2024prl}J.~Kahlbow et al., Phys. Rev. Lett. \textbf{133} (2024); DOI not verified by document author --- cite by journal+volume only.} \\
+    $^{50}$Ar(p,pn)$^{49}$Ar & 2017 & (p,pn)      & not reported                                               & needs verification  & Linh PRC 109 (2024)\footnote{\label{fn:linh2024}B.~D.~Linh et al., Phys. Rev. C \textbf{109} (2024); DOI not verified by document author --- cite by journal+volume only.} \\
+    \bottomrule
+  \end{tabular}
+  \caption{PDC-side $\sigma_p/p$ as reported (or not) in public SAMURAI papers. Cells marked ``needs verification'' or ``inferred'' should not be filled with invented numbers. The most complete public PDC-side performance numbers are in the Kahlbow 2019 PhD (TUprints 9192)\footref{fn:kahlbow2019}. Storck 2023 PhD (TUprints 23768)\footref{fn:storck2023phd} covers a SAMURAI December 2016 campaign with PDC analysis but with a W/Pt target rather than MINOS LH$_2$.}
+  \label{tab:performance-campaigns}
+\end{table}
+
+The honest reading of Table~\ref{tab:performance-campaigns} is that almost every public SAMURAI paper reports physics observables (cross sections, decay energies) but not $\sigma_p/p$ directly, so the ``needs verification'' cells are deliberate placeholders for follow-up commits and must never be filled with invented numbers. The Kondo entry is the lone borderline case: the 0.2~MeV FWHM decay-energy resolution lets one \emph{infer} $\sigma_p/p \sim 1\%$ at the order-of-magnitude level, but that figure is inferred and is labelled as such. The recommended path to resolve the remaining cells is the Kahlbow 2019 PhD thesis\footref{fn:kahlbow2019}, which contains the most complete public PDC-side performance breakdown; Storck 2023\footref{fn:storck2023phd} is partially relevant but covers a different (W/Pt) target.
 
 \section{Gap analysis}
 % [content from Tasks 7--8]
