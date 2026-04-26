@@ -49,10 +49,62 @@ See §6 for proposed action items.
 
 \section{The problem: air multiple scattering at the SAMURAI terminal}
 % [content from Task 3]
+% NOTE: skipped TikZ flight-path sketch in favour of explicit prose; the geometry
+%       is captured numerically by the world/local coordinates and the Region A/B
+%       definitions below, and a hand-drawn diagram risks introducing inaccuracies.
+
 \subsection{Geometry of the proton flight path}
+The deuteron target sits at world coordinates $(-12.488, 0.0009, -1069.458)$~mm, which corresponds to yoke-local coordinates $(-545.5, 0, -919.9)$~mm under the $-30^\circ$ yoke rotation about $Y$\footnote{\label{fn:msablation_geom}See \texttt{docs/reports/reconstruction/momentum\_reco/ms\_ablation/ms\_ablation\_mixed\_20260422\_zh.md} §1.1--§1.3 for coordinates, yoke rotation, and Region A/B definitions.}. Because the SAMURAI dipole cavity (\texttt{vchamber\_box}) extends over $z \in [-1750, +1750]$~mm in yoke-local frame, the target at $z=-919.9$~mm is \emph{physically inside the dipole cavity} rather than upstream of it. Two regions therefore separate the target from the PDCs. \textbf{Region~A} ($\approx 4.3$~m) covers the in-cavity flight from the target through the cavity exit (2.67~m) and onwards through the downstream beam-pipe (\texttt{VacuumDownstream}, $\approx 1.6$~m) up to the Exit Window; this region is controlled by the Geant4 macro switch \texttt{/samurai/geometry/BeamLineVacuum}. \textbf{Region~B} ($\approx 2.0$~m) covers free flight in the world volume from the Exit Window at world $(170.5, 0, 3187.5)$~mm to PDC1 at $(700, 0, 4000)$~mm (0.97~m) and on to PDC2 (1.00~m), gated by \texttt{/samurai/geometry/FillAir}. Inside Region~A the proton bends $\sim 30^\circ$ in the 1.15~T field, but the arc-length vs.\ straight-line difference stays below 10\%\footref{fn:msablation_geom}.
+
 \subsection{Measured \texorpdfstring{$\sigma$}{sigma} values}
+Table~\ref{tab:sigma-three-conditions} reproduces the robust half-width $\sigma = (p_{84}-p_{16})/2$ measured at PDC1 and PDC2 across three vacuum/air configurations and three truth momenta, with $|\vec p|=627$~MeV/c protons.
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{lcrrrrrrr}
+    \toprule
+    Condition & $(p_x, p_y)$ [MeV/c] & $N$ & $\sigma_x$(P1) & $\sigma_y$(P1) & $\sigma_x$(P2) & $\sigma_y$(P2) & $\sigma_{\theta_x}$ & $\sigma_{\theta_y}$ \\
+    \midrule
+    all\_air         & $(0,0)$    & 50 & 3.071 & 9.736  & 3.669 & 12.826 & 12.279 & 9.240 \\
+    all\_air         & $(100,0)$  & 50 & 3.838 & 10.492 & 5.377 & 12.751 & 15.768 & 8.277 \\
+    all\_air         & $(0,20)$   & 50 & 3.372 & 13.039 & 4.065 & 14.927 & 21.709 & 7.846 \\
+    \midrule
+    beamline\_vacuum & $(0,0)$    & 50 & 1.528 & 4.061  & 2.086 & 6.801  & 11.834 & 5.910 \\
+    beamline\_vacuum & $(100,0)$  & 50 & 2.067 & 4.888  & 3.060 & 8.211  & 8.100  & 5.786 \\
+    beamline\_vacuum & $(0,20)$   & 49 & 1.667 & 4.789  & 2.363 & 7.459  & 14.289 & 5.421 \\
+    \midrule
+    all\_vacuum      & $(0,0)$    & 50 & 0.147 & 0.515  & 0.447 & 0.947  & 6.798  & 2.558 \\
+    all\_vacuum      & $(100,0)$  & 50 & 0.154 & 0.364  & 0.416 & 0.999  & 4.075  & 1.956 \\
+    all\_vacuum      & $(0,20)$   & 50 & 0.174 & 0.411  & 0.396 & 1.002  & 6.913  & 2.299 \\
+    \bottomrule
+  \end{tabular}
+  \caption{$\sigma$ values from Geant4 + reconstruction ensemble; $\sigma$ in mm, $\sigma_\theta$ in mrad. Robust half-width $(p_{84}-p_{16})/2$. Source: \texttt{docs/reports/reconstruction/momentum\_reco/ms\_ablation/ms\_ablation\_mixed\_20260422\_zh.md} §4.}
+  \label{tab:sigma-three-conditions}
+\end{table}
+
 \subsection{Gap to design specifications}
+The realistic-air spatial $\sigma_y$(PDC2) sits roughly an order of magnitude away from the 1~mm hardware design figure, and only the all-vacuum ablation reaches the design floor. Table~\ref{tab:design-gap} summarises the comparison; angular and momentum entries follow the same structure.
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{p{4.6cm} p{3.2cm} p{5.2cm} p{2.6cm}}
+    \toprule
+    Quantity & Design / commissioning & Our current state & Source \\
+    \midrule
+    Position $\sigma$ at PDC & 1~mm & $\sim 13$~mm (all-air) / $\sim 7.5$~mm (A=vac) / $\sim 1.0$~mm (all-vac) & Kobayashi 2013 §3.4\footref{fn:kobayashi2013} + memo §4\footref{fn:msablation} \\
+    Angular $\sigma$ & 2~mrad & 5.4--9.2~mrad ($\sigma_{\theta_y}$, all-air \& \texttt{beamline\_vacuum}) / 2.0--2.6~mrad (all-vacuum) & Kobayashi 2013 §3.4\footref{fn:kobayashi2013} + memo §4\footref{fn:msablation} \\
+    RI commissioning $\Delta p / p$ & $1/1500$ & not measured in this ablation & Kobayashi 2013\footref{fn:kobayashi2013} \\
+    Proton-mode design $\Delta p / p$ & $\sim 1/700$ & not measured in this ablation & RIBF-TAC05 (2005)\footref{fn:ribftac05} \\
+    \bottomrule
+  \end{tabular}
+  \caption{PDC reconstruction performance: design / commissioning targets vs.\ our current Geant4 + reconstruction state. Position and angular rows compare against the Kobayashi 2013 §3.4 hardware specification; the two $\Delta p/p$ rows are not yet propagated end-to-end in our ablation, so we have $\sigma_y$(PDC2) but no single $\Delta p/p$ figure to report.}
+  \label{tab:design-gap}
+\end{table}
+
 \subsection{Why this matters for the science floor}
+The PDC2 $\sigma_y$ entries above are not the end of the story: they propagate backwards through the Runge--Kutta tracker and the SAMURAI magnetic field map to a target-momentum uncertainty $\sigma_{p,\text{target}}$, which is the reconstruction science floor for any experiment in which the target sits inside the magnet and the outgoing proton is measured downstream (target $\to$ magnet $\to$ PDC). This document does not re-derive $\sigma_{p,\text{target}}$ propagation values; the per-method numerical breakdown lives in the RK error-analysis deep-dive memo\footnote{\label{fn:rkdeepdive}See \texttt{docs/reports/reconstruction/momentum\_reco/rk/rk\_error\_analysis\_deep\_dive\_20260426\_zh.pdf} for $\sigma_{p,\text{target}}$ propagation under MC, Profile, Laplace, MCMC, and MC-PDC.}.
 
 \section{PDC reconstruction reference frame}
 % [content from Tasks 4--6]

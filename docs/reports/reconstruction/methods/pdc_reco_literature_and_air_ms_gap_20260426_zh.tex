@@ -50,10 +50,61 @@
 
 \section{问题：SAMURAI 终端的 air 多重散射}
 % [content from Task 3]
+% NOTE: 出于稳妥考虑未画 TikZ 飞行路径示意图；几何信息已通过世界/局部坐标
+%       与 Region A/B 的定义完整给出，避免手绘示意图带来不准确的细节。
+
 \subsection{质子飞行路径几何}
+氘靶位于世界坐标 $(-12.488, 0.0009, -1069.458)$~mm，对应于在轭铁绕 $Y$ 轴 $-30^\circ$ 旋转下的 yoke-local 坐标 $(-545.5, 0, -919.9)$~mm\footnote{\label{fn:msablation_geom}见 \texttt{docs/reports/reconstruction/momentum\_reco/ms\_ablation/ms\_ablation\_mixed\_20260422\_zh.md} §1.1--§1.3：坐标、轭铁旋转及 Region A/B 的定义。}。SAMURAI 偶极磁铁腔（\texttt{vchamber\_box}）在 yoke-local 坐标下覆盖 $z \in [-1750, +1750]$~mm，因此位于 $z=-919.9$~mm 的靶在物理上\emph{位于偶极腔之内}，而非腔的上游。从靶到 PDC 共分两段：\textbf{Region~A}（$\approx 4.3$~m）涵盖腔内飞行——从靶到腔出口（2.67~m），再经下游束流管 \texttt{VacuumDownstream}（$\approx 1.6$~m）抵达 Exit Window；该区段由 Geant4 宏开关 \texttt{/samurai/geometry/BeamLineVacuum} 控制。\textbf{Region~B}（$\approx 2.0$~m）覆盖在 world 体内的自由飞行：从世界坐标 $(170.5, 0, 3187.5)$~mm 处的 Exit Window 到 $(700, 0, 4000)$~mm 处的 PDC1（0.97~m），再到 PDC2（1.00~m），由 \texttt{/samurai/geometry/FillAir} 控制。在 Region~A 内质子在 1.15~T 磁场中弯转 $\sim 30^\circ$，但弧长与直线长度的差异保持在 10\% 以内\footref{fn:msablation_geom}。
+
 \subsection{实测 \texorpdfstring{$\sigma$}{sigma} 数值}
+表~\ref{tab:sigma-three-conditions} 汇总了在三种真空/air 配置与三组真值动量下，于 PDC1 与 PDC2 测得的稳健半宽 $\sigma = (p_{84}-p_{16})/2$；粒子为 $|\vec p|=627$~MeV/c 的质子。
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{lcrrrrrrr}
+    \toprule
+    Condition & $(p_x, p_y)$ [MeV/c] & $N$ & $\sigma_x$(P1) & $\sigma_y$(P1) & $\sigma_x$(P2) & $\sigma_y$(P2) & $\sigma_{\theta_x}$ & $\sigma_{\theta_y}$ \\
+    \midrule
+    all\_air         & $(0,0)$    & 50 & 3.071 & 9.736  & 3.669 & 12.826 & 12.279 & 9.240 \\
+    all\_air         & $(100,0)$  & 50 & 3.838 & 10.492 & 5.377 & 12.751 & 15.768 & 8.277 \\
+    all\_air         & $(0,20)$   & 50 & 3.372 & 13.039 & 4.065 & 14.927 & 21.709 & 7.846 \\
+    \midrule
+    beamline\_vacuum & $(0,0)$    & 50 & 1.528 & 4.061  & 2.086 & 6.801  & 11.834 & 5.910 \\
+    beamline\_vacuum & $(100,0)$  & 50 & 2.067 & 4.888  & 3.060 & 8.211  & 8.100  & 5.786 \\
+    beamline\_vacuum & $(0,20)$   & 49 & 1.667 & 4.789  & 2.363 & 7.459  & 14.289 & 5.421 \\
+    \midrule
+    all\_vacuum      & $(0,0)$    & 50 & 0.147 & 0.515  & 0.447 & 0.947  & 6.798  & 2.558 \\
+    all\_vacuum      & $(100,0)$  & 50 & 0.154 & 0.364  & 0.416 & 0.999  & 4.075  & 1.956 \\
+    all\_vacuum      & $(0,20)$   & 50 & 0.174 & 0.411  & 0.396 & 1.002  & 6.913  & 2.299 \\
+    \bottomrule
+  \end{tabular}
+  \caption{$\sigma$ values from Geant4 + reconstruction ensemble; $\sigma$ in mm, $\sigma_\theta$ in mrad. Robust half-width $(p_{84}-p_{16})/2$. Source: \texttt{docs/reports/reconstruction/momentum\_reco/ms\_ablation/ms\_ablation\_mixed\_20260422\_zh.md} §4.}
+  \label{tab:sigma-three-conditions}
+\end{table}
+
 \subsection{与设计指标的差距}
+含 air 的 $\sigma_y$(PDC2) 距 1~mm 硬件设计指标约一个数量级，仅 all-vacuum 消融达到设计底线。表~\ref{tab:design-gap} 给出对照；角度分辨与 $\Delta p/p$ 行采用同样结构。
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{p{4.6cm} p{3.2cm} p{5.2cm} p{2.6cm}}
+    \toprule
+    指标 & 设计 / 投运 & 当前我们的状态 & 来源 \\
+    \midrule
+    PDC 位置 $\sigma$ & 1~mm & $\sim 13$~mm（all-air）/ $\sim 7.5$~mm（A=真空）/ $\sim 1.0$~mm（all-vac） & Kobayashi 2013 §3.4\footref{fn:kobayashi2013} + 备忘录 §4\footref{fn:msablation} \\
+    角度 $\sigma$ & 2~mrad & 5.4--9.2~mrad（$\sigma_{\theta_y}$，all-air 与 \texttt{beamline\_vacuum}）/ 2.0--2.6~mrad（all-vacuum） & Kobayashi 2013 §3.4\footref{fn:kobayashi2013} + 备忘录 §4\footref{fn:msablation} \\
+    RI 投运 $\Delta p / p$ & $1/1500$ & 本次消融未测量 & Kobayashi 2013\footref{fn:kobayashi2013} \\
+    质子模式设计 $\Delta p / p$ & $\sim 1/700$ & 本次消融未测量 & RIBF-TAC05 (2005)\footref{fn:ribftac05} \\
+    \bottomrule
+  \end{tabular}
+  \caption{PDC 重建性能：设计 / 投运目标与当前 Geant4 + 重建状态对照。位置与角度行对照 Kobayashi 2013 §3.4 硬件指标；两行 $\Delta p/p$ 在本次消融中尚未端到端传播，因此我们有 $\sigma_y$(PDC2) 但暂无单一 $\Delta p/p$ 数值可报。}
+  \label{tab:design-gap}
+\end{table}
+
 \subsection{为什么这会限制科学产出}
+上面给出的 PDC2 $\sigma_y$ 并不是终点：它会经由 Runge--Kutta 反推与 SAMURAI 磁场图反向传播为靶处动量不确定度 $\sigma_{p,\text{target}}$，这就是任何“靶在磁铁内 $\to$ 出射质子穿磁铁 $\to$ PDC”实验的重建科学底线。本文档不再重新推导 $\sigma_{p,\text{target}}$ 的传播数值；按方法分解的具体数字见 RK 误差分析深入备忘录\footnote{\label{fn:rkdeepdive}见 \texttt{docs/reports/reconstruction/momentum\_reco/rk/rk\_error\_analysis\_deep\_dive\_20260426\_zh.pdf}：MC、Profile、Laplace、MCMC 与 MC-PDC 各方法下 $\sigma_{p,\text{target}}$ 的传播。}。
 
 \section{PDC 重建参考框架（文献）}
 % [content from Tasks 4--6]
