@@ -177,7 +177,22 @@ SAMURAI 质子臂的已发表参考重建链遵循四阶段主干。\textbf{(i)~
 \section{Gap 分析}
 % [content from Tasks 7--8]
 \subsection{性能：\texorpdfstring{$\sigma$}{sigma} 数值对比}
+已发表的参考框架将基线设定在 Kobayashi 2013 §3.4 的设计指标：PDC 处位置分辨 1~mm、角度分辨 2~mrad、相对动量分辨 0.8\%；SAMURAI 投运的 RI 束流测试达到 $\Delta p/p \approx 1/1500$\footref{fn:kobayashi2013}。最近一次可用作物理量级对比的公开数据是 Kondo 等 SEASTAR-III $^{28}$O 测量\footnote{Y.~Kondo et al., Nature \textbf{620}, 965--970 (2023), DOI: \href{https://doi.org/10.1038/s41586-023-06352-6}{10.1038/s41586-023-06352-6}.} 给出的 0.2~MeV FWHM 衰变能分辨；按量级传播到 PDC 端相对动量分辨约为 $\sigma_p/p \sim 1\%$，但该数值是\emph{推断值}（论文并未直接报告），此处明确标注为推断。
+
+我们 Geant4 + 重建链中可直接观测的空间弥散为：全 air 配置下 $\sigma_y(\text{PDC2}) = 12.83$--$14.93$~mm；当 Region~A（偶极磁铁腔 + 束流管）切换为真空（\texttt{beamline\_vacuum}）时为 $6.80$--$8.21$~mm；全真空配置下约 $1.0$~mm。对应的 $\sigma_{\theta_y}$ 在 all-air 与 \texttt{beamline\_vacuum} 两种情况下落入 5.4--9.2~mrad，全真空下落入 2.0--2.6~mrad\footref{fn:msablation}。本节不引入新数字；以上条目均复用 §2 表~\ref{tab:sigma-three-conditions}。
+
+因此 PDC2 的位置 $\sigma_y$ 在 all-air 与 \texttt{beamline\_vacuum} 两种配置中均比 1~mm 硬件设计指标偏离一个数量级；在同样两种配置中，角度 $\sigma_{\theta_y}$ 是 2~mrad 设计值的 2--4 倍。仅 all-vacuum 消融达到设计底线：$\sigma_y(\text{PDC2}) \approx 1.0$~mm 在消融精度范围内吻合硬件指标，$\sigma_{\theta_y} = 2.0$--$2.6$~mrad 跨越 2~mrad 目标值。本次消融尚未给出端到端的 $\sigma_p/p$ 数字；按方法分解的 $\sigma_{p,\text{target}}$ 传播方法学（MC、Profile、Laplace、MCMC、MC-PDC）见 RK 误差分析深入备忘录\footref{fn:rkdeepdive}，本节不再重新推导。
+
+这种缺口结构的解读对后续工作的范围划定至关重要。all-vacuum 消融落在 1~mm 硬件设计底线，是重建方法学本身正确的直接证据：在 air 中给出 13~mm 的同一条 RK 反推 + 漂移室管线，在真空中给出 1~mm，两者之间没有任何算法变更。因此与设计的差距主要是物质预算问题，而非方法学问题；弥合该差距的责任在 §4.3（物质预算与真空配置）。$\sigma_y$(PDC2) 各项再经 RK 跟踪器与 SAMURAI 磁场图反向传播为靶处动量不确定度 $\sigma_{p,\text{target}}$，按方法分解的具体传播见 RK 深入备忘录\footref{fn:rkdeepdive}。
+
 \subsection{方法学}
+SAMURAI 质子臂的已发表方法学主干由三块组成：通过 Sato 2013 的 OPERA-3d / TOSCA 磁场图\footref{fn:sato2013} 进行 RK 反推作为传播器；前端的漂移室管线（漂移时间→距离、平面内直线拟合）即 Otsu 等的 RIKEN ROOT 分析\footref{fn:otsu2016}；对 PDC 径迹施加可选的 Kalman 平滑作为标准精修步骤——但 \emph{PDC 端的方法学没有任何同行评议论文覆盖}。最接近的已发表 Kalman 论文是 Santamaria 等 Nucl. Instr. Meth. A \textbf{905} (2018)\footref{fn:santamaria2018}，该文将 Kalman 滤波应用于 MINOS TPC 而非 PDC。真正的 PDC 端 Kalman 方法学仅记录于 PhD 论文：Santamaria 2015\footref{fn:santamaria2015phd}、Kahlbow 2019\footref{fn:kahlbow2019}、Lehr 2023\footref{fn:lehr2023phd}、Storck 2023\footref{fn:storck2023phd}。
+
+我们的内部管线位于 \texttt{libs/analysis\_pdc\_reco/}（仓库级指南另见 \texttt{smsimulator5.5/CLAUDE.md}），与文献主干逐块对应：同样使用 RK 反推传播器，提供多种可选 RK 拟合模式（一个具体示例是 \texttt{-{}-rk-fit-mode fixed-target-pdc-only}，见 MS 消融备忘录\footref{fn:msablation}），将神经网络后端封装在 \texttt{scripts/reconstruction/nn\_target\_momentum/} 之下，并在拟合前由几何过滤器（\texttt{libs/qmd\_geo\_filter/}）剔除明显出接收度的轨迹。RK 管线按方法分解的完整数值状态——包括 MC、Profile、Laplace、MCMC 与 MC-PDC 变体——记录于 RK 状态备忘录\footnote{\label{fn:rkstatus}见 \texttt{docs/reports/reconstruction/momentum\_reco/rk/rk\_reconstruction\_status\_20260416\_zh.pdf}：按方法分解的 RK 重建状态。}与深入备忘录\footref{fn:rkdeepdive}。
+
+因此，相对于已发表参考框架，方法学缺口在算法形态层面很小：文献与我们的管线使用同一种 RK 反推与同一种可选 Kalman 平滑。\emph{可执行的}缺口在于过程噪声标定。四份 PhD 论文与 Santamaria 2018 NIM A\footref{fn:santamaria2018} 中没有任何一份发表了针对“特定磁铁 + air 配置”调过的过程噪声协方差，也没有任何公开表格能将“偶极磁铁 + 腔 + 束流管 + 下游 air”这种具体配置映射到一组可直接装入我们平滑器的 Kalman 过程噪声协方差。MS 消融备忘录\footref{fn:msablation} §6 的二次方分解（Region~A 贡献 $\sigma_A \approx 11.19$~mm，Region~B 贡献 $\sigma_B \approx 7.43$~mm）正好就是为我们具体几何设定过程噪声输入所需的逐 Region 标定数据，而这一组数字在公开文献中并不存在。
+
+解读：已发表的参考框架提供了方法学形态（RK + 可选 Kalman），但并未提供针对特定配置的调参数值，因此我们必须基于自身消融数据自行标定过程噪声输入，而不是从某个文献表格上直接读取。这是一个可弥合的缺口，而非根本障碍：标定数据已在内部存在\footref{fn:msablation}，将其灌入 Kalman 平滑器即是下一步具体的方法学动作。
 \subsection{物质预算与真空配置}
 \subsection{实验配置与几何}
 
