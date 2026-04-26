@@ -414,6 +414,26 @@ p_z = \frac{p}{\sqrt{1 + u^2 + v^2}}, \quad p_x = u \cdot p_z, \quad p_y = v \cd
 \end{frame}
 
 % ============================================================
+\begin{frame}{MC Propagation: Algorithm and Cost}
+\small
+Implemented at \texttt{libs/analysis\_pdc\_reco/src/PDCRkAnalysisInternal.cc:850}.
+
+\begin{enumerate}\setlength{\itemsep}{0pt}
+\item Check $\Sigma_{\vec{\alpha}}$ PSD; if not, fall back to Jacobian linear propagation.
+\item $\Sigma_{\vec{\alpha}}^{1/2} \gets$ \texttt{SymmetricSqrt}($\Sigma_{\vec{\alpha}}$).
+\item Loop $s = 1 \dots 256$: $\vec{z} \sim \mathcal{N}(0, I)$;
+$\vec{\alpha}^{(s)} \gets \mathrm{ClampState}(\hat{\vec{\alpha}} + \Sigma^{1/2} \vec{z})$;
+$\vec{p}^{(s)} \gets \mathrm{BuildMomentumVector}(\vec{\alpha}^{(s)})$ (pure algebra).
+\item Empirical $q_{16/84}$, $q_{2.5/97.5}$ for $p_x$, $p_y$, $p_z$, $|\vec{p}|$. RNG seed fixed (\texttt{0xC0FFEE}).
+\end{enumerate}
+
+\textbf{Cost}: 256 algebraic transforms, $< 1$ ms per event.
+
+\vspace{0.1cm}
+\textcolor{red}{\textbf{Implementation note}}: when state covariance is PSD, this routine's outputs are written into the \emph{Laplace} \texttt{IntervalEstimate} slots in \texttt{track\_summary.csv}, not into a separate ``MC propagation'' column. So the CSV's \texttt{laplace\_*\_lower68 / upper68} columns actually carry the 256-sample empirical quantiles, not Gaussian projections of $\Sigma_\mathrm{Laplace}$.
+\end{frame}
+
+% ============================================================
 \begin{frame}{Profile Likelihood}
 \small
 For each active parameter $\alpha_k$, scan a grid of values while minimizing $\chi^2$ over the remaining parameters:
@@ -432,6 +452,26 @@ where $\Delta\chi^2_\mathrm{crit} = 1.0$ for 68\% CL and $4.0$ for 95\% CL (1 pa
 
 \vspace{0.2cm}
 \textbf{Use case}: diagnose non-Gaussian/asymmetric likelihood structure. Especially important for $p$ near the boundary ($p_\mathrm{min}$ or $p_\mathrm{max}$).
+\end{frame}
+
+% ============================================================
+\begin{frame}{Profile LH: Algorithm and Cost}
+\small
+\texttt{PDCErrorAnalysis::ComputeProfileLikelihood} returns \texttt{std::array<ProfileLikelihoodResult, 5>} (one slot per parameter $\delta x, \delta y, u, v, p$; inactive slots have \texttt{valid = false}).
+
+\textbf{Per-parameter scan}:
+\begin{enumerate}\setlength{\itemsep}{0pt}
+\item Range $[\hat{\alpha}_k - 2.5\sigma_{\alpha_k},\; \hat{\alpha}_k + 2.5\sigma_{\alpha_k}]$, $N_\mathrm{scan} = 17$ equispaced points.
+\item Warm-start: $\vec{\alpha}_\mathrm{warm} \gets \hat{\vec{\alpha}}$.
+\item For each scan point: fix $\alpha_k = \alpha_k^{(i)}$; LM-optimize the remaining params from $\vec{\alpha}_\mathrm{warm}$; record $\chi^2_\mathrm{profile}(\alpha_k^{(i)})$; $\vec{\alpha}_\mathrm{warm} \gets$ new optimum (warm-start chains adjacent points).
+\item Linear interpolation for $\Delta\chi^2 = 1.0$ (68\%) and $\Delta\chi^2 = 4.0$ (95\%) crossings.
+\end{enumerate}
+
+\textbf{Cost}: $\sim$20 LM optimizations per parameter, $\sim$10 ms each $\Rightarrow$ $\sim 0.6$ s per scanned parameter. Practical for offline diagnostic, not per-event runtime.
+
+\vspace{0.1cm}
+\textbf{Worked example} (event 399 from realistic legacy run, $|\vec p|$):
+$\hat{p} = 667.75$, Profile 68\% $= [660.73,\, 667.77]$ MeV/$c$ $\Rightarrow$ asymmetric: $\hat{p} - q^- = 7.02$, $q^+ - \hat{p} = 0.02$. Fisher gives symmetric $\pm 2.84$. Profile correctly flags that the $\chi^2$ rises sharply on the high-$p$ side (already $\chi^2_\mathrm{red} = 20.4$) but has a deeper basin on the low-$p$ side.
 \end{frame}
 
 % ============================================================
@@ -457,6 +497,66 @@ where the prior $\pi_0$ is flat on $(u, v, \delta x, \delta y)$ and optionally G
 \item Burn-in: 5000 steps; post-burn: 50000 steps, thin every 5
 \item Diagnostics: Geweke $z$-score (stationarity), effective sample size (autocorrelation)
 \end{itemize}
+\end{frame}
+
+% ============================================================
+\begin{frame}{Laplace: Algorithm and Cost}
+\small
+\texttt{PDCErrorAnalysis::ComputeBayesianPosterior} (also drives MCMC); prior config from \texttt{BayesianConfig::momentum\_prior}.
+
+\begin{enumerate}\setlength{\itemsep}{0pt}
+\item $\Lambda_\mathrm{prior} \gets \mathrm{diag}(0,\dots,1/\sigma_\mathrm{prior}^2)$ if momentum prior enabled, else $\mathbf{0}$.
+\item $\mathcal{H}_\mathrm{post} \gets J^T J + \Lambda_\mathrm{prior}$.
+\item $\Sigma_\mathrm{post} \gets$ \texttt{SVDInverse}($\mathcal{H}_\mathrm{post}$) (same routine as Fisher, with conditioning check).
+\item If $\Sigma_\mathrm{post}$ is PSD, dispatch to method-2's 256-sample MC for empirical quantiles. Else fall back to $M \Sigma_\mathrm{post} M^T$ + Gaussian symmetric intervals.
+\end{enumerate}
+
+\textbf{Cost}: 1 matrix add + 1 SVD inverse, $< 1$ ms.
+
+\vspace{0.1cm}
+\textbf{Worked example} (event 399, prior \emph{disabled} in this run): $\Lambda_\mathrm{prior} = \mathbf{0}$, so mathematically Laplace $\equiv$ Fisher. CSV shows Laplace 68\% $|\vec p|$ $= [664.91,\,670.58]$ (half-width $\approx 2.84$) vs.\ Fisher $\sigma_p = 2.84$ MeV/$c$ --- match exact. The asymmetry expected from method-2 dispatch is below the resolution of this event because $|\vec p|$ is low ($\sim 668$ MeV/$c$, near-linear regime).
+\end{frame}
+
+% ============================================================
+\begin{frame}{MCMC: Algorithm and Cost}
+\small
+Same \texttt{ComputeBayesianPosterior}; convergence diagnostics in \texttt{ComputeGewekeZScore}, \texttt{ComputeEffectiveSampleSize}.
+
+\textbf{Per-track loop} ($N_b = 5000$ burn-in $+ N_s = 50000$ samples, thin = 5 $\Rightarrow \sim 10000$ kept):
+\begin{enumerate}\setlength{\itemsep}{0pt}
+\item Each step: $\vec{\alpha}' \gets \vec{\alpha}^{(t-1)} + s \Sigma_\mathrm{post}^{1/2} \vec{z}$; $\log\pi'$ via 1 RK propagation; accept w.p.\ $\min(1, e^{\Delta\log\pi})$.
+\item During burn-in, every 50 steps: rescale $s$ ($\times 1.1$ if accept rate $> 23\%$, else $\times 0.9$).
+\item Post-burn: thin and store. Compute Geweke $z$ (first 10\% vs.\ last 50\% mean diff) and ESS (autocorrelation sum truncated at $|\hat\rho_k| < 0.05$).
+\item \texttt{converged} flag $=$ (\texttt{ESS} $\geq 50$ \textbf{and} $|z| < 2$).
+\end{enumerate}
+
+\textbf{Cost}: $\sim$55 000 RK propagations $\times$ 0.1 ms $= \sim 5.5$ s per event.
+
+\vspace{0.1cm}
+\textbf{Worked example} (event 399 from realistic-legacy run; \texttt{bayesian\_samples.csv}):
+MCMC 68\% $|\vec p| = [643.19, 654.27]$, width $11.1$ MeV/$c$ (centred $\sim 19$ MeV/$c$ below the LM optimum $667.75$). Acceptance $0.593$ (above MH-optimal $0.234$ $\Rightarrow$ proposal too small), ESS $4.28$, Geweke $|z| = 4.17$, \texttt{converged = 0}. \textbf{Chain unreliable} on this event --- the diagnostics correctly flag it. Remediation: longer burn-in / larger initial scale / NUTS.
+\end{frame}
+
+% ============================================================
+\begin{frame}{MC PDC End-to-End: Algorithm and Cost}
+\small
+\texttt{PDCErrorAnalysis::RunMonteCarlo} + \texttt{PerturbTrack}; error model from \texttt{PDCErrorModel}.
+
+\textbf{Per-track loop} ($N = 256$ samples, fitter $=$ same \texttt{PDCMomentumReconstructor} as central):
+\begin{enumerate}\setlength{\itemsep}{0pt}
+\item For each $k$: $(\delta u_1, \delta v_1)$, $(\delta u_2, \delta v_2) \sim \mathcal{N}(\vec 0, \Sigma_\mathrm{wire})$; perturb both PDC hits along $\hat u, \hat v$.
+\item Rerun \emph{full} LM/RK4 reconstruction starting from $\hat{\vec{\alpha}}$, get $\vec p^{(k)}$.
+\item Trim 5\% on each side of $|\vec p|$ to drop runs that converged to a wrong local minimum.
+\item Empirical quantiles + sample covariance.
+\end{enumerate}
+
+\textbf{Cost}: $\sim 256 \times 100$ ms $= \sim 25$ s per event $\Rightarrow$ offline only ($\sim$50-event subsample).
+
+\vspace{0.1cm}
+\textbf{What's different from method-2 (param-space MC)}: this propagates from \emph{measurement} space ($\sigma_u, \sigma_v$ on PDC hits) through the entire fitter, so it sees fitter pathologies (warm-start sensitivity, multiple minima). Method-2 only propagates the parameter-space $\Sigma_{\vec{\alpha}}$ algebraically and never re-runs the fitter.
+
+\vspace{0.05cm}
+\textbf{Status in this study}: \emph{not enabled} in any of the three datasets summarized in the Run Configuration frame; reserved for offline studies of detector-resolution sensitivity.
 \end{frame}
 
 % ============================================================
