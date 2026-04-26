@@ -25,6 +25,9 @@ OUTPUT_BASE="${OUTPUT_BASE:?OUTPUT_BASE required}"
 MACRO_DIR="${MACRO_DIR:?MACRO_DIR required (per-run macro staging dir)}"
 JOBS="${JOBS:-16}"
 TAG="${TAG:-g4sim}"
+# [EN] Optional filename glob to pick a subset of input ROOTs (e.g. "dbreak*.root").
+# [CN] 可选的文件名通配符，用于在同一目录里挑选子集（例如 "dbreak*.root" 只跑弹性）。
+PATTERN="${PATTERN:-*.root}"
 
 if [[ ! -x "$SIM_EXEC" ]]; then
   echo "[ERROR] sim_deuteron not executable: $SIM_EXEC" >&2
@@ -43,9 +46,9 @@ mkdir -p "$MACRO_DIR" "$OUTPUT_BASE"
 JOBLIST="${MACRO_DIR}/_joblist.txt"
 : > "$JOBLIST"
 
-# [EN] Enumerate input ROOTs under INPUT_ROOT; sort for deterministic order.
-# [CN] 收集 INPUT_ROOT 下所有 .root 输入并按字典序排序。
-mapfile -t FILES < <(find "$INPUT_ROOT" -type f -name "*.root" | sort)
+# [EN] Enumerate input ROOTs under INPUT_ROOT matching PATTERN; sort for deterministic order.
+# [CN] 收集 INPUT_ROOT 下匹配 PATTERN 的 .root 输入并按字典序排序。
+mapfile -t FILES < <(find "$INPUT_ROOT" -type f -name "$PATTERN" | sort)
 total="${#FILES[@]}"
 planned=0
 skipped=0
@@ -84,7 +87,7 @@ EOF
   planned=$((planned+1))
 done
 
-echo "[INIT ${TAG}] total=${total} skipped=${skipped} planned=${planned} jobs=${JOBS}"
+echo "[INIT ${TAG}] total=${total} skipped=${skipped} planned=${planned} jobs=${JOBS} pattern=${PATTERN}"
 echo "[INIT ${TAG}] GEOM=$(basename "$GEOM_MAC")"
 echo "[INIT ${TAG}] OUTPUT_BASE=${OUTPUT_BASE}"
 

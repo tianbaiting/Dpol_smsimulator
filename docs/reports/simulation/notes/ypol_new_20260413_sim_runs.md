@@ -94,6 +94,48 @@ From the same geometry macros used for the runs (target at
 Sub-segments within the first 3.11 m: target → dipole yoke ≈ 0.68 m,
 yoke cavity arc ≈ 0.95 m, downstream pipe ≈ 1.45 m, EW hole ≈ 0.03 m.
 
+## Elastic-only follow-up (dbreakup channel)
+
+Re-ran the same two configurations using only IMQMD's pre-extracted
+deuteron breakup channel (`dbreak.dat` → 2 primaries: p+n) instead of all
+events (`geminiout.dat`). Same g4input directory tree; `dbreak.root` and
+`geminiout.root` coexist. Geometry macros and EW-hole fix unchanged.
+
+- Source filter: `bin/GenInputRoot_qmdrawdata --source elastic --cut-unphysical on`
+  (drops |Δp_y| ≥ 150 MeV/c residuals); `--rotate-ypol` left off.
+- Sim runner: `scripts/simulation/run_g4input_batch_parallel.sh` with new
+  `PATTERN=dbreak*.root` env var so the parallel driver picks only the
+  elastic input ROOTs and ignores the all-event ROOTs sitting alongside.
+- `JOBS=13` per pipeline, both configs in parallel (26 procs on 16 cores;
+  oversubscription tolerated).
+
+Inputs: 32 `dbreak.root` files (16 per Sn isotope), 9,403,747 elastic
+events total, ~0.8 GB of g4input ROOTs.
+
+| config          | files | total evts | FAIL | wall t (avg) | wall t (max) | disk  |
+| --------------- | ----- | ---------- | ---- | ------------ | ------------ | ----- |
+| elastic_allair  | 32    | 9.40 M     | 0    | 2.35 h       | 3.78 h       | 15 GB |
+| elastic_mixed   | 32    | 9.40 M     | 0    | 1.95 h       | 2.67 h       | 14 GB |
+
+Outputs:
+- `data/simulation/g4output/ypol_new_20260413_elastic_allair/d+Sn{112,124}E190/.../dbreak0000.root`
+- `data/simulation/g4output/ypol_new_20260413_elastic_mixed/d+Sn{112,124}E190/.../dbreak0000.root`
+
+Sanity check on a representative file
+(`elastic_allair/.../d+Sn124E190g085ypn-RP360/dbreak0000.root`,
+430,630 entries; mixed counterpart matches): each event has exactly two
+beam primaries (p+n) and `beam[0].fUserInt[0] == 1` (kElastic) for all
+entries. Branch list = `beam, FragSimData, target_*, PDC{1,2}{U,X,V},
+PDCTrackNo, OK_PDC{1,2}, NEBULAPla` — same as the all-event run; no
+step-level NEBULA branch (StoreSteps left off).
+
+Per-process throughput (~50 evt/s allair, ~60 evt/s mixed) is higher
+than the all-event run because the typical elastic event carries far
+fewer secondaries than a full QMD cascade. Mixed remains ~17% faster
+than allair on average — slightly larger gap than in the all-event run,
+again consistent with fewer secondary generations in the vacuumed
+beam-line.
+
 ## Not done here
 
 - No reconstruction run over the new output yet.
