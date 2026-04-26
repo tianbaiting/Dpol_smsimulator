@@ -1,0 +1,86 @@
+% Build: cd docs/reports/reconstruction/methods && latexmk -xelatex pdc_reco_literature_and_air_ms_gap_20260426.tex
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{longtable}
+\usepackage{tabularx}
+
+\definecolor{goodgreen}{RGB}{34,139,34}
+\definecolor{warnred}{RGB}{200,50,50}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\title{\textbf{PDC Reconstruction Literature Survey \\ and SAMURAI Terminal Air-MS Gap Analysis}}
+\author{Baiting Tian \\ RIKEN Nishina Center / DPOL Experiment}
+\date{2026-04-26}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\clearpage
+
+\section{TL;DR}
+% [content from Task 2]
+
+\section{The problem: air multiple scattering at the SAMURAI terminal}
+% [content from Task 3]
+\subsection{Geometry of the proton flight path}
+\subsection{Measured \texorpdfstring{$\sigma$}{sigma} values}
+\subsection{Gap to design specifications}
+\subsection{Why this matters for the science floor}
+
+\section{PDC reconstruction reference frame}
+% [content from Tasks 4--6]
+\subsection{Hardware foundations}
+\subsection{Algorithm spine}
+\subsection{Performance achieved across SAMURAI campaigns}
+
+\section{Gap analysis}
+% [content from Tasks 7--8]
+\subsection{Performance: \texorpdfstring{$\sigma$}{sigma} values}
+\subsection{Methodology}
+\subsection{Material budget and vacuum configuration}
+\subsection{Experimental configuration and geometry}
+
+\section{Broader MINOS+SEASTAR chain context}
+% [content from Task 9]
+\subsection{SEASTAR programme timeline}
+\subsection{Companion detectors}
+\subsection{Reviews and resources}
+\subsection{Caveats from the broader bibliography}
+
+\section{Implications and next steps}
+% [content from Task 10]
+\subsection{Short-term data acquisition action items}
+\subsection{Medium-term simulation and analysis directions}
+\subsection{Open questions}
+\subsection{Non-goals}
+
+\section{References}
+% [content from Task 11]
+\subsection{Hardware and methodology (peer-reviewed, foundational)}
+\subsection{Algorithm references}
+\subsection{PhD theses with PDC methodology}
+\subsection{Physics papers using PDC1/PDC2 (confirmed/implicit)}
+\subsection{Excluded / context-only}
+\subsection{Reviews and topical collections}
+\subsection{Construction proposals and internal notes}
+\subsection{Project-internal references}
+
+\end{document}

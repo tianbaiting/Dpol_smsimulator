@@ -1,0 +1,87 @@
+% Build: cd docs/reports/reconstruction/methods && latexmk -xelatex pdc_reco_literature_and_air_ms_gap_20260426_zh.tex
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{ctex}            % 中文支持
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{longtable}
+\usepackage{tabularx}
+
+\definecolor{goodgreen}{RGB}{34,139,34}
+\definecolor{warnred}{RGB}{200,50,50}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\title{\textbf{PDC 重建文献调研 \\ 与 SAMURAI 终端 air 多重散射 gap 分析}}
+\author{TBT \\ RIKEN 仁科中心 / DPOL 实验}
+\date{2026 年 4 月 26 日}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\clearpage
+
+\section{摘要 TL;DR}
+% [content from Task 2]
+
+\section{问题：SAMURAI 终端的 air 多重散射}
+% [content from Task 3]
+\subsection{质子飞行路径几何}
+\subsection{实测 \texorpdfstring{$\sigma$}{sigma} 数值}
+\subsection{与设计指标的差距}
+\subsection{为什么这会限制科学产出}
+
+\section{PDC 重建参考框架（文献）}
+% [content from Tasks 4--6]
+\subsection{硬件基础}
+\subsection{算法主干}
+\subsection{SAMURAI 各次实验中达到的性能}
+
+\section{Gap 分析}
+% [content from Tasks 7--8]
+\subsection{性能：\texorpdfstring{$\sigma$}{sigma} 数值对比}
+\subsection{方法学}
+\subsection{物质预算与真空配置}
+\subsection{实验配置与几何}
+
+\section{扩展上下文：MINOS+SEASTAR 链}
+% [content from Task 9]
+\subsection{SEASTAR 计划时间线}
+\subsection{配套探测器}
+\subsection{综述与资源}
+\subsection{广义文献中的注意事项}
+
+\section{推论与下一步}
+% [content from Task 10]
+\subsection{短期数据获取行动项}
+\subsection{中期模拟与分析方向}
+\subsection{开放问题}
+\subsection{Non-goals}
+
+\section{参考文献}
+% [content from Task 11]
+\subsection{硬件与方法学（同行评议、基础）}
+\subsection{算法参考}
+\subsection{含 PDC 方法学的 PhD 论文}
+\subsection{使用 PDC1/PDC2 的物理论文（确认/隐含）}
+\subsection{排除/仅作上下文}
+\subsection{综述与专题合集}
+\subsection{建造提案与内部技术注释}
+\subsection{项目内部参考}
+
+\end{document}
