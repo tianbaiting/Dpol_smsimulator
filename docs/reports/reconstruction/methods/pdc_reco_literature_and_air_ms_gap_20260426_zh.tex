@@ -37,7 +37,16 @@
 \clearpage
 
 \section{摘要 TL;DR}
-% [content from Task 2]
+本文档系统梳理 SAMURAI PDC1/PDC2 漂移室链的已发表参考框架，并将其与当前 Geant4 重建性能进行对比，以定位将 PDC2 空间分辨率推离设计指标一个数量级的 air 多重散射缺口。
+
+\begin{itemize}
+  \item \textbf{参考框架。} PDC1/PDC2 链没有专门的同行评议论文。规范参考为 Kobayashi 等 SAMURAI 综述论文 Nucl. Instr. Meth. B \textbf{317}, 294--304 (2013) §3.4\footnote{\label{fn:kobayashi2013}T.~Kobayashi et al., Nucl. Instr. Meth. B \textbf{317}, 294--304 (2013), DOI: \href{https://doi.org/10.1016/j.nimb.2013.05.089}{10.1016/j.nimb.2013.05.089}.}、RIKEN 内部技术注释 \texttt{Detector-PDC.pdf}\footnote{\label{fn:detectorpdc}RIKEN Nishina Center, \emph{Detector-PDC} technical note, \url{https://www.nishina.riken.jp/ribf/SAMURAI/image/Detector-PDC.pdf}.}，以及 Kahlbow 在 TU Darmstadt 的 PhD 论文（2019）\footnote{\label{fn:kahlbow2019}J.~Kahlbow, PhD thesis, TU Darmstadt (2019), TUprints 9192, \url{https://tuprints.ulb.tu-darmstadt.de/9192/}.}——后者给出对同一套硬件的独立重建实现。
+  \item \textbf{设计指标。} 综合 Kobayashi 2013 §3.4\footref{fn:kobayashi2013} 与 SAMURAI 2012 建造提案\footnote{\label{fn:samurai2012}SAMURAI Collaboration, \emph{SAMURAI Construction Proposal} (2012), \url{https://ribf.riken.jp/SAMURAI/120425_SAMURAIConstProp.pdf}.}，PDC1/PDC2 链的设计指标为：位置分辨 1~mm、角度分辨 2~mrad、相对动量分辨 0.8\%（$\Delta p/p$）。投运的 RI 束流测试达到 $\Delta p/p \approx 1/1500$\footref{fn:kobayashi2013}；质子模式的原始设计值 $\Delta p/p \approx 1/700$ 见 RIBF-TAC05 (2005) 建造提案\footnote{\label{fn:ribftac05}SAMURAI Collaboration, \emph{RIBF-TAC05 SAMURAI construction proposal} (2005), \url{https://ribf.riken.jp/RIBF-TAC05/10_SAMURAI.pdf}.}。
+  \item \textbf{我们实测的 $\sigma_y$(PDC2)。} 在 Geant4 + 重建链中，我们观测到：全 air 配置下 $\sigma_y(\text{PDC2}) = 12.83$--$14.93$~mm；当 Region~A（偶极磁铁腔 + 束流管）切换为真空（\texttt{beamline\_vacuum}）时 $6.80$--$8.21$~mm；全真空配置下约 $1.0$~mm\footnote{\label{fn:msablation}见 \texttt{docs/reports/reconstruction/momentum\_reco/ms\_ablation/ms\_ablation\_mixed\_20260422\_zh.md} §4.}。包含真实 air 的两组数值都比 1~mm 硬件设计指标\footref{fn:kobayashi2013} 偏离约一个数量级。
+  \item \textbf{air 多重散射主导，且配置选择决定结果。} 同一备忘录的二次方分解\footref{fn:msablation} 将全 air 预算拆为：Region~A（腔 + 束流管，$\sim$4.3~m）贡献 $\sigma_A \approx 11.19$~mm；Region~B（Exit Window $\to$ PDCs，$\sim$2~m）贡献 $\sigma_B \approx 7.43$~mm。该备忘录 §6 的 stage~D 输入\footnote{见 \texttt{docs/reports/reconstruction/momentum\_reco/ms\_ablation/ms\_ablation\_mixed\_20260422\_zh.md} §6.} 给出：Region~A 为真空时 $\sigma_y(\text{PDC2}) = 7.49$~mm；Region~A 与 Region~B 同时为 air 时 $\sigma_y(\text{PDC2}) = 13.50$~mm。因此 Region~A 在实验中究竟是 air 还是真空属于一个配置问题，它在以上两个数值之间二选一；本文档不主张其中任一对应于真实实验条件。
+\end{itemize}
+
+详见 §6 中提出的行动项。
 
 \section{问题：SAMURAI 终端的 air 多重散射}
 % [content from Task 3]
