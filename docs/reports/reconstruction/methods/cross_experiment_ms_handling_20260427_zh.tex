@@ -1,0 +1,103 @@
+% Build: cd docs/reports/reconstruction/methods && latexmk -xelatex cross_experiment_ms_handling_20260427_zh.tex
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{ctex}            % 中文支持
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{tabularx}
+
+\definecolor{goodgreen}{RGB}{34,139,34}
+\definecolor{warnred}{RGB}{200,50,50}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black,
+}
+
+\title{\textbf{同能区带电粒子径迹重建中的 \\ 多重散射处理对照 \\ （SAMURAI 质子/碎片臂 + GSI）}}
+\author{TBT \\ RIKEN 仁科中心 / DPOL 实验}
+\date{2026 年 4 月 27 日}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\clearpage
+
+\section{摘要 TL;DR}
+% [content from Task 10 — written LAST]
+
+\section{为什么这件事重要}
+% [content from Task 5]
+
+\section{硬件 / 物质预算切面}
+% [content from Task 2]
+
+\subsection{磁谱仪腔：真空 vs 空气}
+\subsection{出射窗}
+\subsection{径迹探测器气体}
+\subsection{束流管 / 上游靶室}
+\subsection{跨实验硬件对照表}
+
+\section{算法切面}
+% [content from Task 3]
+
+\subsection{直线 / RK 反推：无显式 MS 项}
+\subsection{Kalman 滤波 + MS 过程噪声协方差}
+\subsection{GEANE / RKF 带 MS 自适应步长}
+\subsection{查表 / 反卷积修正（事后）}
+\subsection{跨实验算法对照表}
+
+\section{模拟 / 校准切面}
+% [content from Task 4]
+
+\subsection{所选 MC 框架}
+\subsection{MS 模型调谐方法}
+\subsection{残差反卷积 / 事后 MS 修正}
+\subsection{验证观测量}
+\subsection{跨实验模拟/校准对照表}
+
+\section{逐实验事实卡}
+% [content from Task 6]
+
+\subsection{SAMURAI 质子臂 (PDC1/PDC2)}
+\subsection{SAMURAI 碎片臂 (FDC1/FDC2)}
+\subsection{R3B / LAND (GSI/FAIR)}
+\subsection{ALADIN-EOS (GSI)}
+\subsection{FOPI (GSI)}
+\subsection{HADES (GSI)}
+
+\section{对我们 \texorpdfstring{$\sigma_y$}{sigma\_y} 缺口的启示}
+% [content from Task 7]
+
+\subsection{硬件路径}
+\subsection{算法路径}
+\subsection{模拟/校准路径}
+\subsection{组合路径}
+
+\section{开放问题 / 待核证}
+% [content from Task 8]
+
+\section{参考文献}
+% [content from Task 9]
+
+\subsection{SAMURAI 质子臂 (PDC1/PDC2)}
+\subsection{SAMURAI 碎片臂 (FDC1/FDC2)}
+\subsection{R3B / LAND (GSI/FAIR)}
+\subsection{ALADIN-EOS (GSI)}
+\subsection{FOPI (GSI)}
+\subsection{HADES (GSI)}
+\subsection{交叉算法（GENFIT, GEANE, MS 模型）}
+\subsection{交叉 MC 框架}
+
+\end{document}
