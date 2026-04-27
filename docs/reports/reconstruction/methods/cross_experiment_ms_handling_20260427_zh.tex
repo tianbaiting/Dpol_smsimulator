@@ -37,7 +37,44 @@
 \clearpage
 
 \section{摘要 TL;DR}
-% [content from Task 10 — written LAST]
+
+本备忘录在三条切面（硬件、算法、模拟/校准）上对照六个同能区带电粒子径迹链实验的多重散射处理，目标是为我们 PDC2 的 $\sigma_y$ 缺口提供候选改进路径。兄弟备忘录 §2 给出三种消融配置的基准数值\footref{fn:sibling_sec2}：全 air 下 $12.83$--$14.93$~mm，Region~A 切换真空后 $6.80$--$8.21$~mm，全真空约 $1.0$~mm，对照设计指标 1~mm。
+
+\textbf{硬件层。} 按表~\ref{tab:hardware}（§3.5）行序：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+\item \textbf{SAMURAI 质子臂}：偶极腔真空 + Region~B（$\approx 2$~m）air + Ar/i-C$_4$H$_{10}$ PDC；Region~A（$\approx 4.3$~m）配置处于消融探索阶段\footref{fn:msablation_hw}。
+\item \textbf{SAMURAI 碎片臂}：共用偶极腔（同上）+ He/CH$_4$ FDC（低 MS 气体）；FDC2 下游 1~atm air\footref{fn:fdc2note}。
+\item \textbf{R3B/GLAD}：GLAD 超导腔内真空 + 下游 air + 闪烁纤维径迹器（无漂移气体）\footref{fn:glad}\footref{fn:r3b_overview}。
+\item \textbf{ALADIN-EOS}：下游全大气压 air + 闪烁纤维 GFI；腔体状态不详\footref{fn:aladin_web}。
+\item \textbf{FOPI}：螺线管腔内充 CDC 工作气体（非真空）；无 Region~B 型 air 柱\footref{fn:ritman1995}。
+\item \textbf{HADES}：无封闭真空腔（环形开放几何）；MDC 在大气压 He/isobutane 中工作\footref{fn:agakishiev2009}。
+\end{itemize}
+
+\textbf{算法层。} 按表~\ref{tab:algorithm}（§4.5）行序：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+\item \textbf{SAMURAI 质子臂}：RK 反推，无显式 MS 项（源码核查确认\footref{fn:src_pdc_rk}）。
+\item \textbf{SAMURAI 碎片臂}：ANAROOT 直线偏转角，无显式 MS 项（\texttt{[unverified]}\footref{fn:kobayashi2013hw}）。
+\item \textbf{R3B/GLAD}：R3BRoot/FairRoot Kalman，MS 过程噪声 $\mathbf{Q}_k$ 是否启用未报道\footref{fn:r3broot}。
+\item \textbf{ALADIN-EOS}：偏转角+磁场图积分，无显式 MS 项（\texttt{[unverified]}，自研早期代码）\footref{fn:schuttauf1996}。
+\item \textbf{FOPI}：GENFIT2 RKF 自适应步长 + Highland-Lynch-Dahl MS 过程噪声\footref{fn:genfit2}。
+\item \textbf{HADES}：全局 RK（基准，无 MS）+ Kalman 改进版（含 MS 过程噪声，Krebs 2013\footref{fn:krebs2013}）。
+\end{itemize}
+
+\textbf{模拟/校准层。} 按表~\ref{tab:simulation}（§5.5）行序：
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+\item \textbf{SAMURAI 质子臂}：Geant4 11.3.2 + Urban MSC 默认，无项目专属调谐\footref{fn:src_geant4_version}\footref{fn:g4emstandard}。
+\item \textbf{其余五实验}：MS 调谐家族、残差反卷积、验证观测量在可访问公开文献中大量未报道（§5.5 + §8 (I)(II) 类条目）。信息缺失是文献稀薄的客观反映，不代表实验组未做调谐。
+\end{itemize}
+
+\textbf{两条横向对比线。}
+\begin{itemize}[leftmargin=2em,itemsep=0pt]
+\item 接受大量 air MS 并以算法补偿者：HADES、FOPI；选择抽真空者：R3B/GLAD 主体腔；我们处于中间态（腔真空 + 下游 air，无算法 MS 项）。
+\item 公开文献给出明确 MC vs.\ data 残差闭合验证者极少（如 HADES Krebs 2013 论文章节\footref{fn:krebs2013}）；其余属工作组内部，§8 大量「未报道」反映信息稀薄性（R5 caveat）。
+\end{itemize}
+
+\textbf{下一步。} 详 §7 启示与 §7.4 组合路径表~\ref{tab:bundles}：硬件杠杆首推 Region~A 真空决策（§7.1）；算法杠杆需 toy 实验先行（§7.2）；模拟/校准杠杆从调研 MS 调谐闭合协议开始（§7.3）。
+
+\textbf{范围说明。} 本备忘录刻意纳入 R3B/GLAD 作为拓扑最近的外部类比；兄弟备忘录将其排除（见兄弟备忘录 §7.5）。中子臂（NEBULA/NeuLAND）明确排除。范围差异均属刻意设计，详见 §2 末段。
 
 \section{为什么这件事重要}
 
