@@ -43,13 +43,164 @@
 % [content from Task 5]
 
 \section{硬件 / 物质预算切面}
-% [content from Task 2]
 
 \subsection{磁谱仪腔：真空 vs 空气}
+\label{sec:cavity}
+
+径迹器前段的飞行路径是否处于真空中，是决定多重散射（MS）量级的首要因素。以下按固定实验顺序逐一梳理。
+
+\textbf{(1)~SAMURAI 质子臂 (PDC1/PDC2)。}
+SAMURAI 超导 H 形偶极磁铁\footnote{\label{fn:sato2013hw}H.~Sato et al., IEEE Trans.\ Appl.\ Supercond.\ \textbf{23}, 4500308 (2013), DOI: \href{https://doi.org/10.1109/TASC.2012.2237225}{10.1109/TASC.2012.2237225}.}的偶极腔（\texttt{vchamber\_box}）在正常运行时被抽至约数 Pa 量级的真空，这一点以 Shimizu 等 2012 年原始调试论文\footnote{\label{fn:shimizu2013hw}Y.~Shimizu et al., ``Vacuum system for the SAMURAI spectrometer,'' Nucl.\ Instr.\ Meth.\ B \textbf{317}, 739--742 (2013), DOI: \href{https://doi.org/10.1016/j.nimb.2013.08.051}{10.1016/j.nimb.2013.08.051}. \emph{（仅作为腔体抽真空状态来源；不作为出射窗材料来源。）}}为依据。PDC1/PDC2 位于偶极腔\emph{出口下游}，通过 Exit Window 与腔体隔离；从 Exit Window 到 PDC1（$\approx 0.97$~m）、再到 PDC2（$\approx 1.00$~m）的 Region~B（$\approx 2.0$~m）在实验中为大气压空气（world 体填充），由 Geant4 宏开关 \texttt{/samurai/geometry/FillAir} 控制\footnote{\label{fn:msablation_hw}见兄弟备忘录 \texttt{docs/reports/reconstruction/methods/pdc\_reco\_literature\_and\_air\_ms\_gap\_20260426\_zh.tex} §2.1。}。Region~A（腔内 + 下游束流管，$\approx 4.3$~m）的真空状态在我们的模拟中尚处于配置探索阶段：若 Region~A 为真空，stage~D 给出 $\sigma_y(\text{PDC2}) = 7.49$~mm；若 Region~A 亦为 air，则上升至 $13.50$~mm\footref{fn:msablation_hw}。本文不主张两种配置中的任何一种对应于真实实验条件。
+
+\textbf{(2)~SAMURAI 碎片臂 (FDC1/FDC2)。}
+FDC1 位于靶与 SAMURAI 磁铁之间，FDC2 位于磁铁下游——均在同一套 SAMURAI 超导腔内或其紧邻下游运行\footref{fn:kobayashi2013hw}。与质子臂的结构完全对称：偶极腔在正常运行时保持同样的 Pa 量级真空\footref{fn:shimizu2013hw}，FDC1/FDC2 所在的碎片臂下游区域为大气压。Kobayashi 2013 §3.5\footnote{\label{fn:kobayashi2013hw}T.~Kobayashi et al., Nucl.\ Instr.\ Meth.\ B \textbf{317}, 294--304 (2013), DOI: \href{https://doi.org/10.1016/j.nimb.2013.05.089}{10.1016/j.nimb.2013.05.089}.}给出碎片臂漂移室的位置描述；FDC2 技术注释\footnote{\label{fn:fdc2note}RIKEN Nishina Center, \emph{Detector-FDC2} technical note, \url{https://www.nishina.riken.jp/ribf/SAMURAI/image/Detector-FDC2.pdf}.}明确指出 FDC2 原计划在低气压探测箱中运行，但因技术困难暂在 1 atm 下运行。
+
+\textbf{(3)~R3B / LAND (GSI/FAIR)。}
+R3B 实验的核心磁铁为 GLAD（大接受度超导偶极磁铁），其内部配有大型真空腔室，并于 2016 年整体移入 GSI Cave~C\footnote{\label{fn:glad}GLAD spectrometer, GSI Helmholtzzentrum, \url{https://www.gsi.de/glad}.}。GLAD 之后的碎片臂（纤维径迹器 + ToFD）工作于大气压 air 中，属于开放几何布局；这与 SAMURAI 碎片臂的设计理念相似，即磁铁提供真空腔，下游探测器在 air 中运行\footnote{\label{fn:r3b_overview}R3B Collaboration, overview at Lund University, \url{https://www.particle-nuclear.lu.se/experimental-particle-and-nuclear-physics/nuclear-astrophysics-reactions/r3b}.}。GLAD 内部磁场容积属于真空区域这一点为 \texttt{[unverified --- 根据真空腔室移入 Cave~C 的描述推断；尚未找到给出腔压数值的已发表 NIM/EPJ 论文]}。
+
+\textbf{(4)~ALADIN-EOS (GSI)。}
+ALADIN（大接受度偶极磁铁）是 GSI SIS 束流线上的固定偶极磁铁，为重离子碎裂实验服务\footnote{\label{fn:aladin_web}ALADIN Collaboration, \url{http://www-aladin.gsi.de/}.}。Schüttauf 等 1996 年 NPA 607 论文\footnote{\label{fn:schuttauf1996}A.~Schüttauf et al., Nucl.\ Phys.\ A \textbf{607}, 457--486 (1996), DOI: \href{https://doi.org/10.1016/0375-9474(96)00239-4}{10.1016/0375-9474(96)00239-4}.}描述使用 ALADIN 进行金核多重碎裂实验；该论文属于物理论文，不包含磁铁腔体真空或 air 状态的专项描述。ALADIN 偶极磁铁腔内是否运行于真空或空气 \texttt{[unverified --- ALADIN 缺乏可公开获取的 NIM 型硬件描述论文；其下游探测器（GFI 纤维阵列、TFW 飞行时间墙、LAND 中子阵列）均工作于大气压空气中]}。
+
+\textbf{(5)~FOPI (GSI)。}
+FOPI 采用超导螺线管磁场（全 $4\pi$ 覆盖），中央漂移室（CDC）在螺线管场内工作\footnote{\label{fn:ritman1995}J.~L.~Ritman and the FOPI Collaboration, Nucl.\ Phys.\ B Proc.\ Suppl.\ \textbf{44}, 708--715 (1995), DOI: \href{https://doi.org/10.1016/0920-5632(95)00580-5}{10.1016/0920-5632(95)00580-5}.}。CDC 内部充以工作气体（见 §3.3），并非真空；螺线管线圈本身处于低温环境，但 CDC 工作区域为常压气体。Reisdorf 等 2010 年系统性论文\footnote{\label{fn:reisdorf2010}W.~Reisdorf et al.\ (FOPI Collaboration), Nucl.\ Phys.\ A \textbf{848}, 366--427 (2010), DOI: \href{https://doi.org/10.1016/j.nuclphysa.2010.09.008}{10.1016/j.nuclphysa.2010.09.008}.}总结了 FOPI 在 SIS 能区重离子碰撞中的系统性研究，但未给出腔体真空/气压的专项数值 \texttt{[unverified --- CDC 为气体介质而非真空属确认事实；具体气压值未在可访问文献中找到]}。
+
+\textbf{(6)~HADES (GSI)。}
+HADES 采用六扇形超导环形线圈产生环形磁场，多丝漂移室（MDC）分两组布置于磁场前后\footnote{\label{fn:agakishiev2009}HADES Collaboration (G.~Agakishiev et al.), ``The high-acceptance dielectron spectrometer HADES,'' Eur.\ Phys.\ J.\ A \textbf{41}, 243--277 (2009), DOI: \href{https://doi.org/10.1140/epja/i2009-10807-5}{10.1140/epja/i2009-10807-5}.}。HADES 环形磁场区域为开放几何（非封闭腔体），MDC 在大气压气体中工作。HADES 系统中不存在封闭的偶极腔真空区域；整个跟踪系统工作于大气压气体环境\footref{fn:agakishiev2009}。
+
 \subsection{出射窗}
+\label{sec:exitwindow}
+
+出射窗是分隔磁铁真空腔（或上游靶室）与下游大气压探测区域的机械结构，其材料与厚度直接贡献到探测器气体之前的物质预算。
+
+\textbf{(1)~SAMURAI 质子臂 (PDC1/PDC2)。}
+SAMURAI 偶极腔与下游 air 区域（Region~B）之间的边界为 Exit Window。在实际 SAMURAI 谱仪上该窗为金属结构（铁法兰），我们的仿真中将其实现为 G4\_Fe 法兰加中央孔（\texttt{libs/smg4lib/src/devices/ExitWindowC1Construction.cc}、\texttt{ExitWindowC2Construction.cc}）。本文不以任何已发表论文作为出射窗材料的来源——「金属法兰」属于领域工程事实，而非同行评议引证\footref{fn:msablation_hw}。出射窗的精确厚度与材料构成 \texttt{[unverified --- 实际铁法兰的壁厚未在可访问文献或技术注释中找到]}。
+
+\textbf{(2)~SAMURAI 碎片臂 (FDC1/FDC2)。}
+FDC2 技术注释\footref{fn:fdc2note}以及 FDC1 技术注释\footnote{\label{fn:fdc1note}RIKEN Nishina Center, \emph{Detector-FDC1} technical note, \url{http://www.nishina.riken.jp/RIBF/SAMURAI/image/Detector-FDC1.pdf}.}均未对碎片臂出射窗材料给出专项记录。FDC2 注释中明确指出该探测器运行于 1 atm（原计划低气压箱未能实施）\footref{fn:fdc2note}，但未说明将腔体与下游隔离的窗口材料和厚度。碎片臂出射窗规格 \texttt{[unverified]}。
+
+\textbf{(3)~R3B / LAND (GSI/FAIR)。}
+GLAD 真空腔与下游大气压碎片臂之间的出射窗规格 \texttt{[unverified --- 尚未找到给出 GLAD 出射窗材料与厚度的已发表 NIM/EPJ 文献]}。
+
+\textbf{(4)~ALADIN-EOS (GSI)。}
+ALADIN 偶极腔（如果存在真空运行配置）与下游探测器之间的出射窗规格 \texttt{[unverified --- ALADIN 缺乏可访问的 NIM 型硬件描述]}。
+
+\textbf{(5)~FOPI (GSI)。}
+FOPI 螺线管与 CDC 为一体设计，CDC 工作气体直接填充于螺线管场体积内，不存在分隔真空与大气的传统「出射窗」结构。束流沿螺线管轴线进入后穿过束流管薄窗进入 CDC 气体区域；该薄窗规格 \texttt{[unverified]}。
+
+\textbf{(6)~HADES (GSI)。}
+HADES 环形场为开放几何，无封闭真空腔，因此不存在分隔真空腔与大气的出射窗。束流经束流管进入靶区，靶周围为大气压气体。束流管薄窗（区分靶室 vs.\ MDC 气体区域）规格 \texttt{[unverified --- Agakishiev 2009\footref{fn:agakishiev2009}未给出束流管窗口材料厚度]}。
+
 \subsection{径迹探测器气体}
+\label{sec:trackergas}
+
+径迹器工作气体的辐射长度决定了探测器敏感层本身（以及从靶到径迹器途中的气体层）对 MS 的贡献。
+
+\textbf{(1)~SAMURAI 质子臂 (PDC1/PDC2)。}
+PDC1/PDC2 一次工作气体为 Ar + 25\% i-C$_4$H$_{10}$，备选气体为 Ar + 50\% C$_2$H$_6$（异丁烷模式与乙烷模式），这两种气体均明载于 RIKEN 内部技术注释 \texttt{Detector-PDC.pdf}\footnote{\label{fn:detectorpdc_hw}RIKEN Nishina Center, \emph{Detector-PDC} technical note, \url{https://www.nishina.riken.jp/ribf/SAMURAI/image/Detector-PDC.pdf}.}。漂移单元为 Walenta 型，漂移距离 8~mm，阳极间距 16~mm\footref{fn:detectorpdc_hw}。
+
+\textbf{(2)~SAMURAI 碎片臂 (FDC1/FDC2)。}
+FDC1 工作气体为 He + 60\% CH$_4$（1 atm），低气压运行时切换为 i-C$_4$H$_{10}$；FDC2 工作气体为 He + 60\% CH$_4$（1 atm），低压备选为 i-C$_4$H$_{10}$（低于 100 torr），均来自 RIKEN 内部技术注释\footref{fn:fdc2note}\footref{fn:fdc1note}。注意 FDC1/FDC2 采用以 He 为主的混合气体，辐射长度远大于 Ar 基气体，有利于降低 MS；PDC1/PDC2 则采用 Ar 基气体，辐射长度较小。Kobayashi 2013\footref{fn:kobayashi2013hw}总结了碎片臂的设计指标，但气体规格的权威来源是上述技术注释。
+
+\textbf{(3)~R3B / LAND (GSI/FAIR)。}
+GLAD 下游碎片臂的主要径迹器为大面积闪烁纤维探测器（GFI/Fi 系列），以纤维闪烁体而非气体漂移室为基础，不使用传统漂移气体\footref{fn:r3b_overview}。此外 R3B 的 HYDRA 时间投影室（位于 GLAD 内部）使用气体介质，但 TPC 工作气体规格 \texttt{[unverified --- 尚未找到给出 HYDRA TPC 气体混合比的已发表 NIM/EPJ 文献]}。NeuLAND 中子探测器（塑料闪烁体阵列）不属于带电粒子跟踪器，不在此列。
+
+\textbf{(4)~ALADIN-EOS (GSI)。}
+ALADIN 下游碎片臂使用大面积闪烁纤维探测器（GFI）与飞行时间墙（TFW）进行碎片跟踪，以纤维闪烁体为主，不使用气体漂移室\footref{fn:aladin_web}。TP-MUSIC~IV 时间投影室（TPC）作为多重碎片鉴别的辅助探测器出现在 ALADIN-2000 设置中，其工作气体规格 \texttt{[unverified]}。
+
+\textbf{(5)~FOPI (GSI)。}
+FOPI 中央漂移室（CDC）工作气体规格在 Ritman 1995\footref{fn:ritman1995}中未详列。基于领域惯例（同时期 GSI 螺线管探测器多采用 Ar/isobutane 或 He/isobutane 混合气），CDC 气体 \texttt{[unverified --- 具体混合比未在可访问文献中找到]}。
+
+\textbf{(6)~HADES (GSI)。}
+HADES MDC（多丝漂移室）初始工作气体为 He + 40\% isobutane（60:40 比例），其中 isobutane 兼作淬灭气和电离电子提供体\footnote{\label{fn:hades_mdc}见 HADES MDC 恢复论文参考原始气体配方：arXiv:2403.12178; 原始规格见 Agakishiev 2009\footref{fn:agakishiev2009}.}。每个 MDC 腔室的材料预算 $x/X_0 < 0.06$\%\footref{fn:hades_mdc}，各型腔室的 $x/X_0$ 介于 $4.8\times10^{-4}$ 到 $5.5\times10^{-4}$（He-isobutane 配方）\footref{fn:hades_mdc}。由于 isobutane 相关的 Malter 效应，HADES 后续将 MDC 气体替换为 Ar/CO$_2$ 混合气，但这属于升级后的配置，不改变早期物理运行的初始工作气体\footref{fn:hades_mdc}。
+
 \subsection{束流管 / 上游靶室}
+\label{sec:beampipe}
+
+从束流管出口（或靶室边界）到第一个径迹探测器之间的材料（包括气体介质和结构件）构成多重散射的「上游」部分。
+
+\textbf{(1)~SAMURAI 质子臂 (PDC1/PDC2)。}
+在 SAMURAI 装置中，靶位于 SAMURAI 偶极腔内部（yoke-local 坐标 $z = -919.9$~mm，位于腔体 $z\in[-1750, +1750]$~mm 范围之内）\footref{fn:msablation_hw}。腔内束流管（\texttt{VacuumDownstream}）将靶区与 Exit Window 连接，总计 Region~A 长度 $\approx 4.3$~m。束流管的精确壁厚与材料 \texttt{[unverified --- 仿真中以 Geant4 默认参数实现，未从已发表文献读取]}。在全真空配置下（Region~A = 真空），此段贡献可忽略；在 air 配置下，$\approx 4.3$~m 空气层构成主导的 MS 贡献（$\sigma_A \approx 11.19$~mm）\footref{fn:msablation_hw}。
+
+\textbf{(2)~SAMURAI 碎片臂 (FDC1/FDC2)。}
+FDC1 布置于靶与 SAMURAI 磁铁之间，在束流下游紧邻靶区，用于测量碎片出射角\footref{fn:fdc1note}。该区段在偶极腔真空条件下，FDC1 上游材料预算主要来自 FDC1 探测器本身的 Al-Kapton 气窗（$8~\mu$m$\times 2$）和阴极（$8~\mu$m$\times 15$）\footref{fn:fdc1note}；FDC1 到 FDC2 之间穿过 SAMURAI 磁铁腔（真空，同 Region~A 分析）。
+
+\textbf{(3)~R3B / LAND (GSI/FAIR)。}
+GLAD 上游为 CALIFA 量能器和 R3B 硅径迹器，靶区有专用的靶室设计。GLAD 内部真空腔将靶区与下游碎片臂隔离；从靶到 GLAD 下游碎片臂的总飞行路径上，真空腔内部分的物质贡献主要来自 GLAD 出射窗（规格 \texttt{[unverified]}）。靶材料本身（通常为 LH$_2$、C、Pb 等固体靶）属于实验物理量，不在此节讨论。
+
+\textbf{(4)~ALADIN-EOS (GSI)。}
+ALADIN 实验中，束流自 SIS 引出后经束流管进入 ALADIN 偶极区；ALADIN 上游的束流管材料与靶室细节 \texttt{[unverified --- ALADIN 缺乏可访问的专项 NIM 型硬件描述]}。下游碎片跟踪探测器（GFI、TFW）工作于大气压空气中，飞行路径的空气柱贡献可依据 GFI 位置与靶的距离估算，但具体距离 \texttt{[unverified]}。
+
+\textbf{(5)~FOPI (GSI)。}
+FOPI 螺线管轴线上的束流管（carbon-fiber 或铝制薄壁管）将束流从靶室引入 CDC 气体区域。目标靶通常为薄固体靶（金、铅等），放置于螺线管轴线上。束流管材料与薄窗的厚度 \texttt{[unverified --- Ritman 1995\footref{fn:ritman1995}未给出束流管几何细节]}。
+
+\textbf{(6)~HADES (GSI)。}
+HADES 束流沿中心轴线经束流管进入靶区，靶（液态 LH$_2$、固体金属靶等）置于 MDC 前方；束流管为铝制薄壁管，内径约 15~mm \texttt{[unverified --- Agakishiev 2009\footref{fn:agakishiev2009}所述的束流管几何细节未能从摘要级信息中提取；精确尺寸标注为 \texttt{[unverified]}]}。靶区到 MDC-I/II 的飞行路径全程暴露于大气压 He/isobutane 混合气（初始配置）或 Ar/CO$_2$（升级后）\footref{fn:hades_mdc}。
+
 \subsection{跨实验硬件对照表}
+\label{sec:hardwaretable}
+
+表~\ref{tab:hardware} 汇总上述四个维度（腔状态、出射窗、探测器气体、束流管/上游靶室），以及在质子飞行路径上的总估算物质预算。「总 mg/cm²」列仅在气体长度与材料密度均可从已发表文献读取的条件下给出计算值（标注 [计算]），否则标注「未报道」；[unverified] 项在正文各小节已逐一注明，此处对照表中亦保留标注。
+
+\begin{longtable}{p{3.2cm}p{2.4cm}p{2.4cm}p{2.8cm}p{2.4cm}p{2.2cm}}
+  \caption{跨实验硬件对照表：磁谱仪腔状态、出射窗、径迹探测器气体、束流管/上游靶室及总物质预算。\texttt{[unverified]} 项见 §3.1--§3.4 正文各条目。}
+  \label{tab:hardware} \\
+  \toprule
+  实验 & 腔状态 & 出射窗 & 探测器气体 & 束流管 / 上游靶室 & 总 mg/cm²（质子路径） \\
+  \midrule
+  \endfirsthead
+  \caption*{表~\ref{tab:hardware}（续）} \\
+  \toprule
+  实验 & 腔状态 & 出射窗 & 探测器气体 & 束流管 / 上游靶室 & 总 mg/cm²（质子路径） \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  \bottomrule
+  \endlastfoot
+  %
+  SAMURAI 质子臂 (PDC1/PDC2)\footref{fn:kobayashi2013hw}\footref{fn:shimizu2013hw}\footref{fn:detectorpdc_hw}
+    & 偶极腔真空（Pa 量级）\footref{fn:shimizu2013hw}；Region~B（$\approx 2$~m）air\footref{fn:msablation_hw}
+    & 金属法兰（G4\_Fe 仿真）；精确壁厚 \texttt{[unverified]}\footref{fn:msablation_hw}
+    & Ar + 25\% i-C$_4$H$_{10}$（主）；备选 Ar + 50\% C$_2$H$_6$\footref{fn:detectorpdc_hw}
+    & Region~A（$\approx 4.3$~m）：真空或 air 待确认\footref{fn:msablation_hw}；束流管壁厚 \texttt{[unverified]}
+    & 未报道（Region~A 配置待定；air 情况下空气柱 $\approx 720$~mg/cm²）[计算]\footnote{$\rho_\text{air}=1.293$~mg/cm$^3$，Region~B $\approx 200$~cm：$200\times 1.293 = 258.6$~mg/cm$^2$；若 Region~A 亦为 air：Region~A $\approx 430$~cm，$430\times 1.293 = 555.9$~mg/cm$^2$，两者之和 $\approx 814$~mg/cm$^2$（仅空气柱，未含探测器结构）。Region~A 为真空时仅含 Region~B 空气柱 $\approx 259$~mg/cm$^2$。[计算] 标志说明此数值由密度与路径长度计算得出，非直接引文。}
+    \\[4pt]
+  SAMURAI 碎片臂 (FDC1/FDC2)\footref{fn:kobayashi2013hw}\footref{fn:fdc1note}\footref{fn:fdc2note}
+    & 偶极腔真空（同质子臂）\footref{fn:shimizu2013hw}；FDC2 下游为 air（1 atm）\footref{fn:fdc2note}
+    & \texttt{[unverified]}
+    & He + 60\% CH$_4$（1 atm）\footref{fn:fdc1note}\footref{fn:fdc2note}
+    & FDC1 气窗：Al-Kapton 8~$\mu$m$\times 2 + 8~\mu$m$\times 15$（阴极）\footref{fn:fdc1note}；FDC1--FDC2 间穿偶极腔（真空）
+    & 未报道（出射窗 \texttt{[unverified]}；FDC2 下游空气柱长度 \texttt{[unverified]}）
+    \\[4pt]
+  R3B / LAND (GSI/FAIR)\footref{fn:r3b_overview}\footref{fn:glad}
+    & GLAD 内部真空腔\footref{fn:glad}（腔压数值 \texttt{[unverified]}）；下游碎片臂 air
+    & GLAD 出射窗 \texttt{[unverified]}
+    & 闪烁纤维径迹器（无漂移气体）\footref{fn:r3b_overview}
+    & GLAD 真空腔内部（材料预算含 GLAD 出射窗，\texttt{[unverified]}）
+    & 未报道
+    \\[4pt]
+  ALADIN-EOS (GSI)\footref{fn:aladin_web}\footref{fn:schuttauf1996}
+    & 腔状态 \texttt{[unverified]}；下游碎片臂 air（大气压）
+    & \texttt{[unverified]}
+    & 闪烁纤维 GFI + TFW（无漂移气体）\footref{fn:aladin_web}
+    & 束流管材料与靶室 \texttt{[unverified]}
+    & 未报道
+    \\[4pt]
+  FOPI (GSI)\footref{fn:ritman1995}\footref{fn:reisdorf2010}
+    & 螺线管腔体内充 CDC 工作气体（非真空）\footref{fn:ritman1995}
+    & 螺线管薄束流窗（材料与厚度 \texttt{[unverified]}）
+    & CDC 工作气体 \texttt{[unverified]}（同期类似探测器多用 Ar/isobutane 或 He/isobutane）
+    & 束流管薄壁进入 CDC 区域；材料与厚度 \texttt{[unverified]}
+    & 未报道
+    \\[4pt]
+  HADES (GSI)\footref{fn:agakishiev2009}\footref{fn:hades_mdc}
+    & 无封闭真空腔（环形开放几何）\footref{fn:agakishiev2009}；MDC 区域 air 压 He + isobutane
+    & 无传统出射窗（开放几何）；束流管薄窗 \texttt{[unverified]}
+    & He + 40\% isobutane（初始）\footref{fn:hades_mdc}；$x/X_0 < 0.06$\% 每腔\footref{fn:hades_mdc}
+    & 束流管（铝制，内径约 15~mm \texttt{[unverified]}）\footref{fn:agakishiev2009}；靶区 He/isobutane 气体
+    & 未报道（MDC 本身 $x/X_0 \approx 5\times10^{-4}$/腔，已发表\footref{fn:hades_mdc}；总路径 mg/cm² 未报道）
+    \\
+\end{longtable}
 
 \section{算法切面}
 % [content from Task 3]
