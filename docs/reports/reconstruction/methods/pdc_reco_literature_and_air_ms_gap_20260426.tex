@@ -194,7 +194,39 @@ The methodological gap to the published reference frame is therefore small in al
 
 The interpretation is that the published reference frame supplies the methodology shape (RK + optional Kalman), but it does not supply the configuration-specific tuning numbers, so we have to self-calibrate the process-noise inputs against our own ablation data rather than read them off a literature table. This is a closeable gap rather than a fundamental obstacle: the calibration data already exists internally\footref{fn:msablation}, and feeding it into the Kalman smoother is the next concrete methodology step.
 \subsection{Material budget and vacuum configuration}
+The published reference frame for the SAMURAI vacuum system is Shimizu et al.\ Nucl. Instr. Meth. B \textbf{317}, 739--742 (2013)\footref{fn:shimizu2013}, which documents the dipole cavity as evacuated and the boundary to the downstream air volume as the SAMURAI Exit Window (Kevlar 280~µm + Mylar 75~µm). Whether the SEASTAR-III / SAMURAI21 (2017) campaign in particular kept this evacuated-cavity configuration is \emph{inferred from Shimizu 2013 plus standard SAMURAI21 operation}; we do not have a direct quote in the surveyed references that explicitly confirms the Region~A vacuum status for SAMURAI21 (2017), and the claim is flagged as inferred rather than quoted.
+
+In our own Geant4 setup, the Region~A vacuum status is under exploration rather than fixed. Two candidates from the MS ablation memo\footref{fn:msablation} §6 frame the choice numerically: with Region~A set to vacuum the stage~D PDC2 spread is $\sigma_y(\text{PDC2}) = 7.49$~mm, and with Region~A set to air it rises to $\sigma_y(\text{PDC2}) = 13.50$~mm. Both candidates are documented and neither is asserted to be the actual experimental run condition.
+
+If the literature default is the evacuated cavity (inferred) and our $\sigma_y$ under that configuration is 7.49~mm, the residual gap to the 1~mm hardware design figure is dominated by Region~B (Exit Window $\to$ PDCs, $\approx 2$~m of air); if instead our actual configuration is an air-filled cavity giving 13.50~mm, the gap is dominated by Region~A. The quadrature decomposition in the same memo\footref{fn:msablation} §5.2 gives $\sigma_A \approx 11.19$~mm from Region~A and $\sigma_B \approx 7.43$~mm from Region~B, so Region~A air vs.\ vacuum is the single most consequential configuration question for closing the $\sigma$ gap.
+
+Per the project's discipline on experimental-reality claims, we deliberately do not assert which of the two Region~A configurations corresponds to the actual experimental run; documenting both 7.49~mm and 13.50~mm candidates is the honest position. The actionable next step is collaborator confirmation of the SAMURAI21 (2017) Region~A status --- this is an engineering / operational question rather than a physics one, and it should be settled by reading the run-time vacuum logs or by direct contact with the SAMURAI operations group rather than by simulation alone.
+
 \subsection{Experimental configuration and geometry}
+The published reference frame for the SAMURAI + MINOS terminal places the reaction target outside the dipole magnet: the MINOS programme of Obertelli et al., EPJA \textbf{50}, 8 (2014)\footnote{\label{fn:obertelli2014}A.~Obertelli et al., Eur. Phys. J. A \textbf{50}, 8 (2014), DOI: \href{https://doi.org/10.1140/epja/i2014-14008-y}{10.1140/epja/i2014-14008-y}.} proposes a thick LH$_2$ target surrounded by a TPC vertex tracker upstream of the dipole, with a typical SEASTAR beam energy of $\sim 250$~MeV/u; the implementation paper of Santamaria et al.\ NIM~A \textbf{905}, 138--148 (2018)\footref{fn:santamaria2018} documents the MINOS TPC tracking and confirms the target-outside-magnet geometry.
+
+In our setup, the deuteron target sits at world coordinates $(-12.488, 0.0009, -1069.458)$~mm and is therefore physically inside the SAMURAI dipole cavity rather than upstream of it\footref{fn:msablation_geom}. The proton kinematics is fixed at $|\vec p| = 627$~MeV/c, corresponding to $\sim 190$~MeV/u kinetic energy\footref{fn:msablation}; there is no vertex detector around the target.
+
+Region~B ($\sim 2.0$~m, Exit Window $\to$ PDCs) is \emph{directly comparable} to the literature: same SAMURAI dipole, same Exit Window (Kevlar 280~µm + Mylar 75~µm), same PDC1/PDC2 chain, so any performance number on Region~B alone should benchmark against the Kahlbow 2019 PhD\footref{fn:kahlbow2019}. Region~A ($\sim 4.3$~m, target-inside-cavity flight) has \emph{no literature precedent}: published SAMURAI+MINOS configurations all place the target outside the magnet, so the in-cavity 4.3~m flight path is a configuration unique to our experiment.
+
+The interpretation is that the geometry difference between literature and our experiment is by design --- our experiment puts the target inside the dipole cavity for physics reasons, while MINOS puts it outside for vertex-tracking reasons --- and is therefore not actionable in the sense that we should change the geometry to chase a literature number. What it does explain is why no published $\sigma_p/p$ figure applies to our setup directly: every public benchmark is for a target-outside-magnet configuration, and ours is the first target-inside-magnet case for this PDC chain. The Region~B comparison against Kahlbow 2019\footref{fn:kahlbow2019} remains the cleanest benchmark we can run, and Region~A has to be self-calibrated against our own ablation data.
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabularx}{\linewidth}{l X X X}
+    \toprule
+    Axis & Literature reference & Our state & Action item \\
+    \midrule
+    Performance $\sigma_y$ at PDC2 & 1~mm design (Kobayashi 2013) & $\sim 13$~mm all-air / $\sim 7.5$~mm A=vac (ms\_ablation §4) & Region~A vacuum decision \\
+    Methodology & RK + optional Kalman, in PhD theses (Santamaria 2015, Kahlbow 2019) & \texttt{libs/analysis\_pdc\_reco/} & Compare process-noise model to Kahlbow 2019 PhD \\
+    Material budget / vacuum & Cavity evacuated, standard SAMURAI (Shimizu 2013) & Region~A status under exploration (ms\_ablation §6) & Confirm SAMURAI21 (2017) Region~A config from collaborators \\
+    Geometry & Target outside magnet, MINOS+TPC (Obertelli 2014) & Target inside cavity, no vertex (ms\_ablation §1.1) & None --- by-design difference \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Four-axis gap matrix between SAMURAI PDC reconstruction literature and our current state.}
+  \label{tab:gap-matrix}
+\end{table}
 
 \section{Broader MINOS+SEASTAR chain context}
 % [content from Task 9]
