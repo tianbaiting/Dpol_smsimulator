@@ -286,14 +286,111 @@ PDC1/PDC2 链与 SAMURAI 实验区中的多个其他探测器并存。下列条�
 本文档刻意排除若干范围以保持边界紧凑。它\emph{不}重跑任何 \texttt{ms\_ablation} 模拟；它\emph{不}修改 RK 重建代码；它\emph{不}就 Region~A 真空与否做出决定（7.49~mm 与 13.50~mm 两个候选并列、如实记录）；它也\emph{不}推导新的 $\sigma_{p,\text{target}}$ 传播数值——这些归属于 RK 误差分析深度备忘录\footref{fn:rkdeepdive}。以上是刻意的 non-goals，而非疏漏。
 
 \section{参考文献}
-% [content from Task 11]
+本节为本文档的参考文献。下述每一条目都附带 DOI、arXiv 编号、学位论文仓库句柄（TUprints / HAL）或完整 URL 之一。撰写时未独立核验过 DOI 的条目以 \texttt{[DOI not verified]} 标记。诸如 \texttt{[F13/PDC]}、\texttt{[F8-ZDS]}、\texttt{[exclude]}、\texttt{[F13/PDC, confirmed]}、\texttt{[F13/PDC, implicit]}、\texttt{[F13/PDC, expected]}、\texttt{[partial]} 等标签用于标注 SAMURAI 焦面配置以及该条目与 PDC 关联的强度，沿用本文档前文一致的约定。
+
 \subsection{硬件与方法学（同行评议、基础）}
+\begin{itemize}
+  \item Kobayashi T., et al., ``SAMURAI spectrometer for RI beam experiments,'' Nucl.\ Instrum.\ Methods B \textbf{317}, 294--304 (2013), DOI: \href{https://doi.org/10.1016/j.nimb.2013.05.089}{10.1016/j.nimb.2013.05.089}. \texttt{[F13/PDC]}
+  \item Sato H., et al., ``Superconducting Dipole Magnet for SAMURAI Spectrometer,'' IEEE Trans.\ Appl.\ Supercond.\ \textbf{23}, 4500308 (2013), DOI: \href{https://doi.org/10.1109/TASC.2012.2237225}{10.1109/TASC.2012.2237225}.
+  \item Shimizu Y., et al., ``Vacuum system for the SAMURAI spectrometer,'' Nucl.\ Instrum.\ Methods B \textbf{317}, 739--742 (2013), DOI: \href{https://doi.org/10.1016/j.nimb.2013.08.059}{10.1016/j.nimb.2013.08.059}.
+  \item Otsu H., et al., ``SAMURAI in its operation phase for RIBF users,'' Nucl.\ Instrum.\ Methods B \textbf{376}, 175 (2016), DOI: \href{https://doi.org/10.1016/j.nimb.2016.02.056}{10.1016/j.nimb.2016.02.056}.
+  \item Nakamura T.\ and Kondo Y., review, Nucl.\ Instrum.\ Methods B \textbf{376}, 156 (2016), \href{https://arxiv.org/abs/1512.08380}{arXiv:1512.08380}.
+  \item Arai Y., et al., Nucl.\ Instrum.\ Methods A \textbf{453}, 365 (2000), DOI: \href{https://doi.org/10.1016/S0168-9002(00)00658-6}{10.1016/S0168-9002(00)00658-6}.
+\end{itemize}
+
 \subsection{算法参考}
+\begin{itemize}
+  \item Santamaria C., et al., ``Tracking with the MINOS TPC,'' Nucl.\ Instrum.\ Methods A \textbf{905}, 138--148 (2018), DOI: \href{https://doi.org/10.1016/j.nima.2018.07.053}{10.1016/j.nima.2018.07.053}.
+  \item Matta A., et al., ``NPTool,'' J.\ Phys.\ G \textbf{43}, 045113 (2016), DOI: \href{https://doi.org/10.1088/0954-3899/43/4/045113}{10.1088/0954-3899/43/4/045113}.
+  \item Panin V., et al., Phys.\ Lett.\ B \textbf{753}, 204--210 (2016), DOI: \href{https://doi.org/10.1016/j.physletb.2015.11.082}{10.1016/j.physletb.2015.11.082}. \texttt{[R3B/LAND, methodological precursor]}
+\end{itemize}
+
 \subsection{含 PDC 方法学的 PhD 论文}
+\begin{itemize}
+  \item Kahlbow J.\ (2019), TU Darmstadt, TUprints 9192, \url{https://tuprints.ulb.tu-darmstadt.de/9192/}. \texttt{[F13/PDC, confirmed]}
+  \item Likely contains PDC content \texttt{[F13/PDC, expected]}:
+  \begin{itemize}
+    \item Sun Y.\ L.\ ($\sim$2019)
+    \item Chen S.\ ($\sim$2018--19)
+    \item Enciu M.\ ($\sim$2022)
+    \item Liu H.\ N.\ ($\sim$2018)
+    \item Cortés M.\ L.\ ($\sim$2018)
+    \item Lehr C.\ ($\sim$2023, TU Darmstadt)
+    \item Frotscher A.\ (2021, TU Darmstadt)
+    \item Pohl T.
+    \item Duer M.
+    \item Stefanescu A.\ I.\ ($\sim$2022, IFIN-HH/RIKEN)
+    \item Gašparić I.\ ($\sim$2017--19, Zagreb)
+    \item Törnqvist H.\ ($\sim$2017, Chalmers/TU Darmstadt)
+  \end{itemize}
+  \item Storck S.\ (2023), TU Darmstadt, TUprints 23768, \url{https://tuprints.ulb.tu-darmstadt.de/23768/}. \texttt{[partial: SAMURAI Dec 2016 with W/Pt target; PDC content auxiliary]}
+  \item Excluded:
+  \begin{itemize}
+    \item Santamaria C.\ (2015), HAL tel-01231191, \url{https://hal.science/tel-01231191}. \texttt{[excluded --- MINOS-focused, F8/ZeroDegree-era]}
+    \item Panin V.\ (2012), TUprints 3170. \texttt{[excluded --- R3B/LAND]}
+    \item Atar L.\ (2015), GSI-2016-00315. \texttt{[excluded --- R3B/LAND]}
+  \end{itemize}
+\end{itemize}
+
 \subsection{使用 PDC1/PDC2 的物理论文（确认/隐含）}
+\begin{itemize}
+  \item Kondo Y., et al., Nature \textbf{620}, 965--970 (2023), DOI: \href{https://doi.org/10.1038/s41586-023-06352-6}{10.1038/s41586-023-06352-6}. \texttt{[F13/PDC, implicit]}
+  \item Kahlbow J., et al., Phys.\ Rev.\ Lett.\ \textbf{133}, 082501 (2024), DOI: \href{https://doi.org/10.1103/PhysRevLett.133.082501}{10.1103/PhysRevLett.133.082501}. \texttt{[F13/PDC]} \texttt{[DOI not verified]}
+  \item Revel A., et al., Phys.\ Rev.\ Lett.\ \textbf{124}, 152502 (2020), DOI: \href{https://doi.org/10.1103/PhysRevLett.124.152502}{10.1103/PhysRevLett.124.152502}. \texttt{[F13/PDC, mixed]}
+  \item Holl M., et al., Phys.\ Rev.\ C \textbf{105}, 034301 (2022), DOI: \href{https://doi.org/10.1103/PhysRevC.105.034301}{10.1103/PhysRevC.105.034301}. \texttt{[F13/PDC, implicit]}
+  \item Wang H., et al., Phys.\ Lett.\ B \textbf{843}, 138038 (2023), DOI: \href{https://doi.org/10.1016/j.physletb.2023.138038}{10.1016/j.physletb.2023.138038}. \texttt{[F13/PDC, implicit]}
+  \item Duer M., et al., Nature \textbf{606}, 678 (2022), DOI: \href{https://doi.org/10.1038/s41586-022-04827-6}{10.1038/s41586-022-04827-6}. \texttt{[F13/PDC, used for $\alpha$ (note exception)]}
+  \item Corsi A., et al., Phys.\ Lett.\ B \textbf{797}, 134843 (2019). \texttt{[F13/PDC, implicit]}
+  \item Enciu M., et al., Phys.\ Rev.\ Lett.\ \textbf{129}, 262501 (2022), DOI: \href{https://doi.org/10.1103/PhysRevLett.129.262501}{10.1103/PhysRevLett.129.262501}. \texttt{[F13/PDC, implicit]}
+  \item Linh B.\ D., et al., Phys.\ Rev.\ C \textbf{109}, 034312 (2024), DOI: \href{https://doi.org/10.1103/PhysRevC.109.034312}{10.1103/PhysRevC.109.034312}. \texttt{[F13/PDC, implicit]} \texttt{[DOI not verified]}
+  \item Pohl T., et al., Phys.\ Rev.\ Lett.\ \textbf{130}, 172501 (2023), DOI: \href{https://doi.org/10.1103/PhysRevLett.130.172501}{10.1103/PhysRevLett.130.172501}. \texttt{[F13/PDC, implicit]}
+  \item Sekiguchi K., et al., Phys.\ Rev.\ C \textbf{89}, 064007 (2014), DOI: \href{https://doi.org/10.1103/PhysRevC.89.064007}{10.1103/PhysRevC.89.064007}. \texttt{[F13/PDC, in-situ validation]}
+  \item Sekiguchi K., et al., Phys.\ Rev.\ C \textbf{96}, 064001 (2017), DOI: \href{https://doi.org/10.1103/PhysRevC.96.064001}{10.1103/PhysRevC.96.064001}. \texttt{[F13/PDC, in-situ validation]}
+\end{itemize}
+
 \subsection{排除/仅作上下文}
+\begin{itemize}
+  \item Kubota Y., et al., Phys.\ Rev.\ Lett.\ \textbf{125}, 252501 (2020), DOI: \href{https://doi.org/10.1103/PhysRevLett.125.252501}{10.1103/PhysRevLett.125.252501}. \texttt{[exclude --- uses dedicated RPD not PDC]}
+  \item Tanaka J., et al., Science \textbf{371}, 260 (2021), DOI: \href{https://doi.org/10.1126/science.abe4688}{10.1126/science.abe4688}. \texttt{[exclude --- RCNP, not SAMURAI]}
+  \item Taniuchi R., et al., Nature \textbf{569}, 53 (2019), DOI: \href{https://doi.org/10.1038/s41586-019-1155-x}{10.1038/s41586-019-1155-x}. \texttt{[F8-ZDS, not PDC]}
+  \item Doornenbal P., et al., Phys.\ Rev.\ C \textbf{95}, 041302(R) (2017), DOI: \href{https://doi.org/10.1103/PhysRevC.95.041301}{10.1103/PhysRevC.95.041301}. \texttt{[F8-ZDS]}
+  \item Atar L., et al., Phys.\ Rev.\ Lett.\ \textbf{120}, 052501 (2018), DOI: \href{https://doi.org/10.1103/PhysRevLett.120.052501}{10.1103/PhysRevLett.120.052501}. \texttt{[exclude --- R3B/LAND at GSI]}
+  \item Panin V., et al., Phys.\ Lett.\ B \textbf{753}, 204 (2016). \texttt{[exclude --- R3B/LAND]}
+\end{itemize}
+
 \subsection{综述与专题合集}
+\begin{itemize}
+  \item Aumann T., et al., Prog.\ Part.\ Nucl.\ Phys.\ \textbf{118}, 103847 (2021), DOI: \href{https://doi.org/10.1016/j.ppnp.2021.103847}{10.1016/j.ppnp.2021.103847}.
+  \item Panin V., Aumann T., Bertulani C.\ A., Eur.\ Phys.\ J.\ A \textbf{57}, 103 (2021), DOI: \href{https://doi.org/10.1140/epja/s10050-021-00416-9}{10.1140/epja/s10050-021-00416-9}.
+  \item Nowacki F., Poves A., Obertelli A., Prog.\ Part.\ Nucl.\ Phys.\ \textbf{120}, 103866 (2021).
+  \item Aumann T.\ and Bertulani C.\ A., Prog.\ Part.\ Nucl.\ Phys.\ \textbf{112}, 103753 (2020).
+  \item MINOS@SAMURAI EPJ-ST topical collection (2024--2025):
+  \begin{itemize}
+    \item Uesaka T., et al., \href{https://arxiv.org/abs/2412.16649}{arXiv:2412.16649}.
+    \item Gašparić I., et al., \href{https://arxiv.org/abs/2412.16799}{arXiv:2412.16799}.
+    \item Taniuchi R., et al., \href{https://arxiv.org/abs/2412.16972}{arXiv:2412.16972}.
+    \item Togano Y., et al., \href{https://arxiv.org/abs/2412.17887}{arXiv:2412.17887}.
+  \end{itemize}
+\end{itemize}
+
 \subsection{建造提案与内部技术注释}
+\begin{itemize}
+  \item RIBF-TAC05 (2005) SAMURAI construction proposal, \url{https://ribf.riken.jp/RIBF-TAC05/10_SAMURAI.pdf}.
+  \item 2012 SAMURAI Construction Proposal, \url{https://ribf.riken.jp/SAMURAI/120425_SAMURAIConstProp.pdf}.
+  \item RIKEN tech note \texttt{Detector-PDC.pdf}, \url{https://www.nishina.riken.jp/ribf/SAMURAI/image/Detector-PDC.pdf}.
+  \item SAMURAI tecinfo page, \url{https://www.nishina.riken.jp/RIBF/SAMURAI/tecinfo.html}.
+  \item RIKEN Accelerator Progress Report archive, \url{https://nishina.riken.jp/researcher/APR/index_e.html}.
+\end{itemize}
+
 \subsection{项目内部参考}
+\begin{itemize}
+  \item \texttt{docs/reports/reconstruction/momentum\_reco/ms\_ablation/ms\_ablation\_air\_20260421\_zh.md} --- \texttt{[superseded, stage A]}
+  \item \texttt{docs/reports/reconstruction/momentum\_reco/ms\_ablation/ms\_ablation\_mixed\_20260422\_zh.md} --- \texttt{[current, stage A$'$ rev2]}
+  \item \texttt{docs/reports/reconstruction/momentum\_reco/rk/rk\_error\_analysis\_deep\_dive\_20260426\_zh.pdf}
+  \item \texttt{docs/reports/reconstruction/momentum\_reco/rk/rk\_reconstruction\_status\_20260416\_zh.pdf}
+  \item \texttt{docs/reports/reconstruction/track\_reco/pdc/pdc\_reconstruction\_uncertainty\_detailed.pdf}
+  \item \texttt{smsimulator5.5/CLAUDE.md} and \texttt{dpol/CLAUDE.md} --- project guides
+  \item \texttt{libs/analysis\_pdc\_reco/} --- primary reconstruction framework
+\end{itemize}
 
 \end{document}
