@@ -349,13 +349,164 @@ HADES 早期使用全局 Runge-Kutta 拟合（不含 MS）作为基准，Krebs 2
 \end{longtable}
 
 \section{模拟 / 校准切面}
-% [content from Task 4]
+
+本节分析六个实验各自选用的蒙特卡洛（MC）框架、MS 模型是否经过调谐、以及在拟合完成\emph{之后}是否对残差进行基于 MC 的反卷积修正，并给出各实验用于验证 MS 相关系统误差的观测量。由于上述信息属于探测器工作组内部技术细节，在公开 NIM/EPJ 论文中几乎不报道，本节多数条目预期为「未报道」；这是文献稀缺的客观反映，而非信息遗漏。
 
 \subsection{所选 MC 框架}
+\label{sec:mc_framework}
+
+\textbf{(1)~SAMURAI 质子臂 (PDC1/PDC2)。}
+SAMURAI 仿真链采用 \textbf{Geant4 11.3.2}（2025 年主线版本）作为粒子输运框架。这一事实以源代码与构建系统为依据：仿真主程序 \texttt{apps/sim\_deuteron/main.cc} 通过 \texttt{G4RunManager} 初始化 Geant4 运行时；\texttt{CMakeLists.txt} 通过 \texttt{find\_package(Geant4 REQUIRED gdml)} 链接 Geant4 库，构建时实际找到的版本为 \textbf{11.3.2}（\texttt{geant4-config --version} 输出确认\footnote{\label{fn:src_geant4_version}源代码自证：\texttt{apps/sim\_deuteron/CMakeLists.txt} 的 \texttt{find\_package(Geant4 REQUIRED)} 指令；运行时版本通过 \texttt{geant4-config --version} 在本机环境（\texttt{anaroot-env}）确认为 11.3.2。无版本号硬性下界约束——\texttt{CMakeLists.txt} 的 \texttt{find\_package} 中 Geant4 无最低版本指定，由环境决定。}）。默认物理列表为 \texttt{QGSP\_INCLXX\_XS}（见 \texttt{main.cc} 第 79 行 \texttt{G4String physName = "QGSP\_INCLXX\_XS"}），电磁物理模块为 \textbf{G4EmStandardPhysics}（默认 option 0，见 \texttt{libs/smg4lib/src/physics/src/QGSP\_INCLXX\_XS.cc} 第 30 行\footref{fn:src_geant4_version}）。G4EmStandardPhysics (option 0) 对电子、$\mu$ 子及强子的多重散射分别采用 Urban MSC 模型（Wentzel-VI 模型可作为 option4 的替代，但本链不启用）\footnote{\label{fn:g4emstandard}Geant4 Physics Reference Manual, \url{https://geant4-userdoc.web.cern.ch/UsersGuides/PhysicsReferenceManual/html/}. Geant4 11.x 系列中 G4EmStandardPhysics (option 0) 对质子及强子多重散射使用 Urban MSC 模型；WentzelVI 在 option4 中启用。}。
+
+\textbf{(2)~SAMURAI 碎片臂 (FDC1/FDC2)。}
+碎片臂的 ANAROOT 重建框架不含独立的 MC 仿真模块；ANAROOT 以 ROOT 为基础，对实验数据进行重建，仿真对比所用的 MC 通常由 SAMURAI 实验组自行运行 Geant4 仿真后导入 ANAROOT 分析链\footref{fn:kobayashi2013hw}。碎片臂 MC 框架（Geant4 版本及物理列表选型）在 Kobayashi 2013\footref{fn:kobayashi2013hw}及可访问的 FDC 技术注释\footref{fn:fdc1note}\footref{fn:fdc2note}中均未报道；SAMURAI 实验组内部 MC 框架配置 \texttt{[unverified]}。
+
+\textbf{(3)~R3B / LAND (GSI/FAIR)。}
+R3B 实验采用 \textbf{R3BRoot} 软件框架\footref{fn:r3broot}，基于 FairRoot/FairSoft。R3BRoot 通过 VMC（Virtual Monte Carlo）接口支持 GEANT3（via TGeant3）与 GEANT4（via TGeant4）两种后端\footnote{\label{fn:r3broot_vmc}R3BRoot 使用 FairRoot VMC 接口，见 \url{https://fairroot.gsi.de/}；具体使用 GEANT4 还是 GEANT3 后端由运行配置决定。R3BRoot 仓库说明文档（\url{https://github.com/R3BRootGroup/R3BRoot}）提及两种后端均受支持。}。实际生产仿真中优先采用哪种后端（GEANT3 还是 GEANT4 及其版本）未在可访问的 NIM/EPJ 论文中明确报道 \texttt{[unverified --- 根据 FairRoot 文档推断 GEANT4 为近年优先选项，但无法从公开发表的 R3B 物理论文中验证]}。
+
+\textbf{(4)~ALADIN-EOS (GSI)。}
+ALADIN 实验主体运行于 1990--2000 年代，彼时粒子物理 MC 框架以 \textbf{GEANT3}（CERN 程序库版本 3.21 等）为主流。Schüttauf 1996\footref{fn:schuttauf1996}为物理论文，未提及使用的 MC 框架。ALADIN-EOS 所用的具体 MC 框架（GEANT3 版本、物理过程配置）未报道 \texttt{[unverified --- 历史运行期无公开 NIM 型 MC 描述]}。
+
+\textbf{(5)~FOPI (GSI)。}
+FOPI 实验的仿真框架基于 GEANT3，并与 GENFIT 拟合框架组合使用；GEANT3 提供探测器几何与粒子输运仿真，GENFIT 承担径迹拟合。Ritman 1995\footref{fn:ritman1995}为会议摘要，未详述 MC 框架配置。FOPI MC 框架的具体版本及物理过程配置未在可访问文献中报道 \texttt{[unverified --- 依据 GENFIT 仓库自述（FOPI 为列名使用者）推断与 GEANT3/GEANT4 混合使用，但配置细节属工作组内部]}。
+
+\textbf{(6)~HADES (GSI)。}
+HADES 实验仿真框架演化经历了从 GEANT3（早期运行）到 \textbf{GEANT4}（主流运行期）的过渡。Agakishiev 2009\footref{fn:agakishiev2009}未显式说明使用哪一 MC 框架版本做 MDC 系统误差评估。HADES Collaboration 内部仿真工具包（HGeant / HSimu）基于 GEANT4，并以 PLUTO 事件产生器配合\footnote{\label{fn:hades_sim}HADES Collaboration simulation chain（HGeant）为 GEANT4 封装，见 \url{https://hades.gsi.de/}；PLUTO 事件产生器，\href{https://arxiv.org/abs/0906.0961}{arXiv:0906.0961}（I.~Fröhlich et al.）。具体 Geant4 版本号及物理列表选型 \texttt{[unverified]}.}。
+
 \subsection{MS 模型调谐方法}
+\label{sec:ms_tuning}
+
+本节将六个实验的 MS 调谐策略归入三类家族：(a)~开箱即用默认配置（off-the-shelf，无工作组专项调谐）；(b)~以数据对 MS 宽度施加整体缩放系数（scale-factor tuning）；(c)~引入外部材料预算测量结果参数化 MS（parameterized lookup from external MS measurements）。由于该调谐信息高度工作组内部化，多数条目将标注「未报道」。
+
+\textbf{(1)~SAMURAI 质子臂 (PDC1/PDC2)。}
+我们的链采用 \textbf{(a) 开箱即用默认配置}：G4EmStandardPhysics (option 0) 的 Urban MSC 模型以 PDG 参数（Highland/Lynch-Dahl 近似）计算 MS，未施加任何材料预算缩放因子或外部测量调谐\footref{fn:src_geant4_version}\footref{fn:g4emstandard}。源代码检查（\texttt{libs/smg4lib/src/physics/} 目录下全部 \texttt{*.cc}/\texttt{*.hh} 文件）未发现任何 \texttt{scaleFactor}、\texttt{MScaleFactor}、\texttt{material budget tuning} 或类似关键字；G4EmStandardPhysics 作为整体注册，内部参数均为 Geant4 缺省值。因此，当前链的 MS 模型不含项目专属调谐，属于家族 (a)。
+
+\textbf{(2)~SAMURAI 碎片臂 (FDC1/FDC2)。}
+碎片臂 ANAROOT 链的 MC 对比所用的 MS 调谐策略未在可访问文献或技术注释中记录 \texttt{[unverified --- 属工作组内部]}。
+
+\textbf{(3)~R3B / LAND (GSI/FAIR)。}
+R3B 实验的 PhD 论文（如 Panin 2012 TUprints 3170\footnote{\label{fn:panin2012thesis}V.~Panin, PhD thesis, TU Darmstadt, TUprints 3170 (2012), \url{https://tuprints.ulb.tu-darmstadt.de/3170/}. \texttt{[unverified --- 论文全文通过 DOI 跳转后需登录；材料预算调谐内容未从摘要层面确认]}。}）可能记录了 R3BRoot 中的材料预算调谐方法，但调谐家族归类 \texttt{[unverified --- 需阅读论文全文 §X.X "material budget" 或 "MS tuning" 章节]}。
+
+\textbf{(4)~ALADIN-EOS (GSI)。}
+ALADIN MS 调谐策略未在可访问文献中报道 \texttt{[unverified]}。
+
+\textbf{(5)~FOPI (GSI)。}
+FOPI 使用 GENFIT 框架，其 MS 来自 Highland-Lynch-Dahl 解析模型（内嵌于 GENFIT RKTrackRep）\footref{fn:genfit2}。是否在 FOPI 生产运行中施加了材料预算缩放因子未见记录 \texttt{[unverified]}。若 FOPI 仅以默认 GENFIT MS 参数运行，则属家族 (a)；若施加了缩放，则属家族 (b)，但区分依据尚不可得。
+
+\textbf{(6)~HADES (GSI)。}
+HADES MDC 的 MS 调谐策略未在 Agakishiev 2009\footref{fn:agakishiev2009}中详述。Krebs 2013\footref{fn:krebs2013}（非同行评议）记录了 Kalman 中 MS 过程噪声的公式化，但未说明是否对 He/isobutane 气体的材料预算施加经验调谐。HADES 的系统误差文章（Adamczewski-Musch 等物理论文\footref{fn:hades2017}）侧重于物理可观测量，MS 调谐方法在该论文中 \texttt{[unverified]}。
+
 \subsection{残差反卷积 / 事后 MS 修正}
+\label{sec:ms_deconvolution}
+
+\textbf{重要区分（对应规范 R7）：}本节涵盖在拟合完成\emph{之后}基于 MC 模拟做的残差或反卷积修正；拟合\emph{内}的 MS 处理（包括拟合时查表）见 §\ref{sec:algo_lookup}，两者不应混淆。更精确地说：§\ref{sec:algo_lookup}「查表修正（拟合内）」讨论在每次拟合迭代中即时应用的 MS 修正，本节讨论的是在重建完成后、物理量提取之前、对 MC 与数据残差分布进行对比并加以修正的事后处理步骤。
+
+\textbf{(1)~SAMURAI 质子臂 (PDC1/PDC2)。}
+当前 \texttt{analysis\_pdc\_reco} 链（§\ref{sec:algo_rk}）不含事后 MS 残差反卷积步骤\footref{fn:src_pdc_rk}。仿真中 MS 贡献通过消融实验（§\ref{sec:validation_obs}）以 $\sigma_y(\text{PDC2})$ 形式量化，但本项目尚未实施将仿真 $\sigma_y$ 与实验数据 $\sigma_y$ 对比后对动量谱做反卷积的流程。因此，SAMURAI 质子臂目前\textbf{不具有}事后 MS 反卷积步骤，属于「否」类别（且「未来计划实施」状态待定）。
+
+\textbf{(2)~SAMURAI 碎片臂 (FDC1/FDC2)。}
+未在可访问的 ANAROOT 文档或碎片臂相关论文中找到事后 MS 残差反卷积的描述 \texttt{[unverified]}。
+
+\textbf{(3)~R3B / LAND (GSI/FAIR)。}
+R3B 实验是否在动量谱提取后进行 MC 驱动的事后 MS 反卷积，未在可访问的 NIM/EPJ 论文或 R3BRoot 文档中找到明确记录 \texttt{[unverified --- Panin 2012 论文全文未能获取；若存在此步骤，通常会在系统误差讨论节中描述]}。
+
+\textbf{(4)~ALADIN-EOS (GSI)。}
+未报道 \texttt{[unverified --- ALADIN 历史文献（Schüttauf 1996\footref{fn:schuttauf1996}）为物理论文，不含事后 MS 反卷积的描述；ALADIN 缺乏专项硬件/分析 NIM 型论文]}。
+
+\textbf{(5)~FOPI (GSI)。}
+未报道 \texttt{[unverified --- FOPI 物理论文（Reisdorf 2010\footref{fn:reisdorf2010}）含系统误差讨论，但未见 MS 专项反卷积描述；GENFIT 框架内建 MS（见 §\ref{sec:algo_geane}），不需另行事后修正这一惯例可能是 FOPI 无需 §5.3 类步骤的原因，但属推断而非实证]}。
+
+\textbf{(6)~HADES (GSI)。}
+HADES 以 Kalman 滤波内建 MS（§\ref{sec:algo_kalman}）为主要手段，是否另有事后 MS 残差反卷积步骤未在可访问文献中报道 \texttt{[unverified]}。低动量精度要求高的分析（如双电子谱）可能含有分辨函数展宽修正，但这与本节所讨论的 MS 专项反卷积不同，不应混淆。
+
 \subsection{验证观测量}
+\label{sec:validation_obs}
+
+验证观测量是各实验用于量化 MC 与实验数据在 MS 效应相关方面的吻合程度所使用的具体可观测量，通常为残差展宽（数据 $\sigma$ 与 MC $\sigma$ 的比较）或角分布宽度。
+
+\textbf{(1)~SAMURAI 质子臂 (PDC1/PDC2)。}
+我们采用 $\sigma_y(\text{PDC2})$——PDC2 平面内 $y$ 方向上重建动量的鲁棒半宽（$(p_{84}-p_{16})/2$）——作为量化 MS 灵敏度的主要验证观测量。具体数值来自本项目的 MS 消融实验\footref{fn:msablation_hw}：在三种几何配置（全空气、束流线真空、全真空）下，$\sigma_y(\text{PDC2})$ 分别约为 12.8--14.9~mm、6.8--8.2~mm、0.95--1.0~mm，空气成分主导（区域 A 贡献约 $\sigma_A = 11.19$~mm，区域 B 贡献约 $\sigma_B = 7.43$~mm，正交叠加）。该观测量是项目内部正在发展的验证手段，尚无对应的已发表论文图表——将来与实验数据对比时，同一 $\sigma_y(\text{PDC2})$ 值将作为 data-MC 对比的桥梁。
+
+\textbf{(2)~SAMURAI 碎片臂 (FDC1/FDC2)。}
+未报道 \texttt{[unverified --- 未在 Kobayashi 2013\footref{fn:kobayashi2013hw}或技术注释中找到专门针对 MS 效应的 data-MC 比较图或观测量描述]}。碎片臂分辨率通常由位置分辨（$\sigma_x$、$\sigma_y$ 打击点残差）和角度分辨（$\sigma_\theta$）来表征，但这些量在 Kobayashi 2013 中属于设计指标而非 MS 专项验证。
+
+\textbf{(3)~R3B / LAND (GSI/FAIR)。}
+未报道 \texttt{[unverified --- 未找到描述 GLAD 下游碎片臂 MS 专项验证观测量的公开 NIM/EPJ 论文]}。
+
+\textbf{(4)~ALADIN-EOS (GSI)。}
+未报道 \texttt{[unverified]}。
+
+\textbf{(5)~FOPI (GSI)。}
+未报道 \texttt{[unverified --- Reisdorf 2010\footref{fn:reisdorf2010}讨论了探测器响应和系统误差，但未见 MS 专项 data-MC 比较的验证观测量]}。
+
+\textbf{(6)~HADES (GSI)。}
+未报道 \texttt{[unverified --- Agakishiev 2009\footref{fn:agakishiev2009}描述探测器系统，包含 MDC 分辨率规格（如位置分辨 $\sigma < 150~\mu$m），但这是设计规格而非 MS 专项验证观测量；MDC 材料预算 $x/X_0 < 0.06\%$/腔已在 §3.3 引用\footref{fn:hades_mdc}。]}
+
 \subsection{跨实验模拟/校准对照表}
+\label{sec:simulationtable}
+
+表~\ref{tab:simulation} 汇总上述四个维度（MC 框架、MS 调谐家族、事后残差反卷积、主要验证观测量），信息贫乏是预期的——大多数工作组不发表此类内部技术细节。本文的工作是如实记录可以核证的条目，并诚实地标注无法核证的部分。「调谐家族」列：(a)~默认无调谐；(b)~数据导向缩放系数；(c)~外部 MS 测量参数化。
+
+\begin{longtable}{p{2.2cm}p{2.5cm}p{2.0cm}p{2.0cm}p{3.5cm}p{1.8cm}}
+  \caption{跨实验模拟/校准对照表：MC 框架、MS 调谐家族、事后残差反卷积、主要验证观测量与主要引用。\texttt{[unverified]} 项见 §5.1--§5.4 正文各条目。}
+  \label{tab:simulation} \\
+  \toprule
+  实验 & MC 框架 & MS 调谐家族 & 残差反卷积 (是/否/未报道) & 主要验证观测量 & 主要引用 \\
+  \midrule
+  \endfirsthead
+  \caption*{表~\ref{tab:simulation}（续）} \\
+  \toprule
+  实验 & MC 框架 & MS 调谐家族 & 残差反卷积 (是/否/未报道) & 主要验证观测量 & 主要引用 \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+  \bottomrule
+  \endlastfoot
+  %
+  SAMURAI 质子臂 (PDC1/PDC2)
+    & Geant4 11.3.2, QGSP\_INCLXX\_XS + G4EmStandardPhysics (opt.0)\footref{fn:src_geant4_version}\footref{fn:g4emstandard}
+    & (a) 默认无调谐（源码核查确认\footref{fn:src_geant4_version}）
+    & 否（目前无此步骤\footref{fn:src_pdc_rk}）
+    & $\sigma_y(\text{PDC2})$（鲁棒半宽）；消融实验结果：全真空 $\approx 1$~mm，束流线真空 $\approx 7.5$~mm，全空气 $\approx 13.5$~mm\footref{fn:msablation_hw}
+    & \footref{fn:src_geant4_version}（源码）；\footref{fn:msablation_hw}（消融）
+    \\[4pt]
+  SAMURAI 碎片臂 (FDC1/FDC2)
+    & 未报道\footref{fn:kobayashi2013hw}\footref{fn:fdc1note}\footref{fn:fdc2note}（ANAROOT + 外部 MC；Geant4 版本 \texttt{[unverified]}）
+    & 未报道 \texttt{[unverified]}
+    & 未报道 \texttt{[unverified]}
+    & 未报道 \texttt{[unverified]}
+    & \footref{fn:kobayashi2013hw}
+    \\[4pt]
+  R3B / LAND (GSI/FAIR)
+    & R3BRoot / FairRoot VMC（GEANT3 或 GEANT4 后端；版本 \texttt{[unverified]}）\footref{fn:r3broot_vmc}
+    & 未报道 \texttt{[unverified]}（可能在 Panin 2012 论文\footref{fn:panin2012thesis}中，全文未获）
+    & 未报道 \texttt{[unverified]}
+    & 未报道 \texttt{[unverified]}
+    & \footref{fn:r3broot}；\footref{fn:panin2012thesis}（\texttt{[unverified]}）
+    \\[4pt]
+  ALADIN-EOS (GSI)
+    & 未报道 \texttt{[unverified]}（历史时期 GEANT3 可能\footref{fn:schuttauf1996}）
+    & 未报道 \texttt{[unverified]}
+    & 未报道 \texttt{[unverified]}
+    & 未报道 \texttt{[unverified]}
+    & \footref{fn:schuttauf1996}
+    \\[4pt]
+  FOPI (GSI)
+    & GEANT3/GEANT4（VMC，与 GENFIT 组合）；版本 \texttt{[unverified]}\footref{fn:ritman1995}\footref{fn:genfit2}
+    & 未报道 \texttt{[unverified]}（若仅 GENFIT 默认则属 (a)）
+    & 未报道 \texttt{[unverified]}
+    & 未报道 \texttt{[unverified]}\footref{fn:reisdorf2010}
+    & \footref{fn:ritman1995}；\footref{fn:genfit2}
+    \\[4pt]
+  HADES (GSI)
+    & HGeant / GEANT4（PLUTO 事件产生器配合）；版本 \texttt{[unverified]}\footref{fn:hades_sim}
+    & 未报道 \texttt{[unverified]}\footref{fn:agakishiev2009}\footref{fn:krebs2013}
+    & 未报道 \texttt{[unverified]}
+    & 位置分辨 $\sigma < 150~\mu$m（MDC 设计规格，非 MS 专项验证\footref{fn:agakishiev2009}）；MS 专项验证观测量 \texttt{[unverified]}
+    & \footref{fn:agakishiev2009}；\footref{fn:hades_sim}；\footref{fn:krebs2013}
+    \\
+\end{longtable}
 
 \section{逐实验事实卡}
 % [content from Task 6]
