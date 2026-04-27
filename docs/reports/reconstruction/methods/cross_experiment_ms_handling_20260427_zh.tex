@@ -40,7 +40,12 @@
 % [content from Task 10 — written LAST]
 
 \section{为什么这件事重要}
-% [content from Task 5]
+
+兄弟备忘录 §2 系统记录了三种真空/air 消融配置下 PDC2 的稳健半宽 $\sigma_y$\footnote{\label{fn:sibling_sec2}见 \texttt{docs/reports/reconstruction/methods/pdc\_reco\_literature\_and\_air\_ms\_gap\_20260426\_zh.tex} §2 表~1.}：\textbf{全 air 配置}下 $\sigma_y(\text{PDC2}) = 12.83$--$14.93$~mm，\textbf{Region~A 切换为真空}（\texttt{beamline\_vacuum}）后降至 $6.80$--$8.21$~mm，\textbf{全真空消融}约 $1.0$~mm。相比之下，PDC1/PDC2 链的设计指标为 1~mm 位置分辨\footref{fn:sibling_sec2}，即含 air 的两组数值均比硬件设计指标偏离约一个数量级。上述数值来自兄弟备忘录 §2 的消融汇总表，本文不重新推导；所有原始数值溯源见该备忘录脚注。
+
+在以上 $\sigma_y$ 缺口背景下，本备忘录的核心问题是：在与我们能区相近（约 50--500~MeV/u）、同样使用带电粒子径迹链的六个实验中，它们在\textbf{硬件}（§\ref{sec:cavity}--§\ref{sec:trackergas}）、\textbf{算法}（§4）、\textbf{模拟/校准}（§5）三条切面上各自做了什么选择？这些选择中是否存在可以借鉴、用以缩小我们 $\sigma_y$ 缺口的候选？六组对照实验的具体事实见 §6 逐实验卡片；对应的启示与行动项见 §7。
+
+最后，有必要说明本备忘录与兄弟备忘录的刻意范围差异。兄弟备忘录 §7.5「排除/仅作上下文」明确将 R3B/LAND 列为排除条目（\texttt{[exclude --- R3B/LAND at GSI]}），理由是 R3B/LAND 不在 SAMURAI PDC 重建缺口分析的框架内。本备忘录刻意重新纳入 R3B/GLAD，因为跨实验 MS 处理切面才是本文脊梁，而 R3B/GLAD（超导偶极 + 下游 air 径迹器）是与 SAMURAI 质子臂在拓扑结构上最接近的外部类比实验——排除它将使横向对照失去最有价值的参照点。反之，本备忘录刻意排除 SAMURAI \textbf{中子臂}（NEBULA / NeuLAND）：中子臂是飞行时间重建问题，与 PDC 带电粒子径迹链的 MS 处理在方法论上属于不同范畴，不在本文讨论范围之内。两处范围差异均为刻意设计，读者在对照两份备忘录的引用条目时请以此为准。
 
 \section{硬件 / 物质预算切面}
 
