@@ -97,7 +97,7 @@ Each subsection covers one algorithmic family across all six experiments. Closin
 - §4.1 Straight-line / RK back-tracking with **no explicit MS term** — baseline approach; note which experiments use this and how they justify it (typically: MS budget already small enough, or σ dominated by detector resolution).
 - §4.2 Kalman filter with MS process-noise covariance — list which experiments implement this; cite the specific MS process-noise model (Highland formula, Lynch-Dahl, GEANT4-derived lookup).
 - §4.3 GEANE / RKF transport with MS-aware step adaptation — typically ROOT/GENFIT/PandaRoot frameworks; list adopters.
-- §4.4 Look-up / unfolding corrections (per-event posterior MS correction from MC) — rare but used at lower energies; list adopters.
+- §4.4 Look-up / per-event MS correction applied **during** the track fit (drawn from MC tables) — rare but used at lower energies; list adopters. **Distinct from §5.3** which is post-fit; see R7.
 - §4.5 Cross-experiment algorithm table — rows = 6 experiments, columns = (back-track method, MS treatment in fit, framework, citation). Every cell carries citation.
 
 ### §5 Simulation / calibration axis (~3–4 PDF pages)
