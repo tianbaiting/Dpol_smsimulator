@@ -259,9 +259,31 @@ A 2024--2025 EPJ-ST topical collection on MINOS@SAMURAI is in preparation; prepr
 \section{Implications and next steps}
 % [content from Task 10]
 \subsection{Short-term data acquisition action items}
+The following items are candidate next steps for closing literature-side data gaps; they are scoped to bibliographic retrieval and collaborator queries rather than to new simulations.
+\begin{itemize}
+  \item \textbf{Fetch the Kahlbow 2019 PhD thesis} from TUprints 9192 (\url{https://tuprints.ulb.tu-darmstadt.de/9192/})\footref{fn:kahlbow2019} and extract its $\sigma_p/p$, drift-time-to-distance calibration details, and Kalman process-noise specification. The goal is to fill the ``needs verification'' cells in Table~\ref{tab:performance-campaigns} (§3.3) with sourced numbers rather than placeholders.
+  \item \textbf{Browse the RIKEN Accelerator Progress Report (APR) archive} for volumes 46--58 (\url{https://nishina.riken.jp/researcher/APR/index_e.html})\footref{fn:rikenapr} and search for entries by V.~Panin, M.~Kurokawa, and H.~Otsu mentioning PDC commissioning notes. Candidate next step --- short bibliographic notes here can plausibly resolve several ``needs verification'' cells without recourse to a full PhD-length document.
+  \item \textbf{Confirm the SAMURAI21 (2017) Region~A vacuum configuration} from collaborators or internal run-time records. If confirmed, this closes the open question identified in §4.3 paragraph 4 about whether the literature-default cavity-evacuated configuration matches the SAMURAI21 run; until then, the air-vs-vacuum status remains an open question and both candidates ($\sigma_y(\text{PDC2}) = 7.49$~mm and $13.50$~mm) should continue to be documented side by side.
+\end{itemize}
+
 \subsection{Medium-term simulation and analysis directions}
+The following items are conditional on the outcome of §6.1 and on the broader RK status; they are explicitly framed as ``if confirmed'' rather than as commitments.
+\begin{itemize}
+  \item \textbf{Region~A vacuum engineering feasibility.} If a future run configures Region~A as vacuum, an engineering-feasibility assessment (vacuum interlocks, cavity pumping, beam-pipe connection to the dipole cavity) becomes the corresponding action item from the gap matrix in Table~\ref{tab:gap-matrix}. This step is contingent on the §6.1 collaborator confirmation and is not pursued speculatively.
+  \item \textbf{Run \texttt{ms\_ablation} stage~D} feeding $\sigma_A \approx 11.19$~mm and $\sigma_B \approx 7.43$~mm (per\footref{fn:msablation} §6) as RK process-noise inputs. The goal is to complete the methodology-gap closure identified in §4.2 paragraph~3, where the actionable gap is configuration-specific process-noise calibration rather than algorithm shape.
+  \item \textbf{Compare the resulting $\sigma_{p,\text{target}}$ against the literature $\sim 1\%$ figure} once stage~D propagates $\sigma_A$ and $\sigma_B$ back through the RK tracker and the SAMURAI field map. The reference point is the Kondo 2023 SEASTAR-III decay-energy resolution, from which $\sigma_p/p \sim 1\%$ is inferred at the order-of-magnitude level\footref{fn:kondo2023ref}. The current $\sigma_{p,\text{target}}$ propagation methodology is documented in the RK error-analysis deep-dive\footref{fn:rkdeepdive}, with the broader RK status in\footref{fn:rkstatus}.
+\end{itemize}
+
 \subsection{Open questions}
+The following items are deliberately phrased as questions; none of them is closed by the current document.
+\begin{itemize}
+  \item \textbf{Is the actual SAMURAI21 (2017) Region~A air or vacuum?} This is under exploration. Both candidates are documented numerically: $\sigma_y(\text{PDC2}) = 7.49$~mm if Region~A is vacuum, and $\sigma_y(\text{PDC2}) = 13.50$~mm if both Region~A and Region~B are air (per\footref{fn:msablation} §6). See §4.3 for the configuration discussion.
+  \item \textbf{Is our PDC alignment consistent with the literature standard?} No PDC alignment data or alignment-comparison study has been produced internally to date; this is a follow-up question rather than a settled point, and a literature-vs-our-state alignment comparison has not been attempted in this document.
+  \item \textbf{What is the source of our drift-time-to-distance calibration --- simulated or measured?} The calibration is currently consumed via the \texttt{libs/analysis\_pdc\_reco/} defaults; the provenance (simulated vs.\ measured) should be verified before any numerical drift-distance accuracy figure is quoted, and the result compared against the Kahlbow 2019 PhD methodology\footref{fn:kahlbow2019}.
+\end{itemize}
+
 \subsection{Non-goals}
+This document deliberately excludes several scopes to keep its boundary tight. It does \emph{not} re-run any \texttt{ms\_ablation} simulations; it does \emph{not} modify the RK reconstruction code; it does \emph{not} commit to a Region~A vacuum decision (both 7.49~mm and 13.50~mm candidates are documented honestly side by side); and it does \emph{not} derive new $\sigma_{p,\text{target}}$ propagation values --- those live in the RK error-analysis deep-dive memo\footref{fn:rkdeepdive}. These are deliberate non-goals, not oversights.
 
 \section{References}
 % [content from Task 11]
