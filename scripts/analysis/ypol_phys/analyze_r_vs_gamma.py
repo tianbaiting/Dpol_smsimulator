@@ -69,14 +69,17 @@ def main():
         print(f"  [{tag}] N = {len(rows)} (target={target}, gamma={gamma}, helicity={hel})")
 
     # Compute per-cell stats: truth (px_p - px_n) median + reco; truth_R = N_pos/N_neg etc.
-    # First-pass: reco_neutron deferred (rootmap library mismatch in extract macro).
-    # Use truth_neutron as a perfect-neutron proxy. Reco side = reco_proton + truth_neutron.
+    # Full reco: reco_proton (RK) + reco_neutron (NEBULA).
+    # Subset of events where BOTH reco_proton AND reco_neutron are present;
+    # if neutron is missing, fall back to truth_neutron proxy.
     summary_rows = []
     for (target, gamma, hel), rows in by_cell.items():
         truth_diffs = []
-        reco_diffs = []
+        reco_diffs = []      # reco-reco when both present, else mixed proton-truth-n
+        reco_full_diffs = [] # only events with both reco_proton and reco_neutron
         truth_pyp_minus_pyn = []
         reco_pyp_minus_pyn = []
+        n_full_reco_pair = 0
         for r in rows:
             if r["truth_has_proton"] != "1" or r["truth_has_neutron"] != "1":
                 continue
@@ -84,16 +87,23 @@ def main():
             tpyp, tpyn = safe_float(r["truth_pyp"]), safe_float(r["truth_pyn"])
             rpxp = safe_float(r["reco_pxp"])
             rpyp = safe_float(r["reco_pyp"])
+            rpxn = safe_float(r["reco_pxn"])
+            rpyn = safe_float(r["reco_pyn"])
             n_reco_p = int(safe_float(r["n_reco_proton"])) if "n_reco_proton" in r else 0
+            n_reco_n = int(safe_float(r["n_reco_neutrons"])) if "n_reco_neutrons" in r else 0
             if any(math.isnan(x) for x in (tpxp, tpxn, tpyp, tpyn)):
                 continue
             truth_diffs.append(tpxp - tpxn)
             truth_pyp_minus_pyn.append(tpyp - tpyn)
-            # Reco-mixed: reco_proton + truth_neutron (truth_neutron used as perfect proxy
-            # since reco_neutron extraction is deferred).
-            if n_reco_p > 0 and not (math.isnan(rpxp) or math.isnan(rpyp)):
-                reco_diffs.append(rpxp - tpxn)         # reco_pxp - truth_pxn
-                reco_pyp_minus_pyn.append(rpyp - tpyn) # reco_pyp - truth_pyn
+            if n_reco_p > 0:
+                if n_reco_n > 0 and rpxn != 0.0:  # full reco-reco pair
+                    reco_diffs.append(rpxp - rpxn)
+                    reco_pyp_minus_pyn.append(rpyp - rpyn)
+                    reco_full_diffs.append(rpxp - rpxn)
+                    n_full_reco_pair += 1
+                else:  # fallback: mixed reco_p + truth_n (no NEBULA hit)
+                    reco_diffs.append(rpxp - tpxn)
+                    reco_pyp_minus_pyn.append(rpyp - tpyn)
 
         n = len(truth_diffs)
         n_reco = len(reco_diffs)
@@ -111,6 +121,7 @@ def main():
 
         truth_x = safe_stats(truth_diffs)
         reco_x = safe_stats(reco_diffs)
+        reco_full_x = safe_stats(reco_full_diffs)
         truth_y = safe_stats(truth_pyp_minus_pyn)
         reco_y = safe_stats(reco_pyp_minus_pyn)
         summary_rows.append({
@@ -118,13 +129,15 @@ def main():
             "gamma": gamma,
             "helicity": hel,
             "n_truth": n,
-            "n_reco_pair": n_reco,
+            "n_reco_any": len(reco_diffs),
+            "n_reco_full_pair": n_full_reco_pair,
             "truth_pxp_minus_pxn_median": truth_x["median"],
             "truth_pxp_minus_pxn_halfwidth": truth_x["halfwidth"],
             "truth_R_x": truth_x["R"],
             "reco_pxp_minus_pxn_median": reco_x["median"],
             "reco_pxp_minus_pxn_halfwidth": reco_x["halfwidth"],
             "reco_R_x": reco_x["R"],
+            "reco_full_R_x": reco_full_x["R"],
             "truth_pyp_minus_pyn_median": truth_y["median"],
             "reco_pyp_minus_pyn_median": reco_y["median"],
             "truth_R_y": truth_y["R"],
@@ -250,9 +263,9 @@ def main():
     # Print summary table.
     print()
     print("=== Asymmetry summary ===")
-    hdr_keys = ["target", "gamma", "helicity", "n_truth", "n_reco_pair",
+    hdr_keys = ["target", "gamma", "helicity", "n_truth", "n_reco_any", "n_reco_full_pair",
                 "truth_pxp_minus_pxn_median", "reco_pxp_minus_pxn_median",
-                "truth_R_x", "reco_R_x"]
+                "truth_R_x", "reco_R_x", "reco_full_R_x"]
     print(",".join(hdr_keys))
     for r in summary_rows:
         print(",".join(f"{r[k]:.3f}" if isinstance(r[k], float) else str(r[k]) for k in hdr_keys))

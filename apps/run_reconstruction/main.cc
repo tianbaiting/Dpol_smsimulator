@@ -1,6 +1,7 @@
 #include "EventDataReader.hh"
 #include "GeometryManager.hh"
 #include "MagneticField.hh"
+#include "NEBULAFrameRotation.hh"
 #include "NEBULAReconstructor.hh"
 #include "PDCFrameRotation.hh"
 #include "PDCSimAna.hh"
@@ -500,6 +501,16 @@ bool ProcessSingleFile(const fs::path& input_file,
         if (nebula_hits && nebula_hits->GetEntries() > 0) {
             nebula_reco.ProcessEvent(nebula_hits, reco_event);
             ++stats->nebula_hit_events;
+            // [EN] Rotate reco neutron direction(s) from lab frame to target
+            // (beam-as-Z) frame so reco_neutron is in the same frame as
+            // truth_neutron_p4. Mirrors the proton-side rotation done at
+            // RotateRecoResultToTargetFrame below. Without this, NEBULA
+            // direction carries a systematic Δpx ≈ -p_z·sin(α_tgt) ~ -33 MeV/c
+            // bias relative to truth_neutron_p4.
+            // [CN] 把 reco neutron 方向从 lab 系旋到靶系，与 truth_neutron_p4
+            // 同坐标系；不做此旋转 reco_pxn 会有 -33 MeV/c 系统偏。
+            analysis::nebula::RotateRecoNeutronsToTargetFrame(reco_event,
+                                                              target_angle_rad);
         }
 
         bool event_has_reco_proton = false;

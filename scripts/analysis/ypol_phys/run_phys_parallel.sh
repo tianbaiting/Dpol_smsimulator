@@ -5,9 +5,11 @@ set -euo pipefail
 SMSIM_DIR=${SMSIM_DIR:-/home/tian/workspace/dpol/smsimulator5.5}
 J=${J:-6}
 
-TARGETS=(Sn112E190 Sn124E190)
-GAMMAS=(g050 g080)
-HELICITIES=(ynp ypn)
+# Targets / gammas / helicities can be overridden via env, e.g.
+#   GAMMAS="g050 g060 g070 g080" bash run_phys_parallel.sh
+read -r -a TARGETS <<< "${TARGETS:-Sn112E190 Sn124E190}"
+read -r -a GAMMAS  <<< "${GAMMAS:-g050 g080}"
+read -r -a HELICITIES <<< "${HELICITIES:-ynp ypn}"
 
 cd "${SMSIM_DIR}"
 

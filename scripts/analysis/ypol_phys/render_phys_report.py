@@ -75,10 +75,13 @@ def main():
 
 \section*{摘要}
 
-本 pilot 在 ypol elastic Geant4 输出 (\texttt{ypol\_new\_20260413\_elastic\_allair}) 上跑全重建（proton via RK + neutron via NEBULA），
-对 2 个 target (Sn112, Sn124) × 2 个 gamma (g050, g080) × 2 个 helicity (ynp, ypn) = 8 个 cell 各采样 5000 elastic 事件，
-检验 reco 后是否仍能看到 (px\_p − px\_n) 不对称 + R/gamma 趋势。
-使用工具：\texttt{bin/reconstruct\_target\_momentum} (复用 ypol\_pilot 的二进制)。
+本 pilot 在 ypol elastic Geant4 输出 (\texttt{ypol\_new\_20260413\_elastic\_allair}) 上跑全重建：
+proton via RK 拟合 + neutron via NEBULA（位置加权重心 + ToF/$\beta$ → $|\vec p|$）。
+\textbf{两端 reco 都旋转到靶系} —— rotation fix (2026-04-28) 在
+\texttt{libs/analysis/include/NEBULAFrameRotation.hh} 把 NEBULA 的 lab 系 direction 旋到靶系，与 \texttt{truth\_neutron\_p4} 同坐标系。
+
+样本：2 targets (Sn112, Sn124) × 4 gammas (g050, g060, g070, g080) × 2 helicities = 16 cells × 1000 events = 16k events。
+工具：\texttt{bin/reconstruct\_target\_momentum} 重编 (commit pending) + 新增 \texttt{NEBULAFrameRotation::RotateRecoNeutronsToTargetFrame}。
 
 \section{覆盖率与样本统计}
 
@@ -87,34 +90,32 @@ def main():
     if summary:
         tex.append(r"""\begin{table}[H]
 \centering\footnotesize
-\caption{Per-cell 样本与基础统计}
-\begin{tabular}{lllrrrrrrrr}
+\caption{Per-cell 样本与基础统计 (16 cells, N=1000/cell, post-rotation-fix)}
+\begin{tabular}{lllrrrrrrr}
 \toprule
-target & gamma & hel & N\_truth & N\_reco\_pair &
+target & gamma & hel & N & N\_pair &
 truth $\langle\Delta p_x\rangle$ & reco $\langle\Delta p_x\rangle$ &
-truth $R_x$ & reco $R_x$ &
-truth $\langle\Delta p_y\rangle$ & reco $\langle\Delta p_y\rangle$ \\
+truth $R_x$ & reco $R_x$ & reco\_full $R_x$ \\
 \midrule
 """)
         for r in summary:
             tex.append(
                 f"{r['target']} & {r['gamma']} & {r['helicity']} & "
-                f"{r['n_truth']} & {r['n_reco_pair']} & "
+                f"{r['n_truth']} & {r['n_reco_full_pair']} & "
                 f"{fmt_num(r['truth_pxp_minus_pxn_median'])} & "
                 f"{fmt_num(r['reco_pxp_minus_pxn_median'])} & "
                 f"{fmt_num(r['truth_R_x'])} & "
                 f"{fmt_num(r['reco_R_x'])} & "
-                f"{fmt_num(r['truth_pyp_minus_pyn_median'])} & "
-                f"{fmt_num(r['reco_pyp_minus_pyn_median'])} \\\\\n"
+                f"{fmt_num(r.get('reco_full_R_x', 'nan'))} \\\\\n"
             )
         tex.append(r"""\bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{读法}：$\langle\Delta p_x\rangle$ = (px\_p − px\_n) 的事件中位 (MeV/$c$)；
-$R_x$ = $N(\Delta p_x > 0)/N(\Delta p_x < 0)$。
-对极化分析，$R$ 应当随 gamma 变化（破裂动力学非各向同性的体现）；
-本表对照 truth 与 reco 两栏，看 reco 是否保持同向趋势。
+\textbf{读法}：$\langle\Delta p_x\rangle$ = $(p_{x,p} - p_{x,n})$ 的事件中位 (MeV/$c$)，
+对 reco 列采用 reco\_proton + (reco\_neutron 若有, 否则 truth\_neutron 代理)。
+$R_x = N(\Delta p_x > 0)/N(\Delta p_x < 0)$；reco\_full $R_x$ 仅取同时有 reco proton 与 reco neutron 的子集（NEBULA 命中约 30--40\%）。
+\textbf{rotation fix 后} reco neutron 的 $\Delta p_x$ 系统偏置从 $-31.6$ MeV/$c$ 降到 $+0.71$ MeV/$c$（library 修复 2026-04-28，库代码 \texttt{libs/analysis/include/NEBULAFrameRotation.hh}）。
 
 """)
 

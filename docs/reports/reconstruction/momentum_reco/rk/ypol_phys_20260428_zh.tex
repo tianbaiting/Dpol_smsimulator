@@ -25,39 +25,49 @@
 
 \section*{摘要}
 
-本 pilot 在 ypol elastic Geant4 输出 (\texttt{ypol\_new\_20260413\_elastic\_allair}) 上跑全重建（proton via RK + neutron via NEBULA），
-对 2 个 target (Sn112, Sn124) × 2 个 gamma (g050, g080) × 2 个 helicity (ynp, ypn) = 8 个 cell 各采样 5000 elastic 事件，
-检验 reco 后是否仍能看到 (px\_p − px\_n) 不对称 + R/gamma 趋势。
-使用工具：\texttt{bin/reconstruct\_target\_momentum} (复用 ypol\_pilot 的二进制)。
+本 pilot 在 ypol elastic Geant4 输出 (\texttt{ypol\_new\_20260413\_elastic\_allair}) 上跑全重建：
+proton via RK 拟合 + neutron via NEBULA（位置加权重心 + ToF/$\beta$ → $|\vec p|$）。
+\textbf{两端 reco 都旋转到靶系} —— rotation fix (2026-04-28) 在
+\texttt{libs/analysis/include/NEBULAFrameRotation.hh} 把 NEBULA 的 lab 系 direction 旋到靶系，与 \texttt{truth\_neutron\_p4} 同坐标系。
+
+样本：2 targets (Sn112, Sn124) × 4 gammas (g050, g060, g070, g080) × 2 helicities = 16 cells × 1000 events = 16k events。
+工具：\texttt{bin/reconstruct\_target\_momentum} 重编 (commit pending) + 新增 \texttt{NEBULAFrameRotation::RotateRecoNeutronsToTargetFrame}。
 
 \section{覆盖率与样本统计}
 
 \begin{table}[H]
 \centering\footnotesize
-\caption{Per-cell 样本与基础统计}
-\begin{tabular}{lllrrrrrrrr}
+\caption{Per-cell 样本与基础统计 (16 cells, N=1000/cell, post-rotation-fix)}
+\begin{tabular}{lllrrrrrrr}
 \toprule
-target & gamma & hel & N\_truth & N\_reco\_pair &
+target & gamma & hel & N & N\_pair &
 truth $\langle\Delta p_x\rangle$ & reco $\langle\Delta p_x\rangle$ &
-truth $R_x$ & reco $R_x$ &
-truth $\langle\Delta p_y\rangle$ & reco $\langle\Delta p_y\rangle$ \\
+truth $R_x$ & reco $R_x$ & reco\_full $R_x$ \\
 \midrule
-Sn112E190 & g050 & ynp & 1500 & 1500 & +3.647 & +2.909 & +1.095 & +1.095 & -34.044 & -34.392 \\
-Sn112E190 & g050 & ypn & 1500 & 1500 & +1.980 & +0.288 & +1.072 & +1.008 & +35.841 & +35.288 \\
-Sn112E190 & g080 & ynp & 1500 & 1500 & -0.814 & +0.246 & +0.976 & +1.005 & -30.025 & -29.992 \\
-Sn112E190 & g080 & ypn & 1500 & 1500 & +0.070 & +0.046 & +1.011 & +1.000 & +27.079 & +26.749 \\
-Sn124E190 & g050 & ynp & 1500 & 1500 & +2.876 & +2.385 & +1.078 & +1.058 & -36.733 & -37.084 \\
-Sn124E190 & g050 & ypn & 1500 & 1500 & +1.471 & +1.177 & +1.058 & +1.027 & +35.413 & +35.034 \\
-Sn124E190 & g080 & ynp & 1500 & 1500 & -0.141 & -0.407 & +0.987 & +0.982 & -27.891 & -27.780 \\
-Sn124E190 & g080 & ypn & 1500 & 1500 & +1.165 & -0.335 & +1.069 & +0.961 & +28.981 & +28.476 \\
+Sn112E190 & g050 & ynp & 1000 & 302 & +4.042 & +2.288 & +1.092 & +1.083 & +0.830 \\
+Sn112E190 & g050 & ypn & 1000 & 305 & +2.562 & +1.229 & +1.088 & +1.028 & +0.955 \\
+Sn112E190 & g060 & ynp & 1000 & 299 & -1.318 & -1.411 & +0.923 & +0.946 & +0.834 \\
+Sn112E190 & g060 & ypn & 1000 & 350 & +3.115 & +2.519 & +1.160 & +1.132 & +1.000 \\
+Sn112E190 & g070 & ynp & 1000 & 385 & -0.802 & -0.300 & +0.961 & +0.980 & +0.887 \\
+Sn112E190 & g070 & ypn & 1000 & 313 & +0.171 & -0.472 & +1.016 & +0.980 & +1.087 \\
+Sn112E190 & g080 & ynp & 1000 & 379 & -0.755 & -1.680 & +0.972 & +0.919 & +0.876 \\
+Sn112E190 & g080 & ypn & 1000 & 386 & +0.756 & +0.673 & +1.062 & +1.033 & +0.949 \\
+Sn124E190 & g050 & ynp & 1000 & 294 & +1.661 & +1.208 & +1.041 & +1.024 & +1.028 \\
+Sn124E190 & g050 & ypn & 1000 & 316 & +0.917 & -0.046 & +1.041 & +1.000 & +0.915 \\
+Sn124E190 & g060 & ynp & 1000 & 329 & +0.204 & +0.714 & +1.004 & +1.033 & +0.913 \\
+Sn124E190 & g060 & ypn & 1000 & 363 & +2.135 & +0.905 & +1.146 & +1.070 & +0.901 \\
+Sn124E190 & g070 & ynp & 1000 & 365 & +0.565 & +0.270 & +1.016 & +1.012 & +0.807 \\
+Sn124E190 & g070 & ypn & 1000 & 382 & +0.896 & +0.465 & +1.070 & +1.045 & +0.810 \\
+Sn124E190 & g080 & ynp & 1000 & 353 & +0.207 & -0.906 & +1.012 & +0.942 & +0.783 \\
+Sn124E190 & g080 & ypn & 1000 & 409 & +1.012 & -1.207 & +1.058 & +0.931 & +0.810 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textbf{读法}：$\langle\Delta p_x\rangle$ = (px\_p − px\_n) 的事件中位 (MeV/$c$)；
-$R_x$ = $N(\Delta p_x > 0)/N(\Delta p_x < 0)$。
-对极化分析，$R$ 应当随 gamma 变化（破裂动力学非各向同性的体现）；
-本表对照 truth 与 reco 两栏，看 reco 是否保持同向趋势。
+\textbf{读法}：$\langle\Delta p_x\rangle$ = $(p_{x,p} - p_{x,n})$ 的事件中位 (MeV/$c$)，
+对 reco 列采用 reco\_proton + (reco\_neutron 若有, 否则 truth\_neutron 代理)。
+$R_x = N(\Delta p_x > 0)/N(\Delta p_x < 0)$；reco\_full $R_x$ 仅取同时有 reco proton 与 reco neutron 的子集（NEBULA 命中约 30--40\%）。
+\textbf{rotation fix 后} reco neutron 的 $\Delta p_x$ 系统偏置从 $-31.6$ MeV/$c$ 降到 $+0.71$ MeV/$c$（library 修复 2026-04-28，库代码 \texttt{libs/analysis/include/NEBULAFrameRotation.hh}）。
 
 \begin{figure}[H]
 \centering

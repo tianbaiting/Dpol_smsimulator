@@ -24,6 +24,7 @@ void extract_phys_observables(const char* input_path, const char* output_csv_pat
     vector<double>* rp  = nullptr;
     vector<int>* rstatus = nullptr;
     vector<double>* rchi2 = nullptr;
+    RecoEvent* re = nullptr;  // for reco neutrons
     t->SetBranchAddress("truth_has_proton", &truth_has_proton);
     t->SetBranchAddress("truth_has_neutron", &truth_has_neutron);
     t->SetBranchAddress("truth_proton_p4", &truth_proton_p4);
@@ -35,6 +36,7 @@ void extract_phys_observables(const char* input_path, const char* output_csv_pat
     t->SetBranchAddress("reco_proton_p", &rp);
     t->SetBranchAddress("reco_proton_status", &rstatus);
     t->SetBranchAddress("reco_proton_chi2_reduced", &rchi2);
+    t->SetBranchAddress("recoEvent", &re);
 
     ofstream out(output_csv_path);
     out << "tag,event_index,n_reco_proton,truth_has_proton,truth_has_neutron,"
@@ -65,13 +67,37 @@ void extract_phys_observables(const char* input_path, const char* output_csv_pat
             rstatus_ = rstatus ? rstatus->at(0) : 0;
             ++n_with_reco;
         }
+
+        // Reco neutron from RecoEvent.neutrons[0]. p_n = m_n * gamma * beta
+        // along neu.direction. Frame: assumes RecoNeutron has already been
+        // rotated into the target frame at write-time by NEBULAFrameRotation
+        // (in apps/run_reconstruction/main.cc post NEBULAReconstructor::ProcessEvent).
+        int n_reco_neutrons = 0;
+        double rpxn_=0, rpyn_=0, rpzn_=0, ren_=0, rbeta_=0;
+        if (re) {
+            n_reco_neutrons = (int)re->neutrons.size();
+            if (n_reco_neutrons > 0) {
+                const auto& neu = re->neutrons[0];
+                rbeta_ = neu.beta;
+                ren_   = neu.energy;
+                if (rbeta_ > 0 && rbeta_ < 1.0) {
+                    const double m_n = 939.565;
+                    const double gamma_n = 1.0 / sqrt(1.0 - rbeta_*rbeta_);
+                    const double p_mag = m_n * gamma_n * rbeta_;
+                    rpxn_ = p_mag * neu.direction.X();
+                    rpyn_ = p_mag * neu.direction.Y();
+                    rpzn_ = p_mag * neu.direction.Z();
+                }
+            }
+        }
+
         out << tag << "," << i << "," << n_reco << ","
             << (int)truth_has_proton << "," << (int)truth_has_neutron << ","
             << tpxp << "," << tpyp << "," << tpzp << "," << tep << ","
             << tpxn << "," << tpyn << "," << tpzn << "," << ten << ","
             << rpxp_ << "," << rpyp_ << "," << rpzp_ << "," << rep_ << "," << rp_ << ","
             << rstatus_ << "," << rchi2_ << ","
-            << "0,0,0,0,0" << endl;
+            << n_reco_neutrons << "," << rpxn_ << "," << rpyn_ << "," << rpzn_ << "," << ren_ << endl;
     }
     out.close();
     f->Close();
