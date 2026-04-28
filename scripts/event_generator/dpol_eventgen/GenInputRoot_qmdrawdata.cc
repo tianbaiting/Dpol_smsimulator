@@ -477,7 +477,7 @@ void ConvertElasticFile(
         throw std::runtime_error("Missing header line 2 in: " + input_str);
     }
 
-    const double bimp = ExtractB(header1).value_or(kUnknownBimp);
+    const double bimp_header = ExtractB(header1).value_or(kUnknownBimp);
 
     fs::create_directories(output.parent_path());
     TFile out_file(output.c_str(), "RECREATE");
@@ -512,6 +512,14 @@ void ConvertElasticFile(
         if (!(iss >> no >> pxp >> pyp >> pzp >> pxn >> pyn >> pzn)) {
             continue;
         }
+        // [EN] phi_random datasets append two extra columns: per-event b (fm) and rpphi (deg). / [CN] phi_random 数据集多两列: 每事件 b (fm) 与 rpphi (°)
+        double b_per_event = std::numeric_limits<double>::quiet_NaN();
+        double rpphi_deg   = 0.0;
+        const bool has_rpphi = static_cast<bool>(iss >> b_per_event >> rpphi_deg);
+        const double b_phi_raw_rad = has_rpphi ? rpphi_deg * (M_PI / 180.0) : 0.0;
+        const double bimp = (has_rpphi && std::isfinite(b_per_event))
+            ? b_per_event
+            : bimp_header;
         ++parsed_event_count;
         if (max_events.has_value() && selected_event_count >= *max_events) {
             break;
@@ -534,8 +542,6 @@ void ConvertElasticFile(
 
         const bool randomize = (pol == qmd_input_metadata::PolarizationKind::kY && opts.rotate_ypol)
             || (pol == qmd_input_metadata::PolarizationKind::kZ && opts.rotate_zpol);
-        // [EN] Task 4 will fill b_phi_raw_rad from the optional rpphi column. / [CN] Task 4 改为从 rpphi 列读取
-        const double b_phi_raw_rad = 0.0;
         double delta = 0.0;
         if (randomize) {
             // [EN] gRandom seeded in main(); Task 5 wires --rotation-seed.
