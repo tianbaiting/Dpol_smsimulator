@@ -5,12 +5,12 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../.. && pwd)"
 GEN_BIN="${REPO_DIR}/build/bin/GenInputRoot_qmdrawdata"
 
 if [[ ! -x "$GEN_BIN" ]]; then
-    echo "[SKIP] $GEN_BIN not built"
-    exit 0
+    echo "[ERROR] $GEN_BIN not built — should have been gated at CMake-configure time" >&2
+    exit 1
 fi
 
 WORK_DIR="$(mktemp -d)"
-trap "rm -rf $WORK_DIR" EXIT
+trap 'rm -rf "$WORK_DIR"' EXIT
 
 # [EN] Build a synthetic 9-column y_pol input with known rpphi values.
 mkdir -p "$WORK_DIR/in/y_pol/phi_random/d+Sn124E190g050ynp"
