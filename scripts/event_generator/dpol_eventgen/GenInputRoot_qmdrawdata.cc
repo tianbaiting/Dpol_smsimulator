@@ -60,8 +60,9 @@ struct Options {
     bool cut_unphysical = true;
     double cut_ypol_axis_limit = 150.0;
     double cut_zpol_axis_limit = 150.0;
-    bool rotate_ypol = false;
-    bool rotate_zpol = true;
+    bool randomize_ypol = false;
+    bool randomize_zpol = true;
+    long rotation_seed = 0;  // [EN] 0 → use system-time-derived seed / [CN] 0 → 使用系统时间派生种子
 };
 
 struct HeaderInfo {
@@ -540,8 +541,8 @@ void ConvertElasticFile(
             }
         }
 
-        const bool randomize = (pol == qmd_input_metadata::PolarizationKind::kY && opts.rotate_ypol)
-            || (pol == qmd_input_metadata::PolarizationKind::kZ && opts.rotate_zpol);
+        const bool randomize = (pol == qmd_input_metadata::PolarizationKind::kY && opts.randomize_ypol)
+            || (pol == qmd_input_metadata::PolarizationKind::kZ && opts.randomize_zpol);
         double delta = 0.0;
         if (randomize) {
             // [EN] gRandom seeded in main(); Task 5 wires --rotation-seed.
@@ -703,10 +704,12 @@ Options ParseArgs(int argc, char* argv[]) {
             opts.cut_ypol_axis_limit = std::stod(argv[++i]);
         } else if (arg == "--cut-zpol-axis-limit" && i + 1 < argc) {
             opts.cut_zpol_axis_limit = std::stod(argv[++i]);
-        } else if (arg == "--rotate-ypol" && i + 1 < argc) {
-            opts.rotate_ypol = ParseBoolOption(argv[++i]);
-        } else if (arg == "--rotate-zpol" && i + 1 < argc) {
-            opts.rotate_zpol = ParseBoolOption(argv[++i]);
+        } else if (arg == "--randomize-ypol" && i + 1 < argc) {
+            opts.randomize_ypol = ParseBoolOption(argv[++i]);
+        } else if (arg == "--randomize-zpol" && i + 1 < argc) {
+            opts.randomize_zpol = ParseBoolOption(argv[++i]);
+        } else if (arg == "--rotation-seed" && i + 1 < argc) {
+            opts.rotation_seed = std::stol(argv[++i]);
         } else if (arg == "--help") {
             spdlog::info(
                 "Usage: GenInputRoot_qmdrawdata --mode [ypol|zpol|both] "
@@ -714,7 +717,8 @@ Options ParseArgs(int argc, char* argv[]) {
                 "--input-base PATH --output-base PATH "
                 "[--target-filter Sn124] "
                 "[--cut-unphysical on|off] [--cut-ypol-axis-limit 150] [--cut-zpol-axis-limit 150] "
-                "[--rotate-ypol on|off] [--rotate-zpol on|off]"
+                "[--randomize-ypol on|off] [--randomize-zpol on|off] "
+                "[--rotation-seed N]"
             );
             std::exit(0);
         } else {
@@ -814,9 +818,9 @@ void ProcessZpolElasticFiles(
         return;
     }
 
-    if (opts.rotate_zpol) {
-        spdlog::warn(
-            "rotate-zpol is ON: generated files under {} will contain rotated z_pol momenta.",
+    if (opts.randomize_zpol) {
+        spdlog::info(
+            "randomize-zpol is ON: each z_pol event rotated by uniform random phi in [0, 2π). Output: {}",
             output_base.string().c_str()
         );
     }
@@ -921,6 +925,14 @@ int main(int argc, char* argv[]) {
         const auto opts = ParseArgs(argc, argv);
         const auto input_base = ResolveInputBase(opts.input_base, opts.source);
         const auto output_base = ResolveOutputBase(opts.output_base);
+
+        if (opts.rotation_seed != 0) {
+            gRandom->SetSeed(static_cast<UInt_t>(opts.rotation_seed));
+            spdlog::info("Using --rotation-seed {}", opts.rotation_seed);
+        } else {
+            gRandom->SetSeed(0);  // [EN] 0 = TRandom3 picks UUID-based seed / [CN] 0 = TRandom3 使用 UUID 派生种子
+            spdlog::info("Using system-derived seed (--rotation-seed 0)");
+        }
 
         if (opts.source == SourceMode::kElastic || opts.source == SourceMode::kBoth) {
             ProcessElastic(input_base, output_base, opts);

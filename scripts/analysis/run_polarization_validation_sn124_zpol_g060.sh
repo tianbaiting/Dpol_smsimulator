@@ -41,7 +41,7 @@ done
     --output-base "${G4INPUT_BASE}" \
     --target-filter "${TARGET_FILTER}" \
     --cut-unphysical on \
-    --rotate-zpol on \
+    --randomize-zpol on \
     2>&1 | tee "${GENERATOR_LOG}"
 
 while IFS= read -r -d '' input_file; do
