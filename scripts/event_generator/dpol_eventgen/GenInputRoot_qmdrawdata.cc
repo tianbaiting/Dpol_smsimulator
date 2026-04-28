@@ -935,6 +935,9 @@ int main(int argc, char* argv[]) {
         const auto input_base = ResolveInputBase(opts.input_base, opts.source);
         const auto output_base = ResolveOutputBase(opts.output_base);
 
+        if (opts.rotation_seed < 0) {
+            throw std::runtime_error("--rotation-seed must be non-negative");
+        }
         if (opts.rotation_seed != 0) {
             gRandom->SetSeed(static_cast<UInt_t>(opts.rotation_seed));
             spdlog::info("Using --rotation-seed {}", opts.rotation_seed);
