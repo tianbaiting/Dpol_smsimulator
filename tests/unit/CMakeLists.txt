@@ -47,3 +47,17 @@ target_include_directories(test_qmd_input_metadata_indices PRIVATE
 gtest_discover_tests(test_qmd_input_metadata_indices
     PROPERTIES LABELS "unit"
 )
+
+add_executable(test_qmd_rotation
+    test_qmd_rotation.cc
+)
+target_include_directories(test_qmd_rotation PRIVATE
+    ${CMAKE_SOURCE_DIR}/scripts/event_generator/dpol_eventgen
+)
+target_link_libraries(test_qmd_rotation PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_qmd_rotation
+    PROPERTIES LABELS "unit"
+)
