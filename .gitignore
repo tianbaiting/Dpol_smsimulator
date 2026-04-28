@@ -3,6 +3,9 @@ build/
 bin/
 lib/
 
+# Git worktrees
+.worktrees/
+
 # Results and temporary files
 results/
 *.pyc
