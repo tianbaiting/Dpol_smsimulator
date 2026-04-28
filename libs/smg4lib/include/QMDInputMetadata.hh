@@ -20,7 +20,9 @@ constexpr int kOriginalEventIdIndex = 1;
 constexpr int kSourceFileIndex = 2;
 constexpr int kPolarizationKindIndex = 3;
 
-constexpr int kBimpIndex = 0;
+constexpr int kBimpIndex        = 0;
+constexpr int kBPhiIndex        = 1;
+constexpr int kPhiNpTruthIndex  = 2;
 
 }  // namespace qmd_input_metadata
 
