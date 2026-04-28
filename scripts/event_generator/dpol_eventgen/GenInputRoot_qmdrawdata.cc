@@ -317,15 +317,20 @@ void StampMetadata(
     int original_event_id,
     int source_file_index,
     qmd_input_metadata::PolarizationKind pol,
-    double bimp
+    double bimp,
+    double b_phi,
+    double phi_np_truth
 ) {
     beam.fUserInt.assign(qmd_input_metadata::kPolarizationKindIndex + 1, 0);
-    beam.fUserDouble.assign(qmd_input_metadata::kBimpIndex + 1, kUnknownBimp);
+    beam.fUserDouble.assign(qmd_input_metadata::kPhiNpTruthIndex + 1,
+                            std::numeric_limits<double>::quiet_NaN());
     beam.fUserInt[qmd_input_metadata::kSourceKindIndex] = static_cast<int>(source);
     beam.fUserInt[qmd_input_metadata::kOriginalEventIdIndex] = original_event_id;
     beam.fUserInt[qmd_input_metadata::kSourceFileIndex] = source_file_index;
     beam.fUserInt[qmd_input_metadata::kPolarizationKindIndex] = static_cast<int>(pol);
-    beam.fUserDouble[qmd_input_metadata::kBimpIndex] = bimp;
+    beam.fUserDouble[qmd_input_metadata::kBimpIndex]       = bimp;
+    beam.fUserDouble[qmd_input_metadata::kBPhiIndex]       = b_phi;
+    beam.fUserDouble[qmd_input_metadata::kPhiNpTruthIndex] = phi_np_truth;
 }
 
 bool ParseGeminiRow(const std::string& line, GeminiRow& row) {
@@ -360,8 +365,6 @@ void WriteElasticEvent(
     double b_phi,
     double phi_np_truth
 ) {
-    (void)b_phi;
-    (void)phi_np_truth;
     gBeamSimDataArray->clear();
 
     const TLorentzVector momentum_p = BuildApproxP4(1, 1, pxp, pyp, pzp);
@@ -376,7 +379,9 @@ void WriteElasticEvent(
         event_no,
         source_file_index,
         pol,
-        bimp
+        bimp,
+        b_phi,
+        phi_np_truth
     );
     gBeamSimDataArray->push_back(proton);
 
@@ -392,7 +397,9 @@ void WriteElasticEvent(
         event_no,
         source_file_index,
         pol,
-        bimp
+        bimp,
+        b_phi,
+        phi_np_truth
     );
     gBeamSimDataArray->push_back(neutron);
 
@@ -422,7 +429,9 @@ void FlushAlleventGroup(
           current_isim,
           source_file_index,
           pol,
-          current_bimp
+          current_bimp,
+          std::numeric_limits<double>::quiet_NaN(),
+          std::numeric_limits<double>::quiet_NaN()
       );
       gBeamSimDataArray->push_back(primaries[i]);
     }
