@@ -9,6 +9,8 @@
 
 #include "QMDInputMetadata.hh"
 #include "TBeamSimData.hh"
+#include "qmd_rotation.hh"
+#include "TRandom.h"
 
 #include <spdlog/spdlog.h>
 
@@ -353,8 +355,12 @@ void WriteElasticEvent(
     double bimp,
     int source_file_index,
     TTree& tree,
-    const TVector3& position
+    const TVector3& position,
+    double b_phi,
+    double phi_np_truth
 ) {
+    (void)b_phi;
+    (void)phi_np_truth;
     gBeamSimDataArray->clear();
 
     const TLorentzVector momentum_p = BuildApproxP4(1, 1, pxp, pyp, pzp);
@@ -526,29 +532,25 @@ void ConvertElasticFile(
             }
         }
 
-        const bool do_rotate = (pol == qmd_input_metadata::PolarizationKind::kY && opts.rotate_ypol)
+        const bool randomize = (pol == qmd_input_metadata::PolarizationKind::kY && opts.rotate_ypol)
             || (pol == qmd_input_metadata::PolarizationKind::kZ && opts.rotate_zpol);
-        if (do_rotate) {
-            const double sum_px = pxp + pxn;
-            const double sum_py = pyp + pyn;
-            const double phi = std::atan2(sum_py, sum_px);
-            const double angle = -phi;
-            const double cos_a = std::cos(angle);
-            const double sin_a = std::sin(angle);
-
-            const double rot_pxp = cos_a * pxp - sin_a * pyp;
-            const double rot_pyp = sin_a * pxp + cos_a * pyp;
-            const double rot_pxn = cos_a * pxn - sin_a * pyn;
-            const double rot_pyn = sin_a * pxn + cos_a * pyn;
-
-            pxp = rot_pxp;
-            pyp = rot_pyp;
-            pxn = rot_pxn;
-            pyn = rot_pyn;
+        // [EN] Task 4 will fill b_phi_raw_rad from the optional rpphi column. / [CN] Task 4 改为从 rpphi 列读取
+        const double b_phi_raw_rad = 0.0;
+        double delta = 0.0;
+        if (randomize) {
+            // [EN] gRandom seeded in main(); Task 5 wires --rotation-seed.
+            delta = 2.0 * M_PI * gRandom->Uniform();
+            qmd::rotate_xy(pxp, pyp, delta);
+            qmd::rotate_xy(pxn, pyn, delta);
             ++rotated_event_count;
         }
+        const double b_phi = qmd::wrap_two_pi(b_phi_raw_rad + delta);
+        // [EN] qmd::phi_np takes (sum_px, sum_py) — see qmd_rotation.hh.
+        const double phi_np_truth = qmd::phi_np(pxp + pxn, pyp + pyn);
 
-        WriteElasticEvent(no, pxp, pyp, pzp, pxn, pyn, pzn, pol, bimp, source_file_index, tree, position);
+        WriteElasticEvent(no, pxp, pyp, pzp, pxn, pyn, pzn, pol, bimp,
+                          source_file_index, tree, position,
+                          b_phi, phi_np_truth);
         ++written_event_count;
 
         if (written_event_count % 10000 == 0) {
