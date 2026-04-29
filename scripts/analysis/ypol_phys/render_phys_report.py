@@ -40,12 +40,18 @@ def main():
     for png in fig_src_dir.glob("*.png"):
         shutil.copy(png, fig_dst_dir / png.name)
 
-    # Load asymmetry table
+    # Load asymmetry table (no cuts) and cut R table
     summary = []
     asym_csv = out_dir / "asymmetry_table.csv"
     if asym_csv.exists():
         with open(asym_csv) as f:
             summary = list(csv.DictReader(f))
+
+    cut_rows = []
+    cut_csv = out_dir / "cut_R_table.csv"
+    if cut_csv.exists():
+        with open(cut_csv) as f:
+            cut_rows = list(csv.DictReader(f))
 
     tex = []
     tex.append(r"""\documentclass[a4paper,11pt]{article}
@@ -122,13 +128,13 @@ $R_x = N(\Delta p_x > 0)/N(\Delta p_x < 0)$；reco\_full $R_x$ 仅取同时有 r
     # Embed figures
     for png_name, caption in [
         ("px_diff_hist_Sn124E190.png",
-         r"$\Delta p_x = p_{x,p} - p_{x,n}$ 分布 (Sn124E190, 4 cell)。黑线 = truth, 填色 = reco。reco 应跟随 truth 形状但带 reco 端 smearing。"),
+         r"$\Delta p_x = p_{x,p} - p_{x,n}$ 分布 (Sn124E190, 4 cell)。黑线 = truth, 橙填色 = reco mixed (reco\_p − reco\_n if NEBULA hit else reco\_p − truth\_n), 蓝虚线 = reco full (only NEBULA-hit subset)。"),
         ("px_diff_hist_Sn112E190.png",
          r"同图但 Sn112E190 target。"),
         ("px_diff_truth_vs_reco_hist2d.png",
          r"$\Delta p_x$ 的 truth (横) vs reco (纵) 二维直方图，每 cell 一格。对角线 = 完美重建。"),
         ("r_vs_gamma.png",
-         r"$R_x = N_+/N_-$ 随 gamma 的趋势。两 panel = 两 target；线/标 = helicity；实线 = truth, 虚线 = reco。reco 对 truth 趋势的保留程度即全重建对极化分析的 fidelity。")]:
+         r"$R_x = N_+/N_-$ 随 gamma 的趋势 \textbf{(无 cut)}。truth 端几乎平 ~1.03--1.05；reco 跟随；信号在无 cut 上不可见。")]:
         png_path = fig_src_dir / png_name
         if png_path.exists():
             tex.append(rf"""\begin{{figure}}[H]
@@ -138,13 +144,89 @@ $R_x = N(\Delta p_x > 0)/N(\Delta p_x < 0)$；reco\_full $R_x$ 仅取同时有 r
 \end{{figure}}
 """)
 
+    # Cut analysis section
+    if cut_rows:
+        tex.append(r"""\section{加 input\_ana cut 后的 R/gamma 趋势}
+
+无 cut 时 truth $R_x \approx 1.03$ 全 gamma 几乎恒定 —— $(p_{x,p} - p_{x,n})$ 在全样本上不显示物理信号。
+应用 \texttt{scripts/notebooks/input\_analysis/core/cuts.py} 的三个 ypol cut 后（仅基于 truth）：
+
+\begin{itemize}[nosep]
+\item \textbf{loose}: $|p_{y,p}-p_{y,n}|<150$ AND $|\vec p_{T,sum}|>50\,\mathrm{MeV}/c$
+\item \textbf{mid}: loose AND $|\vec p_{T,sum}|<200\,\mathrm{MeV}/c$
+\item \textbf{tight}: mid AND $\pi-|\phi|<0.2$（即散射 sum-T 指向 $-\hat x$）
+\end{itemize}
+""")
+
+        # Tight-cut R table (the key one)
+        tex.append(r"""\subsection{Tight cut R 值}
+\begin{table}[H]
+\centering\footnotesize
+\caption{Tight cut 通过率与 R 值。truth $R_x$ 在 Sn112 上随 gamma 单调上升 g050→g080: 3.1→5.2（信号翻倍），Sn124 同向但弱 1.5→3.1。reco $R_x$ 跟随 truth ~5--10\% 衰减。reco\_full 因 NEBULA 接受度偏置略低。}
+\begin{tabular}{lllrrrrr}
+\toprule
+target & gamma & hel & N\_raw & N\_tight & truth $R_\mathrm{tight}$ & reco $R_\mathrm{tight}$ & reco\_full $R_\mathrm{tight}$ \\
+\midrule
+""")
+        for r in cut_rows:
+            tex.append(
+                f"{r['target']} & {r['gamma']} & {r['helicity']} & "
+                f"{int(r['n_raw'])} & {int(r['n_tight'])} & "
+                f"{fmt_num(r['tight_truth_R'])} & "
+                f"{fmt_num(r['tight_reco_mixed_R'])} & "
+                f"{fmt_num(r['tight_reco_full_R'])} \\\\\n"
+            )
+        tex.append(r"""\bottomrule
+\end{tabular}
+\end{table}
+
+""")
+
+        # Three-cut comparison for one cell
+        sample = next((r for r in cut_rows if r['target']=='Sn112E190' and r['gamma']=='g050' and r['helicity']=='ynp'), None)
+        if sample:
+            tex.append(rf"""\subsection{{三 cut 对比（示例: Sn112 g050 ynp）}}
+\begin{{table}}[H]
+\centering\footnotesize
+\begin{{tabular}}{{lrrrr}}
+\toprule
+Cut & N 通过 & truth $R_x$ & reco $R_x$ & reco\_full $R_x$ \\
+\midrule
+无 cut & {int(sample['n_raw'])} & 1.026 & 1.011 & 0.891 \\
+loose  & {int(sample['n_loose'])} & {fmt_num(sample['loose_truth_R'])} & {fmt_num(sample['loose_reco_mixed_R'])} & {fmt_num(sample['loose_reco_full_R'])} \\
+mid    & {int(sample['n_mid'])} & {fmt_num(sample['mid_truth_R'])} & {fmt_num(sample['mid_reco_mixed_R'])} & {fmt_num(sample['mid_reco_full_R'])} \\
+\textbf{{tight}} & \textbf{{{int(sample['n_tight'])}}} & \textbf{{{fmt_num(sample['tight_truth_R'])}}} & \textbf{{{fmt_num(sample['tight_reco_mixed_R'])}}} & {fmt_num(sample['tight_reco_full_R'])} \\
+\bottomrule
+\end{{tabular}}
+\end{{table}}
+
+\textbf{{读法}}：tight cut 通过率 4--5\% 但把 R 从 ~1.0 拉到 ~3.1 —— 物理信号位于 tight 子集。loose/mid 几乎看不出 trend (R~1.05--1.15)。
+""")
+
+        # Embed R-vs-gamma plots per cut
+        for cut_name in ("loose", "mid", "tight"):
+            png_name = f"r_vs_gamma_{cut_name}.png"
+            png_path = fig_src_dir / png_name
+            if png_path.exists():
+                emph = r"\textbf{重要}" if cut_name == "tight" else ""
+                tex.append(rf"""\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{{{args.figure_rel_dir}/{png_name}}}
+\caption{{{emph} R = $N_+/N_-$ 随 gamma ({cut_name} cut)。两 panel = 两 target；圆 = truth, 方 = reco mixed, 三角 = reco full；线条按 helicity 分。}}
+\end{{figure}}
+""")
+
     tex.append(r"""\section{结论}
 
 \begin{enumerate}[nosep]
-\item \textbf{(px\_p − px\_n) 不对称信号}：见上表 $\langle\Delta p_x\rangle$ 列对比 truth vs reco。
-\item \textbf{R/gamma 趋势}：见 \texttt{r\_vs\_gamma.png}。reco 与 truth 同方向变化即"reco 没毁掉信号"。
-\item \textbf{下一步}：若趋势可见，扩大到 8 gamma + 全 190k events / cell。若不可见，说明 reco fidelity 不够，需要回到详细版报告 §10 的 P0 修复（Bethe-Bloch + Kalman MS）。
+\item \textbf{无 cut 时 (px\_p − px\_n) R 看不到 gamma 趋势}（truth R ≈ 1.03--1.05 全恒定，信号被全 phase space 平均稀释）。
+\item \textbf{加 input\_ana tight cut 后 trend 显现}：Sn112 truth $R$ 随 gamma g050→g080 单调上升 3.1→5.2（翻倍）；Sn124 1.5→3.1。
+\item \textbf{Reco 端保持 trend}：reco $R$ 比 truth $R$ 衰减约 5--10\%，gamma 单调性完整保留。说明全模拟 + 全重建 (RK proton + NEBULA neutron) 的 fidelity 足够看到极化物理信号。
+\item \textbf{Reco\_full（NEBULA hit subset, ~30--38\%）}受接受度偏置影响 R 整体偏低，但 gamma 趋势仍存。
+\item \textbf{Rotation fix}（commit 806cd6a）让 NEBULA 中子方向从 lab 系旋到靶系，否则 reco\_pxn 有 $-31.6\,\mathrm{MeV}/c$ 系统偏置会把 R 推到错误方向。
 \end{enumerate}
+
+\textbf{下一步}：若需要更高统计量验证 trend，扩到 8 gamma 或 N≥30k/cell。若做极化提取，应换 phi-asymmetry $A_y$ 等更直接观测量。
 \end{document}
 """)
 

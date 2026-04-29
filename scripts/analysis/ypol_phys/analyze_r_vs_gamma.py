@@ -33,6 +33,26 @@ def safe_float(s):
         return float("nan")
 
 
+def ypol_cuts(pxp, pyp, pxn, pyn):
+    """Return tuple (loose, mid, tight) booleans matching
+    scripts/notebooks/input_analysis/core/cuts.py."""
+    sum_px = pxp + pxn
+    sum_py = pyp + pyn
+    sum_xy2 = sum_px * sum_px + sum_py * sum_py
+    if math.isnan(sum_xy2):
+        return False, False, False
+    loose = abs(pyp - pyn) < 150 and sum_xy2 > 2500
+    if not loose:
+        return False, False, False
+    sum_T = math.sqrt(sum_xy2)
+    mid = sum_T < 200
+    if not mid:
+        return True, False, False
+    phi = math.atan2(sum_py, sum_px)
+    tight = (math.pi - abs(phi)) < 0.2
+    return loose, mid, tight
+
+
 def cell_decode(tag: str) -> tuple[str, str, str]:
     # tag = e.g. "Sn124E190_g050ynp"
     # parts: target = before "_"; gamma = next 4 chars; helicity = remaining 3 chars
