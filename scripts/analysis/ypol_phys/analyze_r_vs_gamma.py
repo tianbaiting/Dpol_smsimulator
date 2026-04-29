@@ -173,23 +173,35 @@ def main():
             for hi, hel in enumerate(hels):
                 ax = axes[gi, hi]
                 rows = by_cell.get((target, gamma, hel), [])
-                tvals, rvals = [], []
+                tvals, rvals, fvals = [], [], []
                 for r in rows:
                     if r["truth_has_proton"] != "1" or r["truth_has_neutron"] != "1":
                         continue
                     tpxp, tpxn = safe_float(r["truth_pxp"]), safe_float(r["truth_pxn"])
                     rpxp = safe_float(r["reco_pxp"])
+                    rpxn = safe_float(r["reco_pxn"])
                     n_reco_p = int(safe_float(r["n_reco_proton"])) if "n_reco_proton" in r else 0
+                    n_reco_n = int(safe_float(r["n_reco_neutrons"])) if "n_reco_neutrons" in r else 0
                     if not any(math.isnan(x) for x in (tpxp, tpxn)):
                         tvals.append(tpxp - tpxn)
-                    # Reco-mixed: reco_proton + truth_neutron
-                    if n_reco_p > 0 and not math.isnan(rpxp) and not math.isnan(tpxn):
-                        rvals.append(rpxp - tpxn)
+                    if n_reco_p > 0:
+                        if n_reco_n > 0 and rpxn != 0.0:
+                            rvals.append(rpxp - rpxn)        # mixed: reco-reco when avail
+                            fvals.append(rpxp - rpxn)        # full: same
+                        elif not math.isnan(tpxn):
+                            rvals.append(rpxp - tpxn)        # mixed: reco_p - truth_n fallback
                 rng = (-500, 500)
                 bins = 60
-                ax.hist(tvals, bins=bins, range=rng, histtype="step", color="black", linewidth=1.4, label=f"truth (N={len(tvals)})")
+                ax.hist(tvals, bins=bins, range=rng, histtype="step",
+                        color="black", linewidth=1.4, label=f"truth (N={len(tvals)})")
                 if rvals:
-                    ax.hist(rvals, bins=bins, range=rng, histtype="stepfilled", alpha=0.4, color="C1", label=f"reco (N={len(rvals)})")
+                    ax.hist(rvals, bins=bins, range=rng, histtype="stepfilled",
+                            alpha=0.35, color="C1",
+                            label=f"reco mixed (N={len(rvals)})")
+                if fvals:
+                    ax.hist(fvals, bins=bins, range=rng, histtype="step",
+                            color="C0", linewidth=1.4, linestyle="--",
+                            label=f"reco full (N={len(fvals)})")
                 ax.set_xlabel("px_p - px_n (MeV/c)")
                 ax.set_ylabel("counts")
                 ax.legend(fontsize=7)
