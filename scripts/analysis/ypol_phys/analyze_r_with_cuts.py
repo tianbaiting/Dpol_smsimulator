@@ -183,6 +183,23 @@ def main():
         )
 
 
+def rotate_to_reaction_plane(pxp, pyp, pxn, pyn):
+    """Rotate event by -phi where phi=atan2(sum_py, sum_px) so sum_T → +x."""
+    sum_px = pxp + pxn
+    sum_py = pyp + pyn
+    if sum_px == 0 and sum_py == 0:
+        return pxp, pyp, pxn, pyn
+    phi = math.atan2(sum_py, sum_px)
+    cos_a = math.cos(-phi)
+    sin_a = math.sin(-phi)
+    return (
+        cos_a * pxp - sin_a * pyp,
+        sin_a * pxp + cos_a * pyp,
+        cos_a * pxn - sin_a * pyn,
+        sin_a * pxn + cos_a * pyn,
+    )
+
+
 def plot_dpx_hist_per_cut(csv_dir, output_dir):
     """Per-cut Δpx histograms (truth / reco mixed / reco full).
     One figure per (target, cut) — 4 gammas × 2 helicities = 8 panels.
@@ -214,12 +231,14 @@ def plot_dpx_hist_per_cut(csv_dir, output_dir):
                 if any(math.isnan(x) for x in (tpxp, tpyp, tpxn, tpyn)):
                     continue
                 rpxp = safe_float(r["reco_pxp"])
+                rpyp = safe_float(r["reco_pyp"])
                 rpxn = safe_float(r["reco_pxn"])
+                rpyn = safe_float(r["reco_pyn"])
                 n_reco_p = int(safe_float(r.get("n_reco_proton", "0")))
                 n_reco_n = int(safe_float(r.get("n_reco_neutrons", "0")))
                 rows_local.append({
                     "tpxp": tpxp, "tpyp": tpyp, "tpxn": tpxn, "tpyn": tpyn,
-                    "rpxp": rpxp, "rpxn": rpxn,
+                    "rpxp": rpxp, "rpyp": rpyp, "rpxn": rpxn, "rpyn": rpyn,
                     "n_reco_p": n_reco_p, "n_reco_n": n_reco_n,
                     "cuts": ypol_cuts_truth(tpxp, tpyp, tpxn, tpyn),
                 })
@@ -245,16 +264,21 @@ def plot_dpx_hist_per_cut(csv_dir, output_dir):
                     for r in rows_cell:
                         if not r["cuts"][cut_idx[cut_name]]:
                             continue
-                        tpxp, tpxn = r["tpxp"], r["tpxn"]
-                        rpxp, rpxn = r["rpxp"], r["rpxn"]
+                        tpxp, tpyp, tpxn, tpyn = r["tpxp"], r["tpyp"], r["tpxn"], r["tpyn"]
+                        rpxp, rpyp, rpxn, rpyn = r["rpxp"], r["rpyp"], r["rpxn"], r["rpyn"]
                         n_reco_p, n_reco_n = r["n_reco_p"], r["n_reco_n"]
-                        tvals.append(tpxp - tpxn)
+                        # Rotate to reaction plane (phi = atan2(sum_py, sum_px) of truth)
+                        trp, _, trn, _ = rotate_to_reaction_plane(tpxp, tpyp, tpxn, tpyn)
+                        tvals.append(trp - trn)
                         if n_reco_p > 0 and not math.isnan(rpxp):
                             if n_reco_n > 0 and rpxn != 0.0 and not math.isnan(rpxn):
-                                rvals.append(rpxp - rpxn)
-                                fvals.append(rpxp - rpxn)
+                                # Use truth phi for consistency with cut definition
+                                rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, rpxn, rpyn)
+                                rvals.append(rrp - rrn)
+                                fvals.append(rrp - rrn)
                             else:
-                                rvals.append(rpxp - tpxn)
+                                rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, tpxn, tpyn)
+                                rvals.append(rrp - rrn)
                     rng = (-500, 500)
                     bins = 40
                     if tvals:
@@ -315,16 +339,22 @@ def plot_dpx_cuts_overlay(csv_dir, output_dir):
                 if any(math.isnan(x) for x in (tpxp, tpyp, tpxn, tpyn)):
                     continue
                 rpxp = safe_float(r["reco_pxp"])
+                rpyp = safe_float(r["reco_pyp"])
                 rpxn = safe_float(r["reco_pxn"])
+                rpyn = safe_float(r["reco_pyn"])
                 n_reco_p = int(safe_float(r.get("n_reco_proton", "0")))
                 n_reco_n = int(safe_float(r.get("n_reco_neutrons", "0")))
-                truth_dpx = tpxp - tpxn
+                # Reaction-plane rotated Δpx
+                trp, _, trn, _ = rotate_to_reaction_plane(tpxp, tpyp, tpxn, tpyn)
+                truth_dpx = trp - trn
                 reco_dpx = float("nan")
                 if n_reco_p > 0 and not math.isnan(rpxp):
                     if n_reco_n > 0 and rpxn != 0.0 and not math.isnan(rpxn):
-                        reco_dpx = rpxp - rpxn
+                        rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, rpxn, rpyn)
+                        reco_dpx = rrp - rrn
                     else:
-                        reco_dpx = rpxp - tpxn
+                        rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, tpxn, tpyn)
+                        reco_dpx = rrp - rrn
                 loose, mid, tight = ypol_cuts_truth(tpxp, tpyp, tpxn, tpyn)
                 by_tg[key]["truth"]["none"].append(truth_dpx)
                 if not math.isnan(reco_dpx):

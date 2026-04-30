@@ -53,6 +53,23 @@ def ypol_cuts(pxp, pyp, pxn, pyn):
     return loose, mid, tight
 
 
+def rotate_to_reaction_plane(pxp, pyp, pxn, pyn):
+    """Rotate event by -phi where phi=atan2(sum_py, sum_px) so sum_T → +x."""
+    sum_px = pxp + pxn
+    sum_py = pyp + pyn
+    if sum_px == 0 and sum_py == 0:
+        return pxp, pyp, pxn, pyn
+    phi = math.atan2(sum_py, sum_px)
+    cos_a = math.cos(-phi)
+    sin_a = math.sin(-phi)
+    return (
+        cos_a * pxp - sin_a * pyp,
+        sin_a * pxp + cos_a * pyp,
+        cos_a * pxn - sin_a * pyn,
+        sin_a * pxn + cos_a * pyn,
+    )
+
+
 def cell_decode(tag: str) -> tuple[str, str, str]:
     # tag = e.g. "Sn124E190_g050ynp"
     # parts: target = before "_"; gamma = next 4 chars; helicity = remaining 3 chars
@@ -90,6 +107,7 @@ def main():
 
     # Compute per-cell stats: truth (px_p - px_n) median + reco; truth_R = N_pos/N_neg etc.
     # Full reco: reco_proton (RK) + reco_neutron (NEBULA).
+    # All Δpx values are in the REACTION PLANE (rotated by -phi so sum_T→+x).
     # Subset of events where BOTH reco_proton AND reco_neutron are present;
     # if neutron is missing, fall back to truth_neutron proxy.
     summary_rows = []
@@ -113,16 +131,20 @@ def main():
             n_reco_n = int(safe_float(r["n_reco_neutrons"])) if "n_reco_neutrons" in r else 0
             if any(math.isnan(x) for x in (tpxp, tpxn, tpyp, tpyn)):
                 continue
-            truth_diffs.append(tpxp - tpxn)
+            # Truth Δpx: rotate to reaction plane
+            trp, _, trn, _ = rotate_to_reaction_plane(tpxp, tpyp, tpxn, tpyn)
+            truth_diffs.append(trp - trn)
             truth_pyp_minus_pyn.append(tpyp - tpyn)
             if n_reco_p > 0:
                 if n_reco_n > 0 and rpxn != 0.0:  # full reco-reco pair
-                    reco_diffs.append(rpxp - rpxn)
+                    rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, rpxn, rpyn)
+                    reco_diffs.append(rrp - rrn)
                     reco_pyp_minus_pyn.append(rpyp - rpyn)
-                    reco_full_diffs.append(rpxp - rpxn)
+                    reco_full_diffs.append(rrp - rrn)
                     n_full_reco_pair += 1
                 else:  # fallback: mixed reco_p + truth_n (no NEBULA hit)
-                    reco_diffs.append(rpxp - tpxn)
+                    rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, tpxn, tpyn)
+                    reco_diffs.append(rrp - rrn)
                     reco_pyp_minus_pyn.append(rpyp - tpyn)
 
         n = len(truth_diffs)
@@ -197,19 +219,27 @@ def main():
                 for r in rows:
                     if r["truth_has_proton"] != "1" or r["truth_has_neutron"] != "1":
                         continue
-                    tpxp, tpxn = safe_float(r["truth_pxp"]), safe_float(r["truth_pxn"])
+                    tpxp = safe_float(r["truth_pxp"])
+                    tpyp = safe_float(r["truth_pyp"])
+                    tpxn = safe_float(r["truth_pxn"])
+                    tpyn = safe_float(r["truth_pyn"])
                     rpxp = safe_float(r["reco_pxp"])
+                    rpyp = safe_float(r["reco_pyp"])
                     rpxn = safe_float(r["reco_pxn"])
+                    rpyn = safe_float(r["reco_pyn"])
                     n_reco_p = int(safe_float(r["n_reco_proton"])) if "n_reco_proton" in r else 0
                     n_reco_n = int(safe_float(r["n_reco_neutrons"])) if "n_reco_neutrons" in r else 0
-                    if not any(math.isnan(x) for x in (tpxp, tpxn)):
-                        tvals.append(tpxp - tpxn)
+                    if not any(math.isnan(x) for x in (tpxp, tpxn, tpyp, tpyn)):
+                        trp, _, trn, _ = rotate_to_reaction_plane(tpxp, tpyp, tpxn, tpyn)
+                        tvals.append(trp - trn)
                     if n_reco_p > 0:
                         if n_reco_n > 0 and rpxn != 0.0:
-                            rvals.append(rpxp - rpxn)        # mixed: reco-reco when avail
-                            fvals.append(rpxp - rpxn)        # full: same
+                            rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, rpxn, rpyn)
+                            rvals.append(rrp - rrn)
+                            fvals.append(rrp - rrn)
                         elif not math.isnan(tpxn):
-                            rvals.append(rpxp - tpxn)        # mixed: reco_p - truth_n fallback
+                            rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, tpxn, tpyn)
+                            rvals.append(rrp - rrn)
                 rng = (-500, 500)
                 bins = 60
                 ax.hist(tvals, bins=bins, range=rng, histtype="step",
@@ -244,13 +274,19 @@ def main():
                 for r in rows:
                     if r["truth_has_proton"] != "1" or r["truth_has_neutron"] != "1":
                         continue
-                    tpxp, tpxn = safe_float(r["truth_pxp"]), safe_float(r["truth_pxn"])
+                    tpxp = safe_float(r["truth_pxp"])
+                    tpyp = safe_float(r["truth_pyp"])
+                    tpxn = safe_float(r["truth_pxn"])
+                    tpyn = safe_float(r["truth_pyn"])
                     rpxp = safe_float(r["reco_pxp"])
+                    rpyp = safe_float(r["reco_pyp"])
                     n_reco_p = int(safe_float(r["n_reco_proton"])) if "n_reco_proton" in r else 0
-                    if any(math.isnan(x) for x in (tpxp, tpxn, rpxp)) or n_reco_p == 0:
+                    if any(math.isnan(x) for x in (tpxp, tpxn, tpyp, tpyn, rpxp, rpyp)) or n_reco_p == 0:
                         continue
-                    xs.append(tpxp - tpxn)
-                    ys.append(rpxp - tpxn)  # reco_pxp - truth_pxn (mixed)
+                    trp, _, trn, _ = rotate_to_reaction_plane(tpxp, tpyp, tpxn, tpyn)
+                    rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, tpxn, tpyn)
+                    xs.append(trp - trn)
+                    ys.append(rrp - rrn)
                 if xs:
                     h = ax.hist2d(xs, ys, bins=40, range=[[-500, 500], [-500, 500]], cmin=1, norm=LogNorm(), cmap="viridis")
                     fig.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
