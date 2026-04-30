@@ -53,6 +53,12 @@ def main():
         with open(cut_csv) as f:
             cut_rows = list(csv.DictReader(f))
 
+    acc_rows = []
+    acc_csv = out_dir / "acceptance_correction_table.csv"
+    if acc_csv.exists():
+        with open(acc_csv) as f:
+            acc_rows = list(csv.DictReader(f))
+
     tex = []
     tex.append(r"""\documentclass[a4paper,11pt]{article}
 \usepackage[margin=2.4cm]{geometry}
@@ -214,6 +220,55 @@ mid    & {int(sample['n_mid'])} & {fmt_num(sample['mid_truth_R'])} & {fmt_num(sa
 \includegraphics[width=0.95\textwidth]{{{args.figure_rel_dir}/{png_name}}}
 \caption{{{emph} R = $N_+/N_-$ 随 gamma ({cut_name} cut)。两 panel = 两 target；圆 = truth, 方 = reco mixed, 三角 = reco full；线条按 helicity 分。}}
 \end{{figure}}
+""")
+
+        # Embed per-cut Δpx histograms
+        tex.append(r"""\subsection{Per-cut $\Delta p_x$ 直方图}
+对比每 cell $\Delta p_x$ 分布在三个 cut 下：truth (黑 step) / reco mixed (橙填充) / reco full (蓝虚线)。tight cut 下 truth 分布显著向 +$\Delta p_x$ 倾斜，与 R 显著大于 1 一致。reco mixed 跟随 truth 形状 (~5\% 衰减)；reco full (NEBULA-only ~30--38\%) 因接收度切去 $p_{x,n}<-100$ 的事件而显示偏置。
+""")
+        for cut_name in ("loose", "mid", "tight"):
+            for target in ("Sn112E190", "Sn124E190"):
+                png_name = f"px_diff_hist_{target}_{cut_name}.png"
+                if (fig_src_dir / png_name).exists():
+                    tex.append(rf"""\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{{{args.figure_rel_dir}/{png_name}}}
+\caption{{$\Delta p_x$ 分布 ({target}, {cut_name} cut)。4 gammas × 2 helicities。}}
+\end{{figure}}
+""")
+
+    # Acceptance correction section
+    if acc_rows:
+        tex.append(r"""\subsection{NEBULA acceptance 校正验证（失败）}
+
+NEBULA 几何接收角 $\theta_x = \pm 13.5°$, $\theta_y = \pm 6.2°$ 在 8.32 m 飞行距离下对应 $|p_{x,n}| \lesssim 150$, $|p_{y,n}| \lesssim 68$ MeV/$c$ (at $p_z = 627$).
+tight cut 已经把 truth $p_{y,n}$ 限到 ±18 MeV/$c$ 半宽，y 接收角不构成额外限制。
+
+但 \textbf{tight cut 把 truth $p_{x,n}$ 推到中位 −97 MeV/$c$、半宽 70}，分布尾部到 −180 MeV/$c$；NEBULA 在 $p_{x,n} < -100$ 处接收 $\varepsilon \approx 0$。
+建立效率函数 $\varepsilon(p_{x,n}) = N_\mathrm{NEBULA}/N_\mathrm{tight}$ 后做 $1/\varepsilon$ 加权（$\varepsilon < 0.05$ 截断）：
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{16-cell mean R: truth tight vs reco full uncorr vs reco full corr.}
+\begin{tabular}{lr}
+\toprule
+mean R\_truth\_tight (16 cells)        & 3.37 \\
+mean R\_full\_uncorr (NEBULA-only)     & 0.96 \\
+mean R\_full\_corr ($1/\varepsilon$ weighted) & 1.09 \\
+\midrule
+truth − corr 缺口                       & +2.28 \\
+truth − uncorr 缺口                     & +2.41 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+校正只缩小缺口 5\%。原因：tight cut 把事件推到 $p_{x,n} \in (-180, +0)$ 范围，NEBULA 在 $p_{x,n} < -100$ 几乎完全失明 ($\varepsilon < 0.03$, 见 \texttt{acceptance\_correction\_table.csv})。
+\textbf{这些事件物理上没被探测到——不存在能补回它们的权重}。可行路径：
+\begin{enumerate}[nosep]
+\item 接受 acceptance 限制，只在 NEBULA 可见窗口里做物理；
+\item 用 reco\_proton + truth\_neutron 的混合分析 (即 reco mixed R)，绕过 NEBULA 几何瓶颈；
+\item 换更大角度接收的中子探测器 (硬件改动)。
+\end{enumerate}
 """)
 
     tex.append(r"""\section{结论}

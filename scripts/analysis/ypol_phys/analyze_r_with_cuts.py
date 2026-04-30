@@ -183,6 +183,104 @@ def main():
         )
 
 
+def plot_dpx_hist_per_cut(csv_dir, output_dir):
+    """Per-cut Δpx histograms (truth / reco mixed / reco full).
+    One figure per (target, cut) — 4 gammas × 2 helicities = 8 panels.
+    """
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError:
+        return
+    csv_dir = Path(csv_dir)
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    cells = sorted(p for p in csv_dir.glob("*.csv"))
+    by_cell: dict = {}
+    for cp in cells:
+        tag = cp.stem
+        target, gamma, hel = cell_decode(tag)
+        rows_local = []
+        with open(cp) as f:
+            for r in csv.DictReader(f):
+                if r["truth_has_proton"] != "1" or r["truth_has_neutron"] != "1":
+                    continue
+                tpxp = safe_float(r["truth_pxp"])
+                tpyp = safe_float(r["truth_pyp"])
+                tpxn = safe_float(r["truth_pxn"])
+                tpyn = safe_float(r["truth_pyn"])
+                if any(math.isnan(x) for x in (tpxp, tpyp, tpxn, tpyn)):
+                    continue
+                rpxp = safe_float(r["reco_pxp"])
+                rpxn = safe_float(r["reco_pxn"])
+                n_reco_p = int(safe_float(r.get("n_reco_proton", "0")))
+                n_reco_n = int(safe_float(r.get("n_reco_neutrons", "0")))
+                rows_local.append({
+                    "tpxp": tpxp, "tpyp": tpyp, "tpxn": tpxn, "tpyn": tpyn,
+                    "rpxp": rpxp, "rpxn": rpxn,
+                    "n_reco_p": n_reco_p, "n_reco_n": n_reco_n,
+                    "cuts": ypol_cuts_truth(tpxp, tpyp, tpxn, tpyn),
+                })
+        by_cell[(target, gamma, hel)] = rows_local
+
+    targets = sorted({k[0] for k in by_cell})
+    gammas = sorted({k[1] for k in by_cell})
+    hels = sorted({k[2] for k in by_cell})
+
+    cut_names = ("loose", "mid", "tight")
+    cut_idx = {"loose": 0, "mid": 1, "tight": 2}
+
+    for cut_name in cut_names:
+        for target in targets:
+            fig, axes = plt.subplots(len(gammas), len(hels),
+                                     figsize=(5 * len(hels), 4 * len(gammas)),
+                                     squeeze=False)
+            for gi, gamma in enumerate(gammas):
+                for hi, hel in enumerate(hels):
+                    ax = axes[gi, hi]
+                    rows_cell = by_cell.get((target, gamma, hel), [])
+                    tvals, rvals, fvals = [], [], []
+                    for r in rows_cell:
+                        if not r["cuts"][cut_idx[cut_name]]:
+                            continue
+                        tpxp, tpxn = r["tpxp"], r["tpxn"]
+                        rpxp, rpxn = r["rpxp"], r["rpxn"]
+                        n_reco_p, n_reco_n = r["n_reco_p"], r["n_reco_n"]
+                        tvals.append(tpxp - tpxn)
+                        if n_reco_p > 0 and not math.isnan(rpxp):
+                            if n_reco_n > 0 and rpxn != 0.0 and not math.isnan(rpxn):
+                                rvals.append(rpxp - rpxn)
+                                fvals.append(rpxp - rpxn)
+                            else:
+                                rvals.append(rpxp - tpxn)
+                    rng = (-500, 500)
+                    bins = 40
+                    if tvals:
+                        ax.hist(tvals, bins=bins, range=rng, histtype="step",
+                                color="black", linewidth=1.4,
+                                label=f"truth (N={len(tvals)})")
+                    if rvals:
+                        ax.hist(rvals, bins=bins, range=rng, histtype="stepfilled",
+                                alpha=0.35, color="C1",
+                                label=f"reco mixed (N={len(rvals)})")
+                    if fvals:
+                        ax.hist(fvals, bins=bins, range=rng, histtype="step",
+                                color="C0", linewidth=1.4, linestyle="--",
+                                label=f"reco full (N={len(fvals)})")
+                    ax.set_xlabel("px_p - px_n (MeV/c)")
+                    ax.set_ylabel("counts")
+                    ax.legend(fontsize=7)
+                    ax.set_title(f"{target} {gamma} {hel} [{cut_name}]")
+                    ax.axvline(0, color="gray", linestyle=":", linewidth=0.6)
+            plt.tight_layout()
+            out_path = output_dir / f"px_diff_hist_{target}_{cut_name}.png"
+            plt.savefig(out_path, dpi=120)
+            plt.close()
+            print(f"[hist] wrote {out_path}")
+
+
 def plot_r_vs_gamma_per_cut(rows, output_dir):
     """Plot R vs gamma for each cut, comparing truth/reco/reco_full."""
     try:
@@ -249,3 +347,7 @@ if __name__ == "__main__":
                         r[k] = float("nan")
             rows.append(r)
     plot_r_vs_gamma_per_cut(rows, out_dir)
+    plot_dpx_hist_per_cut(
+        "/home/tian/workspace/dpol/smsimulator5.5/build/test_output/ypol_phys_20260428/csv",
+        out_dir,
+    )
