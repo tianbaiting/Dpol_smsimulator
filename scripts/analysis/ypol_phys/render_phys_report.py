@@ -134,7 +134,64 @@ def main():
 在 16 个 cell × 10000 事件 (4 gammas × 2 targets × 2 helicities) 上验证：
 \textbf{应用 input\_ana 三个 cut + 反应平面旋转后, $R_x = N(\Delta p_x^\text{rot}>0)/N(\Delta p_x^\text{rot}<0)$ 随 gamma 单调下降, reco 端忠实跟随 truth。}
 
-\section{1. 数据流 \& 重建链}
+\section{1. 全重建动量精度 overview}
+
+\textbf{在进入 cut/R 分析之前, 先看一下当前 reco 链对 (proton, neutron) × ($p_x, p_y, p_z$) 各分量的重建精度。}
+所有事件均通过 truth\_has\_proton \& truth\_has\_neutron 选择, 共 160000 事件 (16 cells × 10000 events)。
+proton 通过 RK 重建（要求 \texttt{n\_reco\_proton} > 0, 全部事件均成功）；neutron 通过 NEBULA $\beta$ 重建（要求 NEBULA 击中, 通过率 $\sim$34\%）。
+
+\subsection*{1.1 Per-particle 残差直方图（reco − truth）}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{__REL_DIR__/reco_residuals_per_particle.png}
+\caption{Reco − truth 残差分布。上行: proton (RK), 下行: neutron (NEBULA)。每行三列: $\Delta p_x$, $\Delta p_y$, $\Delta p_z$。
+红虚线 = median, 标题给出 N、median、half-width (=$(P_{84}-P_{16})/2$)。}
+\end{figure}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Per-particle 残差汇总（单位: MeV/$c$）。half-width = $(P_{84}-P_{16})/2$, 接近 1$\sigma$。}
+\begin{tabular}{lcrrrr}
+\toprule
+particle & 通道 & N & median & half-width  \\
+\midrule
+proton  & $\Delta p_x$ & 160000 & $-0.03$ &  5.89 \\
+proton  & $\Delta p_y$ & 160000 & $-0.12$ &  1.53 \\
+proton  & $\Delta p_z$ & 160000 & $-1.05$ &  5.91 \\
+\midrule
+neutron & $\Delta p_x$ &  55115 & $+0.59$ &  3.65 \\
+neutron & $\Delta p_y$ &  55115 & $-0.15$ &  2.93 \\
+neutron & $\Delta p_z$ &  55115 & $-9.79$ &  8.59 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{读法}：
+\begin{itemize}[nosep]
+\item proton 三方向 median 全部 $|\text{med}| < 1.1$ MeV/$c$, half-width $\sim 1.5$–$5.9$ MeV/$c$ —— RK 重建准确度 $\sim$1\% 量级（典型 $|\vec p_p| \sim 600$ MeV/$c$）。
+\item neutron $p_x, p_y$ 也无明显偏置 (med $<0.6$ MeV/$c$), half-width $\sim 3$ MeV/$c$。
+\item neutron $p_z$ 有 $-9.8$ MeV/$c$ 系统偏 + 8.6 MeV/$c$ 半宽 —— 来自 NEBULA $\beta$ 法的非线性 ($p = m \gamma\beta$, $\beta$ 在 0.7 附近放大误差) + 时间分辨。这是 full reco 端 R 偏置的一部分来源。
+\item 注意: $\Delta p_y$ 比 $\Delta p_x$ 窄 (proton: 1.5 vs 5.9; neutron: 2.9 vs 3.6) —— 因 PDC y-strip 比 x-strip 测量精度高, 且 NEBULA y-bar 排布更密。
+\end{itemize}
+
+\subsection*{1.2 Truth $\phi^\text{event}$ vs reco $\phi^\text{event}$}
+对 NEBULA 击中的 55115 事件, 用 $\phi^\text{event} = \arctan_2(p_{y,p}+p_{y,n}, p_{x,p}+p_{x,n})$ 分别从 truth 和 reco 计算事件方位角:
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{__REL_DIR__/truth_phi_vs_reco_phi.png}
+\caption{左: truth $\phi$ vs reco $\phi$ 二维直方图（红虚线 $y=x$, NEBULA 击中事件）；右: $\Delta\phi = \phi^\text{reco} - \phi^\text{truth}$ 一维分布（缠绕到 $[-180°, 180°]$）。}
+\end{figure}
+
+\textbf{统计}:
+\begin{itemize}[nosep]
+\item $\Delta\phi$ median = $+0.13°$ (无系统偏), half-width = $22.0°$。
+\item 约 $46.5\%$ 事件满足 $|\Delta\phi| < 10°$, $\sim$80\% 在 $|\Delta\phi| < 30°$。
+\item 2D 图主对角线清晰可见但有显著弥散, 反映 reco $\vec p_T^\text{sum}$ 的振幅不大 (典型几十 MeV/$c$) 时, 方向不确定度偏大。
+\end{itemize}
+
+\textbf{对反应平面分析的影响}: 全 reco (B/C 变体) 端用 reco $\phi$ 旋转时, 会引入 $\sim$20° 的旋转误差, 把部分 $\Delta p_x$ 信号"漏"到 $\Delta p_y$ 方向。这是 reco mixed/full 端 $R_x^\text{rot}$ 比 truth 端衰减的另一来源。
+
+\section{2. 数据流 \& 重建链}
 
 \subsection*{数据来源}
 \texttt{data/simulation/g4output/ypol\_new\_20260413\_elastic\_allair/d+\{Sn112,Sn124\}E190/d+...g\{050,060,070,080\}\{ynp,ypn\}-RP360/dbreak0000.root}：
@@ -143,7 +200,7 @@ QMD 生成 elastic d+A → p + n 事件后过 Geant4 探测器模拟，每 cell 
 \subsection*{Pipeline (per cell)}
 \begin{enumerate}[nosep]
 \item \texttt{subsample\_dbreak.py} 随机抽 N=10000 events (要求 \texttt{OK\_PDC1} \& \texttt{OK\_PDC2})。
-\item \texttt{bin/reconstruct\_target\_momentum --backend rk}: PDC1+PDC2 hits → RK 拟合 proton 动量；NEBULA hits → 时间重建 β 推 neutron 动量。
+\item \texttt{bin/reconstruct\_target\_momentum --backend rk}: PDC1+PDC2 hits → RK 拟合 proton 动量；NEBULA hits → 时间重建 $\beta$ 推 neutron 动量。
 \item NEBULA 端在 commit \texttt{806cd6a} 加 \texttt{NEBULAFrameRotation::RotateRecoNeutronsToTargetFrame}, 把 lab 系方向旋到靶系（与 \texttt{truth\_neutron\_p4} 同坐标系），消除 $\Delta p_{x,n} \approx -33$ MeV/$c$ 的系统偏。
 \item \texttt{extract\_phys\_observables.C}: 从 reco ROOT 抽出每事件 truth/reco 动量分量到 CSV。
 \end{enumerate}
@@ -166,7 +223,7 @@ $R_x \equiv N(\Delta p_x^\text{rot} > 0) / N(\Delta p_x^\text{rot} < 0)$。
 \bottomrule
 \end{tabular}
 
-\section{2. input\_ana 三个 cut (基于 truth)}
+\section{3. input\_ana 三个 cut (基于 truth)}
 \begin{itemize}[nosep]
 \item \textbf{loose}: $|p_{y,p} - p_{y,n}| < 150$ AND $|\vec p_{T,\text{sum}}| > 50$ MeV/$c$
 \item \textbf{mid}:   loose AND $|\vec p_{T,\text{sum}}| < 200$ MeV/$c$
@@ -176,7 +233,7 @@ $R_x \equiv N(\Delta p_x^\text{rot} > 0) / N(\Delta p_x^\text{rot} < 0)$。
 
     # Per-cell statistics
     if cut:
-        tex.append(r"""\section{3. Per-cell sample 统计}
+        tex.append(r"""\section{4. Per-cell sample 统计}
 \begin{table}[H]
 \centering\footnotesize
 \caption{Per-cell 通过率（基于 truth cuts）。N\_NEBULA = NEBULA 击中子集（用于 full reco 列）。}
@@ -205,11 +262,11 @@ target & gamma & hel & N\_raw & N\_loose & N\_mid & N\_tight & N\_NEBULA(in tigh
 """)
 
         # MAIN RESULT TABLE — three R variants × three cuts, in reaction plane
-        tex.append(r"""\section{4. 主结果: $R_x^\text{rot}$ vs gamma （反应平面 frame）}
+        tex.append(r"""\section{5. 主结果: $R_x^\text{rot}$ vs gamma （反应平面 frame）}
 
-\textbf{所有数字均在反应平面 frame 下计算}。三种 R 定义见 §1。
+\textbf{所有数字均在反应平面 frame 下计算}。三种 R 定义见 §2。
 
-\subsection*{4.1 全 16-cell 表}
+\subsection*{5.1 全 16-cell 表}
 \begin{table}[H]
 \centering\footnotesize
 \caption{$R_x^\text{rot}$ per cell × per cut × per reco variant。N 在表头第 4 列后的下面那行 (cut 通过数) 已在 §3 表中。}
@@ -233,7 +290,7 @@ target & gamma & hel & A truth & B mixed & C full & A truth & B mixed & C full &
 """)
 
         # Aggregated R vs gamma (averaged over both helicities)
-        tex.append(r"""\subsection*{4.2 R vs gamma （averaged over 两 helicities, 分 truth / reco mixed / full）}
+        tex.append(r"""\subsection*{5.2 R vs gamma （averaged over 两 helicities, 分 truth / reco mixed / full）}
 \begin{table}[H]
 \centering\footnotesize
 \caption{每 (target, gamma) 平均两 helicities 的 $R_x^\text{rot}$。三种 reco 变体并列。}
@@ -269,7 +326,7 @@ target & gamma & A truth & B mixed & C full & A truth & B mixed & C full & A tru
 """)
 
         # R vs gamma plots
-        tex.append(r"""\subsection*{4.3 R vs gamma 图（每 cut 一张）}
+        tex.append(r"""\subsection*{5.3 R vs gamma 图（每 cut 一张）}
 """)
         for cn in ("loose", "mid", "tight"):
             png_name = f"r_vs_gamma_{cn}.png"
@@ -281,10 +338,10 @@ target & gamma & A truth & B mixed & C full & A truth & B mixed & C full & A tru
 \end{{figure}}
 """)
 
-        # Section 5: histograms
-        tex.append(r"""\section{5. $\Delta p_x^\text{rot}$ 分布直方图}
+        # Section 6: histograms
+        tex.append(r"""\section{6. $\Delta p_x^\text{rot}$ 分布直方图}
 
-\subsection*{5.1 Per-cell 直方图（每 cut 一张图, 每图 8 panel = 4 gammas × 2 hels）}
+\subsection*{6.1 Per-cell 直方图（每 cut 一张图, 每图 8 panel = 4 gammas × 2 hels）}
 """)
         for cn in ("loose", "mid", "tight"):
             for tg in ("Sn112E190", "Sn124E190"):
@@ -297,7 +354,7 @@ target & gamma & A truth & B mixed & C full & A truth & B mixed & C full & A tru
 \end{{figure}}
 """)
 
-        tex.append(r"""\subsection*{5.2 Cuts overlay（一图叠加 4 cuts: 无 cut + loose + mid + tight）}
+        tex.append(r"""\subsection*{6.2 Cuts overlay（一图叠加 4 cuts: 无 cut + loose + mid + tight）}
 """)
         for tg in ("Sn112E190", "Sn124E190"):
             png_name = f"px_diff_cuts_overlay_{tg}.png"
@@ -309,24 +366,24 @@ target & gamma & A truth & B mixed & C full & A truth & B mixed & C full & A tru
 \end{{figure}}
 """)
 
-    # Section 6: bottleneck
+    # Section 7: bottleneck
     if acc:
-        tex.append(r"""\section{6. NEBULA 几何接收瓶颈分析}
+        tex.append(r"""\section{7. NEBULA 几何接收瓶颈分析}
 
-\subsection*{6.1 几何参数}
+\subsection*{7.1 几何参数}
 NEBULA 位于 $z = 7249.72$ mm, 距靶 ($z = -1070$ mm) \textbf{8.32 m}。覆盖范围:
 \begin{itemize}[nosep]
 \item $x$ 半角 $\pm 13.5°$ → $|p_{x,n}| \lesssim 150$ MeV/$c$ (at $p_{z,n}=627$)
 \item $y$ 半角 $\pm 6.2°$ → $|p_{y,n}| \lesssim 68$ MeV/$c$
 \end{itemize}
 
-\subsection*{6.2 哪个方向是瓶颈}
+\subsection*{7.2 哪个方向是瓶颈}
 tight cut 已经把 truth $|p_{y,n}|$ 限到半宽 18 MeV/$c$ (远在 ±68 内), 所以 \textbf{y 方向不是瓶颈}。
 但 tight cut 同时把 truth $p_{x,n}$ 中位推到 \textbf{$-97$ MeV/$c$, 半宽 70} (尾部到 $-180$), NEBULA $\varepsilon \approx 0$ 在 $p_{x,n} < -100$:
 """)
 
         # Acceptance correction table
-        tex.append(r"""\subsection*{6.3 1/$\varepsilon$ 加权校正失败}
+        tex.append(r"""\subsection*{7.3 1/$\varepsilon$ 加权校正失败}
 按 $\varepsilon(p_{x,n}^\text{truth}) = N_\text{NEBULA-hit}/N_\text{tight}$ 建表, 每事件 weight = $1/\varepsilon$, 截断 $\varepsilon < 0.05$:
 \begin{table}[H]
 \centering\footnotesize
@@ -357,8 +414,8 @@ truth − uncorr 缺口                        & {gap_uncorr} \\
    .replace("{gap_uncorr}", f"{_s.mean([r['R_truth_tight'] - r['R_full_uncorr'] for r in acc if not math.isnan(r['R_full_uncorr']) and not math.isnan(r['R_truth_tight'])]):+.3f}")
         )
 
-    # Section 7: conclusions
-    tex.append(r"""\section{7. 结论 \& 下一步}
+    # Section 8: conclusions
+    tex.append(r"""\section{8. 结论 \& 下一步}
 
 \begin{enumerate}[nosep]
 \item \textbf{全模拟全重建 + 反应平面旋转} 后 $R_x^\text{rot}$ 信号清晰随 gamma 单调下降 (Sn124 loose: 0.29→0.22; tight: 0.62→0.32).
@@ -377,8 +434,9 @@ truth − uncorr 缺口                        & {gap_uncorr} \\
 """)
 
     Path(args.report_tex).parent.mkdir(parents=True, exist_ok=True)
+    body = "".join(tex).replace("__REL_DIR__", args.figure_rel_dir)
     with open(args.report_tex, "w") as f:
-        f.write("".join(tex))
+        f.write(body)
     print(f"[render] wrote {args.report_tex}")
 
 
