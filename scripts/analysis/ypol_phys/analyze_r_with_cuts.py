@@ -100,23 +100,29 @@ def main():
                     continue
 
                 rpxp = safe_float(r["reco_pxp"])
+                rpyp = safe_float(r["reco_pyp"])
                 rpxn = safe_float(r["reco_pxn"])
+                rpyn = safe_float(r["reco_pyn"])
                 n_reco_p = int(safe_float(r.get("n_reco_proton", "0")))
                 n_reco_n = int(safe_float(r.get("n_reco_neutrons", "0")))
 
                 cell_cut_counts[(target, gamma, hel)]["raw"] += 1
                 loose, mid, tight = ypol_cuts_truth(tpxp, tpyp, tpxn, tpyn)
 
-                # Build Δpx for the three "kinds"
-                truth_dpx = tpxp - tpxn
+                # Build Δpx_rot (reaction-plane rotated) for the three "kinds"
+                # phi defined by truth sum_T direction (canonical, common to all 3)
+                trp, _, trn, _ = rotate_to_reaction_plane(tpxp, tpyp, tpxn, tpyn)
+                truth_dpx = trp - trn
                 reco_mixed_dpx = float("nan")
                 reco_full_dpx = float("nan")
                 if n_reco_p > 0 and not math.isnan(rpxp):
                     if n_reco_n > 0 and rpxn != 0.0 and not math.isnan(rpxn):
-                        reco_mixed_dpx = rpxp - rpxn
-                        reco_full_dpx = rpxp - rpxn
+                        rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, rpxn, rpyn)
+                        reco_mixed_dpx = rrp - rrn
+                        reco_full_dpx = rrp - rrn
                     else:
-                        reco_mixed_dpx = rpxp - tpxn
+                        rrp, _, rrn, _ = rotate_to_reaction_plane(rpxp, rpyp, tpxn, tpyn)
+                        reco_mixed_dpx = rrp - rrn
 
                 for cut_name, ok in (("loose", loose), ("mid", mid), ("tight", tight)):
                     if not ok:
