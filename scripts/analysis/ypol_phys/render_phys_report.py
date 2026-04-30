@@ -222,8 +222,24 @@ mid    & {int(sample['n_mid'])} & {fmt_num(sample['mid_truth_R'])} & {fmt_num(sa
 \end{{figure}}
 """)
 
+        # All-cuts overlay (per target, shows progression visually)
+        tex.append(r"""\subsection{$\Delta p_x$ 分布随 cut 进展（叠加视图）}
+4 个 cut 级别（无 cut / loose / mid / tight）在同一坐标系上叠加，log y 轴。
+truth 列（左）显示 cut 如何 progressively 选出 $\Delta p_x$ 偏正的子集。
+reco 列（右）展示同样模式但有 reco smearing。
+""")
+        for target in ("Sn112E190", "Sn124E190"):
+            png_name = f"px_diff_cuts_overlay_{target}.png"
+            if (fig_src_dir / png_name).exists():
+                tex.append(rf"""\begin{{figure}}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{{{args.figure_rel_dir}/{png_name}}}
+\caption{{$\Delta p_x$ 在四 cut 下的叠加 ({target})。4 行 = 4 gammas, 列 = truth / reco mixed。蓝 = 无 cut, 绿 = loose, 橙 = mid, 红 = tight。}}
+\end{{figure}}
+""")
+
         # Embed per-cut Δpx histograms
-        tex.append(r"""\subsection{Per-cut $\Delta p_x$ 直方图}
+        tex.append(r"""\subsection{Per-cut $\Delta p_x$ 直方图（每 cell 单独）}
 对比每 cell $\Delta p_x$ 分布在三个 cut 下：truth (黑 step) / reco mixed (橙填充) / reco full (蓝虚线)。tight cut 下 truth 分布显著向 +$\Delta p_x$ 倾斜，与 R 显著大于 1 一致。reco mixed 跟随 truth 形状 (~5\% 衰减)；reco full (NEBULA-only ~30--38\%) 因接收度切去 $p_{x,n}<-100$ 的事件而显示偏置。
 """)
         for cut_name in ("loose", "mid", "tight"):

@@ -158,7 +158,21 @@ mid    & 4417 & +1.139 & +1.119 & +0.764 \\
 \includegraphics[width=0.95\textwidth]{figures/ypol_phys/r_vs_gamma_tight.png}
 \caption{\textbf{重要} R = $N_+/N_-$ 随 gamma (tight cut)。两 panel = 两 target；圆 = truth, 方 = reco mixed, 三角 = reco full；线条按 helicity 分。}
 \end{figure}
-\subsection{Per-cut $\Delta p_x$ 直方图}
+\subsection{$\Delta p_x$ 分布随 cut 进展（叠加视图）}
+4 个 cut 级别（无 cut / loose / mid / tight）在同一坐标系上叠加，log y 轴。
+truth 列（左）显示 cut 如何 progressively 选出 $\Delta p_x$ 偏正的子集。
+reco 列（右）展示同样模式但有 reco smearing。
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/ypol_phys/px_diff_cuts_overlay_Sn112E190.png}
+\caption{$\Delta p_x$ 在四 cut 下的叠加 (Sn112E190)。4 行 = 4 gammas, 列 = truth / reco mixed。蓝 = 无 cut, 绿 = loose, 橙 = mid, 红 = tight。}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/ypol_phys/px_diff_cuts_overlay_Sn124E190.png}
+\caption{$\Delta p_x$ 在四 cut 下的叠加 (Sn124E190)。4 行 = 4 gammas, 列 = truth / reco mixed。蓝 = 无 cut, 绿 = loose, 橙 = mid, 红 = tight。}
+\end{figure}
+\subsection{Per-cut $\Delta p_x$ 直方图（每 cell 单独）}
 对比每 cell $\Delta p_x$ 分布在三个 cut 下：truth (黑 step) / reco mixed (橙填充) / reco full (蓝虚线)。tight cut 下 truth 分布显著向 +$\Delta p_x$ 倾斜，与 R 显著大于 1 一致。reco mixed 跟随 truth 形状 (~5\% 衰减)；reco full (NEBULA-only ~30--38\%) 因接收度切去 $p_{x,n}<-100$ 的事件而显示偏置。
 \begin{figure}[H]
 \centering

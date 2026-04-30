@@ -281,6 +281,104 @@ def plot_dpx_hist_per_cut(csv_dir, output_dir):
             print(f"[hist] wrote {out_path}")
 
 
+def plot_dpx_cuts_overlay(csv_dir, output_dir):
+    """All-cuts overlay: per (target, gamma), aggregate over helicities,
+    plot Δpx distributions for {no cut, loose, mid, tight} on same axes.
+    Two columns: truth (left) and reco mixed (right)."""
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError:
+        return
+    csv_dir = Path(csv_dir)
+    output_dir = Path(output_dir)
+    cells = sorted(p for p in csv_dir.glob("*.csv"))
+    by_tg: dict = {}  # (target, gamma) -> {'truth': {cut: list}, 'reco': {cut: list}}
+    for cp in cells:
+        tag = cp.stem
+        target, gamma, hel = cell_decode(tag)
+        key = (target, gamma)
+        if key not in by_tg:
+            by_tg[key] = {
+                "truth": {"none": [], "loose": [], "mid": [], "tight": []},
+                "reco":  {"none": [], "loose": [], "mid": [], "tight": []},
+            }
+        with open(cp) as f:
+            for r in csv.DictReader(f):
+                if r["truth_has_proton"] != "1" or r["truth_has_neutron"] != "1":
+                    continue
+                tpxp = safe_float(r["truth_pxp"])
+                tpyp = safe_float(r["truth_pyp"])
+                tpxn = safe_float(r["truth_pxn"])
+                tpyn = safe_float(r["truth_pyn"])
+                if any(math.isnan(x) for x in (tpxp, tpyp, tpxn, tpyn)):
+                    continue
+                rpxp = safe_float(r["reco_pxp"])
+                rpxn = safe_float(r["reco_pxn"])
+                n_reco_p = int(safe_float(r.get("n_reco_proton", "0")))
+                n_reco_n = int(safe_float(r.get("n_reco_neutrons", "0")))
+                truth_dpx = tpxp - tpxn
+                reco_dpx = float("nan")
+                if n_reco_p > 0 and not math.isnan(rpxp):
+                    if n_reco_n > 0 and rpxn != 0.0 and not math.isnan(rpxn):
+                        reco_dpx = rpxp - rpxn
+                    else:
+                        reco_dpx = rpxp - tpxn
+                loose, mid, tight = ypol_cuts_truth(tpxp, tpyp, tpxn, tpyn)
+                by_tg[key]["truth"]["none"].append(truth_dpx)
+                if not math.isnan(reco_dpx):
+                    by_tg[key]["reco"]["none"].append(reco_dpx)
+                if loose:
+                    by_tg[key]["truth"]["loose"].append(truth_dpx)
+                    if not math.isnan(reco_dpx):
+                        by_tg[key]["reco"]["loose"].append(reco_dpx)
+                if mid:
+                    by_tg[key]["truth"]["mid"].append(truth_dpx)
+                    if not math.isnan(reco_dpx):
+                        by_tg[key]["reco"]["mid"].append(reco_dpx)
+                if tight:
+                    by_tg[key]["truth"]["tight"].append(truth_dpx)
+                    if not math.isnan(reco_dpx):
+                        by_tg[key]["reco"]["tight"].append(reco_dpx)
+
+    targets = sorted({k[0] for k in by_tg})
+    gammas = sorted({k[1] for k in by_tg})
+
+    cut_styles = [
+        ("none",  "C0", "无 cut"),
+        ("loose", "C2", "loose"),
+        ("mid",   "C1", "mid"),
+        ("tight", "C3", "tight"),
+    ]
+
+    for target in targets:
+        fig, axes = plt.subplots(len(gammas), 2, figsize=(12, 3.5 * len(gammas)), squeeze=False)
+        for gi, gamma in enumerate(gammas):
+            data = by_tg.get((target, gamma), {})
+            for col, kind in enumerate(["truth", "reco"]):
+                ax = axes[gi, col]
+                rng = (-500, 500)
+                bins = 50
+                for cut_name, color, label in cut_styles:
+                    vals = data.get(kind, {}).get(cut_name, [])
+                    if vals:
+                        ax.hist(vals, bins=bins, range=rng, histtype="step",
+                                color=color, linewidth=1.5,
+                                label=f"{label} (N={len(vals)})", density=False)
+                ax.set_xlabel(f"{kind} px_p - px_n (MeV/c)")
+                ax.set_ylabel("counts")
+                ax.set_title(f"{target} {gamma} — {kind}")
+                ax.axvline(0, color="gray", linestyle=":", linewidth=0.6)
+                ax.legend(fontsize=7)
+                ax.set_yscale("log")
+        plt.tight_layout()
+        out_path = output_dir / f"px_diff_cuts_overlay_{target}.png"
+        plt.savefig(out_path, dpi=120)
+        plt.close()
+        print(f"[hist] wrote {out_path}")
+
+
 def plot_r_vs_gamma_per_cut(rows, output_dir):
     """Plot R vs gamma for each cut, comparing truth/reco/reco_full."""
     try:
@@ -348,6 +446,10 @@ if __name__ == "__main__":
             rows.append(r)
     plot_r_vs_gamma_per_cut(rows, out_dir)
     plot_dpx_hist_per_cut(
+        "/home/tian/workspace/dpol/smsimulator5.5/build/test_output/ypol_phys_20260428/csv",
+        out_dir,
+    )
+    plot_dpx_cuts_overlay(
         "/home/tian/workspace/dpol/smsimulator5.5/build/test_output/ypol_phys_20260428/csv",
         out_dir,
     )
