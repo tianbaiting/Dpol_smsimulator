@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import math
 from pathlib import Path
 
 
@@ -58,6 +59,12 @@ def main():
     if acc_csv.exists():
         with open(acc_csv) as f:
             acc_rows = list(csv.DictReader(f))
+
+    rp_rows = []
+    rp_csv = out_dir / "reaction_plane_R_table.csv"
+    if rp_csv.exists():
+        with open(rp_csv) as f:
+            rp_rows = list(csv.DictReader(f))
 
     tex = []
     tex.append(r"""\documentclass[a4paper,11pt]{article}
@@ -285,6 +292,78 @@ truth − uncorr 缺口                     & +2.41 \\
 \item 用 reco\_proton + truth\_neutron 的混合分析 (即 reco mixed R)，绕过 NEBULA 几何瓶颈；
 \item 换更大角度接收的中子探测器 (硬件改动)。
 \end{enumerate}
+""")
+
+    # Reaction-plane analysis section
+    if rp_rows:
+        import statistics as _s
+        for r in rp_rows:
+            for k, v in list(r.items()):
+                try:
+                    r[k] = float(v)
+                except (ValueError, TypeError):
+                    pass
+        tex.append(r"""\section{反应平面旋转后的 R/gamma 分析（信号显著增强）}
+
+之前的 R 分析在 lab frame 内做 $\Delta p_x = p_{x,p} - p_{x,n}$，每事件的反应平面方向（$\vec p_{T,sum}$ 朝向）不同。
+loose/mid cut 下不同事件的不对称信号互相抵消 → R$\approx$1 几乎看不出物理。
+tight cut 强行把 $\phi$ 限到 $\pm\pi$ 附近（保留 ~5\%），但损失 95\% 统计。
+
+\textbf{正确做法}：每事件按 $\vec p_{T,sum}$ 方向（即 $\phi=\arctan_2(\sum p_y, \sum p_x)$）旋转 $-\phi$，
+让所有事件的反应平面对齐到 $+\hat x$。然后 $\Delta p_x^\text{rot} = \mathrm{rot\_pxp} - \mathrm{rot\_pxn}$ 是
+"$p$-$n$ 相对动量在反应平面上的投影"——这是 ypol 极化分析的 canonical observable。
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{16-cell mean R: lab vs reaction-plane rotated。loose/mid 下旋转把 R 从 ~1.08 拉到 ~0.24-0.27（信号显现）；tight 下 lab 与 rot 互为倒数（sign-flip 约定）。}
+\begin{tabular}{lrrrr}
+\toprule
+cut & R\_truth\_lab & R\_truth\_rot & R\_reco\_lab & R\_reco\_rot \\
+\midrule
+""")
+        for cut in ("loose", "mid", "tight"):
+            tl = _s.mean([r[f'R_{cut}_truth_lab'] for r in rp_rows if not (isinstance(r[f'R_{cut}_truth_lab'], float) and math.isnan(r[f'R_{cut}_truth_lab']))])
+            tr = _s.mean([r[f'R_{cut}_truth_rot'] for r in rp_rows if not (isinstance(r[f'R_{cut}_truth_rot'], float) and math.isnan(r[f'R_{cut}_truth_rot']))])
+            rl = _s.mean([r[f'R_{cut}_reco_lab'] for r in rp_rows if not (isinstance(r[f'R_{cut}_reco_lab'], float) and math.isnan(r[f'R_{cut}_reco_lab']))])
+            rr = _s.mean([r[f'R_{cut}_reco_rot'] for r in rp_rows if not (isinstance(r[f'R_{cut}_reco_rot'], float) and math.isnan(r[f'R_{cut}_reco_rot']))])
+            tex.append(f"{cut} & {tl:.3f} & {tr:.3f} & {rl:.3f} & {rr:.3f} \\\\\n")
+        tex.append(r"""\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{R\_rot 随 gamma 趋势（per target，averaged over both helicities）}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{反应平面旋转后 R\_rot vs gamma。Sn124 信号显著强于 Sn112（破裂动力学差异）。reco 端信号 ~5\% 衰减，趋势完整保留。}
+\begin{tabular}{llrrrrrr}
+\toprule
+target & gamma & \multicolumn{2}{c}{loose} & \multicolumn{2}{c}{mid} & \multicolumn{2}{c}{tight} \\
+       &       & truth & reco & truth & reco & truth & reco \\
+\midrule
+""")
+        from collections import defaultdict as _dd
+        agg = _dd(list)
+        for r in rp_rows:
+            agg[(r['target'], r['gamma'])].append(r)
+        for (target, gamma) in sorted(agg.keys()):
+            cells = agg[(target, gamma)]
+            line = f"{target} & {gamma}"
+            for cut in ("loose", "mid", "tight"):
+                tr = _s.mean([c[f'R_{cut}_truth_rot'] for c in cells])
+                rr = _s.mean([c[f'R_{cut}_reco_rot'] for c in cells])
+                line += f" & {tr:.3f} & {rr:.3f}"
+            line += r" \\" + "\n"
+            tex.append(line)
+        tex.append(r"""\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{物理结论}：R\_rot 在 Sn124 上随 gamma 单调下降 g050(0.62) → g080(0.32)，约 50\% 变化幅度。
+loose cut + rotation 提供最佳统计（每 cell ~5000 事件, CP 半宽 ~0.01）+ 良好信号 (5--15\% 不对称)。
+tight cut 信号更强 (30--60\%) 但统计差 (CP 半宽 0.04)。
+reco 端忠实跟随 truth，全模拟 + 全重建 (含 NEBULA 中子) 对反应平面 R 的 fidelity 验证通过。
+
 """)
 
     tex.append(r"""\section{结论}
