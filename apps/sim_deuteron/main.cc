@@ -43,6 +43,7 @@
 
 #include "NEBULASimDataConverter_TArtNEBULAPla.hh"
 #include "FragSimDataConverter_Basic.hh"
+#include "EventTruthConverter.hh"
 
 #include "G4PhysListFactorySAMURAI.hh"
 #include "G4VModularPhysicsList.hh"
@@ -104,6 +105,7 @@ int main(int argc,char** argv)
   simDataManager->RegistInitializer(new NEBULASimDataInitializer);
   simDataManager->RegistConverter(new FragSimDataConverter_Basic);
   simDataManager->RegistConverter(new NEBULASimDataConverter_TArtNEBULAPla);
+  simDataManager->RegistConverter(new EventTruthConverter);
 
   G4UserRunAction* userRunAction = new RunActionBasic;
   runManager->SetUserAction(userRunAction);

@@ -124,7 +124,7 @@ if [[ "${REUSE_G4INPUT}" != "1" && ( "${MODE}" == "zpol" || "${MODE}" == "both" 
         --output-base "${G4INPUT_BASE}" \
         --target-filter "${ZPOL_TARGET_FILTER}" \
         --cut-unphysical on \
-        --rotate-zpol on
+        --randomize-zpol on
 fi
 
 if [[ "${REUSE_G4INPUT}" != "1" && ( "${MODE}" == "ypol" || "${MODE}" == "both" ) ]]; then
@@ -135,7 +135,7 @@ if [[ "${REUSE_G4INPUT}" != "1" && ( "${MODE}" == "ypol" || "${MODE}" == "both" 
         --output-base "${G4INPUT_BASE}" \
         --target-filter "${YPOL_TARGET_FILTER}" \
         --cut-unphysical on \
-        --rotate-ypol off
+        --randomize-ypol off
 fi
 
 if [[ "${REUSE_G4INPUT}" == "1" ]]; then

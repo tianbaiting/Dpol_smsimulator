@@ -9,6 +9,8 @@
 
 #include "QMDInputMetadata.hh"
 #include "TBeamSimData.hh"
+#include "qmd_rotation.hh"
+#include "TRandom.h"
 
 #include <spdlog/spdlog.h>
 
@@ -58,8 +60,9 @@ struct Options {
     bool cut_unphysical = true;
     double cut_ypol_axis_limit = 150.0;
     double cut_zpol_axis_limit = 150.0;
-    bool rotate_ypol = false;
-    bool rotate_zpol = true;
+    bool randomize_ypol = false;
+    bool randomize_zpol = true;
+    long rotation_seed = 0;  // [EN] 0 → use system-time-derived seed / [CN] 0 → 使用系统时间派生种子
 };
 
 struct HeaderInfo {
@@ -314,15 +317,20 @@ void StampMetadata(
     int original_event_id,
     int source_file_index,
     qmd_input_metadata::PolarizationKind pol,
-    double bimp
+    double bimp,
+    double b_phi,
+    double phi_np_truth
 ) {
     beam.fUserInt.assign(qmd_input_metadata::kPolarizationKindIndex + 1, 0);
-    beam.fUserDouble.assign(qmd_input_metadata::kBimpIndex + 1, kUnknownBimp);
+    beam.fUserDouble.assign(qmd_input_metadata::kPhiNpTruthIndex + 1,
+                            std::numeric_limits<double>::quiet_NaN());
     beam.fUserInt[qmd_input_metadata::kSourceKindIndex] = static_cast<int>(source);
     beam.fUserInt[qmd_input_metadata::kOriginalEventIdIndex] = original_event_id;
     beam.fUserInt[qmd_input_metadata::kSourceFileIndex] = source_file_index;
     beam.fUserInt[qmd_input_metadata::kPolarizationKindIndex] = static_cast<int>(pol);
-    beam.fUserDouble[qmd_input_metadata::kBimpIndex] = bimp;
+    beam.fUserDouble[qmd_input_metadata::kBimpIndex]       = bimp;
+    beam.fUserDouble[qmd_input_metadata::kBPhiIndex]       = b_phi;
+    beam.fUserDouble[qmd_input_metadata::kPhiNpTruthIndex] = phi_np_truth;
 }
 
 bool ParseGeminiRow(const std::string& line, GeminiRow& row) {
@@ -353,7 +361,9 @@ void WriteElasticEvent(
     double bimp,
     int source_file_index,
     TTree& tree,
-    const TVector3& position
+    const TVector3& position,
+    double b_phi,
+    double phi_np_truth
 ) {
     gBeamSimDataArray->clear();
 
@@ -369,7 +379,9 @@ void WriteElasticEvent(
         event_no,
         source_file_index,
         pol,
-        bimp
+        bimp,
+        b_phi,
+        phi_np_truth
     );
     gBeamSimDataArray->push_back(proton);
 
@@ -385,7 +397,9 @@ void WriteElasticEvent(
         event_no,
         source_file_index,
         pol,
-        bimp
+        bimp,
+        b_phi,
+        phi_np_truth
     );
     gBeamSimDataArray->push_back(neutron);
 
@@ -415,7 +429,9 @@ void FlushAlleventGroup(
           current_isim,
           source_file_index,
           pol,
-          current_bimp
+          current_bimp,
+          std::numeric_limits<double>::quiet_NaN(),
+          std::numeric_limits<double>::quiet_NaN()
       );
       gBeamSimDataArray->push_back(primaries[i]);
     }
@@ -471,7 +487,7 @@ void ConvertElasticFile(
         throw std::runtime_error("Missing header line 2 in: " + input_str);
     }
 
-    const double bimp = ExtractB(header1).value_or(kUnknownBimp);
+    const double bimp_header = ExtractB(header1).value_or(kUnknownBimp);
 
     fs::create_directories(output.parent_path());
     TFile out_file(output.c_str(), "RECREATE");
@@ -506,6 +522,14 @@ void ConvertElasticFile(
         if (!(iss >> no >> pxp >> pyp >> pzp >> pxn >> pyn >> pzn)) {
             continue;
         }
+        // [EN] phi_random datasets append two extra columns: per-event b (fm) and rpphi (deg). / [CN] phi_random 数据集多两列: 每事件 b (fm) 与 rpphi (°)
+        double b_per_event = std::numeric_limits<double>::quiet_NaN();
+        double rpphi_deg   = 0.0;
+        const bool has_rpphi = static_cast<bool>(iss >> b_per_event >> rpphi_deg);
+        const double b_phi_raw_rad = has_rpphi ? rpphi_deg * (M_PI / 180.0) : 0.0;
+        const double bimp = (has_rpphi && std::isfinite(b_per_event))
+            ? b_per_event
+            : bimp_header;
         ++parsed_event_count;
         if (max_events.has_value() && selected_event_count >= *max_events) {
             break;
@@ -526,29 +550,23 @@ void ConvertElasticFile(
             }
         }
 
-        const bool do_rotate = (pol == qmd_input_metadata::PolarizationKind::kY && opts.rotate_ypol)
-            || (pol == qmd_input_metadata::PolarizationKind::kZ && opts.rotate_zpol);
-        if (do_rotate) {
-            const double sum_px = pxp + pxn;
-            const double sum_py = pyp + pyn;
-            const double phi = std::atan2(sum_py, sum_px);
-            const double angle = -phi;
-            const double cos_a = std::cos(angle);
-            const double sin_a = std::sin(angle);
-
-            const double rot_pxp = cos_a * pxp - sin_a * pyp;
-            const double rot_pyp = sin_a * pxp + cos_a * pyp;
-            const double rot_pxn = cos_a * pxn - sin_a * pyn;
-            const double rot_pyn = sin_a * pxn + cos_a * pyn;
-
-            pxp = rot_pxp;
-            pyp = rot_pyp;
-            pxn = rot_pxn;
-            pyn = rot_pyn;
+        const bool randomize = (pol == qmd_input_metadata::PolarizationKind::kY && opts.randomize_ypol)
+            || (pol == qmd_input_metadata::PolarizationKind::kZ && opts.randomize_zpol);
+        double delta = 0.0;
+        if (randomize) {
+            // [EN] gRandom seeded in main(); Task 5 wires --rotation-seed.
+            delta = 2.0 * M_PI * gRandom->Uniform();
+            qmd::rotate_xy(pxp, pyp, delta);
+            qmd::rotate_xy(pxn, pyn, delta);
             ++rotated_event_count;
         }
+        const double b_phi = qmd::wrap_two_pi(b_phi_raw_rad + delta);
+        // [EN] qmd::phi_np takes (sum_px, sum_py) — see qmd_rotation.hh.
+        const double phi_np_truth = qmd::phi_np(pxp + pxn, pyp + pyn);
 
-        WriteElasticEvent(no, pxp, pyp, pzp, pxn, pyn, pzn, pol, bimp, source_file_index, tree, position);
+        WriteElasticEvent(no, pxp, pyp, pzp, pxn, pyn, pzn, pol, bimp,
+                          source_file_index, tree, position,
+                          b_phi, phi_np_truth);
         ++written_event_count;
 
         if (written_event_count % 10000 == 0) {
@@ -695,10 +713,12 @@ Options ParseArgs(int argc, char* argv[]) {
             opts.cut_ypol_axis_limit = std::stod(argv[++i]);
         } else if (arg == "--cut-zpol-axis-limit" && i + 1 < argc) {
             opts.cut_zpol_axis_limit = std::stod(argv[++i]);
-        } else if (arg == "--rotate-ypol" && i + 1 < argc) {
-            opts.rotate_ypol = ParseBoolOption(argv[++i]);
-        } else if (arg == "--rotate-zpol" && i + 1 < argc) {
-            opts.rotate_zpol = ParseBoolOption(argv[++i]);
+        } else if (arg == "--randomize-ypol" && i + 1 < argc) {
+            opts.randomize_ypol = ParseBoolOption(argv[++i]);
+        } else if (arg == "--randomize-zpol" && i + 1 < argc) {
+            opts.randomize_zpol = ParseBoolOption(argv[++i]);
+        } else if (arg == "--rotation-seed" && i + 1 < argc) {
+            opts.rotation_seed = std::stol(argv[++i]);
         } else if (arg == "--help") {
             spdlog::info(
                 "Usage: GenInputRoot_qmdrawdata --mode [ypol|zpol|both] "
@@ -706,7 +726,8 @@ Options ParseArgs(int argc, char* argv[]) {
                 "--input-base PATH --output-base PATH "
                 "[--target-filter Sn124] "
                 "[--cut-unphysical on|off] [--cut-ypol-axis-limit 150] [--cut-zpol-axis-limit 150] "
-                "[--rotate-ypol on|off] [--rotate-zpol on|off]"
+                "[--randomize-ypol on|off] [--randomize-zpol on|off] "
+                "[--rotation-seed N]"
             );
             std::exit(0);
         } else {
@@ -806,9 +827,9 @@ void ProcessZpolElasticFiles(
         return;
     }
 
-    if (opts.rotate_zpol) {
-        spdlog::warn(
-            "rotate-zpol is ON: generated files under {} will contain rotated z_pol momenta.",
+    if (opts.randomize_zpol) {
+        spdlog::info(
+            "randomize-zpol is ON: each z_pol event rotated by uniform random phi in [0, 2π). Output: {}",
             output_base.string().c_str()
         );
     }
@@ -913,6 +934,17 @@ int main(int argc, char* argv[]) {
         const auto opts = ParseArgs(argc, argv);
         const auto input_base = ResolveInputBase(opts.input_base, opts.source);
         const auto output_base = ResolveOutputBase(opts.output_base);
+
+        if (opts.rotation_seed < 0) {
+            throw std::runtime_error("--rotation-seed must be non-negative");
+        }
+        if (opts.rotation_seed != 0) {
+            gRandom->SetSeed(static_cast<UInt_t>(opts.rotation_seed));
+            spdlog::info("Using --rotation-seed {}", opts.rotation_seed);
+        } else {
+            gRandom->SetSeed(0);  // [EN] 0 = TRandom3 picks UUID-based seed / [CN] 0 = TRandom3 使用 UUID 派生种子
+            spdlog::info("Using system-derived seed (--rotation-seed 0)");
+        }
 
         if (opts.source == SourceMode::kElastic || opts.source == SourceMode::kBoth) {
             ProcessElastic(input_base, output_base, opts);

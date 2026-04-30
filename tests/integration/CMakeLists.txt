@@ -257,3 +257,20 @@ cd ${CMAKE_BINARY_DIR}/bin
 ")
 
 message(STATUS "Run scripts created in ${CMAKE_BINARY_DIR}/bin/")
+
+##############################################################################
+# 测试5: GenInputRoot_qmdrawdata roundtrip smoke test
+# [EN] Verify b_phi/bimp metadata is correctly stamped into TBeamSimData.fUserDouble.
+# [CN] 验证 b_phi/bimp 元数据被正确写入 TBeamSimData.fUserDouble。
+##############################################################################
+
+if(TARGET GenInputRoot_qmdrawdata)
+    add_test(NAME test_geninput_qmdrawdata_roundtrip
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test_geninput_qmdrawdata_roundtrip.sh
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+    set_tests_properties(test_geninput_qmdrawdata_roundtrip PROPERTIES
+        LABELS "integration"
+        TIMEOUT 60
+    )
+endif()

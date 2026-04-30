@@ -31,3 +31,33 @@ add_test(NAME test_no_bare_target_macros
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 set_tests_properties(test_no_bare_target_macros PROPERTIES LABELS "unit")
+
+# QMDInputMetadata index layout regression
+add_executable(test_qmd_input_metadata_indices
+    test_qmd_input_metadata_indices.cc
+)
+target_link_libraries(test_qmd_input_metadata_indices PRIVATE
+    smg4lib
+    GTest::gtest
+    GTest::gtest_main
+)
+target_include_directories(test_qmd_input_metadata_indices PRIVATE
+    ${CMAKE_SOURCE_DIR}/libs/smg4lib/include
+)
+gtest_discover_tests(test_qmd_input_metadata_indices
+    PROPERTIES LABELS "unit"
+)
+
+add_executable(test_qmd_rotation
+    test_qmd_rotation.cc
+)
+target_include_directories(test_qmd_rotation PRIVATE
+    ${CMAKE_SOURCE_DIR}/scripts/event_generator/dpol_eventgen
+)
+target_link_libraries(test_qmd_rotation PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_qmd_rotation
+    PROPERTIES LABELS "unit"
+)
