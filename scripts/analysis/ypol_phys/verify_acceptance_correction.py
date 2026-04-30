@@ -59,12 +59,12 @@ def main():
     def bin_idx(pxn):
         return int(round(pxn / bin_w))
 
-    # Per (target, gamma, hel) tight events
+    # Per (target, gamma) tight events — helicities pooled
     by_cell: dict = defaultdict(list)
     cells = sorted(p for p in Path(args.csv_dir).glob("*.csv"))
     for cp in cells:
         tag = cp.stem
-        target, gamma, hel = cell_decode(tag)
+        target, gamma, hel = cell_decode(tag)  # hel ignored for keying
         with open(cp) as f:
             for r in csv.DictReader(f):
                 if r["truth_has_proton"] != "1" or r["truth_has_neutron"] != "1":
@@ -81,7 +81,7 @@ def main():
                 rpxn = safe_float(r["reco_pxn"])
                 n_reco_n = int(safe_float(r.get("n_reco_neutrons", "0")))
                 neb_hit = (n_reco_n > 0 and rpxn != 0.0 and not math.isnan(rpxn))
-                by_cell[(target, gamma, hel)].append({
+                by_cell[(target, gamma)].append({
                     "tpxp": tpxp, "tpxn": tpxn,
                     "rpxp": rpxp, "rpxn": rpxn,
                     "neb": neb_hit,
@@ -108,15 +108,15 @@ def main():
         flag = " *" if eps_map[b] < args.eps_min else ""
         print(f"  {bin_cen:>+8.1f}    {nt:>5d}   {nn:>4d}  {eps_map[b]:>5.3f}{flag}")
 
-    # Apply 1/eps weighting per cell, recompute R for truth/reco/full
+    # Apply 1/eps weighting per (target, gamma), recompute R for truth/reco/full
     print()
-    print("Per-cell R values (uncorrected vs ε-corrected on truth_pxn binning):")
-    print(f"{'target':10s} {'gamma':6s} {'hel':4s} | "
+    print("Per-(target,gamma) R values (uncorrected vs ε-corrected on truth_pxn binning):")
+    print(f"{'target':10s} {'gamma':6s} | "
           f"{'R_truth_tight':>14s} {'R_full_uncorr':>15s} {'R_full_corr':>13s} | "
           f"{'N_neb':>5s} {'N_corr_kept':>12s}")
     summary_rows = []
     for key, events in sorted(by_cell.items()):
-        target, gamma, hel = key
+        target, gamma = key
         # Truth R on tight (no NEBULA req)
         truth_diffs = [e["tpxp"] - e["tpxn"] for e in events]
         npos = sum(1 for v in truth_diffs if v > 0)
@@ -146,11 +146,11 @@ def main():
             n_kept += 1
         R_corr = wpos / wneg if wneg > 0 else float("nan")
 
-        print(f"{target:10s} {gamma:6s} {hel:4s} | "
+        print(f"{target:10s} {gamma:6s} | "
               f"{R_truth:>14.3f} {R_full:>15.3f} {R_corr:>13.3f} | "
               f"{len(neb_events):>5d} {n_kept:>12d}")
         summary_rows.append({
-            "target": target, "gamma": gamma, "helicity": hel,
+            "target": target, "gamma": gamma,
             "R_truth_tight": R_truth, "R_full_uncorr": R_full,
             "R_full_corr": R_corr,
             "N_neb": len(neb_events), "N_corr_kept": n_kept,
