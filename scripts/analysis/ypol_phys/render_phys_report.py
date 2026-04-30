@@ -334,7 +334,7 @@ target & gamma & A truth & B mixed & C full & A truth & B mixed & C full & A tru
                 tex.append(rf"""\begin{{figure}}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{{{args.figure_rel_dir}/{png_name}}}
-\caption{{$R_x^\text{{rot}}$ 随 gamma ({cn} cut)。两 panel = 两 target；圆=A truth, 方=B reco mixed, 三角=C full reco；线条按 helicity 分。\textbf{{所有 R 值在反应平面 frame}}。}}
+\caption{{$R_x^\text{{rot}}$ 随 gamma ({cn} cut)。两 panel = 两 target；marker 形状区分 reco 变体（圆=A truth, 方=B reco mixed, 三角=C full reco）；每 panel 共 6 条曲线 = 2 helicities × 3 变体，每条曲线由 legend 标出 (helicity, 变体) 组合。\textbf{{所有 R 值在反应平面 frame}}。}}
 \end{{figure}}
 """)
 
