@@ -16,7 +16,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
-from typing import Sequence
+from typing import List, Sequence, Tuple
 
 CONFIG = {
     "local_smsim_dir":   "/home/tian/workspace/dpol/smsimulator5.5",
@@ -70,8 +70,10 @@ def run(cmd: Sequence[str], dry_run: bool = False, check: bool = True,
         log("CMD ", " ".join(shlex.quote(c) for c in cmd))
     if dry_run:
         return subprocess.CompletedProcess(cmd, 0, "", "")
-    return subprocess.run(cmd, check=check, text=True,
-                          capture_output=capture, shell=shell)
+    return subprocess.run(cmd, check=check, universal_newlines=True,
+                          stdout=subprocess.PIPE if capture else None,
+                          stderr=subprocess.PIPE if capture else None,
+                          shell=shell)
 
 
 def run_bash(remote_cmd: str, dry_run: bool = False, check: bool = True,
@@ -82,7 +84,7 @@ def run_bash(remote_cmd: str, dry_run: bool = False, check: bool = True,
                dry_run=dry_run, check=check, capture=capture)
 
 
-def plan_ypol_symlinks(cfg: dict) -> list[tuple[PurePosixPath, PurePosixPath]]:
+def plan_ypol_symlinks(cfg: dict) -> List[Tuple[PurePosixPath, PurePosixPath]]:
     """Return [(src, dst)] file-symlink plan for ypol Sn data.
 
     src lives under cfg['ypol_source_dir']/d+{iso}E190/d+{iso}E190g{gamma}{dir}-RP360/dbreak.dat
@@ -104,7 +106,7 @@ def plan_ypol_symlinks(cfg: dict) -> list[tuple[PurePosixPath, PurePosixPath]]:
     return plan
 
 
-def build_rsync_cmd(cfg: dict, dry_run: bool) -> list[str]:
+def build_rsync_cmd(cfg: dict, dry_run: bool) -> List[str]:
     """Build rsync command pushing 20260413ypol/Sn{iso}E190 to remote, only dbreak.dat.
 
     Documents the rsync flag shape for sync_dbreak_to_spana.sh.
@@ -152,7 +154,7 @@ def build_geninput_cmd(cfg: dict, mode: str, isotope: str) -> str:
     return " && ".join(parts)
 
 
-def plan_filtered_tree(cfg: dict, pol: str) -> list[tuple[PurePosixPath, PurePosixPath]]:
+def plan_filtered_tree(cfg: dict, pol: str) -> List[Tuple[PurePosixPath, PurePosixPath]]:
     """Plan the (g4input → state_dir/g4input_filtered_<pol>) symlink farm.
 
     The filtered tree is what `run_g4input_batch_parallel.sh` reads as
@@ -242,8 +244,55 @@ def stage_prebuild(args) -> None:
     log("INFO", "prebuild: done")
 
 
+def stage_prepare(args) -> None:
+    """Create file-level symlinks under y_pol/phi_random/ pointing into 20260413ypol/."""
+    log("INFO", "prepare: starting")
+    cfg = CONFIG
+    plan = plan_ypol_symlinks(cfg)
+    log("INFO", f"prepare: {len(plan)} symlinks planned")
+
+    # Build a single bash heredoc that creates all symlinks idempotently.
+    # Use absolute symlink targets — simpler than computing relatives, and
+    # the data tree never moves after rsync.
+    lines = []
+    for src, dst in plan:
+        abs_src = PurePosixPath(cfg["remote_smsim_dir"]) / src
+        abs_dst = PurePosixPath(cfg["remote_smsim_dir"]) / dst
+        lines.append(f"mkdir -p {shlex.quote(str(abs_dst.parent))}")
+        lines.append(f"ln -snf {shlex.quote(str(abs_src))} "
+                     f"{shlex.quote(str(abs_dst))}")
+    bash = " && ".join(lines)
+
+    if args.dry_run:
+        log("INFO", "prepare: dry-run, would execute:")
+        for line in lines:
+            print("  " + line)
+        return
+
+    run_bash(bash, check=True)
+
+    # Verify each symlink resolves to an existing file
+    check = " && ".join(
+        f"test -f {shlex.quote(str(PurePosixPath(cfg['remote_smsim_dir']) / dst))}"
+        for _, dst in plan
+    )
+    res = run_bash(check, check=False, capture=True)
+    if res.returncode != 0:
+        log("ERROR", "prepare: at least one symlink target is missing")
+        sys.exit(1)
+
+    # Marker
+    state_remote = PurePosixPath(cfg["remote_smsim_dir"]) / cfg["state_dir"]
+    marker_payload = json.dumps({"count": len(plan)})
+    marker_cmd = (
+        f"mkdir -p {state_remote} && "
+        f"echo {shlex.quote(marker_payload)} > {state_remote}/prepare.done"
+    )
+    run_bash(marker_cmd, check=True)
+    log("INFO", "prepare: done")
+
+
 # Stage stubs (filled in by later tasks)
-def stage_prepare(args): raise NotImplementedError
 def stage_gen_input(args): raise NotImplementedError
 def stage_gen_output(args): raise NotImplementedError
 def stage_status(args): raise NotImplementedError
@@ -276,7 +325,7 @@ def build_argparser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv=None) -> int:
     args = build_argparser().parse_args(argv)
     STAGES[args.stage](args)
     return 0
