@@ -48,7 +48,7 @@ JOBLIST="${MACRO_DIR}/_joblist.txt"
 
 # [EN] Enumerate input ROOTs under INPUT_ROOT matching PATTERN; sort for deterministic order.
 # [CN] 收集 INPUT_ROOT 下匹配 PATTERN 的 .root 输入并按字典序排序。
-mapfile -t FILES < <(find "$INPUT_ROOT" -type f -name "$PATTERN" | sort)
+mapfile -t FILES < <(find -L "$INPUT_ROOT" -type f -name "$PATTERN" | sort)
 total="${#FILES[@]}"
 planned=0
 skipped=0
