@@ -322,8 +322,8 @@ def stage_gen_input(args) -> None:
     # Validate g4input was actually produced (≥1 .root file under each pol root)
     if not args.dry_run:
         for pol in {p for p, _ in combos}:
-            # GenInputRoot outputs to 20260413ypol/ for ypol; check that location
-            sub = "20260413ypol" if pol == "ypol" else "z_pol_b_discrete"
+            # GenInputRoot outputs to 20260413ypol/ for ypol, z_pol/b_discrete/ for zpol
+            sub = "20260413ypol" if pol == "ypol" else "z_pol/b_discrete"
             check = (
                 f"find {cfg['remote_smsim_dir']}/{cfg['g4input_base']}/{sub} "
                 f" -name '*.root' -newer {state_remote}/prepare.done 2>/dev/null | wc -l"
