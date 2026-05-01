@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Run dbreak elastic data (ypol+zpol Sn112/Sn124) through GenInputRoot
-and sim_deuteron on remote spana03.
+and sim_deuteron. Designed to be invoked ON spana03 (after `ssh spana03`),
+so all stages call subprocess directly — no inner ssh wrapping.
+
+Local data push (rsync) is a separate small bash helper at
+scripts/batch/sync_dbreak_to_spana.sh, run from local before invoking
+the pipeline on remote.
 
 Spec: docs/superpowers/specs/2026-04-30-dbreak-elastic-g4-pipeline-design.md
 """
@@ -17,9 +22,9 @@ CONFIG = {
     "local_smsim_dir":   "/home/tian/workspace/dpol/smsimulator5.5",
     "remote_host":       "spana03",
     "remote_smsim_dir":  "/home/tbt/workspace/Dpol_smsimulator",
-    "remote_git_remote": "origin",
-    "remote_git_branch": "main",
-    "remote_build_cmd":  "bash build.sh",
+    "git_remote":        "origin",
+    "git_branch":        "feature/dbreak-elastic-pipeline",
+    "build_cmd":         "bash build.sh",
 
     "isotopes":          ["Sn112", "Sn124"],
     "gammas":            ["g050", "g060", "g070", "g080"],
@@ -56,24 +61,29 @@ def log(level: str, msg: str) -> None:
     sys.stdout.flush()
 
 
-def run_local(cmd: Sequence[str], dry_run: bool = False, check: bool = True,
-              capture: bool = False) -> subprocess.CompletedProcess:
-    log("CMD ", " ".join(shlex.quote(c) for c in cmd))
+def run(cmd: Sequence[str], dry_run: bool = False, check: bool = True,
+        capture: bool = False, shell: bool = False) -> subprocess.CompletedProcess:
+    """Run a command via subprocess (not over ssh — driver runs on remote)."""
+    if shell:
+        log("CMD ", cmd if isinstance(cmd, str) else " ".join(cmd))
+    else:
+        log("CMD ", " ".join(shlex.quote(c) for c in cmd))
     if dry_run:
         return subprocess.CompletedProcess(cmd, 0, "", "")
     return subprocess.run(cmd, check=check, text=True,
-                          capture_output=capture)
+                          capture_output=capture, shell=shell)
 
 
-def run_ssh(remote_cmd: str, dry_run: bool = False, check: bool = True,
-            capture: bool = False) -> subprocess.CompletedProcess:
-    cmd = ["ssh", CONFIG["remote_host"], "bash", "-lc", remote_cmd]
-    return run_local(cmd, dry_run=dry_run, check=check, capture=capture)
+def run_bash(remote_cmd: str, dry_run: bool = False, check: bool = True,
+             capture: bool = False) -> subprocess.CompletedProcess:
+    """Run a multi-statement bash snippet locally with `bash -lc <cmd>`,
+    so setup_spana.sh and other login-shell scripts work."""
+    return run(["bash", "-lc", remote_cmd],
+               dry_run=dry_run, check=check, capture=capture)
 
 
 # Stage stubs (filled in by later tasks)
 def stage_prebuild(args): raise NotImplementedError
-def stage_sync(args): raise NotImplementedError
 def stage_prepare(args): raise NotImplementedError
 def stage_gen_input(args): raise NotImplementedError
 def stage_gen_output(args): raise NotImplementedError
@@ -81,14 +91,13 @@ def stage_status(args): raise NotImplementedError
 
 
 def stage_all(args) -> None:
-    for fn in (stage_prebuild, stage_sync, stage_prepare,
+    for fn in (stage_prebuild, stage_prepare,
                stage_gen_input, stage_gen_output):
         fn(args)
 
 
 STAGES = {
     "prebuild":   stage_prebuild,
-    "sync":       stage_sync,
     "prepare":    stage_prepare,
     "gen-input":  stage_gen_input,
     "gen-output": stage_gen_output,
