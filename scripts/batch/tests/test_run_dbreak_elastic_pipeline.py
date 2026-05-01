@@ -78,8 +78,8 @@ def test_build_geninput_cmd_ypol_sn112():
     assert "--source elastic" in cmd
     assert "--target-filter Sn112" in cmd
     assert "--cut-unphysical on" in cmd
-    assert "--cut-ypol-axis-limit 150" in cmd
-    assert "--cut-zpol-axis-limit 150" in cmd
+    assert "--cut-ypol-axis-limit 150.0" in cmd
+    assert "--cut-zpol-axis-limit 150.0" in cmd
     assert "--randomize-ypol off" in cmd
     assert "--randomize-zpol on" in cmd
     assert "--rotation-seed 0" in cmd
