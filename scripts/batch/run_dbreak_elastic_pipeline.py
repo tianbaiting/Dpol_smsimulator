@@ -437,7 +437,27 @@ def stage_gen_output(args) -> None:
 
 
 # Stage stubs (filled in by later tasks)
-def stage_status(args): raise NotImplementedError
+def stage_status(args) -> None:
+    """Read state files and g4output file counts; print summary. SSH read-only."""
+    log("INFO", "status: querying remote state")
+    cfg = CONFIG
+    remote_root = PurePosixPath(cfg["remote_smsim_dir"])
+    state_remote = remote_root / cfg["state_dir"]
+    g4output = remote_root / cfg["g4output_base"]
+
+    cmd = (
+        f"echo '== state files =='; "
+        f"ls -la {state_remote}/*.done 2>/dev/null || echo '(none)'; "
+        f"echo; echo '== g4output ypol .root count =='; "
+        f"find {g4output}/y_pol/phi_random -name 'dbreak.root' 2>/dev/null | wc -l; "
+        f"echo '== g4output zpol .root count =='; "
+        f"find {g4output}/z_pol/b_discrete -name 'dbreakb*.root' 2>/dev/null | wc -l; "
+        f"echo; echo '== last .done payloads =='; "
+        f"for f in {state_remote}/*.done; do "
+        f"  echo \"-- $f --\"; cat \"$f\"; echo; "
+        f"done"
+    )
+    run_bash(cmd, capture=False, check=False)
 
 
 def stage_all(args) -> None:
