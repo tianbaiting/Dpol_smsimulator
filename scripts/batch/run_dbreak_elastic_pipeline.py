@@ -359,8 +359,73 @@ def stage_gen_input(args) -> None:
     log("INFO", "gen-input: done")
 
 
+def stage_gen_output(args) -> None:
+    """Build filtered g4input symlink trees, then call run_g4input_batch_parallel.sh
+    twice (ypol, zpol)."""
+    log("INFO", "gen-output: starting")
+    cfg = CONFIG
+    remote_root = PurePosixPath(cfg["remote_smsim_dir"])
+    state_remote = remote_root / cfg["state_dir"]
+
+    pols = (["ypol", "zpol"] if args.only is None else [args.only])
+    summary = {"jobs": []}
+
+    for pol in pols:
+        plan = plan_filtered_tree(cfg, pol=pol)
+        # Filter by isotope if given
+        if args.isotope is not None:
+            plan = [(s, d) for s, d in plan if args.isotope in str(s)]
+        log("INFO", f"gen-output: {pol} filter tree, {len(plan)} files")
+
+        # 1. Build filter symlink tree
+        ln_lines = []
+        for src, dst in plan:
+            abs_src = remote_root / src
+            abs_dst = remote_root / dst
+            ln_lines.append(f"mkdir -p {shlex.quote(str(abs_dst.parent))}")
+            ln_lines.append(f"ln -snf {shlex.quote(str(abs_src))} "
+                            f"{shlex.quote(str(abs_dst))}")
+        bash = " && ".join(ln_lines) if ln_lines else "true"
+        run_bash(bash, dry_run=args.dry_run, check=True)
+
+        # 2. Invoke run_g4input_batch_parallel.sh
+        sub = "y_pol/phi_random" if pol == "ypol" else "z_pol/b_discrete"
+        pattern = "dbreak.root" if pol == "ypol" else "dbreakb*.root"
+        input_root = state_remote / f"g4input_filtered_{pol}"
+        output_base = remote_root / cfg["g4output_base"] / sub
+        log_path = state_remote / f"gen_output_{pol}.log"
+        env = " ".join(f"{k}={shlex.quote(v)}" for k, v in {
+            "INPUT_ROOT":  str(input_root),
+            "OUTPUT_BASE": str(output_base),
+            "GEOM_MAC":    str(remote_root / cfg["geom_mac"]),
+            "MACRO_DIR":   str(remote_root / cfg["macro_dir"]),
+            "JOBS":        str(cfg["g4_jobs"]),
+            "PATTERN":     pattern,
+            "TAG":         f"{pol}_Sn_{cfg['tag']}",
+        }.items())
+        cmd = (
+            f"set -eo pipefail && "
+            f"cd {shlex.quote(cfg['remote_smsim_dir'])} && "
+            f"source setup_spana.sh && "
+            f"mkdir -p {state_remote} {output_base} && "
+            f"{env} bash {cfg['batch_script']} 2>&1 | tee {log_path}"
+        )
+        run_bash(cmd, dry_run=args.dry_run, check=True)
+        summary["jobs"].append({"pol": pol, "log": str(log_path),
+                                "input_root": str(input_root),
+                                "output_base": str(output_base)})
+
+    if not args.dry_run:
+        marker = json.dumps(summary)
+        marker_cmd = (
+            f"mkdir -p {state_remote} && "
+            f"echo {shlex.quote(marker)} > {state_remote}/gen_output.done"
+        )
+        run_bash(marker_cmd, check=True)
+    log("INFO", "gen-output: done")
+
+
 # Stage stubs (filled in by later tasks)
-def stage_gen_output(args): raise NotImplementedError
 def stage_status(args): raise NotImplementedError
 
 
