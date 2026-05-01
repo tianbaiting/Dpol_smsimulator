@@ -290,8 +290,63 @@ def stage_prepare(args) -> None:
     log("INFO", "prepare: done")
 
 
+def stage_gen_input(args) -> None:
+    """Run GenInputRoot_qmdrawdata 4 times: (ypol|zpol) × (Sn112|Sn124)."""
+    log("INFO", "gen-input: starting")
+    cfg = CONFIG
+    state_remote = PurePosixPath(cfg["remote_smsim_dir"]) / cfg["state_dir"]
+
+    combos = []
+    for pol in (["ypol", "zpol"] if args.only is None else [args.only]):
+        for iso in (cfg["isotopes"] if args.isotope is None else [args.isotope]):
+            combos.append((pol, iso))
+
+    summary = {"runs": []}
+    for pol, iso in combos:
+        log("INFO", f"gen-input: {pol} {iso}")
+        cmd = build_geninput_cmd(cfg, mode=pol, isotope=iso)
+        log_path = state_remote / f"geninput_{pol}_{iso}.log"
+        wrapped = (
+            f"mkdir -p {state_remote} && "
+            f"({cmd}) 2>&1 | tee {log_path}"
+        )
+        rc = run_bash(wrapped, dry_run=args.dry_run, check=False).returncode
+        ok = (rc == 0)
+        summary["runs"].append({"pol": pol, "isotope": iso, "ok": ok,
+                                "log": str(log_path)})
+        if not ok and not args.force:
+            log("ERROR", f"gen-input: {pol} {iso} failed (rc={rc}); "
+                        f"see {log_path}")
+            sys.exit(1)
+
+    # Validate g4input was actually produced (≥1 .root file under each pol root)
+    if not args.dry_run:
+        for pol in {p for p, _ in combos}:
+            sub = "y_pol/phi_random" if pol == "ypol" else "z_pol/b_discrete"
+            check = (
+                f"find {cfg['remote_smsim_dir']}/{cfg['g4input_base']}/{sub} "
+                f" -name '*.root' -newer {state_remote}/prepare.done | wc -l"
+            )
+            res = run_bash(check, capture=True, check=True)
+            count = int(res.stdout.strip())
+            log("INFO", f"gen-input: {pol} produced {count} .root files")
+            if count == 0:
+                log("ERROR", f"gen-input: {pol} produced 0 ROOT files; "
+                            "cut may be too tight or paths wrong")
+                sys.exit(1)
+
+    # Write done marker
+    if not args.dry_run:
+        marker = json.dumps(summary)
+        marker_cmd = (
+            f"mkdir -p {state_remote} && "
+            f"echo {shlex.quote(marker)} > {state_remote}/geninput.done"
+        )
+        run_bash(marker_cmd, check=True)
+    log("INFO", "gen-input: done")
+
+
 # Stage stubs (filled in by later tasks)
-def stage_gen_input(args): raise NotImplementedError
 def stage_gen_output(args): raise NotImplementedError
 def stage_status(args): raise NotImplementedError
 
