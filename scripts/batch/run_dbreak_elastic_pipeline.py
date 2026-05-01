@@ -15,7 +15,7 @@ import json
 import shlex
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Sequence
 
 CONFIG = {
@@ -80,6 +80,107 @@ def run_bash(remote_cmd: str, dry_run: bool = False, check: bool = True,
     so setup_spana.sh and other login-shell scripts work."""
     return run(["bash", "-lc", remote_cmd],
                dry_run=dry_run, check=check, capture=capture)
+
+
+def plan_ypol_symlinks(cfg: dict) -> list[tuple[PurePosixPath, PurePosixPath]]:
+    """Return [(src, dst)] file-symlink plan for ypol Sn data.
+
+    src lives under cfg['ypol_source_dir']/d+{iso}E190/d+{iso}E190g{gamma}{dir}-RP360/dbreak.dat
+    dst lives under cfg['ypol_link_target']/d+{iso}E190g{gamma}{dir}/dbreak.dat
+
+    Both returned as PurePosixPath relative to cfg['remote_smsim_dir'].
+    """
+    src_root = PurePosixPath(cfg["ypol_source_dir"])
+    dst_root = PurePosixPath(cfg["ypol_link_target"])
+    energy = cfg["energy"]
+    plan = []
+    for iso in cfg["isotopes"]:
+        for gamma in cfg["gammas"]:
+            for direction in cfg["ypol_directions"]:
+                tag = f"d+{iso}{energy}{gamma}{direction}"  # e.g. d+Sn112E190g050ynp
+                src = src_root / f"d+{iso}{energy}" / f"{tag}-RP360" / "dbreak.dat"
+                dst = dst_root / tag / "dbreak.dat"
+                plan.append((src, dst))
+    return plan
+
+
+def build_rsync_cmd(cfg: dict, dry_run: bool) -> list[str]:
+    """Build rsync command pushing 20260413ypol/Sn{iso}E190 to remote, only dbreak.dat.
+
+    Documents the rsync flag shape for sync_dbreak_to_spana.sh.
+    Not called by the driver at runtime; covered by tests as documentation-as-code.
+    """
+    local_root = Path(cfg["local_smsim_dir"]) / cfg["ypol_source_dir"]
+    remote_root = (PurePosixPath(cfg["remote_smsim_dir"])
+                   / cfg["ypol_source_dir"])
+    src = f"{local_root}/"
+    dst = f"{cfg['remote_host']}:{remote_root}/"
+    cmd = [
+        "rsync", "-avz", "--info=progress2",
+        "--include=*/", "--include=dbreak.dat", "--exclude=*",
+        "--prune-empty-dirs",
+    ]
+    if dry_run:
+        cmd.append("--dry-run")
+    cmd += [src, dst]
+    return cmd
+
+
+def build_geninput_cmd(cfg: dict, mode: str, isotope: str) -> str:
+    """Build the bash command that runs GenInputRoot_qmdrawdata once.
+
+    Returns a single string suitable for `run_bash(...)` (bash -lc <cmd>).
+    Driver invokes this on remote spana03 directly.
+    """
+    assert mode in ("ypol", "zpol")
+    parts = [
+        f"cd {shlex.quote(cfg['remote_smsim_dir'])}",
+        "source setup_spana.sh",
+        " ".join([
+            cfg["geninput_bin"],
+            f"--mode {mode}",
+            "--source elastic",
+            f"--target-filter {isotope}",
+            f"--cut-unphysical {cfg['cut_unphysical']}",
+            f"--cut-ypol-axis-limit {cfg['cut_axis_limit']}",
+            f"--cut-zpol-axis-limit {cfg['cut_axis_limit']}",
+            f"--randomize-ypol {cfg['randomize_ypol']}",
+            f"--randomize-zpol {cfg['randomize_zpol']}",
+            f"--rotation-seed {cfg['rotation_seed']}",
+        ]),
+    ]
+    return " && ".join(parts)
+
+
+def plan_filtered_tree(cfg: dict, pol: str) -> list[tuple[PurePosixPath, PurePosixPath]]:
+    """Plan the (g4input → state_dir/g4input_filtered_<pol>) symlink farm.
+
+    The filtered tree is what `run_g4input_batch_parallel.sh` reads as
+    INPUT_ROOT, so it only contains the target isotope/gamma/direction subset.
+    Both paths are PurePosixPath relative to cfg['remote_smsim_dir'].
+    """
+    assert pol in ("ypol", "zpol")
+    energy = cfg["energy"]
+    if pol == "ypol":
+        src_root = PurePosixPath(cfg["g4input_base"]) / "y_pol" / "phi_random"
+        dst_root = PurePosixPath(cfg["state_dir"]) / "g4input_filtered_ypol"
+        directions = cfg["ypol_directions"]
+        files = ["dbreak.root"]
+    else:
+        src_root = PurePosixPath(cfg["g4input_base"]) / "z_pol" / "b_discrete"
+        dst_root = PurePosixPath(cfg["state_dir"]) / "g4input_filtered_zpol"
+        directions = cfg["zpol_directions"]
+        files = [f"dbreakb{i:02d}.root" for i in range(1, 11)]
+
+    plan = []
+    for iso in cfg["isotopes"]:
+        for gamma in cfg["gammas"]:
+            for direction in directions:
+                tag = f"d+{iso}{energy}{gamma}{direction}"
+                for fname in files:
+                    plan.append((src_root / tag / fname,
+                                 dst_root / tag / fname))
+    return plan
 
 
 # Stage stubs (filled in by later tasks)
