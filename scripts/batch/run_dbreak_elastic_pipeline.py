@@ -158,28 +158,40 @@ def plan_filtered_tree(cfg: dict, pol: str) -> list[tuple[PurePosixPath, PurePos
     The filtered tree is what `run_g4input_batch_parallel.sh` reads as
     INPUT_ROOT, so it only contains the target isotope/gamma/direction subset.
     Both paths are PurePosixPath relative to cfg['remote_smsim_dir'].
+
+    Note (ypol path quirk): GenInputRoot's recursive_directory_iterator
+    resolves the y_pol/phi_random/<dir>/dbreak.dat file symlinks created in
+    `prepare` to their canonical 20260413ypol target before computing the
+    output path. So ypol Sn .root files land at
+    g4input/20260413ypol/d+{ISO}E190/d+{ISO}E190g{XXX}{ynp,ypn}-RP360/dbreak.root,
+    NOT g4input/y_pol/phi_random/<dir>/dbreak.root. We use the canonical
+    path here.
     """
     assert pol in ("ypol", "zpol")
     energy = cfg["energy"]
+    plan = []
     if pol == "ypol":
-        src_root = PurePosixPath(cfg["g4input_base"]) / "y_pol" / "phi_random"
+        src_root = PurePosixPath(cfg["g4input_base"]) / "20260413ypol"
         dst_root = PurePosixPath(cfg["state_dir"]) / "g4input_filtered_ypol"
-        directions = cfg["ypol_directions"]
-        files = ["dbreak.root"]
+        for iso in cfg["isotopes"]:
+            for gamma in cfg["gammas"]:
+                for direction in cfg["ypol_directions"]:
+                    tag = f"d+{iso}{energy}{gamma}{direction}"
+                    src_path = (src_root / f"d+{iso}{energy}"
+                                / f"{tag}-RP360" / "dbreak.root")
+                    dst_path = dst_root / tag / "dbreak.root"
+                    plan.append((src_path, dst_path))
     else:
         src_root = PurePosixPath(cfg["g4input_base"]) / "z_pol" / "b_discrete"
         dst_root = PurePosixPath(cfg["state_dir"]) / "g4input_filtered_zpol"
-        directions = cfg["zpol_directions"]
         files = [f"dbreakb{i:02d}.root" for i in range(1, 11)]
-
-    plan = []
-    for iso in cfg["isotopes"]:
-        for gamma in cfg["gammas"]:
-            for direction in directions:
-                tag = f"d+{iso}{energy}{gamma}{direction}"
-                for fname in files:
-                    plan.append((src_root / tag / fname,
-                                 dst_root / tag / fname))
+        for iso in cfg["isotopes"]:
+            for gamma in cfg["gammas"]:
+                for direction in cfg["zpol_directions"]:
+                    tag = f"d+{iso}{energy}{gamma}{direction}"
+                    for fname in files:
+                        plan.append((src_root / tag / fname,
+                                     dst_root / tag / fname))
     return plan
 
 

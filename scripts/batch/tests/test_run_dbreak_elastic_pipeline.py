@@ -98,8 +98,8 @@ def test_plan_filtered_tree_ypol_picks_target_isotope_gamma_dirs():
     # 1 iso * 1 gamma * 1 dir * 1 dbreak.root file
     assert len(plan) == 1
     src, dst = plan[0]
-    assert str(src) == ("data/simulation/g4input/y_pol/phi_random/"
-                        "d+Sn112E190g050ynp/dbreak.root")
+    assert str(src) == ("data/simulation/g4input/20260413ypol/d+Sn112E190/"
+                        "d+Sn112E190g050ynp-RP360/dbreak.root")
     assert str(dst) == ("logs/dbreak_elastic_pipeline/g4input_filtered_ypol/"
                         "d+Sn112E190g050ynp/dbreak.root")
 
