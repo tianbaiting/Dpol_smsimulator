@@ -405,16 +405,19 @@ def stage_gen_output(args) -> None:
         }.items())
         # sim_deuteron needs Geant4 data env vars (G4ENSDFSTATEDATA, etc.)
         # which setup_spana.sh does NOT export. Pull them from `geant4-config
-        # --datasets` after activating the conda env. Keep this in the driver
-        # so we don't have to mutate the user's setup_spana.sh.
+        # --datasets` after activating the conda env. The conda Geant4 package
+        # installs data dirs without the "G4" prefix (ENSDFSTATE3.0/ instead of
+        # G4ENSDFSTATE3.0/) while geant4-config still reports the G4-prefixed
+        # form, so we strip the leading G4 from each basename via sed.
         cmd = (
             f'eval "$(/home/tbt/.local/bin/micromamba shell hook -s bash)" && '
             f'micromamba activate anaroot-env && '
             f"set -eo pipefail && "
             f"cd {shlex.quote(cfg['remote_smsim_dir'])} && "
             f"source setup_spana.sh && "
-            f'eval "$(geant4-config --datasets | '
-            f"awk '{{print \"export \" $2 \"=\" $3}}')\" && "
+            f'eval "$(geant4-config --datasets '
+            f"| sed 's|/G4\\([A-Z]\\)|/\\1|g' "
+            f"| awk '{{print \"export \" $2 \"=\" $3}}')\" && "
             f"mkdir -p {state_remote} {output_base} && "
             f"{env} bash {cfg['batch_script']} 2>&1 | tee {log_path}"
         )
