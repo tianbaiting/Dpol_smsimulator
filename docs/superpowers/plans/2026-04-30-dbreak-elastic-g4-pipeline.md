@@ -6,7 +6,12 @@
 
 **Architecture (revised 2026-04-30):** Two artifacts — a small **local** bash helper does the rsync data push, and a Python driver runs **on spana03** (after `ssh spana03`) with all stages calling subprocess directly (no inner ssh). Code travels via `git remote spana03` push. Pure planning logic (rsync cmd, symlink list, geninput cmd, filtered-tree plan) is unit-tested locally with pytest; integration tests run on spana03.
 
-**Tech Stack:** Python 3.10+ (remote and local both have 3.10+), pytest for unit tests, rsync over ssh (local→remote), bash on remote, existing remote binaries `build/bin/{GenInputRoot_qmdrawdata,sim_deuteron}` and existing script `scripts/simulation/run_g4input_batch_parallel.sh`.
+**Tech Stack:** Python 3.10+, pytest for unit tests, rsync over ssh (local→remote), bash on remote, existing remote binaries `build/bin/{GenInputRoot_qmdrawdata,sim_deuteron}` and existing script `scripts/simulation/run_g4input_batch_parallel.sh`.
+
+**Python interpreter conventions (important — do NOT downgrade syntax):**
+- Local pytest: `/home/tian/micromamba/envs/anaroot-env/bin/python3` (3.10.19)
+- Remote driver / pytest: `/home/tbt/.local/share/mamba/envs/anaroot-env/bin/python3` (3.10.19)
+- **NEVER use `ssh spana03 'python3 ...'`** because that resolves to system `/usr/bin/python3` (3.6) and modern syntax fails. Always use the absolute conda-env path above, OR `bash -lc "source setup_spana.sh && python3 ..."` after PATH setup.
 
 **Spec:** `docs/superpowers/specs/2026-04-30-dbreak-elastic-g4-pipeline-design.md`
 
@@ -576,14 +581,14 @@ def stage_prebuild(args) -> None:
 - [ ] **Step 3.2: Smoke test prebuild dry-run (run from local via ssh)**
 
 ```bash
-ssh spana03 'cd /home/tbt/workspace/Dpol_smsimulator && python3 scripts/batch/run_dbreak_elastic_pipeline.py prebuild --dry-run'
+ssh spana03 'cd /home/tbt/workspace/Dpol_smsimulator && /home/tbt/.local/share/mamba/envs/anaroot-env/bin/python3 scripts/batch/run_dbreak_elastic_pipeline.py prebuild --dry-run'
 ```
 Expected: prints CMD lines for each `bash -lc ...` invocation; no real bash calls.
 
 - [ ] **Step 3.3: Real prebuild (run from local via ssh)**
 
 ```bash
-python3 scripts/batch/run_dbreak_elastic_pipeline.py prebuild
+ssh spana03 'cd /home/tbt/workspace/Dpol_smsimulator && /home/tbt/.local/share/mamba/envs/anaroot-env/bin/python3 scripts/batch/run_dbreak_elastic_pipeline.py prebuild'
 ```
 Expected (interactive observation):
 - git pull / build runs and ends with build success message

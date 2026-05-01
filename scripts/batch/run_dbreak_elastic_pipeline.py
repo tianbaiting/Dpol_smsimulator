@@ -16,7 +16,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
-from typing import List, Sequence, Tuple
+from typing import Sequence
 
 CONFIG = {
     "local_smsim_dir":   "/home/tian/workspace/dpol/smsimulator5.5",
@@ -70,10 +70,8 @@ def run(cmd: Sequence[str], dry_run: bool = False, check: bool = True,
         log("CMD ", " ".join(shlex.quote(c) for c in cmd))
     if dry_run:
         return subprocess.CompletedProcess(cmd, 0, "", "")
-    return subprocess.run(cmd, check=check, universal_newlines=True,
-                          stdout=subprocess.PIPE if capture else None,
-                          stderr=subprocess.PIPE if capture else None,
-                          shell=shell)
+    return subprocess.run(cmd, check=check, text=True,
+                          capture_output=capture, shell=shell)
 
 
 def run_bash(remote_cmd: str, dry_run: bool = False, check: bool = True,
@@ -84,7 +82,7 @@ def run_bash(remote_cmd: str, dry_run: bool = False, check: bool = True,
                dry_run=dry_run, check=check, capture=capture)
 
 
-def plan_ypol_symlinks(cfg: dict) -> List[Tuple[PurePosixPath, PurePosixPath]]:
+def plan_ypol_symlinks(cfg: dict) -> list[tuple[PurePosixPath, PurePosixPath]]:
     """Return [(src, dst)] file-symlink plan for ypol Sn data.
 
     src lives under cfg['ypol_source_dir']/d+{iso}E190/d+{iso}E190g{gamma}{dir}-RP360/dbreak.dat
@@ -106,7 +104,7 @@ def plan_ypol_symlinks(cfg: dict) -> List[Tuple[PurePosixPath, PurePosixPath]]:
     return plan
 
 
-def build_rsync_cmd(cfg: dict, dry_run: bool) -> List[str]:
+def build_rsync_cmd(cfg: dict, dry_run: bool) -> list[str]:
     """Build rsync command pushing 20260413ypol/Sn{iso}E190 to remote, only dbreak.dat.
 
     Documents the rsync flag shape for sync_dbreak_to_spana.sh.
@@ -154,7 +152,7 @@ def build_geninput_cmd(cfg: dict, mode: str, isotope: str) -> str:
     return " && ".join(parts)
 
 
-def plan_filtered_tree(cfg: dict, pol: str) -> List[Tuple[PurePosixPath, PurePosixPath]]:
+def plan_filtered_tree(cfg: dict, pol: str) -> list[tuple[PurePosixPath, PurePosixPath]]:
     """Plan the (g4input → state_dir/g4input_filtered_<pol>) symlink farm.
 
     The filtered tree is what `run_g4input_batch_parallel.sh` reads as
