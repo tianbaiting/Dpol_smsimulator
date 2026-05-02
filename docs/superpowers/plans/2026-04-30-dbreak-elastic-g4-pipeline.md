@@ -2,11 +2,16 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build `scripts/batch/run_dbreak_elastic_pipeline.py`, a Python driver that runs end-to-end ypol+zpol Sn112/Sn124 elastic dbreak data through GenInputRoot_qmdrawdata → sim_deuteron on remote spana03, preserving b_phi metadata in both input and output ROOT.
+**Goal:** Build `scripts/batch/run_dbreak_elastic_pipeline.py` (runs on spana03) + `scripts/batch/sync_dbreak_to_spana.sh` (runs on local), an end-to-end pipeline that pushes ypol Sn data, then runs GenInputRoot_qmdrawdata → sim_deuteron, preserving b_phi metadata in both input and output ROOT.
 
-**Architecture:** Single Python 3 driver invoked from local workspace. Five stages (`prebuild → sync → prepare → gen-input → gen-output`) plus `all` and `status`. Pure planning logic (rsync cmd, symlink list, geninput cmd, filtered-tree plan) is unit-tested with pytest; stage execution is integration-tested via smoke runs. SSH/rsync to spana03 reuses the user's `~/.ssh/config` alias.
+**Architecture (revised 2026-04-30):** Two artifacts — a small **local** bash helper does the rsync data push, and a Python driver runs **on spana03** (after `ssh spana03`) with all stages calling subprocess directly (no inner ssh). Code travels via `git remote spana03` push. Pure planning logic (rsync cmd, symlink list, geninput cmd, filtered-tree plan) is unit-tested locally with pytest; integration tests run on spana03.
 
-**Tech Stack:** Python 3.10+ (local has 3.14), pytest for unit tests, rsync over ssh, bash on remote, existing remote binaries `build/bin/{GenInputRoot_qmdrawdata,sim_deuteron}` and existing script `scripts/simulation/run_g4input_batch_parallel.sh`.
+**Tech Stack:** Python 3.10+, pytest for unit tests, rsync over ssh (local→remote), bash on remote, existing remote binaries `build/bin/{GenInputRoot_qmdrawdata,sim_deuteron}` and existing script `scripts/simulation/run_g4input_batch_parallel.sh`.
+
+**Python interpreter conventions (important — do NOT downgrade syntax):**
+- Local pytest: `/home/tian/micromamba/envs/anaroot-env/bin/python3` (3.10.19)
+- Remote driver / pytest: `/home/tbt/.local/share/mamba/envs/anaroot-env/bin/python3` (3.10.19)
+- **NEVER use `ssh spana03 'python3 ...'`** because that resolves to system `/usr/bin/python3` (3.6) and modern syntax fails. Always use the absolute conda-env path above, OR `bash -lc "source setup_spana.sh && python3 ..."` after PATH setup.
 
 **Spec:** `docs/superpowers/specs/2026-04-30-dbreak-elastic-g4-pipeline-design.md`
 
@@ -16,13 +21,14 @@
 
 | Path | Role |
 |---|---|
-| `scripts/batch/run_dbreak_elastic_pipeline.py` | Main driver (~500 lines): CONFIG dict, argparse, stage functions, helpers |
+| `scripts/batch/run_dbreak_elastic_pipeline.py` | Main driver (~500 lines): CONFIG dict, argparse, stage functions, helpers. Runs ON remote. |
+| `scripts/batch/sync_dbreak_to_spana.sh` | Tiny rsync wrapper. Runs on local, pushes 20260413ypol Sn data to spana03. |
 | `scripts/batch/tests/__init__.py` | Empty package marker |
 | `scripts/batch/tests/test_run_dbreak_elastic_pipeline.py` | Unit tests for pure planning functions |
 | `scripts/batch/tests/conftest.py` | pytest path setup |
 | `docs/superpowers/plans/2026-04-30-dbreak-elastic-g4-pipeline.md` | This plan |
 
-No new files on remote spana03 (driver only invokes existing binaries/scripts).
+Code is committed to local feature branch and pushed to spana03 via `git remote spana03`.
 
 ---
 
@@ -112,7 +118,7 @@ def log(level: str, msg: str) -> None:
     sys.stdout.flush()
 
 
-def run_local(cmd: Sequence[str], dry_run: bool = False, check: bool = True,
+def run(cmd: Sequence[str], dry_run: bool = False, check: bool = True,
               capture: bool = False) -> subprocess.CompletedProcess:
     log("CMD ", " ".join(shlex.quote(c) for c in cmd))
     if dry_run:
@@ -121,10 +127,10 @@ def run_local(cmd: Sequence[str], dry_run: bool = False, check: bool = True,
                           capture_output=capture)
 
 
-def run_ssh(remote_cmd: str, dry_run: bool = False, check: bool = True,
+def run_bash(remote_cmd: str, dry_run: bool = False, check: bool = True,
             capture: bool = False) -> subprocess.CompletedProcess:
     cmd = ["ssh", CONFIG["remote_host"], "bash", "-lc", remote_cmd]
-    return run_local(cmd, dry_run=dry_run, check=check, capture=capture)
+    return run(cmd, dry_run=dry_run, check=check, capture=capture)
 
 
 # Stage stubs (filled in by later tasks)
@@ -398,7 +404,7 @@ def build_geninput_cmd(cfg: dict, mode: str, isotope: str) -> str:
     """Build the bash command that runs GenInputRoot_qmdrawdata once on remote.
 
     Returns a single string suitable for `ssh ... bash -lc '<cmd>'`.
-    Caller embeds via run_ssh().
+    Caller embeds via run_bash().
     """
     assert mode in ("ypol", "zpol")
     parts = [
@@ -510,56 +516,49 @@ git commit -m "scripts/batch: pure planning fns (rsync, symlinks, geninput, filt
 
 - [ ] **Step 3.1: Implement `stage_prebuild`**
 
+Driver runs **on spana03** (after the user `ssh spana03 && git checkout feature/...`); code is delivered via `git push spana03` from local, so prebuild does NOT pull or fetch — that would race with the local push. It just verifies the branch is right, runs the build, and confirms the EventTruthConverter symbol landed.
+
 Replace the stub:
 ```python
 def stage_prebuild(args) -> None:
-    """SSH remote: git pull origin main + bash build.sh + verify symbol."""
+    """Verify branch + build + check EventTruthConverter symbol. Runs on spana03."""
     log("INFO", "prebuild: starting")
     cfg = CONFIG
-    state_remote = PurePosixPath(cfg["remote_smsim_dir"]) / cfg["state_dir"]
+    remote_root = PurePosixPath(cfg["remote_smsim_dir"])
+    state_remote = remote_root / cfg["state_dir"]
 
-    # 1. Verify remote git is on main and clean (or --force allows reset)
+    # 1. Verify we are on the expected feature branch (code arrived via local push).
     verify = (
-        f"cd {shlex.quote(cfg['remote_smsim_dir'])} && "
-        f"git fetch {cfg['remote_git_remote']} {cfg['remote_git_branch']} && "
-        f"git rev-parse HEAD && "
-        f"git rev-parse {cfg['remote_git_remote']}/{cfg['remote_git_branch']}"
+        f"cd {shlex.quote(str(remote_root))} && "
+        f"git rev-parse --abbrev-ref HEAD && "
+        f"git rev-parse HEAD"
     )
-    res = run_ssh(verify, dry_run=args.dry_run, capture=True, check=True)
+    res = run_bash(verify, dry_run=args.dry_run, capture=True, check=True)
     head = ""
     if not args.dry_run:
-        head, origin = res.stdout.strip().splitlines()[-2:]
-        if head != origin and not args.force:
-            log("ERROR", f"remote HEAD {head[:8]} != origin {origin[:8]}; "
-                        "rerun with --force to git reset --hard")
+        branch, head = res.stdout.strip().splitlines()[-2:]
+        if branch != cfg["git_branch"] and not args.force:
+            log("ERROR", f"remote on branch {branch!r}, expected {cfg['git_branch']!r}; "
+                        f"checkout the right branch or pass --force")
             sys.exit(1)
 
-    # 2. Reset auto-regenerated tracked files (rootlogon.C / setup.sh are
-    #    rewritten on every setup_spana.sh source, so they always show dirty),
-    #    then pull or reset, then build.
-    pull_or_reset = (
-        "git reset --hard {remote}/{branch}"
-        if args.force else
-        "git checkout -- rootlogon.C setup.sh 2>/dev/null || true && "
-        "git checkout {branch} && git pull --ff-only {remote} {branch}"
-    ).format(remote=cfg["remote_git_remote"], branch=cfg["remote_git_branch"])
-
+    # 2. Build (rootlogon.C / setup.sh are auto-regenerated by setup_spana.sh,
+    #    so they always show dirty in `git status` — we don't try to pull).
     build = (
         f"set -eo pipefail && "
-        f"cd {shlex.quote(cfg['remote_smsim_dir'])} && "
-        f"{pull_or_reset} && "
+        f"cd {shlex.quote(str(remote_root))} && "
         f"source setup_spana.sh && "
-        f"{cfg['remote_build_cmd']} 2>&1 | tail -200"
+        f"{cfg['build_cmd']} 2>&1 | tail -200"
     )
-    log("INFO", "prebuild: running git pull + build (this may take minutes)")
-    run_ssh(build, dry_run=args.dry_run, check=True)
+    log("INFO", "prebuild: running build (this may take minutes)")
+    run_bash(build, dry_run=args.dry_run, check=True)
 
     # 3. Verify EventTruthConverter symbol present in libsmdata.so
     verify_sym = (
-        f"cd {shlex.quote(cfg['remote_smsim_dir'])} && "
+        f"cd {shlex.quote(str(remote_root))} && "
         f"nm -D build/lib/libsmdata.so | grep -c EventTruthConverter || true"
     )
-    res = run_ssh(verify_sym, dry_run=args.dry_run, capture=True, check=False)
+    res = run_bash(verify_sym, dry_run=args.dry_run, capture=True, check=False)
     if not args.dry_run:
         count = int(res.stdout.strip() or "0")
         if count == 0:
@@ -570,28 +569,26 @@ def stage_prebuild(args) -> None:
 
     # 4. Write state_dir/prebuild.done
     head_short = "" if args.dry_run else head[:12]
+    payload = json.dumps({"git_head": head_short, "has_event_truth": True})
     done = (
-        f"mkdir -p {state_remote} && "
-        f"jq -n --arg head {head_short} '{{git_head:$head, has_event_truth:true}}' "
-        f"  > {state_remote}/prebuild.done || "
-        f"echo '{{\"git_head\":\"{head_short}\",\"has_event_truth\":true}}' "
-        f"  > {state_remote}/prebuild.done"
+        f"mkdir -p {shlex.quote(str(state_remote))} && "
+        f"echo {shlex.quote(payload)} > {shlex.quote(str(state_remote / 'prebuild.done'))}"
     )
-    run_ssh(done, dry_run=args.dry_run, check=True)
+    run_bash(done, dry_run=args.dry_run, check=True)
     log("INFO", "prebuild: done")
 ```
 
-- [ ] **Step 3.2: Smoke test prebuild dry-run**
+- [ ] **Step 3.2: Smoke test prebuild dry-run (run from local via ssh)**
 
 ```bash
-python3 scripts/batch/run_dbreak_elastic_pipeline.py prebuild --dry-run
+ssh spana03 'cd /home/tbt/workspace/Dpol_smsimulator && /home/tbt/.local/share/mamba/envs/anaroot-env/bin/python3 scripts/batch/run_dbreak_elastic_pipeline.py prebuild --dry-run'
 ```
-Expected: prints CMD lines for each ssh invocation; no real ssh calls.
+Expected: prints CMD lines for each `bash -lc ...` invocation; no real bash calls.
 
-- [ ] **Step 3.3: Real prebuild**
+- [ ] **Step 3.3: Real prebuild (run from local via ssh)**
 
 ```bash
-python3 scripts/batch/run_dbreak_elastic_pipeline.py prebuild
+ssh spana03 'cd /home/tbt/workspace/Dpol_smsimulator && /home/tbt/.local/share/mamba/envs/anaroot-env/bin/python3 scripts/batch/run_dbreak_elastic_pipeline.py prebuild'
 ```
 Expected (interactive observation):
 - git pull / build runs and ends with build success message
@@ -605,66 +602,54 @@ nm -D /home/tian/workspace/sshDir/spana03/Dpol_smsimulator/build/lib/libsmdata.s
 ```
 Expected: file exists; count ≥ 10.
 
-- [ ] **Step 3.4: Commit**
+- [ ] **Step 3.4: Commit and push to spana03**
 
 ```bash
+cd /home/tian/workspace/dpol/smsimulator5.5
 git add scripts/batch/run_dbreak_elastic_pipeline.py
-git commit -m "scripts/batch: prebuild stage — remote git pull + build + symbol check"
+git commit -m "scripts/batch: prebuild stage — verify branch, build, symbol check"
+git push spana03 feature/dbreak-elastic-pipeline
 ```
 
 ---
 
-## Task 4: `sync` stage
+## Task 4: `sync_dbreak_to_spana.sh` local bash helper
+
+**Architecture revision (2026-04-30):** Originally Task 4 added a `stage_sync` to the Python driver. The driver now runs ON the remote, so a local-side bash helper does the rsync push from outside the driver. Already created in commit `<refactor>` — this task is to verify it exists, run a dry-run smoke test, and unit-test it from Python (import the rsync command shape via the existing `build_rsync_cmd` planning fn — kept for testability even though the driver doesn't call it).
 
 **Files:**
-- Modify: `scripts/batch/run_dbreak_elastic_pipeline.py` (replace stub)
+- Verify exists (already created): `scripts/batch/sync_dbreak_to_spana.sh`
+- Test (already added in T2): `build_rsync_cmd` in driver covers the rsync shape
 
-- [ ] **Step 4.1: Implement `stage_sync` reusing `build_rsync_cmd`**
-
-```python
-def stage_sync(args) -> None:
-    """rsync 20260413ypol/d+Sn{112,124}E190 to spana03 (only dbreak.dat)."""
-    log("INFO", "sync: starting")
-    cfg = CONFIG
-    cmd = build_rsync_cmd(cfg, dry_run=args.dry_run)
-    run_local(cmd, dry_run=False, check=True)  # rsync prints its own progress
-
-    # Mark done (skip in dry-run)
-    if not args.dry_run:
-        state_remote = PurePosixPath(cfg["remote_smsim_dir"]) / cfg["state_dir"]
-        marker = (
-            f"mkdir -p {state_remote} && "
-            f"echo '{{\"timestamp\":\"'$(date -Iseconds)'\"}}' "
-            f"  > {state_remote}/sync.done"
-        )
-        run_ssh(marker, check=True)
-    log("INFO", "sync: done")
-```
-
-- [ ] **Step 4.2: Run dry-run**
+- [ ] **Step 4.1: Verify the bash helper exists and is executable**
 
 ```bash
-python3 scripts/batch/run_dbreak_elastic_pipeline.py sync --dry-run
+ls -la /home/tian/workspace/dpol/smsimulator5.5/scripts/batch/sync_dbreak_to_spana.sh
+test -x /home/tian/workspace/dpol/smsimulator5.5/scripts/batch/sync_dbreak_to_spana.sh && echo OK
+head -10 /home/tian/workspace/dpol/smsimulator5.5/scripts/batch/sync_dbreak_to_spana.sh
 ```
-Expected: rsync prints "would send" file list. **You should see only `dbreak.dat` files; geminiout.dat and reactiontype.dat must NOT appear.**
+Expected: file present, executable, shebang `#!/usr/bin/env bash`.
 
-- [ ] **Step 4.3: Real sync**
+- [ ] **Step 4.2: Dry-run sync (does not transfer)**
 
 ```bash
-python3 scripts/batch/run_dbreak_elastic_pipeline.py sync
+cd /home/tian/workspace/dpol/smsimulator5.5
+bash scripts/batch/sync_dbreak_to_spana.sh --dry-run
 ```
-Verify:
+Expected: rsync prints "would send" listings. **Only `dbreak.dat` files appear; geminiout.dat and reactiontype.dat must NOT appear.**
+
+- [ ] **Step 4.3: Real sync (transfers data)**
+
+```bash
+bash scripts/batch/sync_dbreak_to_spana.sh
+```
+Verify on remote:
 ```bash
 ls /home/tian/workspace/sshDir/spana03/Dpol_smsimulator/data/qmdrawdata/qmdrawdata/20260413ypol/d+Sn112E190/d+Sn112E190g050ynp-RP360/
 ```
-Expected: contains `dbreak.dat` (and only that, no geminiout/reactiontype).
+Expected: contains `dbreak.dat` (and only that — no geminiout/reactiontype).
 
-- [ ] **Step 4.4: Commit**
-
-```bash
-git add scripts/batch/run_dbreak_elastic_pipeline.py
-git commit -m "scripts/batch: sync stage — rsync 20260413ypol Sn data, dbreak.dat only"
-```
+- [ ] **Step 4.4: No code change required** — sync helper landed in the architecture-refactor commit. If editing the bash script, commit normally.
 
 ---
 
@@ -701,14 +686,14 @@ def stage_prepare(args) -> None:
             print("  " + line)
         return
 
-    run_ssh(bash, check=True)
+    run_bash(bash, check=True)
 
     # Verify each symlink resolves to an existing file
     check = " && ".join(
         f"test -f {shlex.quote(str(PurePosixPath(cfg['remote_smsim_dir']) / dst))}"
         for _, dst in plan
     )
-    res = run_ssh(check, check=False, capture=True)
+    res = run_bash(check, check=False, capture=True)
     if res.returncode != 0:
         log("ERROR", "prepare: at least one symlink target is missing")
         sys.exit(1)
@@ -720,7 +705,7 @@ def stage_prepare(args) -> None:
         f"mkdir -p {state_remote} && "
         f"echo {shlex.quote(marker_payload)} > {state_remote}/prepare.done"
     )
-    run_ssh(marker_cmd, check=True)
+    run_bash(marker_cmd, check=True)
     log("INFO", "prepare: done")
 ```
 
@@ -779,7 +764,7 @@ def stage_gen_input(args) -> None:
             f"mkdir -p {state_remote} && "
             f"({cmd}) 2>&1 | tee {log_path}"
         )
-        rc = run_ssh(wrapped, dry_run=args.dry_run, check=False).returncode
+        rc = run_bash(wrapped, dry_run=args.dry_run, check=False).returncode
         ok = (rc == 0)
         summary["runs"].append({"pol": pol, "isotope": iso, "ok": ok,
                                 "log": str(log_path)})
@@ -796,7 +781,7 @@ def stage_gen_input(args) -> None:
                 f"find {cfg['remote_smsim_dir']}/{cfg['g4input_base']}/{sub} "
                 f" -name '*.root' -newer {state_remote}/sync.done | wc -l"
             )
-            res = run_ssh(check, capture=True, check=True)
+            res = run_bash(check, capture=True, check=True)
             count = int(res.stdout.strip())
             log("INFO", f"gen-input: {pol} produced {count} .root files")
             if count == 0:
@@ -811,7 +796,7 @@ def stage_gen_input(args) -> None:
             f"mkdir -p {state_remote} && "
             f"echo {shlex.quote(marker)} > {state_remote}/geninput.done"
         )
-        run_ssh(marker_cmd, check=True)
+        run_bash(marker_cmd, check=True)
     log("INFO", "gen-input: done")
 ```
 
@@ -884,7 +869,7 @@ def stage_gen_output(args) -> None:
             ln_lines.append(f"ln -snf {shlex.quote(str(abs_src))} "
                             f"{shlex.quote(str(abs_dst))}")
         bash = " && ".join(ln_lines) if ln_lines else "true"
-        run_ssh(bash, dry_run=args.dry_run, check=True)
+        run_bash(bash, dry_run=args.dry_run, check=True)
 
         # 2. Invoke run_g4input_batch_parallel.sh
         sub = "y_pol/phi_random" if pol == "ypol" else "z_pol/b_discrete"
@@ -908,7 +893,7 @@ def stage_gen_output(args) -> None:
             f"mkdir -p {state_remote} {output_base} && "
             f"{env} bash {cfg['batch_script']} 2>&1 | tee {log_path}"
         )
-        run_ssh(cmd, dry_run=args.dry_run, check=True)
+        run_bash(cmd, dry_run=args.dry_run, check=True)
         summary["jobs"].append({"pol": pol, "log": str(log_path),
                                 "input_root": str(input_root),
                                 "output_base": str(output_base)})
@@ -919,7 +904,7 @@ def stage_gen_output(args) -> None:
             f"mkdir -p {state_remote} && "
             f"echo {shlex.quote(marker)} > {state_remote}/gen_output.done"
         )
-        run_ssh(marker_cmd, check=True)
+        run_bash(marker_cmd, check=True)
     log("INFO", "gen-output: done")
 ```
 
@@ -981,7 +966,7 @@ def stage_status(args) -> None:
         f"  echo \"-- $f --\"; cat \"$f\"; echo; "
         f"done"
     )
-    run_ssh(cmd, capture=False, check=False)
+    run_bash(cmd, capture=False, check=False)
 ```
 
 - [ ] **Step 8.2: Run after smoke runs**
