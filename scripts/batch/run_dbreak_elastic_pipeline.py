@@ -519,6 +519,7 @@ def stage_reco(args) -> None:
     cmd = (
         f'eval "$(/home/tbt/.local/bin/micromamba shell hook -s bash)" && '
         f'micromamba activate anaroot-env && '
+        f"renice +15 $$ >/dev/null 2>&1; "  # lower priority for the long-running reco
         f"cd {shlex.quote(cfg['remote_smsim_dir'])} && "
         f"source setup_spana.sh && "
         f'eval "$(geant4-config --datasets '
