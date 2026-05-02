@@ -519,7 +519,6 @@ def stage_reco(args) -> None:
     cmd = (
         f'eval "$(/home/tbt/.local/bin/micromamba shell hook -s bash)" && '
         f'micromamba activate anaroot-env && '
-        f"set -u && "
         f"cd {shlex.quote(cfg['remote_smsim_dir'])} && "
         f"source setup_spana.sh && "
         f'eval "$(geant4-config --datasets '
