@@ -64,7 +64,15 @@ for f in "${FILES[@]}"; do
 
   # [EN] Skip if a plausibly-complete output already exists (>100 KB).
   # [CN] 若输出已存在且 >100 KB，认为之前已完成，跳过。
-  if [[ -s "$out_root" ]] && [[ $(stat -c %s "$out_root") -gt 100000 ]]; then
+  # [EN] sim_deuteron writes ${run_name}<runId>.root (e.g. dbreak0000.root)
+  # rather than the bare ${run_name}.root, so check the largest matching file.
+  existing_size=0
+  for cand in "${output_dir}/${run_name}".root "${output_dir}/${run_name}"[0-9]*.root; do
+    [[ -s "$cand" ]] || continue
+    sz=$(stat -c %s "$cand" 2>/dev/null || echo 0)
+    [[ "$sz" -gt "$existing_size" ]] && existing_size=$sz
+  done
+  if [[ "$existing_size" -gt 100000 ]]; then
     skipped=$((skipped+1))
     continue
   fi
