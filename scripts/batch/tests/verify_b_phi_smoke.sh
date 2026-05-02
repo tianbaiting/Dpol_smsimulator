@@ -6,14 +6,14 @@
 #
 # Run on remote (spana03) after smoke or full gen-output has produced ≥1
 # matched input+output pair for ypol Sn112 g050 ynp and zpol Sn112 g050 znp b01.
-set -euo pipefail
-
+# NOTE: do NOT `set -euo pipefail` here — setup_spana.sh references unset
+# vars and that would trip set -u; we still propagate root's exit code.
 REMOTE_DIR="${REMOTE_DIR:-/home/tbt/workspace/Dpol_smsimulator}"
 cd "$REMOTE_DIR"
 
 eval "$(/home/tbt/.local/bin/micromamba shell hook -s bash)" >/dev/null 2>&1
-micromamba activate anaroot-env >/dev/null 2>&1
-source setup_spana.sh >/dev/null 2>&1
+micromamba activate anaroot-env >/dev/null 2>&1 || { echo "FAIL: micromamba activate"; exit 1; }
+source setup_spana.sh >/dev/null 2>&1 || { echo "FAIL: source setup_spana.sh"; exit 1; }
 
 cat > /tmp/verify_b_phi.C << 'EOF'
 {
@@ -21,9 +21,9 @@ cat > /tmp/verify_b_phi.C << 'EOF'
   // [CN] 待验证的 (input, output) 对.
   std::vector<std::pair<std::string,std::string>> pairs = {
     {"data/simulation/g4input/20260413ypol/d+Sn112E190/d+Sn112E190g050ynp-RP360/dbreak.root",
-     "data/simulation/g4output/y_pol/phi_random/d+Sn112E190g050ynp/dbreak.root"},
+     "data/simulation/g4output/y_pol/phi_random/d+Sn112E190g050ynp/dbreak0000.root"},
     {"data/simulation/g4input/z_pol/b_discrete/d+Sn112E190g050znp/dbreakb01.root",
-     "data/simulation/g4output/z_pol/b_discrete/d+Sn112E190g050znp/dbreakb01.root"},
+     "data/simulation/g4output/z_pol/b_discrete/d+Sn112E190g050znp/dbreakb010000.root"},
   };
 
   int failed = 0;
