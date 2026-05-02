@@ -43,6 +43,15 @@ CONFIG = {
     "g4_jobs":           8,
     "tag":               "elastic",
 
+    "reco_bin":          "build/bin/reconstruct_target_momentum",
+    "reco_backend":      "rk",
+    "reco_output_base":  "data/reconstruction/dbreak_elastic",
+    "reco_jobs":         16,                          # spana03 has 16 cores
+    "reco_field_map":    "configs/simulation/geometry/filed_map/180703-1,15T-3000.table",
+    "reco_magnet_rotation_deg": 30,
+    "reco_rk_fit_mode":  "three-point-free",
+    "reco_max_iterations": 40,
+
     "ypol_source_dir":   "data/qmdrawdata/qmdrawdata/20260413ypol",
     "ypol_link_target":  "data/qmdrawdata/qmdrawdata/y_pol/phi_random",
     "zpol_input_dir":    "data/qmdrawdata/qmdrawdata/z_pol/b_discrete",
@@ -436,6 +445,142 @@ def stage_gen_output(args) -> None:
     log("INFO", "gen-output: done")
 
 
+def stage_reco(args) -> None:
+    """Run reconstruct_target_momentum on every g4output ROOT.
+
+    Walks both y_pol/phi_random/<tag>/ and z_pol/b_discrete/<tag>/ trees,
+    matches CONFIG.isotopes/gammas/directions, runs RK reco with
+    --max-iterations and --rk-fit-mode from CONFIG, JOBS reco_jobs in
+    parallel via xargs. Skip-if-exists by reco output > 100 KB.
+
+    Designed for long-running (8+ days) jobs: launch via nohup so SSH
+    disconnect doesn't kill it. Per-file [OK/FAIL] lines stream to
+    state_dir/reco.log. Resume by re-invoking — done files are skipped.
+    """
+    log("INFO", "reco: starting")
+    cfg = CONFIG
+    remote_root = PurePosixPath(cfg["remote_smsim_dir"])
+    state_remote = remote_root / cfg["state_dir"]
+    g4output_root = remote_root / cfg["g4output_base"]
+    reco_root = remote_root / cfg["reco_output_base"]
+    log_path = state_remote / "reco.log"
+
+    # Build per-file (input, output, log, run_name) joblist using globs that
+    # match CONFIG.isotopes × gammas × directions × b-slices for zpol.
+    # Compose patterns from the task plan; one entry per matching .root.
+    jobs = []
+    pols = (["ypol", "zpol"] if args.only is None else [args.only])
+    isotopes = cfg["isotopes"] if args.isotope is None else [args.isotope]
+    energy = cfg["energy"]
+    for pol in pols:
+        sub = "y_pol/phi_random" if pol == "ypol" else "z_pol/b_discrete"
+        directions = cfg["ypol_directions"] if pol == "ypol" else cfg["zpol_directions"]
+        for iso in isotopes:
+            for gamma in cfg["gammas"]:
+                for direction in directions:
+                    tag = f"d+{iso}{energy}{gamma}{direction}"
+                    out_dir = g4output_root / sub / tag
+                    if pol == "ypol":
+                        files = ["dbreak0000.root"]
+                    else:
+                        files = [f"dbreakb{i:02d}0000.root" for i in range(1, 11)]
+                    for fname in files:
+                        in_path = out_dir / fname
+                        run_name = fname.replace(".root", "")
+                        reco_dir = reco_root / sub / tag
+                        reco_path = reco_dir / f"{run_name}_reco.root"
+                        jobs.append((str(in_path), str(reco_path), str(reco_dir), run_name))
+
+    log("INFO", f"reco: {len(jobs)} candidate jobs (Sn112+Sn124, ypol+zpol)")
+
+    # Build joblist file on remote: input|output|reco_dir|run_name per line.
+    joblist_path = state_remote / "reco_joblist.txt"
+    joblist_content = "\n".join("|".join(j) for j in jobs) + "\n"
+    write_joblist = (
+        f"mkdir -p {shlex.quote(str(state_remote))} && "
+        f"cat > {shlex.quote(str(joblist_path))} << 'JOBLIST_EOF'\n"
+        f"{joblist_content}"
+        f"JOBLIST_EOF"
+    )
+    run_bash(write_joblist, dry_run=args.dry_run, check=True)
+
+    # The worker bash function: for each line, skip if reco file exists with
+    # >100 KB; otherwise run reconstruct_target_momentum and append [OK Ns]/[FAIL]
+    # to the global log. xargs runs JOBS workers in parallel.
+    reco_bin = remote_root / cfg["reco_bin"]
+    geom_mac = remote_root / cfg["geom_mac"]
+    field_map = remote_root / cfg["reco_field_map"]
+    jobs_n = cfg["reco_jobs"]
+    max_iter = cfg["reco_max_iterations"]
+    fit_mode = cfg["reco_rk_fit_mode"]
+    backend = cfg["reco_backend"]
+    rotation = cfg["reco_magnet_rotation_deg"]
+
+    cmd = (
+        f'eval "$(/home/tbt/.local/bin/micromamba shell hook -s bash)" && '
+        f'micromamba activate anaroot-env && '
+        f"set -u && "
+        f"cd {shlex.quote(cfg['remote_smsim_dir'])} && "
+        f"source setup_spana.sh && "
+        f'eval "$(geant4-config --datasets '
+        f"| sed 's|/G4\\([A-Z]\\)|/\\1|g' "
+        f"| awk '{{print \"export \" $2 \"=\" $3}}')\" && "
+        f"export RECO_BIN={shlex.quote(str(reco_bin))} && "
+        f"export GEOM_MAC={shlex.quote(str(geom_mac))} && "
+        f"export FIELD_MAP={shlex.quote(str(field_map))} && "
+        f"export RK_FIT_MODE={shlex.quote(fit_mode)} && "
+        f"export MAX_ITER={max_iter} && "
+        f"export ROTATION_DEG={rotation} && "
+        f"export BACKEND={shlex.quote(backend)} && "
+        f'run_one() {{ '
+        f'  local entry="$1"; '
+        f'  local in_path="${{entry%%|*}}"; entry="${{entry#*|}}"; '
+        f'  local out_path="${{entry%%|*}}"; entry="${{entry#*|}}"; '
+        f'  local out_dir="${{entry%%|*}}"; '
+        f'  local run_name="${{entry##*|}}"; '
+        f'  if [[ -s "$out_path" ]] && [[ $(stat -c %s "$out_path") -gt 100000 ]]; then '
+        f'    echo "[SKIP] $run_name"; return 0; '
+        f'  fi; '
+        f'  if [[ ! -s "$in_path" ]]; then echo "[MISS-IN] $in_path"; return 0; fi; '
+        f'  mkdir -p "$out_dir"; '
+        f'  local s=$(date +%s); '
+        f'  if "$RECO_BIN" --backend "$BACKEND" --input-file "$in_path" --output-file "$out_path" '
+        f'      --geometry-macro "$GEOM_MAC" --magnetic-field-map "$FIELD_MAP" '
+        f'      --magnet-rotation-deg "$ROTATION_DEG" --rk-fit-mode "$RK_FIT_MODE" '
+        f'      --max-iterations "$MAX_ITER" '
+        f'      > "${{out_path%.root}}.log" 2>&1; then '
+        f'    local e=$(date +%s); echo "[OK $((e-s))s] $run_name"; '
+        f'  else '
+        f'    local rc=$?; local e=$(date +%s); '
+        f'    echo "[FAIL rc=$rc t=$((e-s))s] $run_name (log ${{out_path%.root}}.log)"; '
+        f'  fi; '
+        f'}}; '
+        f'export -f run_one; '
+        f"export RECO_BIN GEOM_MAC FIELD_MAP RK_FIT_MODE MAX_ITER ROTATION_DEG BACKEND && "
+        f"echo \"[INIT reco] backend={backend} jobs={jobs_n} max_iter={max_iter} fit_mode={fit_mode}\" && "
+        f"xargs -a {shlex.quote(str(joblist_path))} -d '\\n' -I {{}} -P {jobs_n} "
+        f"bash -c 'run_one \"$@\"' _ {{}} && "
+        f"echo \"[DONE reco] joblist={joblist_path}\""
+    )
+
+    full_cmd = f"({cmd}) 2>&1 | tee {shlex.quote(str(log_path))}"
+    if args.dry_run:
+        log("INFO", "reco: --dry-run, would execute joblist of size " + str(len(jobs)))
+        return
+    run_bash(full_cmd, dry_run=False, check=False)
+
+    # Write done marker (count completed reco files)
+    marker_cmd = (
+        f"mkdir -p {shlex.quote(str(state_remote))} && "
+        f"count=$(find {shlex.quote(str(reco_root))} -name '*_reco.root' "
+        f"-size +100k 2>/dev/null | wc -l) && "
+        f"echo \"{{\\\"completed\\\": $count}}\" "
+        f" > {shlex.quote(str(state_remote / 'reco.done'))}"
+    )
+    run_bash(marker_cmd, check=True)
+    log("INFO", "reco: done")
+
+
 # Stage stubs (filled in by later tasks)
 def stage_status(args) -> None:
     """Read state files and g4output file counts; print summary. SSH read-only."""
@@ -471,6 +616,7 @@ STAGES = {
     "prepare":    stage_prepare,
     "gen-input":  stage_gen_input,
     "gen-output": stage_gen_output,
+    "reco":       stage_reco,
     "all":        stage_all,
     "status":     stage_status,
 }
