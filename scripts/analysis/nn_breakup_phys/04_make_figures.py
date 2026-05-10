@@ -89,8 +89,12 @@ def plot_px_diff_hist(df, cut, out_path, pol_label):
     fig.savefig(out_path, dpi=130); plt.close(fig)
 
 def plot_r_vs_gamma(r_df, cut, out_path, pol_label):
+    # ypol: Sn112 and Sn124 R values are similar magnitude → sharey aids comparison.
+    # zpol: Sn112 stays in [0.05, 0.4] while Sn124 reaches 3.6 → forcing sharey
+    # squashes Sn112 against the bottom. Use independent y-axes for zpol.
+    share = "all" if pol_label.startswith("ypol") else False
     targets = sorted(r_df.target.unique())
-    fig, axes = plt.subplots(1, len(targets), figsize=(6*len(targets), 4), sharey=True)
+    fig, axes = plt.subplots(1, len(targets), figsize=(6*len(targets), 4), sharey=share)
     if len(targets) == 1: axes = [axes]
     for i, tgt in enumerate(targets):
         ax = axes[i]
@@ -105,8 +109,9 @@ def plot_r_vs_gamma(r_df, cut, out_path, pol_label):
             ax.errorbar(v.gamma, v.R, yerr=[yerr_lo, yerr_hi], color=color, marker=marker, ls=ls, label=variant, lw=1.5, ms=5, capsize=3)
         ax.set_title(f"{tgt}", fontsize=10)
         ax.set_xlabel("gamma"); ax.grid(alpha=0.3)
-        if i == 0:
+        if i == 0 or not share:
             ax.set_ylabel(r"$R = N(\Delta p_x^{rot}>0)/N(\Delta p_x^{rot}<0)$")
+        if i == 0:
             ax.legend(fontsize=9)
     fig.suptitle(f"{pol_label} R vs γ ({cut} cut)", fontsize=11)
     fig.tight_layout(rect=[0, 0, 1, 0.94])
