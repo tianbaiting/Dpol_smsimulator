@@ -29,6 +29,49 @@ def add_rot_neutron(df):
     df["truth_rot_pyn"] = sin * df.truth_pxn + cos * df.truth_pyn
     return df
 
+def plot_reco_vs_truth_2d(df, out_path, pol_label):
+    """[EN] reco-vs-truth 2D for proton (NN) and neutron (NEBULA-hit) per component.
+    [CN] 6 panel 共享一个 LogNorm 颜色映射, 右侧 colorbar 给出 events per bin."""
+    from matplotlib.colors import LogNorm
+    fig, axes = plt.subplots(2, 3, figsize=(14, 8))
+    nebula = df[df.n_reco_neutrons > 0]
+    rows = [
+        ("proton (NN)",      df,     [("px","truth_pxp","nn_pxp"),("py","truth_pyp","nn_pyp"),("pz","truth_pzp","nn_pzp")]),
+        ("neutron (NEBULA)", nebula, [("px","truth_pxn","reco_pxn"),("py","truth_pyn","reco_pyn"),("pz","truth_pzn","reco_pzn")]),
+    ]
+    # px/py wider for breakup (truth distribution reaches a few hundred MeV/c).
+    axis_ranges = {"px": (-400, 400), "py": (-200, 200), "pz": (200, 900)}
+    counts_max = 0
+    for _, sub, comps in rows:
+        for label, t, r in comps:
+            x = sub[t].values; y = sub[r].values
+            mask = np.isfinite(x) & np.isfinite(y)
+            lo, hi = axis_ranges[label]
+            H, _, _ = np.histogram2d(x[mask], y[mask], bins=120, range=[[lo,hi],[lo,hi]])
+            counts_max = max(counts_max, H.max())
+    norm = LogNorm(vmin=1, vmax=max(counts_max, 1))
+    last_im = None
+    for r_idx, (row_label, sub, comps) in enumerate(rows):
+        for c_idx, (label, t, rcol) in enumerate(comps):
+            ax = axes[r_idx, c_idx]
+            x = sub[t].values; y = sub[rcol].values
+            mask = np.isfinite(x) & np.isfinite(y)
+            lo, hi = axis_ranges[label]
+            _, _, _, im = ax.hist2d(x[mask], y[mask], bins=120, range=[[lo,hi],[lo,hi]],
+                                    cmap="viridis", norm=norm)
+            last_im = im
+            ax.plot([lo, hi], [lo, hi], 'r--', lw=1)
+            ax.set_xlim(lo, hi); ax.set_ylim(lo, hi)
+            ax.set_xlabel(f"truth {label} (MeV/c)")
+            ax.set_ylabel(f"reco {label} (MeV/c)")
+            ax.set_title(f"{row_label}: {label}  (N={mask.sum()})", fontsize=10)
+    fig.suptitle(f"{pol_label}: reco vs truth 2D (proton NN top, neutron NEBULA bottom)", fontsize=11)
+    fig.tight_layout(rect=[0, 0, 0.93, 0.95])
+    cbar_ax = fig.add_axes([0.945, 0.08, 0.015, 0.82])
+    cbar = fig.colorbar(last_im, cax=cbar_ax)
+    cbar.set_label("events per bin")
+    fig.savefig(out_path, dpi=130); plt.close(fig)
+
 def plot_residuals_per_particle(df, out_path, pol_label):
     # Proton: NN reco − truth; Neutron: reco (β method) − truth, NEBULA-hit only.
     fig, axes = plt.subplots(2, 3, figsize=(13, 7))
@@ -130,6 +173,7 @@ def main():
     df = add_rot_neutron(df)
 
     plot_residuals_per_particle(df, out / f"residuals_per_particle_{args.pol}.png", args.pol)
+    plot_reco_vs_truth_2d(df, out / f"reco_vs_truth_2d_{args.pol}.png", args.pol)
     for cut in ("loose", "mid", "tight"):
         plot_px_diff_hist(df, cut, out / f"px_diff_hist_{args.pol}_{cut}.png", args.pol)
         plot_r_vs_gamma(r_df, cut, out / f"r_vs_gamma_{args.pol}_{cut}.png", args.pol)

@@ -88,72 +88,112 @@ def main():
     with (out / "summary.json").open("w") as f:
         json.dump(summary, f, indent=2)
 
-    # 2x4 grid: rows = method (RK, NN), cols = px/py/pz/|p|
-    # Wider range + log y so RK heavy tails (px RMSE 17, pz RMSE 46) become visible.
-    fig, axes = plt.subplots(2, 4, figsize=(16, 7), sharex="col")
     method_titles = {"rk": "RK", "nn": "NN (formal_B115T3deg)"}
     col_titles = [r"$\Delta p_x$", r"$\Delta p_y$", r"$\Delta p_z$", r"$\Delta |\vec p|$"]
     keys = ["px", "py", "pz", "pmag"]
-    # Wide ranges + log y so the catastrophic RK failures are visible:
-    #  RK pz tail extends to +2535, |p| tail to +3750; 1097 events have |Δpz|>300
-    #  vs 26 for NN. Range ±500 catches the bulk of the RK tail population while
-    #  keeping per-bin width <10 MeV/c so the central peak stays resolved.
-    ranges = {"px": (-500, 500), "py": (-30, 30), "pz": (-500, 500), "pmag": (-500, 500)}
-    for r, m in enumerate(("rk", "nn")):
-        for c, k in enumerate(keys):
-            ax = axes[r, c]
-            data = res[m][k]
-            lo, hi = ranges[k]
-            ax.hist(data, bins=120, range=(lo, hi), histtype="step", color=("C0" if m == "rk" else "C3"), linewidth=1.5)
-            med = np.median(data)
-            hw = half_width(data)
-            ax.axvline(med, ls="--", color="k", lw=0.8)
-            ax.set_title(f"{method_titles[m]}: {col_titles[c]}\nN={len(data)}, med={med:+.2f}, hw={hw:.2f}", fontsize=10)
-            ax.set_xlim(lo, hi)
-            ax.set_yscale("log")
-            ax.set_ylim(bottom=0.5)
-            if r == 1:
-                ax.set_xlabel("reco - truth (MeV/c)")
-            if c == 0:
-                ax.set_ylabel("events (log)")
-            ax.grid(alpha=0.3, which="both")
-    fig.suptitle("Proton momentum residuals on ypol_new_20260413_elastic_allair (16 cells, 160k events, both reco OK)", fontsize=11)
-    fig.tight_layout(rect=[0, 0, 1, 0.96])
-    fig.savefig(out / "residuals_grid.png", dpi=130)
-    plt.close(fig)
 
-    # overlay 1x4: RK vs NN per component, log y, wide range — shows tail divergence
-    fig2, axes2 = plt.subplots(1, 4, figsize=(16, 4))
-    for c, k in enumerate(keys):
-        ax = axes2[c]
-        lo, hi = ranges[k]
-        ax.hist(res["rk"][k], bins=120, range=(lo, hi), histtype="step", color="C0", lw=1.6, label="RK")
-        ax.hist(res["nn"][k], bins=120, range=(lo, hi), histtype="step", color="C3", lw=1.6, label="NN")
-        ax.set_xlabel("reco - truth (MeV/c)")
-        ax.set_title(col_titles[c])
-        ax.set_xlim(lo, hi)
-        ax.set_yscale("log")
-        ax.set_ylim(bottom=0.5)
-        ax.grid(alpha=0.3, which="both")
-        if c == 0:
-            ax.legend()
-            ax.set_ylabel("events (log)")
-    fig2.suptitle("RK vs NN residual overlay (proton, 16 cells pooled, log y reveals RK tails)", fontsize=11)
-    fig2.tight_layout(rect=[0, 0, 1, 0.94])
-    fig2.savefig(out / "residuals_overlay.png", dpi=130)
-    plt.close(fig2)
+    # Two view modes per residual figure:
+    #   "core"  -> narrow x-range, linear y. Shows central resolution / 1σ.
+    #   "tail"  -> wide x-range, log y. Reveals the RK catastrophic-failure mode
+    #              (~1000 events with |Δpz|>300, max +2535 MeV/c) that linear/narrow
+    #              clips. NN tails stay inside ±412.
+    view_specs = [
+        ("core",
+         {"px": (-30, 30), "py": (-15, 15), "pz": (-30, 30), "pmag": (-30, 30)},
+         False, "events"),
+        ("tail",
+         {"px": (-500, 500), "py": (-30, 30), "pz": (-500, 500), "pmag": (-500, 500)},
+         True,  "events (log)"),
+        ("tail_linear",
+         {"px": (-100, 100), "py": (-30, 30), "pz": (-100, 100), "pmag": (-100, 100)},
+         False, "events"),
+    ]
+
+    for view_name, ranges, log_y, ylabel in view_specs:
+        # 2x4 grid: rows = method (RK, NN), cols = px/py/pz/|p|
+        fig, axes = plt.subplots(2, 4, figsize=(16, 7), sharex="col")
+        for r, m in enumerate(("rk", "nn")):
+            for c, k in enumerate(keys):
+                ax = axes[r, c]
+                data = res[m][k]
+                lo, hi = ranges[k]
+                ax.hist(data, bins=120, range=(lo, hi), histtype="step",
+                        color=("C0" if m == "rk" else "C3"), linewidth=1.5)
+                med = np.median(data)
+                hw = half_width(data)
+                ax.axvline(med, ls="--", color="k", lw=0.8)
+                ax.set_title(f"{method_titles[m]}: {col_titles[c]}\nN={len(data)}, med={med:+.2f}, hw={hw:.2f}", fontsize=10)
+                ax.set_xlim(lo, hi)
+                if log_y:
+                    ax.set_yscale("log")
+                    ax.set_ylim(bottom=0.5)
+                if r == 1:
+                    ax.set_xlabel("reco - truth (MeV/c)")
+                if c == 0:
+                    ax.set_ylabel(ylabel)
+                ax.grid(alpha=0.3, which="both" if log_y else "major")
+        suptitle = "Proton momentum residuals on ypol_new_20260413_elastic_allair (16 cells, 160k events, both reco OK)"
+        if view_name == "tail":
+            suptitle += " — log y, wide range"
+        elif view_name == "tail_linear":
+            suptitle += " — linear y, wide range"
+        fig.suptitle(suptitle, fontsize=11)
+        fig.tight_layout(rect=[0, 0, 1, 0.96])
+        suffix = {"core": "", "tail": "_tail", "tail_linear": "_tail_linear"}[view_name]
+        fig.savefig(out / f"residuals_grid{suffix}.png", dpi=130)
+        plt.close(fig)
+
+        # overlay 1x4: RK vs NN per component
+        fig2, axes2 = plt.subplots(1, 4, figsize=(16, 4))
+        for c, k in enumerate(keys):
+            ax = axes2[c]
+            lo, hi = ranges[k]
+            ax.hist(res["rk"][k], bins=120, range=(lo, hi), histtype="step", color="C0", lw=1.6, label="RK")
+            ax.hist(res["nn"][k], bins=120, range=(lo, hi), histtype="step", color="C3", lw=1.6, label="NN")
+            ax.set_xlabel("reco - truth (MeV/c)")
+            ax.set_title(col_titles[c])
+            ax.set_xlim(lo, hi)
+            if log_y:
+                ax.set_yscale("log")
+                ax.set_ylim(bottom=0.5)
+            ax.grid(alpha=0.3, which="both" if log_y else "major")
+            if c == 0:
+                ax.legend()
+                ax.set_ylabel(ylabel)
+        suptitle2 = "RK vs NN residual overlay (proton, 16 cells pooled"
+        suptitle2 += ", log y reveals RK tails)" if log_y else ", linear y, ±30 core view)"
+        fig2.suptitle(suptitle2, fontsize=11)
+        fig2.tight_layout(rect=[0, 0, 1, 0.94])
+        if view_name == "tail_linear":
+            suptitle2 = "RK vs NN residual overlay (proton, 16 cells pooled, linear y, wide range)"
+            fig2.suptitle(suptitle2, fontsize=11)
+        fig2.savefig(out / f"residuals_overlay{suffix}.png", dpi=130)
+        plt.close(fig2)
 
     # 2D scatter: reco vs truth for each component, both methods.
     # Hardcoded per-column ranges so RK outliers don't compress the useful diagonal.
     # log color scale for the 2D density (RK has long thin spike + few outliers).
     from matplotlib.colors import LogNorm
-    fig3, axes3 = plt.subplots(2, 3, figsize=(13, 8))
+    fig3, axes3 = plt.subplots(2, 3, figsize=(14, 8))
     truth_cols = ["truth_pxp", "truth_pyp", "truth_pzp"]
     reco_cols_rk = ["rk_pxp", "rk_pyp", "rk_pzp"]
     reco_cols_nn = ["nn_pxp", "nn_pyp", "nn_pzp"]
     # px/py: ±200 / ±100; pz: 400-800 (truth pz median ~627).
     axis_ranges = {"px": (-200, 200), "py": (-100, 100), "pz": (400, 800)}
-    for r, (label, rcols, color) in enumerate([("RK", reco_cols_rk, "C0"), ("NN", reco_cols_nn, "C3")]):
+    # [EN] Shared color scale across all 6 panels so the colorbar maps to the same counts everywhere
+    # / [CN] 6 个面板共享同一 LogNorm，colorbar 数值统一对应
+    counts_max = 0
+    for r, (label, rcols) in enumerate([("RK", reco_cols_rk), ("NN", reco_cols_nn)]):
+        for c, comp in enumerate(COMP):
+            x = df_e[truth_cols[c]].values
+            y = df_e[rcols[c]].values
+            mask = np.isfinite(x) & np.isfinite(y)
+            xlo, xhi = axis_ranges[comp]
+            H, _, _ = np.histogram2d(x[mask], y[mask], bins=120, range=[[xlo, xhi], [xlo, xhi]])
+            counts_max = max(counts_max, H.max())
+    norm = LogNorm(vmin=1, vmax=max(counts_max, 1))
+    last_im = None
+    for r, (label, rcols) in enumerate([("RK", reco_cols_rk), ("NN", reco_cols_nn)]):
         for c, comp in enumerate(COMP):
             ax = axes3[r, c]
             x = df_e[truth_cols[c]].values
@@ -161,15 +201,19 @@ def main():
             mask = np.isfinite(x) & np.isfinite(y)
             xlo, xhi = axis_ranges[comp]
             ylo, yhi = axis_ranges[comp]
-            ax.hist2d(x[mask], y[mask], bins=120, range=[[xlo, xhi], [ylo, yhi]],
-                      cmap="viridis", norm=LogNorm())
+            _, _, _, im = ax.hist2d(x[mask], y[mask], bins=120, range=[[xlo, xhi], [ylo, yhi]],
+                                    cmap="viridis", norm=norm)
+            last_im = im
             ax.plot([xlo, xhi], [xlo, xhi], 'r--', lw=1)
             ax.set_xlim(xlo, xhi); ax.set_ylim(ylo, yhi)
             ax.set_xlabel(f"truth {comp} (MeV/c)")
             ax.set_ylabel(f"{label} reco {comp} (MeV/c)")
             ax.set_title(f"{label}: {comp}")
     fig3.suptitle("reco vs truth 2D, proton (16 cells pooled, fixed axes; RK outliers clipped)", fontsize=11)
-    fig3.tight_layout(rect=[0, 0, 1, 0.95])
+    fig3.tight_layout(rect=[0, 0, 0.93, 0.95])
+    cbar_ax = fig3.add_axes([0.945, 0.08, 0.015, 0.82])
+    cbar = fig3.colorbar(last_im, cax=cbar_ax)
+    cbar.set_label("events per bin")
     fig3.savefig(out / "reco_vs_truth_2d.png", dpi=130)
     plt.close(fig3)
 

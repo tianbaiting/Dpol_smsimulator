@@ -1,0 +1,16 @@
+# Proton residual summary (ypol elastic_allair, 16 cells)
+total events read: 160000
+truth_has_proton:  160000
+RK ok / NN ok / both ok: 158293 / 160000 / 158293
+
+RK residuals (apples-to-apples on both-ok subset):
+  px   : med=-0.014  hw=5.856  rmse=17.077  p95|.|=12.655
+  py   : med=-0.122  hw=1.522  rmse=1.883  p95|.|=3.256
+  pz   : med=-1.044  hw=5.881  rmse=46.358  p95|.|=12.808
+  pmag : med=-1.042  hw=5.857  rmse=39.910  p95|.|=12.752
+
+NN residuals (same subset):
+  px   : med=-0.813  hw=6.010  rmse=11.729  p95|.|=13.764
+  py   : med=+0.518  hw=1.370  rmse=1.819  p95|.|=3.104
+  pz   : med=+1.613  hw=6.248  rmse=13.425  p95|.|=14.459
+  pmag : med=+1.601  hw=6.259  rmse=10.772  p95|.|=14.402

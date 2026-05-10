@@ -242,6 +242,13 @@ Sn124 & g080 & 0.228 & 0.229 & 0.792 & 0.256 & 0.260 & 0.783 & 0.316 & 0.320 & 0
 
 \textbf{NEBULA neutron}: $\Delta p_z$ med $-9.83$ hw $8.72$ MeV/$c$ — 与 elastic 报告 §1.1 同样的 $\beta$ 法非线性偏置. $\Delta p_x$ 出现明显的双峰 (中央 dip), 这是 NEBULA bar 横向位置由两端时间差离散反推的结构性 artefact, 在 breakup 比 elastic 更明显 (NEBULA 击中率更高, 统计放大了离散步进).
 
+\subsection{5.5 ypol reco vs truth 二维对照}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/nn_breakup_phys/reco_vs_truth_2d_ypol.png}
+\caption{ypol reco vs truth 2D 直方图. 上行 NN proton (3.38M 事件), 下行 NEBULA neutron (1.20M NEBULA-hit 事件). 红虚线 $y=x$. 6 panel 共享 \texttt{LogNorm} 颜色映射, 右侧 colorbar 标出每 bin 事件数. proton 在 $p_x, p_y$ 方向覆盖 $\pm 400 / \pm 200$ MeV/$c$ 的 breakup 动量范围 (训练域只到 $|p_T|\le 100$, 域外区域可见对角线偏离); $p_z$ 主要堆积在 $\sim 627$ 附近. neutron $p_x$ 上能看到 NEBULA bar 离散步进的横向带状结构.}
+\end{figure}
+
 \section{6. zpol 章节}
 
 \subsection{6.1 通过率 (znp+zpn 已合并)}
@@ -342,6 +349,13 @@ Sn124 & g080 & 0.312 & 0.312 & 0.374 & 0.225 & 0.249 & 0.341 & 0.298 & 0.325 & 0
 \end{figure}
 
 注意 zpol 训练域覆盖率 91.3\% (vs ypol 97.4\%), 残差略宽于 ypol 但量级相同; 不构成 R 比值的显著扰动.
+
+\subsection{6.5 zpol reco vs truth 二维对照}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/nn_breakup_phys/reco_vs_truth_2d_zpol.png}
+\caption{zpol reco vs truth 2D 直方图. 上行 NN proton, 下行 NEBULA neutron. 红虚线 $y=x$. 6 panel 共享 \texttt{LogNorm} 颜色映射, 右侧 colorbar 标出每 bin 事件数. proton 在域外 ($|p_T| > 100$ MeV/$c$) 处可见对角线弯折; neutron 与 ypol 同样存在 NEBULA 离散步进结构.}
+\end{figure}
 
 \section{7. 结论 \& 下一步}
 
