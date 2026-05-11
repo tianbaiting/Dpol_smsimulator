@@ -240,13 +240,18 @@ Sn124 & g080 & 0.228 & 0.229 & 0.792 & 0.256 & 0.260 & 0.783 & 0.316 & 0.320 & 0
 
 \textbf{NN proton}: $\Delta p_x$ med $-0.79$ hw $6.05$, $\Delta p_y$ med $+0.51$ hw $1.38$, $\Delta p_z$ med $+1.59$ hw $6.30$ MeV/$c$. 与 elastic 报告 (\texttt{nn\_vs\_rk\_ypol\_allair\_20260503\_zh.tex} §3.1) 几乎完全一致, 证明 NN 在 breakup 域内的性能与 elastic 域接近.
 
-\textbf{NEBULA neutron}: $\Delta p_z$ med $-9.83$ hw $8.72$ MeV/$c$ — 与 elastic 报告 §1.1 同样的 $\beta$ 法非线性偏置. $\Delta p_x$ 出现明显的双峰 (中央 dip), 这是 NEBULA bar 横向位置由两端时间差离散反推的结构性 artefact, 在 breakup 比 elastic 更明显 (NEBULA 击中率更高, 统计放大了离散步进).
+\textbf{NEBULA neutron}: $\Delta p_z$ med $-9.83$ hw $8.72$ MeV/$c$ — 与 elastic 报告 §1.1 同样的 $\beta$ 法非线性偏置. $\Delta p_x$ 出现明显的双峰 (中央 dip), 来源是 NEBULA bar 几何与重建链:
+\begin{itemize}[nosep]
+    \item NEBULA bar 横截面 $12\times 12$ cm, 长轴沿 $Y$ (vertical, 1.8 m); 60 根 bar 沿 $X$ 方向并排堆叠, 共 2 层 $Z$. 在 \texttt{NEBULASimDataConverter\_TArtNEBULAPla.cc} 里, \textbf{X = bar 几何中心} (离散, 步长 12 cm), \textbf{Y = $0.5\,\Delta t\, v_\text{scinti}$ 由两端 PMT 时间差换算} (连续), Z = 层中心. 因此沿 $X$ 方向重建是离散的, 沿 $Y$ 才是时间差.
+    \item \texttt{NEBULAReconstructor::ApplyPositionSmearing} 叠 5 mm 的高斯抖动远小于 12 cm bar 间距, 离散性几乎没被抹掉; 12 cm / $L_\text{NEBULA}=7.25$ m $\times |\vec p|\approx 600$ MeV/$c$ $\to$ Δ$p_x$ 矩形宽 $\sim\pm 5$ MeV/$c$, 与观测一致.
+    \item 中央 dip 的成因是单 bar / 多 bar cluster 群体的叠加: 多 bar cluster (能量加权质心) 把 bar 边界事件拉回真值附近, 但分析下游若只保留 \texttt{n\_reco\_neutrons==1} 这类干净事件, 该中央群体被砍掉 $\to$ 看到的是矩形挖空中央. breakup 比 elastic 更显著是因为 NEBULA 击中率更高, 离散结构在 1.2M 事件统计下完全显出来.
+\end{itemize}
 
 \subsection{5.5 ypol reco vs truth 二维对照}
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/nn_breakup_phys/reco_vs_truth_2d_ypol.png}
-\caption{ypol reco vs truth 2D 直方图. 上行 NN proton (3.38M 事件), 下行 NEBULA neutron (1.20M NEBULA-hit 事件). 红虚线 $y=x$. 6 panel 共享 \texttt{LogNorm} 颜色映射, 右侧 colorbar 标出每 bin 事件数. proton 在 $p_x, p_y$ 方向覆盖 $\pm 400 / \pm 200$ MeV/$c$ 的 breakup 动量范围 (训练域只到 $|p_T|\le 100$, 域外区域可见对角线偏离); $p_z$ 主要堆积在 $\sim 627$ 附近. neutron $p_x$ 上能看到 NEBULA bar 离散步进的横向带状结构.}
+\caption{ypol reco vs truth 2D 直方图. 上行 NN proton (3.38M 事件), 下行 NEBULA neutron (1.20M NEBULA-hit 事件). 红虚线 $y=x$. 6 panel 共享 \texttt{LogNorm} 颜色映射, 右侧 colorbar 标出每 bin 事件数. proton 在 $p_x, p_y$ 方向覆盖 $\pm 400 / \pm 200$ MeV/$c$ 的 breakup 动量范围 (训练域只到 $|p_T|\le 100$, 域外区域可见对角线偏离); $p_z$ 主要堆积在 $\sim 627$ 附近. neutron $p_x$ 上能看到 NEBULA bar 沿 $X$ 方向 12 cm 步长的离散带状结构 (X = bar 中心, 见 §5.4).}
 \end{figure}
 
 \section{6. zpol 章节}
@@ -354,7 +359,7 @@ Sn124 & g080 & 0.312 & 0.312 & 0.374 & 0.225 & 0.249 & 0.341 & 0.298 & 0.325 & 0
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/nn_breakup_phys/reco_vs_truth_2d_zpol.png}
-\caption{zpol reco vs truth 2D 直方图. 上行 NN proton, 下行 NEBULA neutron. 红虚线 $y=x$. 6 panel 共享 \texttt{LogNorm} 颜色映射, 右侧 colorbar 标出每 bin 事件数. proton 在域外 ($|p_T| > 100$ MeV/$c$) 处可见对角线弯折; neutron 与 ypol 同样存在 NEBULA 离散步进结构.}
+\caption{zpol reco vs truth 2D 直方图. 上行 NN proton, 下行 NEBULA neutron. 红虚线 $y=x$. 6 panel 共享 \texttt{LogNorm} 颜色映射, 右侧 colorbar 标出每 bin 事件数. proton 在域外 ($|p_T| > 100$ MeV/$c$) 处可见对角线弯折; neutron 与 ypol 同样存在 NEBULA bar X 方向 12 cm 离散结构.}
 \end{figure}
 
 \section{7. 结论 \& 下一步}

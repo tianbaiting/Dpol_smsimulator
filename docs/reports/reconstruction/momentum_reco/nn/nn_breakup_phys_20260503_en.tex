@@ -238,13 +238,18 @@ Full bootstrap CIs are in \texttt{build/test\_output/nn\_breakup\_phys\_20260503
 
 \textbf{NN proton}: $\Delta p_x$ med $-0.79$ hw $6.05$, $\Delta p_y$ med $+0.51$ hw $1.38$, $\Delta p_z$ med $+1.59$ hw $6.30$ MeV/$c$. Almost identical to the elastic report (\texttt{nn\_vs\_rk\_ypol\_allair\_20260503\_en.tex} \S3.1), confirming NN performance on the breakup domain matches the elastic domain.
 
-\textbf{NEBULA neutron}: $\Delta p_z$ med $-9.83$ hw $8.72$ MeV/$c$ --- the same $\beta$-method nonlinear bias seen in the elastic report \S1.1. $\Delta p_x$ shows a clear double-peak (central dip), a structural artefact of the NEBULA bar transverse position derived from end-to-end time difference. The artefact is more visible in breakup than in elastic because NEBULA hit rate is higher and statistics amplify the discrete stepping.
+\textbf{NEBULA neutron}: $\Delta p_z$ med $-9.83$ hw $8.72$ MeV/$c$ --- the same $\beta$-method nonlinear bias seen in the elastic report \S1.1. $\Delta p_x$ shows a clear double-peak (central dip); the cause comes from the NEBULA bar geometry plus the reconstruction chain:
+\begin{itemize}[nosep]
+    \item Each NEBULA bar has a $12\times 12$ cm cross-section and its long axis is along $Y$ (vertical, 1.8 m); 60 bars are stacked side-by-side along $X$, with 2 $Z$ layers. In \texttt{NEBULASimDataConverter\_TArtNEBULAPla.cc}, \textbf{X = bar geometric centre} (discrete, 12 cm pitch), \textbf{Y = $0.5\,\Delta t\, v_\text{scinti}$ from PMT end-to-end time difference} (continuous), $Z$ = layer centre. So the reco position is discrete in $X$; the time difference gives $Y$, not $X$.
+    \item \texttt{NEBULAReconstructor::ApplyPositionSmearing} adds a 5 mm Gaussian which is far smaller than the 12 cm bar pitch, so the discreteness is essentially preserved. $12$ cm / $L_\text{NEBULA}=7.25$ m $\times |\vec p|\approx 600$ MeV/$c$ $\to$ a rectangle of $\sim\pm 5$ MeV/$c$ in $\Delta p_x$, consistent with what is observed.
+    \item The central dip arises from the mix of single-bar and multi-bar cluster events. A multi-bar cluster (energy-weighted centroid) pulls bar-boundary events back close to truth; if the downstream analysis keeps only clean events (e.g.\ \texttt{n\_reco\_neutrons==1}), this central population is removed, leaving the rectangle with a hollow centre. The effect is more pronounced in breakup than in elastic simply because NEBULA hit rate is higher and the 1.2 M-event statistics fully expose the discrete structure.
+\end{itemize}
 
 \subsection{5.5 ypol reco vs truth 2D}
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/nn_breakup_phys/reco_vs_truth_2d_ypol.png}
-\caption{ypol reco vs truth 2D histograms. Top: NN proton (3.38M events); bottom: NEBULA neutron (1.20M NEBULA-hit events). Red dashed line $y=x$. All 6 panels share a common \texttt{LogNorm} color map; the right-side colorbar gives events per bin. Proton coverage in $p_x, p_y$ is $\pm 400 / \pm 200$ MeV/$c$ (training domain only goes to $|p_T|\le 100$, so off-domain regions show a deviation from the diagonal); $p_z$ is concentrated near $\sim 627$. Neutron $p_x$ shows the NEBULA-bar discrete-stepping band structure.}
+\caption{ypol reco vs truth 2D histograms. Top: NN proton (3.38M events); bottom: NEBULA neutron (1.20M NEBULA-hit events). Red dashed line $y=x$. All 6 panels share a common \texttt{LogNorm} color map; the right-side colorbar gives events per bin. Proton coverage in $p_x, p_y$ is $\pm 400 / \pm 200$ MeV/$c$ (training domain only goes to $|p_T|\le 100$, so off-domain regions show a deviation from the diagonal); $p_z$ is concentrated near $\sim 627$. Neutron $p_x$ shows the 12 cm bar-pitch discrete band structure along $X$ (reco $X$ = bar centre; see \S5.4).}
 \end{figure}
 
 \section{6. zpol section}
@@ -352,7 +357,7 @@ zpol training-domain coverage is 91.3\% (vs ypol 97.4\%); residuals are slightly
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/nn_breakup_phys/reco_vs_truth_2d_zpol.png}
-\caption{zpol reco vs truth 2D histograms. Top: NN proton; bottom: NEBULA neutron. Red dashed line $y=x$. All 6 panels share a common \texttt{LogNorm} color map; the right-side colorbar gives events per bin. Proton diagonal bends visibly outside the training domain ($|p_T| > 100$ MeV/$c$); neutron has the same NEBULA discrete-stepping structure as ypol.}
+\caption{zpol reco vs truth 2D histograms. Top: NN proton; bottom: NEBULA neutron. Red dashed line $y=x$. All 6 panels share a common \texttt{LogNorm} color map; the right-side colorbar gives events per bin. Proton diagonal bends visibly outside the training domain ($|p_T| > 100$ MeV/$c$); neutron shows the same 12 cm NEBULA-bar $X$-discrete band structure as ypol.}
 \end{figure}
 
 \section{7. Conclusion \& next steps}
