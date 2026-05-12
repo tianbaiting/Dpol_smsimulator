@@ -52,7 +52,14 @@ case "$CURRENT_HOST" in
         # 如果 ANAROOT 安装在 Conda 环境系统目录下，解开下面这行：
         # export TARTSYS=$CONDA_PREFIX
         ;;
-    
+
+    "ENPG")
+        # labenpg (lab.enpg.cn) — anaroot 与 conda env 都在 /data/tian 下
+        export TARTSYS=/data/tian/software/anaroot/install
+        export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5
+        export LD_LIBRARY_PATH=$TARTSYS/lib:$LD_LIBRARY_PATH
+        ;;
+
     *)
         # --- 其他未匹配的设备 ---
         echo "  -> 未知设备，仅加载通用配置。"

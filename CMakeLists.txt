@@ -86,6 +86,12 @@ find_package(XercesC REQUIRED)
 include_directories(${XercesC_INCLUDE_DIRS})
 message(STATUS "Xerces-C found")
 
+# spdlog at top level so the IMPORTED target is visible to all subdirectories
+# (apps/tools uses spdlog::spdlog directly; without this, find_package inside
+# libs/smlogger keeps the target scoped to that subdir and apps fail to link)
+find_package(spdlog REQUIRED)
+message(STATUS "spdlog found: ${spdlog_VERSION}")
+
 message(STATUS "========================================")
 
 ##############################################################################
