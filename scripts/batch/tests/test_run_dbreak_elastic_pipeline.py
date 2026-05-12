@@ -72,7 +72,7 @@ def test_build_geninput_cmd_ypol_sn112():
     cmd = build_geninput_cmd(cfg, mode="ypol", isotope="Sn112")
     # Returns a single shell string suitable for run_bash()
     assert isinstance(cmd, str)
-    assert "source setup_spana.sh" in cmd
+    assert "source setup.sh" in cmd
     assert "build/bin/GenInputRoot_qmdrawdata" in cmd
     assert "--mode ypol" in cmd
     assert "--source elastic" in cmd

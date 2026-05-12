@@ -6,14 +6,14 @@
 #
 # Run on remote (spana03) after smoke or full gen-output has produced ≥1
 # matched input+output pair for ypol Sn112 g050 ynp and zpol Sn112 g050 znp b01.
-# NOTE: do NOT `set -euo pipefail` here — setup_spana.sh references unset
+# NOTE: do NOT `set -euo pipefail` here — setup.sh references unset
 # vars and that would trip set -u; we still propagate root's exit code.
 REMOTE_DIR="${REMOTE_DIR:-/home/tbt/workspace/Dpol_smsimulator}"
 cd "$REMOTE_DIR"
 
 eval "$(/home/tbt/.local/bin/micromamba shell hook -s bash)" >/dev/null 2>&1
 micromamba activate anaroot-env >/dev/null 2>&1 || { echo "FAIL: micromamba activate"; exit 1; }
-source setup_spana.sh >/dev/null 2>&1 || { echo "FAIL: source setup_spana.sh"; exit 1; }
+source setup.sh >/dev/null 2>&1 || { echo "FAIL: source setup.sh"; exit 1; }
 
 cat > /tmp/verify_b_phi.C << 'EOF'
 {

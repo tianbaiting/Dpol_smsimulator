@@ -35,8 +35,16 @@ case "$CURRENT_HOST" in
         export SMSIMDIR=/home/tbt/workspace/dpol/smsimulator5.5
         ;;
 
-    "spana03")
+    "spana03"|"spana03".*)
         # --- spana03 服务器配置 ---
+        # [EN] Match both "spana03" and FQDN "spana03.2.novalocal"
+        # [CN] 同时匹配短主机名和 FQDN，避免 hostname 返回 FQDN 时漏匹配
+
+        # [EN] Auto-activate anaroot-env if not already in a conda env
+        # [CN] 若未处于 conda 环境，自动激活 anaroot-env
+        if [[ -z "$CONDA_PREFIX" ]]; then
+            eval "micromamba activate anaroot-env"
+        fi
 
         # 定义当前项目的根目录
         # 如果你在这个脚本所在的目录下 source 它，建议使用 pwd 动态获取，方便移植
