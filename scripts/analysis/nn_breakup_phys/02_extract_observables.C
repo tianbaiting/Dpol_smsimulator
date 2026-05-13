@@ -52,7 +52,7 @@ void extract_observables(const char* input_path, const char* csv_path,
             << "truth_pxp,truth_pyp,truth_pzp,truth_ep,"
             << "truth_pxn,truth_pyn,truth_pzn,truth_en,"
             << "nn_pxp,nn_pyp,nn_pzp,nn_ep,nn_p,nn_status,"
-            << "n_reco_neutrons,reco_pxn,reco_pyn,reco_pzn,reco_n_energy" << endl;
+            << "n_reco_neutrons,reco_pxn,reco_pyn,reco_pzn,reco_n_energy,hit_mult_n" << endl;
     }
 
     int n_with_nn = 0;
@@ -77,10 +77,12 @@ void extract_observables(const char* input_path, const char* csv_path,
         // Reco neutron from RecoEvent.neutrons[0] (frame-rotated to target frame upstream).
         int n_reco_neutrons = 0;
         double rpxn_=0, rpyn_=0, rpzn_=0, ren_=0, rbeta_=0;
+        int hit_mult_n_ = 0;
         if (re) {
             n_reco_neutrons = (int)re->neutrons.size();
             if (n_reco_neutrons > 0) {
                 const auto& neu = re->neutrons[0];
+                hit_mult_n_ = neu.hitMultiplicity;
                 rbeta_ = neu.beta; ren_ = neu.energy;
                 if (rbeta_ > 0 && rbeta_ < 1.0) {
                     const double m_n = 939.565;
@@ -97,7 +99,7 @@ void extract_observables(const char* input_path, const char* csv_path,
             << tpxp << "," << tpyp << "," << tpzp << "," << tep << ","
             << tpxn << "," << tpyn << "," << tpzn << "," << ten << ","
             << nnpx_ << "," << nnpy_ << "," << nnpz_ << "," << nne_ << "," << nnp_ << "," << nnst_ << ","
-            << n_reco_neutrons << "," << rpxn_ << "," << rpyn_ << "," << rpzn_ << "," << ren_ << endl;
+            << n_reco_neutrons << "," << rpxn_ << "," << rpyn_ << "," << rpzn_ << "," << ren_ << "," << hit_mult_n_ << endl;
     }
     out.close();
     f->Close();
