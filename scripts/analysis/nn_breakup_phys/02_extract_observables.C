@@ -3,7 +3,7 @@
 //      truth_has_proton, truth_has_neutron,
 //      truth_p{x,y,z}p, truth_ep, truth_p{x,y,z}n, truth_en,
 //      nn_p{x,y,z}p, nn_ep, nn_p, nn_status,
-//      n_reco_neutrons, reco_p{x,y,z}n, reco_n_energy
+//      n_reco_neutrons, reco_p{x,y,z}n, reco_n_energy, hit_mult_n
 // [CN] 从 NN reco ROOT 抽出每事件 truth + NN proton + NEBULA neutron, 写一份 CSV.
 //
 // Usage:
@@ -77,7 +77,7 @@ void extract_observables(const char* input_path, const char* csv_path,
         // Reco neutron from RecoEvent.neutrons[0] (frame-rotated to target frame upstream).
         int n_reco_neutrons = 0;
         double rpxn_=0, rpyn_=0, rpzn_=0, ren_=0, rbeta_=0;
-        int hit_mult_n_ = 0;
+        int hit_mult_n_ = -1;
         if (re) {
             n_reco_neutrons = (int)re->neutrons.size();
             if (n_reco_neutrons > 0) {
