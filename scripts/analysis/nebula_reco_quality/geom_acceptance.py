@@ -57,8 +57,8 @@ def load_nebula_bars(detectors_csv: Path, nebula_csv: Path, neut_only: bool = Tr
     for i, line in enumerate(detectors_csv.read_text().splitlines()):
         if i == 0 or not line.strip():
             continue
-        # Strip trailing "!" (seen on last Veto line) then split on comma
-        parts = [p.strip().rstrip("!") for p in line.split(",")]
+        # Strip leading/trailing "!" (seen as "!0" prefix on last Veto line) then split on comma
+        parts = [p.strip().strip("!") for p in line.split(",")]
         if len(parts) < 7:
             continue
         det_type = parts[1].strip()
