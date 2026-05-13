@@ -45,7 +45,7 @@ echo "[run_reco] launching N=${N_PARALLEL} parallel reco jobs at $(date -Isecond
 # This avoids concurrent ACLiC cache races and bakes in the correct include
 # paths from ROOT_INCLUDE_PATH (set by setup.sh on this host).
 echo "[run_reco] pre-compiling ${MACRO} via ACLiC..."
-root -l -b -q "${MACRO}+" 2>&1 | tail -3
+root -l -b -q -e ".L ${MACRO}+" 2>&1 | tail -5
 echo "[run_reco] ACLiC compile done"
 
 # For each g4output shard, derive the matching input shard index and emit a
