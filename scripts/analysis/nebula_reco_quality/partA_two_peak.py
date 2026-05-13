@@ -1,9 +1,14 @@
 """Part A: Δp_x two-peak source trace.
 
+§5.4 of nn_breakup_phys_20260503_zh.tex reports a double-peak with central
+dip in the NEBULA neutron *reconstruction residual* Δp_x ≡ truth_pxn − reco_pxn
+(in the rotated reaction-plane frame). This is a *per-particle* residual, not
+the event-level proton–neutron polarization observable.
+
 Loads the regenerated joined.parquet (Task A2), splits NEBULA-hit subset by
 hit_mult_n, and emits the three Part A figures:
-  fig_A1_dpx_overview      — Δp_x rotated, all events vs NEBULA-hit subset
-  fig_A2_dpx_split_mult    — Δp_x rotated split by hit_mult_n (1 vs ≥2)
+  fig_A1_dpx_overview      — neutron Δp_x residual (truth − reco), NEBULA-hit subset
+  fig_A2_dpx_split_mult    — same, split by hit_mult_n (1 vs ≥2)
   fig_A3_nebula_x_discrete — reco neutron x distribution (shows bar-pitch peaks)
 """
 from __future__ import annotations
@@ -15,29 +20,41 @@ import matplotlib.pyplot as plt
 
 
 def fig_A1(df: pd.DataFrame, out: Path):
-    """Δp_x_rot histogram: all events (truth proton + truth neutron) vs NEBULA-hit subset."""
-    fig, ax = plt.subplots(figsize=(7, 4.5))
-    # truth Δp_x
-    dpx_truth = (df.truth_rot_pxp - df.truth_rot_pxn).values
+    """Neutron Δp_x residual = truth_pxn - reco_pxn (lab + rotated), NEBULA-hit subset.
+
+    This is the quantity §5.4 reports as having a double-peak with central dip,
+    NOT the event-level proton-neutron polarization observable.
+    """
     nh = df.n_reco_neutrons > 0
-    dpx_nh = (df.nn_rot_pxp[nh] - df.reco_rot_pxn[nh]).values
+    sub = df[nh]
+    dpx_lab = (sub.truth_pxn - sub.reco_pxn).values
+    dpx_rot = (sub.truth_rot_pxn - sub.reco_rot_pxn).values
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.5), sharey=True)
     bins = np.linspace(-30, 30, 121)
-    ax.hist(dpx_truth, bins=bins, density=True, histtype="step", color="gray", label=f"truth ({len(dpx_truth)})")
-    ax.hist(dpx_nh,    bins=bins, density=True, histtype="step", color="C0",   label=f"NEBULA-hit full reco ({len(dpx_nh)})")
-    ax.set_xlabel(r"$\Delta p_x^\mathrm{rot}$ [MeV/c]")
-    ax.set_ylabel("density")
-    ax.set_title("Fig A1: Δp_x overview")
-    ax.legend()
+    axes[0].hist(dpx_lab, bins=bins, density=True, histtype="step", color="C0",
+                 label=f"N={len(dpx_lab)}")
+    axes[0].set_xlabel(r"$\Delta p_x = p_x^\mathrm{truth,n} - p_x^\mathrm{reco,n}$ [MeV/c]  (lab)")
+    axes[0].set_ylabel("density")
+    axes[0].set_title("Fig A1 (lab frame)")
+    axes[0].axvline(0, color="k", lw=0.5, ls=":")
+    axes[0].legend()
+    axes[1].hist(dpx_rot, bins=bins, density=True, histtype="step", color="C0",
+                 label=f"N={len(dpx_rot)}")
+    axes[1].set_xlabel(r"$\Delta p_x^\mathrm{rot}$ [MeV/c]  (reaction-plane frame)")
+    axes[1].set_title("Fig A1 (rotated)")
+    axes[1].axvline(0, color="k", lw=0.5, ls=":")
+    axes[1].legend()
+    fig.suptitle("Fig A1: NEBULA neutron residual  Δp_x = truth − reco")
     fig.tight_layout()
     fig.savefig(out, dpi=120)
     plt.close(fig)
 
 
 def fig_A2(df: pd.DataFrame, out: Path):
-    """Δp_x split by hit_mult_n: 1 (single-bar) vs ≥2 (multi-bar cluster)."""
+    """Neutron Δp_x residual split by hit_mult_n: 1 (single-bar) vs ≥2 (multi-bar)."""
     nh = (df.n_reco_neutrons > 0)
     sub = df[nh]
-    dpx = (sub.nn_rot_pxp - sub.reco_rot_pxn).values
+    dpx = (sub.truth_pxn - sub.reco_pxn).values   # lab-frame residual: cleanest for bar discreteness
     mult = sub.hit_mult_n.values
     fig, ax = plt.subplots(figsize=(7, 4.5))
     bins = np.linspace(-30, 30, 121)
@@ -50,9 +67,9 @@ def fig_A2(df: pd.DataFrame, out: Path):
         ax.hist(dpx[m_mask], bins=bins, density=True, histtype="step", color=color,
                 label=f"{label}  N={n}")
     ax.axvline(0, color="k", lw=0.5, ls=":")
-    ax.set_xlabel(r"$\Delta p_x^\mathrm{rot}$ [MeV/c]")
+    ax.set_xlabel(r"$\Delta p_x = p_x^\mathrm{truth,n} - p_x^\mathrm{reco,n}$ [MeV/c]  (lab)")
     ax.set_ylabel("density")
-    ax.set_title("Fig A2: Δp_x split by NEBULA cluster multiplicity")
+    ax.set_title("Fig A2: NEBULA neutron Δp_x split by cluster multiplicity")
     ax.legend()
     fig.tight_layout()
     fig.savefig(out, dpi=120)
@@ -90,8 +107,8 @@ def main():
 
     df = pd.read_parquet(args.joined)
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
-    required = {"truth_rot_pxp", "truth_rot_pxn", "nn_rot_pxp", "reco_rot_pxn",
-                "n_reco_neutrons", "hit_mult_n", "reco_pxn", "reco_pzn"}
+    required = {"truth_pxn", "reco_pxn", "truth_rot_pxn", "reco_rot_pxn",
+                "n_reco_neutrons", "hit_mult_n", "reco_pzn"}
     missing = required - set(df.columns)
     if missing:
         raise SystemExit(f"joined parquet missing columns: {missing}")
