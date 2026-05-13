@@ -51,12 +51,36 @@
 ## 4. Part B：truth-only (px,py) 效率扫描
 
 ### 4.1 执行环境
-在 `labenpg` (96 cores, ENPG host case 已在 commit `83c7503` 处理) 上跑 Geant4 扫描。本地 PC 只负责生成 tree-gun 输入和分析。
+在 `labenpg` (96 cores, ENPG host case 已在 commit `83c7503` 处理, `~/workspace/dpol/smsimulator5.5` 与 main 同步) 上跑 Geant4 扫描。本地 PC 只负责生成 tree-gun 输入和分析。
+
+**已在 2026-05-13 完成的环境核查**（dry run 10 neutron @200 MeV/c 端到端通过，41 KB 输出 root 含 tree + FragParameter + NEBULAParameter + RunParameter）：
+
+- 1.15T 磁场表 `configs/simulation/geometry/filed_map/180703-1,15T-3000.table` (854 MB) 已在
+- ROOT 6.36 + Geant4 11.3.2 在 conda env `anaroot-env` 中
+- 几何构建正确（120 Neut bars + 24 Veto bars + PDC + Dipole 磁场全部成功放置）
+- 已知良性 warning：`3deg_1.15T.mac:51-52` 用相对路径覆盖了 `geometry_B115T.mac` 的绝对路径，第二次 Update 时 `geometry/NEBULA_*.csv` 找不到打红色 warning，但首次 Update 已正确填充缓存的 map，几何最终正确。可选清理（删 51-52 行）作为单独 cosmetic commit。
+
+**SSH 路由**: 必须用 `labenpg-hk`（ProxyJump 经 `tex.enpg.cn`），直连 labenpg 掉包。所有 ssh/scp 命令以 `labenpg-hk` 为 target。
+
+**非交互环境激活 preamble**（脚本里硬编码，因 direnv 在非交互 ssh 中不触发）：
+```bash
+export MAMBA_EXE=/data/tian/software/micromamba/bin/micromamba
+export MAMBA_ROOT_PREFIX=/data/tian/conda
+eval "$($MAMBA_EXE shell hook --shell bash --root-prefix $MAMBA_ROOT_PREFIX)"
+micromamba activate anaroot-env
+source setup.sh
+```
+
+**G4 mac 命令规范**（dry run 期间踩坑确认）：
+- gun 类型用 `/action/gun/Type Tree`（生产）或 `Pencil`（测试）
+- 位置命令是 `/action/gun/Position x y z mm`，**不是** `SetBeamPosition`
+- 动量用 `/action/gun/Energy + AngleX/AngleY`，**不是** `SetBeamMomentum`
+- Tree gun: `/action/gun/tree/InputFileName <file>` + `/action/gun/tree/beamOn <N>`
 
 执行流程（双向 rsync）：
-1. 本机 → labenpg：tree-gun 输入 root 文件 + macros
+1. 本机 → labenpg-hk：tree-gun 输入 root 文件 + macros
 2. labenpg：批量 sim_deuteron + reconstruct
-3. labenpg → 本机：summary parquet（不传 g4output 大文件）
+3. labenpg-hk → 本机：summary parquet（不传 g4output 大文件）
 4. 本机：分析 + 出图 + 写 tex
 
 ### 4.2 Gun 配置
