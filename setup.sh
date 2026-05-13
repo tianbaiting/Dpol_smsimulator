@@ -62,9 +62,9 @@ case "$CURRENT_HOST" in
         ;;
 
     "ENPG")
-        # labenpg (lab.enpg.cn) — anaroot 与 conda env 都在 /data/tian 下
+        # labenpg (lab.enpg.cn) — repo, anaroot, conda env 都在 /data/tian 下
         export TARTSYS=/data/tian/software/anaroot/install
-        export SMSIMDIR=/home/tian/workspace/dpol/smsimulator5.5
+        export SMSIMDIR=/data/tian/workspace/dpol/smsimulator5.5
         export LD_LIBRARY_PATH=$TARTSYS/lib:$LD_LIBRARY_PATH
         ;;
 
