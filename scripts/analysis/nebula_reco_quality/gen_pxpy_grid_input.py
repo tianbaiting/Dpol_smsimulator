@@ -34,7 +34,20 @@ import numpy as np
 # ---------------------------------------------------------------------------
 import ROOT  # noqa: E402  (must come after numpy to avoid symbol clashes)
 
+# [EN] Tell ROOT where to find TBeamSimData.hh before loading the library so
+# PyROOT can resolve the class definition (rootmap declares the header by
+# basename only). / [CN] 在加载库前告诉 ROOT 头文件路径，PyROOT 才能解析
+# 类定义（rootmap 只用 basename）。
+_SMSIM = os.environ.get("SMSIMDIR", str(Path(__file__).resolve().parents[3]))
+for inc in (
+    f"{_SMSIM}/libs/smg4lib/src/data/include",
+    f"{_SMSIM}/libs/analysis/include",
+):
+    if Path(inc).is_dir():
+        ROOT.gInterpreter.AddIncludePath(inc)
+
 ROOT.gSystem.Load("libsmdata.so")  # TBeamSimData + TBeamSimDataArray
+ROOT.gInterpreter.ProcessLine('#include "TBeamSimData.hh"')
 
 
 def _make_neutron(px_mev: float, py_mev: float, pz_mev: float,
