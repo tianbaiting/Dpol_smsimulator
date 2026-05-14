@@ -180,14 +180,45 @@ $21 \times 21 \times 5 \times 2000 = 4{,}410{,}000$ 总事件，32 shards 各约
 field map \texttt{180703-1,15T-3000.table}）+ \texttt{Target/SetTarget false}（屏蔽 target 散射，
 只测 NEBULA 接受度）。
 
-\textbf{三层效率定义}（见 \texttt{scripts/analysis/nebula\_reco\_quality/analyze\_efficiency.py}）：
-\begin{itemize}
-    \item $\varepsilon_\mathrm{geom}(p_x, p_y)$ = truth ray 与 NEBULA Neut active 体积有交 / N\_total
-          （纯 Python ray-cast，\texttt{geom\_acceptance.py}，详见 \S3.2）
-    \item $\varepsilon_\mathrm{det}(p_x, p_y)$ = NEBULASimData ΣE > 1 MeV / N\_total（Geant4 输出统计）
-    \item $\varepsilon_\mathrm{reco}(p_x, p_y)$ = \texttt{n\_reco\_neutrons} $\geq 1$ / N\_total
-\end{itemize}
-$p_z$ 边缘化：对每 $(p_x, p_y)$ 池 pool 5 个 pz 子点。
+\textbf{三层效率定义}。对每个靶系网格点 $(p_x^\mathrm{tgt}, p_y^\mathrm{tgt})$，
+$p_z$ 边缘化（pool 5 个 $p_z$ 子点 $\times$ 2000 events/子点 = 10000 events/bin）。
+分子 / 分母如下：
+
+\begin{table}[h]
+\centering
+\caption{$\varepsilon_\mathrm{geom}, \varepsilon_\mathrm{det}, \varepsilon_\mathrm{reco}$
+的分子和分母定义。$N_\mathrm{total} = 10000$ 是每 $(p_x, p_y)$ 网格点的总 truth-neutron-gun 事件数。}
+\label{tab:eps_defs}
+\begin{tabular}{lll}
+\toprule
+效率 & 分子 (事件数) & 分母 \\
+\midrule
+$\varepsilon_\mathrm{geom}$ & $N_\mathrm{geom}$ = 射线穿过任意 NEBULA Neut bar AABB 的事件数 &
+$N_\mathrm{total}$ \\
+& {\small (纯 Python ray-cast, \texttt{geom\_acceptance.py}, 详见 \S3.2)} & \\
+\midrule
+$\varepsilon_\mathrm{det}$ & $N_\mathrm{det}$ = NEBULAPla 累计能量 $\sum_k Q^\mathrm{AveCal}_k > 1$ MeV 的事件数 &
+$N_\mathrm{total}$ \\
+& {\small (Geant4 中子-塑闪反应 + 1 MeV 阈值, \texttt{run\_nebula\_reco.C} 输出 \texttt{nebula\_sumE})} & \\
+\midrule
+$\varepsilon_\mathrm{reco}$ & $N_\mathrm{reco}$ = \texttt{n\_reco\_neutrons} $\geq 1$ 的事件数 &
+$N_\mathrm{total}$ \\
+& {\small (NEBULAReconstructor 时间聚类后至少一个 RecoNeutron)} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+条件效率（同一分母约掉）：
+\begin{align*}
+\varepsilon_\mathrm{det}|\mathrm{geom} &\;=\; \varepsilon_\mathrm{det} \big/ \varepsilon_\mathrm{geom}
+\;=\; N_\mathrm{det} \big/ N_\mathrm{geom}, \\
+\varepsilon_\mathrm{reco}|\mathrm{det} &\;=\; \varepsilon_\mathrm{reco} \big/ \varepsilon_\mathrm{det}
+\;=\; N_\mathrm{reco} \big/ N_\mathrm{det}.
+\end{align*}
+$\varepsilon_\mathrm{det}|\mathrm{geom}$ 是"射线进入 active 体积后实际产生足够能量沉积的概率"
+（中子-塑闪反应概率 $\times$ 阈值通过率），$\varepsilon_\mathrm{reco}|\mathrm{det}$ 是
+"已经产生 NEBULA hits 之后聚类成功的概率"（cluster 时间窗 + 能量阈值的损失）。
+代码实现见 \texttt{scripts/analysis/nebula\_reco\_quality/analyze\_efficiency.py}。
 
 \subsection{几何接受率 $\varepsilon_\mathrm{geom}$ 计算方法}
 \label{sec:geom_acceptance}
