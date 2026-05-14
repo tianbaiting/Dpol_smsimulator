@@ -1,5 +1,6 @@
 \documentclass[a4paper,11pt]{ctexart}
 \usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{listings}
@@ -297,21 +298,35 @@ $\varepsilon_\mathrm{reco}|\mathrm{det} \approx 0.995$ 几乎为 1.0。
 \label{fig:B3}
 \end{figure}
 
-\subsection{加权回 breakup truth，R cut 不对称表}
+\subsection{接受度对 R 的正向偏置（不是 unfold）}
+
+\textbf{重要说明}：本小节算的 \emph{不是} 对 $R$ 的修正，而是 \textbf{正向模拟} ——
+即"如果用 NEBULA 中子接受度 $\varepsilon(p_x^n, p_y^n)$ 作为每事件被观测到的概率，
+观测到的 $R$ 会是多少"。换句话说：
+$$R_w^{\varepsilon} \;\approx\; R_\mathrm{observed},
+   \qquad R_\mathrm{truth} \;=\; \text{theory value}.$$
+
+为什么 \textbf{不能} 简单 unfold：$R$ 同时依赖 $(p_x^p, p_x^n)$ 两边的动量
+（$\Delta p_x^\mathrm{rot} = p_x^{p,\mathrm{rot}} - p_x^{n,\mathrm{rot}}$），proton 端还经过 PDC + NN
+重建，自己有一套接受度 $\varepsilon^p(p^p)$。要恢复 $R_\mathrm{truth}$ 必须知道
+联合接受度 $\varepsilon(p^p, p^n)$ 而不是边缘 $\varepsilon^n(p^n)$。本工作只测量了 NEBULA 中子端
+$\varepsilon^n$，所以 \textbf{无法 unfold}。
 
 把 Part A 的 \texttt{joined.parquet} 中 3.38M ypol breakup truth 事件以
-$(p_x^{n,\mathrm{truth}}, p_y^{n,\mathrm{truth}})$ 落到 Part B 的 (px,py) 网格 (步长 20/10 MeV/c)，
-按 cut 和 $\Delta p_x^\mathrm{rot}$ 符号求加权 $R$:
-$R_\mathrm{weighted} = \frac{\sum_{\Delta p_x > 0} \varepsilon}{\sum_{\Delta p_x < 0} \varepsilon}$，
-比较 $R_\mathrm{truth}$ (不加权)、$R_\mathrm{weighted}^{\varepsilon_\mathrm{geom}}$ 和
-$R_\mathrm{weighted}^{\varepsilon_\mathrm{reco}}$。
+$(p_x^{n,\mathrm{truth}}, p_y^{n,\mathrm{truth}})$ 落到 Part B 的 $(p_x, p_y)$ 网格 (步长 20/10 MeV/c)，
+对每个 cut 子集，按 $\Delta p_x^\mathrm{rot}$ 符号分组求 $\varepsilon$ 之和：
+$$R_w^{\varepsilon} \;=\; \frac{\sum_{i:\,(\Delta p_x^\mathrm{rot})_i > 0}\, \varepsilon_i^n}
+                                {\sum_{i:\,(\Delta p_x^\mathrm{rot})_i < 0}\, \varepsilon_i^n}.$$
+$R_\mathrm{truth}$ 是不加权（理论值），$R_w^\varepsilon$ 是 $\varepsilon$ 加权后（模拟观测值）。
 
 \begin{table}[h]
 \centering
 \caption{ypol $R = N(\Delta p_x^\mathrm{rot} > 0) / N(\Delta p_x^\mathrm{rot} < 0)$
-在 3 种 truth cut 下、3 种权重下的取值。$\Delta p_x^\mathrm{rot} = p_x^{\mathrm{p,rot}} - p_x^{\mathrm{n,rot}}$
+在 3 种 truth cut 下的取值。
+$\Delta p_x^\mathrm{rot} = p_x^{\mathrm{p,rot}} - p_x^{\mathrm{n,rot}}$
 （reaction-plane 旋转，与 \texttt{03\_analyze\_r\_breakup.py} 一致）。
-$\varepsilon$ 查表用靶系 $(p_x^n, p_y^n)$（lab → target via $R_y(-3^\circ)$）。}
+$\varepsilon$ 查表用靶系 $(p_x^n, p_y^n)$（lab → target via $R_y(-3^\circ)$）。
+$R_w^\varepsilon$ 是 \emph{正向模拟} 的观测 R，不是修正后的 R。}
 \label{tab:R_acceptance}
 \begin{tabular}{lrrrrr}
 \toprule
@@ -328,14 +343,17 @@ tight &  22322 &  69005 & 0.323 & 0.442 & 0.886 \\
 读法：
 \begin{itemize}
     \item \textbf{loose/mid}：$R_\mathrm{truth} \approx 0.24$--$0.27$（cuts 选到 neutron-rich 子区
-          $\Delta p_x^\mathrm{rot} < 0$ 占 4 倍）；以 $\varepsilon_\mathrm{geom}$ 加权 R 拉到 0.63--0.66，
-          以 $\varepsilon_\mathrm{reco}$ 加权 R 进一步拉到 0.73。接受度修正 \textbf{把 R 推向 1 三倍以上}：
-          没修正会把"接受度造成的 N\_neg 偏多"误判成物理不对称信号。
-    \item \textbf{tight}：$R_\mathrm{truth} = 0.32$，$\varepsilon_\mathrm{reco}$ 加权后到 0.89 接近 1；
-          虽然 tight 通过率低（2--5\%），但接受度修正把它推向中性，说明 tight 段的"信号"主要来自接受度
-          chromaticity 不是物理。
-    \item 三个 cut 修正后都距 1 还有差距（0.45--0.89），说明残余不对称的一部分仍可能是物理 ypol 信号 ---
-          需要把不确定度 + 系统估计一起写进 $R(\theta)$ 拟合。
+          $\Delta p_x^\mathrm{rot} < 0$ 占 4 倍）；用 $\varepsilon_\mathrm{geom}$ 模拟得到
+          $R_w \approx 0.66$，用 $\varepsilon_\mathrm{reco}$ 得到 $R_w \approx 0.73$。
+          $R_w$ 比 $R_\mathrm{truth}$ 大 $3 \times$（更接近 1）：说明 NEBULA 接受度对
+          $\Delta p_x^\mathrm{rot} > 0$ 的事件更友好（neutron 偏小、留在接受度窗内），
+          \textbf{真实观测会比理论值显得更对称}。
+    \item \textbf{tight}：$R_\mathrm{truth} = 0.32$，$R_w^{\varepsilon_\mathrm{reco}} = 0.89$ 接近 1。
+          tight 通过率低 (2--5\%) 的"信号"经过观测放大后几乎完全被接受度 chromaticity 主导。
+    \item \textbf{结论}：$R_\mathrm{truth} \ne R_\mathrm{observed}$ 是显著的 ($3\times$ 量级)，
+          但因 $R$ 联合依赖 $(p^p, p^n)$，单测 $\varepsilon^n$ 不能反推 $R_\mathrm{truth}$。
+          正确处理方式：\textbf{在 $R_\mathrm{observed}$ 上直接拟合 polarization 信号}，
+          把 $\varepsilon$ 系统效应作为 toy MC 的预测进入似然，而不是预 unfold。
 \end{itemize}
 
 \subsection{Part B 结论}
@@ -345,12 +363,14 @@ tight &  22322 &  69005 & 0.323 & 0.442 & 0.886 \\
           (非对称是 3$^\circ$ 旋转 + 靶位 $(-12.488, 0.009, -1069.458)$ mm 的几何效应)，
           垂直边界 $|p_y^\mathrm{tgt}| \approx 65$--$80$ MeV/c。
     \item \textbf{Geant4 中子探测效率 (~43\%) 是主导瓶颈}，NEBULA cluster 重建链几乎无损 (~97--99\%)。
-    \item ypol R 在 loose/mid cut 下 $R_\mathrm{truth} \approx 0.24$--$0.27$（被 cuts 强烈选到
-          neutron-rich 子区），$\varepsilon_\mathrm{reco}$ 加权后跳到 $\sim 0.73$
-          (3$\times$ 推向 1)。说明 \textbf{未修正的 R 把接受度 chromaticity 大量当作信号} ---
-          R 在用作极化观测量前 \textbf{必须} 做接受度修正。
-    \item 修正路径：以 $1/\varepsilon(p_x^{n,\mathrm{tgt}}, p_y^{n,\mathrm{tgt}})$ 逐事件加权，
-          或拟合接受度修正后的 $R(\theta)$。这是 ypol 真实数据分析的必经步骤。
+    \item ypol $R_\mathrm{truth} \approx 0.24$--$0.27$ (loose/mid)，正向模拟 ($\varepsilon$ 加权) 给出
+          $R_\mathrm{observed} \approx 0.73$，即 \textbf{真实观测 R 与理论值差 $3 \times$}。
+          差异方向：观测把 R 推向 1，因 NEBULA 对 $\Delta p_x^\mathrm{rot} > 0$ 事件更友好。
+    \item \textbf{不能简单 unfold $R_\mathrm{observed}$ 回 $R_\mathrm{truth}$}：$R$ 联合依赖
+          $(p^p, p^n)$，本工作只测了中子端 $\varepsilon^n(p^n)$，proton 端 PDC+NN 接受度
+          $\varepsilon^p(p^p)$ 未测；联合修正需要 $\varepsilon(p^p, p^n)$。
+    \item 正确处理路径：把 $\varepsilon$ 系统效应作为 toy-MC 预测进入 polarization 似然/拟合，
+          \textbf{在 observed R 层面直接拟合极化信号}，不要预 unfold。
 \end{enumerate}
 
 \section{综合结论与未来工作}
@@ -374,8 +394,10 @@ $\Delta p_x = p_x^{\mathrm{truth,n}} - p_x^{\mathrm{reco,n}}$，不是事件级 
 在 $p_x^\mathrm{tgt} \in [-180, +120]$ MeV/c 完全 (非对称是 3$^\circ$ 旋转 + 靶位偏移)；
 Geant4 中子探测效率 ~43\% 是限制因素；cluster 重建几乎无损 (~97--99\%)。
 ypol $R = N(\Delta p_x^\mathrm{rot} > 0)/N(\Delta p_x^\mathrm{rot} < 0)$ 在 loose/mid cut 下
-$R_\mathrm{truth} \approx 0.24$--$0.27$，$\varepsilon_\mathrm{reco}$ 加权后跳到 ~0.73 ($3\times$ 推向 1)，
-\textbf{未修正的 R 把大量接受度 chromaticity 当作物理信号 --- R 必须经接受度修正才能解释为极化量}。
+$R_\mathrm{truth} \approx 0.24$--$0.27$。正向模拟 ($\varepsilon$ 加权) 给出 $R_\mathrm{observed} \approx 0.73$，
+真实观测会比理论值偏大 $3 \times$ 向 1 靠拢，是 NEBULA 对 $\Delta p_x^\mathrm{rot} > 0$ 事件
+更友好造成的。$R$ 联合依赖 $(p^p, p^n)$ 不能简单 unfold；
+\textbf{$\varepsilon$ 系统效应应作为 toy-MC 预测进入 polarization 似然/拟合，在 observed R 上直接拟合信号}。
 
 \subsection{未来工作}
 
