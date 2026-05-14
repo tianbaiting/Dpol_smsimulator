@@ -4,6 +4,21 @@ Each shard is an independent ROOT file; sim_deuteron jobs run in parallel,
 each consuming one shard.  Events are round-robin distributed so every shard
 covers the full (px,py,pz) grid uniformly.
 
+Coordinate conventions
+----------------------
+--px-min/max/step, --py-..., --pz-list are interpreted as **target-frame**
+momentum components.  Each event is converted to lab-frame via R_y(θ) before
+writing to TBeamSimData.fMomentum, and the target position from the mac file
+is written to TBeamSimData.fPosition.
+
+  R_y(θ): px_lab =  cos(θ)*px_tgt + sin(θ)*pz_tgt
+           py_lab =  py_tgt
+           pz_lab = -sin(θ)*px_tgt + cos(θ)*pz_tgt
+
+Default target position and angle match 3deg_1.15T.mac:
+  target_pos = (-12.488, 0.009, -1069.458) mm
+  target_angle_deg = 3.0°
+
 Schema
 ------
 The Tree gun in PrimaryGeneratorActionBasic::BeamTypeTree reads a TTree named
@@ -18,7 +33,9 @@ Typical invocation (after source setup.sh):
         --px-min -200 --px-max 200 --px-step 20 \\
         --py-min -100 --py-max 100 --py-step 10 \\
         --pz-list 550,600,627,650,700 \\
-        --n-per-bin 2000
+        --n-per-bin 2000 \\
+        --target-position-mm "-12.488,0.009,-1069.458" \\
+        --target-angle-deg 3.0
 """
 from __future__ import annotations
 
@@ -28,6 +45,27 @@ import os
 from pathlib import Path
 
 import numpy as np
+
+# ---------------------------------------------------------------------------
+# Rotation helper: target frame → lab frame
+# ---------------------------------------------------------------------------
+
+def _target_to_lab(px_tgt: float, py_tgt: float, pz_tgt: float,
+                   theta_deg: float) -> tuple[float, float, float]:
+    """Apply R_y(theta_deg) to convert target-frame to lab-frame momentum.
+
+    R_y(θ): px_lab =  cos(θ)*px_tgt + sin(θ)*pz_tgt
+             py_lab =  py_tgt
+             pz_lab = -sin(θ)*px_tgt + cos(θ)*pz_tgt
+    """
+    if theta_deg == 0.0:
+        return px_tgt, py_tgt, pz_tgt
+    theta = math.radians(theta_deg)
+    ct, st = math.cos(theta), math.sin(theta)
+    px_lab =  ct * px_tgt + st * pz_tgt
+    py_lab =  py_tgt
+    pz_lab = -st * px_tgt + ct * pz_tgt
+    return px_lab, py_lab, pz_lab
 
 # ---------------------------------------------------------------------------
 # ROOT / smdata bootstrap
@@ -96,15 +134,24 @@ def main() -> None:
     ap.add_argument("--smear-sigma", type=float, default=0.1,
                     help="Gaussian smear sigma [MeV/c] applied to each "
                          "momentum component (default: 0.1)")
-    ap.add_argument("--x-mm", type=float, default=0.0,
-                    help="Vertex x position [mm] (default: 0)")
-    ap.add_argument("--y-mm", type=float, default=0.0,
-                    help="Vertex y position [mm] (default: 0)")
-    ap.add_argument("--z-mm", type=float, default=0.0,
-                    help="Vertex z position [mm] (default: 0)")
+    ap.add_argument("--target-position-mm", type=str,
+                    default="-12.488,0.009,-1069.458",
+                    help="Target position in lab-frame mm as 'x,y,z' "
+                         "(default: '-12.488,0.009,-1069.458' from 3deg_1.15T.mac)")
+    ap.add_argument("--target-angle-deg", type=float, default=3.0,
+                    help="Target rotation about Y axis [degrees] "
+                         "(default: 3.0 from 3deg_1.15T.mac). "
+                         "px/py/pz grid values are in target frame; this angle "
+                         "converts them to lab frame for TBeamSimData.fMomentum.")
     ap.add_argument("--seed", type=int, default=20260513,
                     help="NumPy RNG seed for reproducibility (default: 20260513)")
     args = ap.parse_args()
+
+    # Parse target position
+    tgt_pos = [float(v) for v in args.target_position_mm.split(",")]
+    if len(tgt_pos) != 3:
+        raise ValueError(f"--target-position-mm must be 'x,y,z', got: {args.target_position_mm}")
+    tgt_x, tgt_y, tgt_z = tgt_pos
 
     # Build grids
     px_grid = np.arange(args.px_min,
@@ -118,6 +165,8 @@ def main() -> None:
     n_bins = len(px_grid) * len(py_grid) * len(pz_list)
     n_total_expected = n_bins * args.n_per_bin
 
+    print(f"[gen_pxpy_grid_input] frame=target, angle={args.target_angle_deg}°, "
+          f"origin=({tgt_x},{tgt_y},{tgt_z}) mm")
     print(f"[gen_pxpy_grid_input] grid: "
           f"px {len(px_grid)} pts x py {len(py_grid)} pts x pz {len(pz_list)} pts "
           f"= {n_bins} bins, {args.n_per_bin} events/bin → "
@@ -166,13 +215,20 @@ def main() -> None:
                     arr = arrays[shard_idx]
                     arr.clear()
 
+                    # [EN] Apply smear in target frame, then rotate to lab frame.
+                    # [CN] 在靶系中加抖动，然后旋转到实验室系写入 TBeamSimData。
+                    px_tgt = float(px_nom) + dpx[k]
+                    py_tgt = float(py_nom) + dpy[k]
+                    pz_tgt = float(pz_nom) + dpz[k]
+                    px_lab, py_lab, pz_lab = _target_to_lab(
+                        px_tgt, py_tgt, pz_tgt, args.target_angle_deg
+                    )
+
                     particle = _make_neutron(
-                        float(px_nom) + dpx[k],
-                        float(py_nom) + dpy[k],
-                        float(pz_nom) + dpz[k],
-                        x_mm=args.x_mm,
-                        y_mm=args.y_mm,
-                        z_mm=args.z_mm,
+                        px_lab, py_lab, pz_lab,
+                        x_mm=tgt_x,
+                        y_mm=tgt_y,
+                        z_mm=tgt_z,
                     )
                     arr.push_back(particle)
                     trees[shard_idx].Fill()

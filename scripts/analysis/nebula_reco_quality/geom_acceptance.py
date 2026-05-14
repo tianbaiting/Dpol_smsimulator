@@ -1,9 +1,21 @@
-"""NEBULA geometric acceptance: ray-cast from target (0,0,0) to NEBULA bars.
+"""NEBULA geometric acceptance: ray-cast from target position to NEBULA bars.
 
 Pure Python; reads bar geometry from the two CSVs that the Geant4 sim also reads,
 so this module is the single source of truth for the ε_geom layer of Part B.
+
+Coordinate conventions
+----------------------
+- Lab frame: standard Geant4/SAMURAI frame.
+- Target frame: rotated by `target_angle_deg` about the Y axis relative to lab.
+  The rotation matrix R_y(θ) transforms target-frame momentum to lab-frame via:
+      px_lab =  cos(θ) * px_tgt + sin(θ) * pz_tgt
+      py_lab =  py_tgt
+      pz_lab = -sin(θ) * px_tgt + cos(θ) * pz_tgt
+  (target's z-axis tilts toward +X in lab, toward the proton-arm side.)
+- Default mac values: target_pos = (-12.488, 0.009, -1069.458) mm, θ = 3°.
 """
 from __future__ import annotations
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List
@@ -113,27 +125,52 @@ def ray_hits_bar(ox: float, oy: float, oz: float,
     return t_max >= max(t_min, 0.0)
 
 
-def geom_acceptance(px: float, py: float, pz: float,
+def geom_acceptance(px_tgt: float, py_tgt: float, pz_tgt: float,
                     detectors_csv: Path, nebula_csv: Path,
+                    target_pos: tuple[float, float, float] = (0.0, 0.0, 0.0),
+                    target_angle_deg: float = 0.0,
                     bars_cache: dict | None = None) -> bool:
-    """Return True iff a neutron leaving target (0,0,0) with momentum (px,py,pz)
-    enters any NEBULA Neut bar.
+    """Return True iff a neutron emitted from target_pos (lab mm) with
+    target-frame momentum (px_tgt, py_tgt, pz_tgt) enters any NEBULA Neut bar.
 
-    The ray direction is (px, py, pz); pz must be > 0 for a forward-going neutron.
-    The magnitude of momentum does not matter — only the direction is used.
+    The target frame is rotated by `target_angle_deg` about the Y axis from lab:
+        px_lab =  cos(θ) * px_tgt + sin(θ) * pz_tgt
+        py_lab =  py_tgt
+        pz_lab = -sin(θ) * px_tgt + cos(θ) * pz_tgt
+    pz_tgt must be > 0 for a forward-going neutron (in target frame).
+
+    Backward compatibility: calling geom_acceptance(px, py, pz, det_csv, neb_csv)
+    without the new keyword args defaults to target_pos=(0,0,0) and angle=0°,
+    which is equivalent to the old lab-frame behaviour.
 
     Args:
-        px, py, pz: Neutron momentum components (any consistent unit; MeV/c typical).
+        px_tgt, py_tgt, pz_tgt: Neutron momentum components in target frame
+                                 (any consistent unit; MeV/c typical).
         detectors_csv: Path to NEBULA_Detectors_Dayone.csv.
         nebula_csv: Path to NEBULA_Dayone.csv.
+        target_pos: Ray origin in lab-frame mm (default: (0,0,0)).
+        target_angle_deg: Rotation of target frame about Y axis [degrees]
+                          (default: 0.0, i.e. target frame == lab frame).
         bars_cache: Optional dict to cache loaded bar lists between calls.
                     Key is (str(detectors_csv), str(nebula_csv)).
 
     Returns:
         True if the ray hits at least one Neut bar, False otherwise.
     """
-    if pz <= 0:
+    if pz_tgt <= 0:
         return False
+
+    # [EN] Rotate target-frame momentum to lab-frame via R_y(target_angle_deg).
+    # [CN] 将靶系动量通过 R_y(target_angle_deg) 旋转到实验室系。
+    if target_angle_deg != 0.0:
+        theta = math.radians(target_angle_deg)
+        ct, st = math.cos(theta), math.sin(theta)
+        px_lab =  ct * px_tgt + st * pz_tgt
+        py_lab =  py_tgt
+        pz_lab = -st * px_tgt + ct * pz_tgt
+    else:
+        px_lab, py_lab, pz_lab = px_tgt, py_tgt, pz_tgt
+
     key = (str(detectors_csv), str(nebula_csv))
     if bars_cache is None or key not in bars_cache:
         bars = load_nebula_bars(detectors_csv, nebula_csv, neut_only=True)
@@ -141,7 +178,9 @@ def geom_acceptance(px: float, py: float, pz: float,
             bars_cache[key] = bars
     else:
         bars = bars_cache[key]
+
+    ox, oy, oz = target_pos
     for b in bars:
-        if ray_hits_bar(0.0, 0.0, 0.0, px, py, pz, b):
+        if ray_hits_bar(ox, oy, oz, px_lab, py_lab, pz_lab, b):
             return True
     return False
