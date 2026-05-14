@@ -290,28 +290,42 @@ $\varepsilon_\mathrm{geom}(p_x, p_y) = \frac{1}{5}\sum_{p_z \in \{550,600,627,65
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.92\linewidth]{figures/fig_B1_efficiency_2D.pdf}
-\caption{Fig B1：四张效率热图 ($\varepsilon_\mathrm{geom}, \varepsilon_\mathrm{det},
-\varepsilon_\mathrm{reco}, \varepsilon_\mathrm{reco}|\mathrm{det}$)，靶系 $(p_x^\mathrm{tgt}, p_y^\mathrm{tgt})$ 坐标。
-所有面板共享 [0,1] colorbar。
-$\varepsilon_\mathrm{geom}$ 呈非对称矩形：水平边界 $p_x^\mathrm{tgt} \in [-180, +120]$ MeV/c
-(靶 3$^\circ$ 旋转 + 靶位偏移 $(-12.488, 0.009, -1069.458)$ mm 把 NEBULA 中心在靶系下推到 $p_x^\mathrm{tgt} < 0$ 一侧)，
-垂直 $|p_y^\mathrm{tgt}| \le 65$ MeV/c；
-$\varepsilon_\mathrm{det}, \varepsilon_\mathrm{reco}$ 形态相同但绝对值低 ($\sim$ 20\%)，是 Geant4 中子探测
-效率 (~43\%) $\times \varepsilon_\mathrm{geom}$ 的结果；$\varepsilon_\mathrm{reco}|\mathrm{det}$
-近乎处处 1.0。}
+\caption{Fig B1：四张效率热图，靶系 $(p_x^\mathrm{tgt}, p_y^\mathrm{tgt})$ 坐标，
+共享 $[0,1]$ colorbar。各面板分子/分母见下文。
+$\varepsilon_\mathrm{geom}$ 呈非对称矩形 $p_x^\mathrm{tgt} \in [-180, +120]$ MeV/c
+(靶 3$^\circ$ 旋转 + 靶位 $(-12.488, 0.009, -1069.458)$ mm 把 NEBULA 中心推到 $p_x^\mathrm{tgt} < 0$ 一侧)，
+垂直 $|p_y^\mathrm{tgt}| \le 65$ MeV/c；$\varepsilon_\mathrm{det}, \varepsilon_\mathrm{reco}$
+形态相同但绝对值低 ($\sim 20\%$)，是中子-塑闪反应效率 ($\sim 43\%$) $\times \varepsilon_\mathrm{geom}$
+的结果；$\varepsilon_\mathrm{reco}|\mathrm{det}$ 近乎处处 1.0。}
 \label{fig:B1}
 \end{figure}
+
+Fig B1 各面板的分子/分母（详见 \S3.1 \autoref{tab:eps_defs}）：
+\begin{itemize}\itemsep -2pt
+  \item $\varepsilon_\mathrm{geom} = N_\mathrm{geom} / N_\mathrm{total}$ ---
+        \textbf{分母 = 入射 truth 中子事件数} ($N_\mathrm{total} = 10000$/bin)；
+        分子 = 射线穿过任意 NEBULA Neut bar AABB 的事件数。
+  \item $\varepsilon_\mathrm{det} = N_\mathrm{det} / N_\mathrm{total}$ ---
+        \textbf{分母同上}；分子 = Geant4 模拟下 NEBULAPla $\sum Q > 1$ MeV 的事件数。
+  \item $\varepsilon_\mathrm{reco} = N_\mathrm{reco} / N_\mathrm{total}$ ---
+        \textbf{分母同上}；分子 = NEBULAReconstructor 输出 \texttt{n\_reco\_neutrons} $\geq 1$ 的事件数。
+  \item $\varepsilon_\mathrm{reco}|\mathrm{det} = N_\mathrm{reco} / N_\mathrm{det}$ ---
+        \textbf{分母换成 $N_\mathrm{det}$}（已被 det 探测的事件子集），分子 = 其中又通过 reco 的。
+\end{itemize}
 
 \subsection{$p_y = 0$ 切片}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.85\linewidth]{figures/fig_B2_efficiency_slice_py0.pdf}
-\caption{Fig B2：$p_y^\mathrm{tgt}=0$ 切片 — $\varepsilon_\mathrm{geom}$ (蓝)、$\varepsilon_\mathrm{det}$ (橙)、
-$\varepsilon_\mathrm{reco}$ (绿) vs $p_x^\mathrm{tgt}$。$\varepsilon_\mathrm{geom}$ 在
-$p_x^\mathrm{tgt} \in [-140, +100]$ 内为 1.0，左墙 $\sim -180$、右墙 $\sim +120$ MeV/c 降到 0
-(两-bin 过渡)。$\varepsilon_\mathrm{det}$ 和 $\varepsilon_\mathrm{reco}$ 几乎重合在 0.43 平台上，
-证明 NEBULA cluster 重建近乎无损。}
+\caption{Fig B2：$p_y^\mathrm{tgt}=0$ 切片，三条曲线 \textbf{分母都是 $N_\mathrm{total}$}
+(入射 truth 中子事件数 = 10000/bin)：
+$\varepsilon_\mathrm{geom} = N_\mathrm{geom}/N_\mathrm{total}$ (蓝, ray-cast 命中)；
+$\varepsilon_\mathrm{det} = N_\mathrm{det}/N_\mathrm{total}$ (橙, $\sum Q > 1$ MeV)；
+$\varepsilon_\mathrm{reco} = N_\mathrm{reco}/N_\mathrm{total}$ (绿, n\_reco\_neutrons$\geq 1$)。
+$\varepsilon_\mathrm{geom}$ 在 $p_x^\mathrm{tgt} \in [-140, +100]$ 内为 1.0，左墙 $\sim -180$、
+右墙 $\sim +120$ MeV/c 降到 0（两-bin 过渡）；$\varepsilon_\mathrm{det}, \varepsilon_\mathrm{reco}$
+几乎重合在 0.43 平台上，证明 NEBULA cluster 重建相对探测层近乎无损。}
 \label{fig:B2}
 \end{figure}
 
@@ -320,14 +334,24 @@ $p_x^\mathrm{tgt} \in [-140, +100]$ 内为 1.0，左墙 $\sim -180$、右墙 $\s
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.85\linewidth]{figures/fig_B3_efficiency_conditional_py0.pdf}
-\caption{Fig B3：$p_y=0$ 切片的条件效率 — $\varepsilon_\mathrm{det}|\mathrm{geom}$ (蓝) 和
-$\varepsilon_\mathrm{reco}|\mathrm{det}$ (橙) vs $p_x$。$\varepsilon_\mathrm{det}|\mathrm{geom}
-\approx 0.43$ 平台 = 一束 200 MeV 中子穿过一根 12 cm × 12 cm $\times$ 120 cm 塑闪
-bar 时的 $n$-探测概率（与 NEBULA / SAMURAI 在 RIKEN 报告里给出的 ~50\% 一致）；
+\caption{Fig B3：$p_y^\mathrm{tgt}=0$ 切片的\textbf{条件效率}（分子分母见下文）。
+$\varepsilon_\mathrm{det}|\mathrm{geom} \approx 0.43$ 平台 = 一束 $\sim 200$ MeV 中子穿过一根
+$12 \times 12 \times 120$ cm 塑闪 bar 时的 $n$-探测概率（与 NEBULA/SAMURAI RIKEN 报告 $\sim 50\%$ 一致）；
 $\varepsilon_\mathrm{reco}|\mathrm{det} \approx 0.995$ 几乎为 1.0。
-\textbf{结论：NEBULA 的接受度瓶颈在 Geant4 探测效率 (43\%)，不在重建链。}}
+\textbf{结论：NEBULA 接受度瓶颈在 Geant4 中子探测概率 (43\%)，不在重建链。}}
 \label{fig:B3}
 \end{figure}
+
+Fig B3 的两条曲线与 Fig B2 \textbf{分母不同}：
+\begin{itemize}\itemsep -2pt
+  \item $\varepsilon_\mathrm{det}|\mathrm{geom} = N_\mathrm{det}/N_\mathrm{geom}$ (蓝) ---
+        \textbf{分母 = 几何接受事件数 $N_\mathrm{geom}$}（射线进 active 体积）；
+        分子 = 其中 $\sum Q > 1$ MeV 的事件数。
+        含义："中子-塑闪相互作用 + 1 MeV 阈值通过率"，与几何脱钩。
+  \item $\varepsilon_\mathrm{reco}|\mathrm{det} = N_\mathrm{reco}/N_\mathrm{det}$ (橙) ---
+        \textbf{分母 = det 通过事件数 $N_\mathrm{det}$}；分子 = 其中又通过 reco 的事件数。
+        含义："NEBULA cluster 重建链对已探测事件的损失率"。
+\end{itemize}
 
 \subsection{接受度对 R 的正向偏置（不是 unfold）}
 
