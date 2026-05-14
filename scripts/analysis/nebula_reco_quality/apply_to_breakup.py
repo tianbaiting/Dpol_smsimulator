@@ -59,23 +59,31 @@ def main():
     joined["eps_det"]  = joined["eps_det"].fillna(0)
     joined["eps_reco"] = joined["eps_reco"].fillna(0)
 
-    # [EN] Sign of neutron px asymmetry is evaluated in target frame to be
-    # consistent with the ε grid frame. / [CN] 中子 px 不对称性的符号在靶系中
-    # 评估，与 ε 网格保持一致。
+    # [EN] R observable is defined on the reaction-plane-rotated Δp_x:
+    #   R = N(Δp_x_rot > 0) / N(Δp_x_rot < 0),  Δp_x_rot = p_x^{p,rot} - p_x^{n,rot}
+    # (see 03_analyze_r_breakup.py:variant_dpx). NOT on raw truth_pxn or raw
+    # truth_pxn_tgt --- those are frame-dependent and not polarization observables.
+    # The ε weighting still uses target-frame (pxn_tgt, pyn_tgt) for the per-event
+    # acceptance lookup, but the +/- sign comes from Δp_x_rot.
+    # [CN] R 信号定义在 reaction-plane 旋转后的 Δp_x 上，与原始 truth_pxn 无关；
+    # ε 加权仍以靶系动量查表，但正负号取自 Δp_x_rot。
+    dpx_rot = joined["truth_rot_pxp"] - joined["truth_rot_pxn"]
+    joined["dpx_rot"] = dpx_rot
+
     rows = []
     for cut_col in ("loose", "mid", "tight"):
         sub = joined[joined[cut_col]]
-        pxn_tgt = sub["truth_pxn_tgt"]
-        n_pos = (pxn_tgt > 0).sum()
-        n_neg = (pxn_tgt < 0).sum()
-        w_pos_g = sub["eps_geom"][pxn_tgt > 0].sum()
-        w_neg_g = sub["eps_geom"][pxn_tgt < 0].sum()
-        w_pos_r = sub["eps_reco"][pxn_tgt > 0].sum()
-        w_neg_r = sub["eps_reco"][pxn_tgt < 0].sum()
+        sign = sub["dpx_rot"]
+        n_pos = int((sign > 0).sum())
+        n_neg = int((sign < 0).sum())
+        w_pos_g = float(sub["eps_geom"][sign > 0].sum())
+        w_neg_g = float(sub["eps_geom"][sign < 0].sum())
+        w_pos_r = float(sub["eps_reco"][sign > 0].sum())
+        w_neg_r = float(sub["eps_reco"][sign < 0].sum())
         rows.append({
             "cut": cut_col,
-            "N_truth_pos": int(n_pos),
-            "N_truth_neg": int(n_neg),
+            "N_truth_pos": n_pos,
+            "N_truth_neg": n_neg,
             "R_truth": n_pos / max(n_neg, 1),
             "R_weighted_geom":  w_pos_g / max(w_neg_g, 1e-9),
             "R_weighted_reco":  w_pos_r / max(w_neg_r, 1e-9),
