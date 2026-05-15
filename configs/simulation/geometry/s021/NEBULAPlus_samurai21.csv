@@ -1,0 +1,6 @@
+Position, 0, 0, 8089,
+NeutSize, 120, 1800, 120,
+VetoSize, 320, 1900, 10,
+Angle, 0, 0, 0,
+////input time reso for one PMT
+TimeReso, 0.240,
