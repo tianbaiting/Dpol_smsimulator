@@ -274,3 +274,32 @@ if(TARGET GenInputRoot_qmdrawdata)
         TIMEOUT 60
     )
 endif()
+
+##############################################################################
+# 测试6: NEBULA-Plus 烟雾集成测试
+# [EN] Run sim_deuteron with the NEBULA-Plus smoke macro and verify that the
+#      output ROOT file contains the expected NEBULA-Plus branches and
+#      parameter objects (TNEBULAPlusSimParameter).
+# [CN] 用 NEBULA-Plus 烟雾宏驱动 sim_deuteron，验证输出 ROOT 包含相应的
+#      NEBULAPlusPla 分支和 TNEBULAPlusSimParameter 参数对象。
+##############################################################################
+
+if(TARGET sim_deuteron)
+    set(NEBULA_PLUS_SMOKE_MAC
+        ${CMAKE_SOURCE_DIR}/configs/simulation/macros/test_nebula_plus.mac
+    )
+    if(EXISTS ${NEBULA_PLUS_SMOKE_MAC})
+        add_test(
+            NAME test_sim_deuteron_with_nebula_plus
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/test_sim_deuteron_with_nebula_plus.sh
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        )
+        set_tests_properties(test_sim_deuteron_with_nebula_plus PROPERTIES
+            LABELS "integration"
+            TIMEOUT 120
+        )
+        message(STATUS "NEBULA-Plus smoke integration test configured")
+    else()
+        message(WARNING "NEBULA-Plus smoke macro not found, skipping: ${NEBULA_PLUS_SMOKE_MAC}")
+    endif()
+endif()
