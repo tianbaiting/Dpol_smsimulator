@@ -9,19 +9,7 @@
 
 #include "GeometryManager.hh"
 #include "RecoEvent.hh"
-
-// NEBULA击中信息结构
-struct NEBULAHit {
-    int moduleID;        // 模块ID
-    TVector3 position;   // 3D位置
-    double energy;       // 能量沉积
-    double time;         // 时间
-    double qave;         // 平均电荷
-    
-    NEBULAHit() : moduleID(-1), position(0,0,0), energy(0), time(0), qave(0) {}
-    NEBULAHit(int id, const TVector3& pos, double e, double t, double q) 
-        : moduleID(id), position(pos), energy(e), time(t), qave(q) {}
-};
+#include "NEBULABaseReco.hh"  // provides NEBULAHit (canonical definition)
 
 class NEBULAReconstructor : public TObject {
 public:

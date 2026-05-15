@@ -8,8 +8,7 @@
 #pragma link C++ class MagneticField+;
 #pragma link C++ class EventProcessor+;
 #pragma link C++ class PDCSimAna+;
-// NEBULAReconstructor+ removed from dict: NEBULABaseReco.hh is now canonical
-// for NEBULAHit; NEBULAReconstructor will be deleted in P2.7.
+#pragma link C++ class NEBULAReconstructor+;
 #pragma link C++ class NEBULABaseReco+;
 #pragma link C++ class NEBULAReco+;
 #pragma link C++ class RecoEvent+;

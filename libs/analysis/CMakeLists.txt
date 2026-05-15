@@ -22,10 +22,8 @@ set(ANALYSIS_DICT_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PDCSimAna.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/NEBULABaseReco.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/NEBULAReco.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/NEBULAReconstructor.hh
 )
-# NOTE: NEBULAReconstructor.hh is intentionally excluded from the dict headers
-# to avoid a duplicate NEBULAHit struct definition (NEBULABaseReco.hh is now
-# canonical). NEBULAReconstructor will be deleted in P2.7.
 
 # 生成 ROOT 字典
 ROOT_GENERATE_DICTIONARY(G__Analysis

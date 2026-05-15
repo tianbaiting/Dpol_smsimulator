@@ -16,6 +16,7 @@
 #include "NEBULAReco.hh"           // <- the new class, doesn't exist yet
 #include "GeometryManager.hh"
 #include "RecoEvent.hh"            // RecoNeutron lives here
+#include "SMLogger.hh"             // explicit shutdown before ROOT teardown
 
 namespace {
 
@@ -69,3 +70,13 @@ TEST(NEBULARecoLegacyCompat, MatchesGoldenFixture) {
 }
 
 }  // namespace
+
+// Custom main: run tests, then explicitly shut down the async logger before
+// ROOT's static destructors fire — avoids the malloc_consolidate SIGABRT that
+// occurs when spdlog's thread pool is torn down after ROOT's TObjectTable.
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    int result = RUN_ALL_TESTS();
+    SMLogger::Logger::Instance().Shutdown();
+    return result;
+}
