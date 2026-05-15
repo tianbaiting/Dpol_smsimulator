@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add the NEBULA-Plus Geant4 sub-detector to smsimulator5.5 with full SimData chain, then refactor the existing `NEBULAReconstructor` into a base/derived hierarchy and add the joint NEBULA + NEBULA-Plus neutron reconstruction.
+**Goal:** Add the NEBULA-Plus Geant4 sub-detector to smsimulator5.5 with full SimData chain, then refactor the existing `NEBULAReco` into a base/derived hierarchy and add the joint NEBULA + NEBULA-Plus neutron reconstruction.
 
-**Architecture:** New `NEBULAPlus*` module mirrors the existing `NEBULA*` files under `libs/smg4lib/`, produces independent SimData branches `fNEBULAPlusSimData` / `fNEBULAPlusSimParameter`. In `libs/analysis/`, `NEBULAReconstructor` is split into `NEBULABaseReco` (abstract) + `NEBULAReco` (NEBULA-only), and a sibling `NEBULAPlusReco` plus a `NebulaJointReco` are added. The plan is structured in three phases, each ending at a clean commit.
+**Architecture:** New `NEBULAPlus*` module mirrors the existing `NEBULA*` files under `libs/smg4lib/`, produces independent SimData branches `fNEBULAPlusSimData` / `fNEBULAPlusSimParameter`. In `libs/analysis/`, `NEBULAReco` is split into `NEBULABaseReco` (abstract) + `NEBULAReco` (NEBULA-only), and a sibling `NEBULAPlusReco` plus a `NebulaJointReco` are added. The plan is structured in three phases, each ending at a clean commit.
 
 **Tech Stack:** C++17, Geant4 (CMake `find_package`), ROOT (`ROOT_GENERATE_DICTIONARY`), GoogleTest (`gtest_discover_tests`). Source layout: `libs/smg4lib/{src/construction,src/data,include}` for G4 / SimData, `libs/analysis/{include,src}` for reconstruction, `tests/{unit,analysis,integration}` for tests.
 
@@ -1226,7 +1226,7 @@ echo "Phase 1 complete. NEBULA-Plus geometry + SimData chain in place."
 
 ## Phase 2 — Reco refactor (extract NEBULABaseReco, rename, sweep)
 
-Goal: refactor existing `NEBULAReconstructor` into `NEBULABaseReco` + `NEBULAReco`, sweep all 16 call sites, delete old files, ensure regression test passes against a pre-refactor golden fixture.
+Goal: refactor existing `NEBULAReco` into `NEBULABaseReco` + `NEBULAReco`, sweep all 16 call sites, delete old files, ensure regression test passes against a pre-refactor golden fixture.
 
 ### Task 2.1: Capture pre-refactor golden fixture
 
@@ -1248,7 +1248,7 @@ Pick the smallest file with NEBULA branches. If none exists, run `sim_deuteron` 
 Create `tools/dump_nebula_reco_golden.cc`:
 
 ```cpp
-// One-shot tool: run the legacy NEBULAReconstructor against $INPUT_ROOT
+// One-shot tool: run the legacy NEBULAReco against $INPUT_ROOT
 // and dump a deterministic representation of its output into
 // tests/fixtures/nebula_reco_golden.root. This file is the regression
 // pin for Phase 2: after the refactor, NEBULAReco must reproduce it.
@@ -1256,7 +1256,7 @@ Create `tools/dump_nebula_reco_golden.cc`:
 #include <TFile.h>
 #include <TTree.h>
 #include <TClonesArray.h>
-#include "NEBULAReconstructor.hh"
+#include "NEBULAReco.hh"
 #include "GeometryManager.hh"
 #include "RecoEvent.hh"
 #include "RecoNeutron.hh"
@@ -1272,11 +1272,11 @@ int main(int argc, char** argv) {
     t->SetBranchAddress("fNEBULASimData", &neb);
 
     GeometryManager geo("configs/simulation/geometry/s021/");
-    NEBULAReconstructor reco(geo);
+    NEBULAReco reco(geo);
     reco.SetTargetPosition({0,0,0});
 
     TFile* fout = TFile::Open(argv[2], "RECREATE");
-    TTree* tout = new TTree("golden", "legacy NEBULAReconstructor outputs");
+    TTree* tout = new TTree("golden", "legacy NEBULAReco outputs");
     std::vector<RecoNeutron>* cands = new std::vector<RecoNeutron>();
     tout->Branch("cands", &cands);
 
@@ -1355,7 +1355,7 @@ git commit -m "test: capture pre-refactor NEBULA reco golden fixture"
 ```cpp
 // tests/analysis/test_NEBULAReco_legacy_compat.cc
 // After the refactor, NEBULAReco must produce bit-for-bit (within fp
-// tolerance) the same outputs as the legacy NEBULAReconstructor saved
+// tolerance) the same outputs as the legacy NEBULAReco saved
 // in tests/fixtures/nebula_reco_golden.root.
 #include <gtest/gtest.h>
 #include <TFile.h>
@@ -1474,8 +1474,8 @@ git commit -m "test(analysis): failing legacy-compat for NEBULAReco refactor"
 
 ```bash
 cd /home/tian/workspace/dpol/smsimulator5.5
-cat libs/analysis/include/NEBULAReconstructor.hh
-sed -n '1,80p' libs/analysis/src/NEBULAReconstructor.cc
+cat libs/analysis/include/NEBULAReco.hh
+sed -n '1,80p' libs/analysis/src/NEBULAReco.cc
 ```
 
 Identify which private methods are pure-algorithm (no NEBULA-specific data extraction) and which are extraction-specific (the parts that touch `fNEBULASimData` / `TArtNEBULAPla`).
@@ -1560,7 +1560,7 @@ protected:
 
 - [ ] **Step 3: Create `NEBULABaseReco.cc` by moving the algorithm bodies from the legacy `.cc`**
 
-Open `libs/analysis/src/NEBULAReconstructor.cc` and copy the bodies of:
+Open `libs/analysis/src/NEBULAReco.cc` and copy the bodies of:
 - `ClusterHits()`
 - `ReconstructFromCluster()`
 - `CalculateBeta()`
@@ -1612,7 +1612,7 @@ We expect the analysis lib to be incomplete here because `NEBULAReco` doesn't ex
 cd /home/tian/workspace/dpol/smsimulator5.5
 git add libs/analysis/include/NEBULABaseReco.hh \
         libs/analysis/src/NEBULABaseReco.cc
-git commit -m "refactor(analysis): extract NEBULABaseReco from NEBULAReconstructor"
+git commit -m "refactor(analysis): extract NEBULABaseReco from NEBULAReco"
 ```
 
 ---
@@ -1664,7 +1664,7 @@ private:
 
 - [ ] **Step 2: `.cc` — port the NEBULA-specific extraction from the legacy class**
 
-Open `libs/analysis/src/NEBULAReconstructor.cc` and copy the body of `ExtractHits(TClonesArray* nebulaData)` into `libs/analysis/src/NEBULAReco.cc` as `NEBULAReco::ExtractHits()`, reading from `fNebHits` instead of an argument. Set `hit.wall_tag = 3` for sub1 / `4` for sub2 if you can disambiguate from the underlying `TArtNEBULAPla` (Layer field), else leave it 0; tags get set by the joint reco anyway.
+Open `libs/analysis/src/NEBULAReco.cc` and copy the body of `ExtractHits(TClonesArray* nebulaData)` into `libs/analysis/src/NEBULAReco.cc` as `NEBULAReco::ExtractHits()`, reading from `fNebHits` instead of an argument. Set `hit.wall_tag = 3` for sub1 / `4` for sub2 if you can disambiguate from the underlying `TArtNEBULAPla` (Layer field), else leave it 0; tags get set by the joint reco anyway.
 
 ```cpp
 // libs/analysis/src/NEBULAReco.cc
@@ -1683,7 +1683,7 @@ std::vector<NEBULAHit> NEBULAReco::ExtractHits() {
         auto* pla = static_cast<TArtNEBULAPla*>(fNebHits->UncheckedAt(i));
         // [adapt to the same field reads as the legacy class did]
         // Below is the structure; replace field accessors with the
-        // actual TArtNEBULAPla getters used in NEBULAReconstructor.cc.
+        // actual TArtNEBULAPla getters used in NEBULAReco.cc.
         if (pla->IsVeto()) continue;
         NEBULAHit h;
         h.moduleID = pla->GetID();
@@ -1699,7 +1699,7 @@ std::vector<NEBULAHit> NEBULAReco::ExtractHits() {
 }
 ```
 
-The exact getter names (`GetX`, `GetEdep`, `GetT`, etc.) must match what `NEBULAReconstructor::ExtractHits` originally used. Open the legacy `.cc` and copy that block almost verbatim.
+The exact getter names (`GetX`, `GetEdep`, `GetT`, etc.) must match what `NEBULAReco::ExtractHits` originally used. Open the legacy `.cc` and copy that block almost verbatim.
 
 - [ ] **Step 3: Build analysis lib**
 
@@ -1708,7 +1708,7 @@ cd /home/tian/workspace/dpol/smsimulator5.5/build
 cmake --build . --target analysis -j$(nproc) 2>&1 | tail -15
 ```
 
-Expected: build succeeds (the legacy NEBULAReconstructor still exists, so symbols still resolve).
+Expected: build succeeds (the legacy NEBULAReco still exists, so symbols still resolve).
 
 - [ ] **Step 4: Commit**
 
@@ -1727,12 +1727,12 @@ git commit -m "refactor(analysis): add NEBULAReco derived class"
 - Modify: `libs/analysis/src/LinkDef.h`
 - Modify: `libs/analysis/CMakeLists.txt`
 
-- [ ] **Step 1: Replace the `NEBULAReconstructor` pragma in both LinkDefs**
+- [ ] **Step 1: Replace the `NEBULAReco` pragma in both LinkDefs**
 
 In `libs/analysis/src/LinkDef.h` (line 19) and `libs/analysis/include/AnalysisLinkDef.h` (line 11), replace the old pragma:
 
 ```cpp
-#pragma link C++ class NEBULAReconstructor+;
+#pragma link C++ class NEBULAReco+;
 ```
 
 with:
@@ -1744,7 +1744,7 @@ with:
 
 - [ ] **Step 2: Update CMake dict header list**
 
-Open `libs/analysis/CMakeLists.txt`. Find `ANALYSIS_DICT_HEADERS` and replace the `NEBULAReconstructor.hh` line with two lines:
+Open `libs/analysis/CMakeLists.txt`. Find `ANALYSIS_DICT_HEADERS` and replace the `NEBULAReco.hh` line with two lines:
 
 ```cmake
     ${CMAKE_CURRENT_SOURCE_DIR}/include/NEBULABaseReco.hh
@@ -1800,7 +1800,7 @@ for f in apps/run_reconstruction/main.cc \
          scripts/analysis/ypol_phys/render_phys_report.py \
          scripts/visualization/run_display_safe.C \
          scripts/analysis/nebula_reco_quality/README.md; do
-    sed -i 's/\bNEBULAReconstructor\b/NEBULAReco/g' "$f"
+    sed -i 's/\bNEBULAReco\b/NEBULAReco/g' "$f"
 done
 ```
 
@@ -1808,15 +1808,15 @@ done
 
 ```bash
 cd /home/tian/workspace/dpol/smsimulator5.5
-sed -i 's|"NEBULAReconstructor.hh"|"NEBULAReco.hh"|g' apps/run_reconstruction/main.cc
+sed -i 's|"NEBULAReco.hh"|"NEBULAReco.hh"|g' apps/run_reconstruction/main.cc
 ```
 
 - [ ] **Step 3: Confirm no straggler references remain**
 
 ```bash
 cd /home/tian/workspace/dpol/smsimulator5.5
-git grep -nE "\bNEBULAReconstructor\b" -- ':!libs/analysis/include/NEBULAReconstructor.hh' \
-                                          ':!libs/analysis/src/NEBULAReconstructor.cc' \
+git grep -nE "\bNEBULAReco\b" -- ':!libs/analysis/include/NEBULAReco.hh' \
+                                          ':!libs/analysis/src/NEBULAReco.cc' \
                                           ':!tools/dump_nebula_reco_golden.cc'
 ```
 
@@ -1844,30 +1844,30 @@ git add apps/run_reconstruction/main.cc \
         scripts/analysis/ypol_phys/render_phys_report.py \
         scripts/visualization/run_display_safe.C \
         scripts/analysis/nebula_reco_quality/README.md
-git commit -m "refactor: sweep NEBULAReconstructor -> NEBULAReco in apps and scripts"
+git commit -m "refactor: sweep NEBULAReco -> NEBULAReco in apps and scripts"
 ```
 
 ---
 
-### Task 2.7: Delete legacy NEBULAReconstructor
+### Task 2.7: Delete legacy NEBULAReco
 
 **Files:**
-- Delete: `libs/analysis/include/NEBULAReconstructor.hh`
-- Delete: `libs/analysis/src/NEBULAReconstructor.cc`
+- Delete: `libs/analysis/include/NEBULAReco.hh`
+- Delete: `libs/analysis/src/NEBULAReco.cc`
 
 - [ ] **Step 1: Delete the files**
 
 ```bash
 cd /home/tian/workspace/dpol/smsimulator5.5
-git rm libs/analysis/include/NEBULAReconstructor.hh \
-       libs/analysis/src/NEBULAReconstructor.cc
+git rm libs/analysis/include/NEBULAReco.hh \
+       libs/analysis/src/NEBULAReco.cc
 ```
 
 - [ ] **Step 2: Final grep guard**
 
 ```bash
 cd /home/tian/workspace/dpol/smsimulator5.5
-git grep -nE "\bNEBULAReconstructor\b" -- ':!tools/dump_nebula_reco_golden.cc' || echo "all clean"
+git grep -nE "\bNEBULAReco\b" -- ':!tools/dump_nebula_reco_golden.cc' || echo "all clean"
 ```
 
 Expected: `all clean` printed, OR only `tools/dump_nebula_reco_golden.cc` references appear (that tool is allowed to keep the legacy name in its source until we decide to remove or rename it).
@@ -1886,7 +1886,7 @@ Expected: build + ctest green.
 
 ```bash
 cd /home/tian/workspace/dpol/smsimulator5.5
-git commit -m "refactor: delete legacy NEBULAReconstructor.hh/cc (now NEBULAReco)"
+git commit -m "refactor: delete legacy NEBULAReco.hh/cc (now NEBULAReco)"
 ```
 
 ---
@@ -1908,7 +1908,7 @@ Expected: all green.
 ```bash
 cd /home/tian/workspace/dpol/smsimulator5.5
 git tag nebula-plus-phase2
-echo "Phase 2 complete. NEBULAReconstructor refactored into NEBULABaseReco + NEBULAReco."
+echo "Phase 2 complete. NEBULAReco refactored into NEBULABaseReco + NEBULAReco."
 ```
 
 ---
@@ -2411,7 +2411,7 @@ Expected: all green.
 ```bash
 cd /home/tian/workspace/dpol/smsimulator5.5
 echo "Stragglers of legacy class name:"
-git grep -nE "\bNEBULAReconstructor\b" -- ':!tools/dump_nebula_reco_golden.cc' || echo "  (none)"
+git grep -nE "\bNEBULAReco\b" -- ':!tools/dump_nebula_reco_golden.cc' || echo "  (none)"
 echo
 echo "Stragglers of placeholder Z (should be empty):"
 git grep -nE "NEBULA-?Plus.*Z *= *8[0-9]{3} *mm" -- configs/ docs/ | grep -v "8089" || echo "  (only 8089)"

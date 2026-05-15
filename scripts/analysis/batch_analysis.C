@@ -21,7 +21,7 @@
 #include "PDCSimAna.hh"
 #include "EventDataReader.hh"
 #include "RecoEvent.hh"
-#include "NEBULAReconstructor.hh"
+#include "NEBULAReco.hh"
 #include "TBeamSimData.hh"
 #include "MagneticField.hh"
 #include "TargetReconstructor.hh"
@@ -262,7 +262,7 @@ void batch_analysis_single_file(const char* inputFile, const char* outputFile) {
     ana.SetSmearing(0.5, 0.5);  // 设置位置分辨率
     
     // 3. 初始化NEBULA重建器
-    NEBULAReconstructor nebulaRecon(geo);
+    NEBULAReco nebulaRecon(geo);
     nebulaRecon.SetTargetPosition(geo.GetTargetPosition());
     nebulaRecon.SetTimeWindow(10.0);     // 10 ns时间窗口
     nebulaRecon.SetEnergyThreshold(1.0); // 1 MeV能量阈值

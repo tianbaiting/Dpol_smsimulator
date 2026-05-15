@@ -15,7 +15,7 @@
 
 #include "GeometryManager.hh"
 #include "MagneticField.hh"
-#include "NEBULAReconstructor.hh"
+#include "NEBULAReco.hh"
 #include "PDCSimAna.hh"
 #include "RecoEvent.hh"
 #include "TBeamSimData.hh"
@@ -339,7 +339,7 @@ void analyze_synthetic_px_reco(const char* sim_root,
     PDCSimAna pdcAna(geo);
     pdcAna.SetSmearing(0.5, 0.5);
 
-    NEBULAReconstructor nebulaRecon(geo);
+    NEBULAReco nebulaRecon(geo);
     nebulaRecon.SetTargetPosition(targetPos);
     nebulaRecon.SetTimeWindow(10.0);
     nebulaRecon.SetEnergyThreshold(1.0);

@@ -13,7 +13,7 @@ Two questions about NEBULA reconstruction:
   geometric × Geant4-detection × cluster-reco, quantify each layer's
   contribution to the ypol R observable.
 
-Both are read-only — no NEBULAReconstructor / Converter code is modified.
+Both are read-only — no NEBULAReco / Converter code is modified.
 
 ## File map
 

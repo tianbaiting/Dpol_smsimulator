@@ -62,7 +62,7 @@ void NEBULABaseReco::ProcessEvent(RecoEvent& event) {
 }
 
 // ---------------------------------------------------------------------------
-// Shared algorithm steps (ported verbatim from NEBULAReconstructor)
+// Shared algorithm steps (ported verbatim from NEBULAReco)
 // ---------------------------------------------------------------------------
 
 std::vector<std::vector<NEBULAHit>> NEBULABaseReco::ClusterHits(

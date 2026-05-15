@@ -2,7 +2,7 @@
 #include "GeometryManager.hh"
 #include "MagneticField.hh"
 #include "NEBULAFrameRotation.hh"
-#include "NEBULAReconstructor.hh"
+#include "NEBULAReco.hh"
 #include "PDCFrameRotation.hh"
 #include "PDCSimAna.hh"
 #include "PDCMomentumReconstructor.hh"
@@ -328,7 +328,7 @@ bool ProcessSingleFile(const fs::path& input_file,
                        bool write_rk_errors,
                        bool write_rk_laplace,
                        PDCSimAna& pdc_ana,
-                       NEBULAReconstructor& nebula_reco,
+                       NEBULAReco& nebula_reco,
                        reco::PDCMomentumReconstructor& proton_reco,
                        const reco::RecoConfig& proton_config,
                        const reco::TargetConstraint& target_constraint,
@@ -696,7 +696,7 @@ int main(int argc, char* argv[]) {
         PDCSimAna pdc_ana(geometry);
         pdc_ana.SetSmearing(0.5, 0.5);
 
-        NEBULAReconstructor nebula_reco(geometry);
+        NEBULAReco nebula_reco(geometry);
         nebula_reco.SetTargetPosition(geometry.GetTargetPosition());
         nebula_reco.SetTimeWindow(10.0);
         nebula_reco.SetEnergyThreshold(1.0);

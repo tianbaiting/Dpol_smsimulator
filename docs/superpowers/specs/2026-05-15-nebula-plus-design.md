@@ -24,7 +24,7 @@ alone.
 Current state of the surrounding codebase:
 
 - **smsimulator5.5** has a NEBULA G4 module (geometry, SD, SimData
-  converter) and an analysis-side `NEBULAReconstructor`
+  converter) and an analysis-side `NEBULAReco`
   (`libs/analysis/`). No NEBULA-Plus support.
 - **anaroot** reserves `Layer=1,2` for NEBULA-Plus and channel names
   `V301–V410` for its veto bars, but the per-bar positions are
@@ -48,7 +48,7 @@ anaroot reco updates.
 2. New ROOT data class `TArtNEBULAPlusPla` and SimData branches
    `fNEBULAPlusSimData` + `fNEBULAPlusSimParameter` written to the
    output tree.
-3. Refactor `libs/analysis/NEBULAReconstructor` into a small class
+3. Refactor `libs/analysis/NEBULAReco` into a small class
    hierarchy: `NEBULABaseReco` (abstract base) →
    `NEBULAReco` / `NEBULAPlusReco` / `NebulaJointReco`.
 4. User analysis macros can instantiate any of the three reco classes
@@ -173,7 +173,7 @@ libs/analysis/include/
 
 libs/analysis/src/
     NEBULABaseReco.cc
-    NEBULAReco.cc           (mostly moved from NEBULAReconstructor.cc)
+    NEBULAReco.cc           (mostly moved from NEBULAReco.cc)
     NEBULAPlusReco.cc
     NebulaJointReco.cc
 
@@ -205,11 +205,11 @@ tests/integration/
 | `libs/sim_deuteron_core/include/DeutDetectorConstruction.hh` | add forward decl `NEBULAPlusConstruction`; add members `fNEBULAPlusConstruction`, `fNEBULAPlusSD` |
 | `libs/sim_deuteron_core/src/DeutDetectorConstruction.cc` | instantiate `fNEBULAPlusConstruction`, create SD, call `PutNEBULAPlus(ExpHall_log)` in `Construct()` / `UpdateGeometry()`; delete in dtor |
 | `apps/sim_deuteron/main.cc` | after `NEBULASimDataInitializer initNeb.Initialize()`, also call `NEBULAPlusSimDataInitializer initNplus.Initialize()` |
-| `apps/run_reconstruction/main.cc` | replace all `NEBULAReconstructor` with `NEBULAReco` |
-| `libs/analysis/CMakeLists.txt` | in `ANALYSIS_DICT_HEADERS`, replace `NEBULAReconstructor.hh` with the four new headers (`NEBULABaseReco.hh`, `NEBULAReco.hh`, `NEBULAPlusReco.hh`, `NebulaJointReco.hh`) |
-| `libs/analysis/include/AnalysisLinkDef.h` | rename pragma class `NEBULAReconstructor` to `NEBULAReco`; add 3 new pragmas |
+| `apps/run_reconstruction/main.cc` | replace all `NEBULAReco` with `NEBULAReco` |
+| `libs/analysis/CMakeLists.txt` | in `ANALYSIS_DICT_HEADERS`, replace `NEBULAReco.hh` with the four new headers (`NEBULABaseReco.hh`, `NEBULAReco.hh`, `NEBULAPlusReco.hh`, `NebulaJointReco.hh`) |
+| `libs/analysis/include/AnalysisLinkDef.h` | rename pragma class `NEBULAReco` to `NEBULAReco`; add 3 new pragmas |
 | `libs/analysis/src/LinkDef.h` | same as above |
-| `libs/analysis/include/NEBULAFrameRotation.hh` | comment string `NEBULAReconstructor` → `NEBULAReco` |
+| `libs/analysis/include/NEBULAFrameRotation.hh` | comment string `NEBULAReco` → `NEBULAReco` |
 | `scripts/analysis/nebula_reco_quality/run_nebula_reco.C` | rename class |
 | `scripts/analysis/batch_analysis.C` | rename class |
 | `scripts/analysis/legacy_target_reco/analyze_synthetic_px_reco.C` | rename class |
@@ -222,8 +222,8 @@ tests/integration/
 ### 4.3 Deletes
 
 ```
-libs/analysis/include/NEBULAReconstructor.hh
-libs/analysis/src/NEBULAReconstructor.cc
+libs/analysis/include/NEBULAReco.hh
+libs/analysis/src/NEBULAReco.cc
 ```
 
 ROOT `_C.d` cache files under `scripts/analysis/` are auto-regenerated;
@@ -313,7 +313,7 @@ protected:
   const GeometryManager& fGeoManager;
   TVector3 fTargetPosition{0,0,0};
   // Defaults are placeholders to be reconciled with the actual values
-  // hardcoded in libs/analysis/src/NEBULAReconstructor.cc during the
+  // hardcoded in libs/analysis/src/NEBULAReco.cc during the
   // refactor; the legacy-compat test pins them down.
   double fTimeWindow = 3.0;        // ns
   double fEnergyThreshold = 6.0;   // MeV
@@ -388,7 +388,7 @@ No separate veto branch.
   and are auto-collected).
 - `libs/analysis/CMakeLists.txt`: sources are GLOB but dictionary
   headers are an **explicit list**. The list must be edited to swap
-  `NEBULAReconstructor.hh` for `NEBULAReco.hh` and add three new
+  `NEBULAReco.hh` for `NEBULAReco.hh` and add three new
   headers.
 - `libs/analysis/src/LinkDef.h` and `libs/analysis/include/AnalysisLinkDef.h`:
   rename one pragma class entry, add three new ones.
@@ -407,7 +407,7 @@ sanity-check during implementation).
 | `test_NEBULAPlusSimParameterReader` | CSV parses to 114 bars, 22+22+23+23 sub-layer counts, 12 veto/wall, `fPosition.z = 8089`, `fTimeReso = 0.240` |
 | `test_NEBULAPlusGeometry` | per-bar X start `-1320`, pitch 120; sub-layer Z offsets 0/130/845/975; veto Z offsets -100/+745 |
 | `test_NEBULAPlusSimDataConverter` | synthetic step in bar ID=101, 5 MeV @ t=10 ns ⇒ one `TArtNEBULAPlusPla` with `fLayer=1`, `fSubLayer=1`, `fEdep≈5`, plausible TU/TD |
-| `test_NEBULABaseReco_refactor` | Same hits → new `NEBULAReco` gives `RecoNeutron` results equal (within fp tolerance) to the old `NEBULAReconstructor` output on a captured fixture |
+| `test_NEBULABaseReco_refactor` | Same hits → new `NEBULAReco` gives `RecoNeutron` results equal (within fp tolerance) to the old `NEBULAReco` output on a captured fixture |
 | `test_NEBULAPlusReco_basic` | Hand-crafted `TArtNEBULAPlusPla` array with Layer 1/2 hits clusters correctly; hits with Layer 3/4 (if present by accident) are ignored |
 | `test_NebulaJointReco_combined` | NEBULA + NEBULA-Plus hits at consistent space-time form one cluster; `wall_tag` set; cross-detector veto works |
 
@@ -416,7 +416,7 @@ sanity-check during implementation).
 | Test | Asserts |
 |------|---------|
 | `test_NebulaJointReco_efficiency` | Synthetic monoenergetic neutrons (200 MeV) thrown at the array; relative ε ordering `NebulaJointReco > NEBULAReco` and `NebulaJointReco > NEBULAPlusReco`; absolute single-n ε within `[0.20, 0.45]` for NEBULA-only and `[0.40, 0.75]` for joint |
-| `test_NEBULAReco_legacy_compat` | Golden-file comparison: pre-refactor `NEBULAReconstructor` output saved into `tests/fixtures/nebula_reco_golden.root`; new `NEBULAReco` reproduces it |
+| `test_NEBULAReco_legacy_compat` | Golden-file comparison: pre-refactor `NEBULAReco` output saved into `tests/fixtures/nebula_reco_golden.root`; new `NEBULAReco` reproduces it |
 
 ### Integration (`tests/integration/`, label `integration`)
 
@@ -427,21 +427,21 @@ sanity-check during implementation).
 
 ### Static checks (CI add-ons)
 
-- `grep -r NEBULAReconstructor libs/ apps/ scripts/ docs/` must return zero
+- `grep -r NEBULAReco libs/ apps/ scripts/ docs/` must return zero
   hits after the refactor lands.
 - Build with `BUILD_TESTS=ON` must succeed; `ctest -L unit -L analysis -L integration`
   must pass.
 - Pre-refactor one-shot scan
   `tools/scan_old_roots_for_nebula_reconstructor.sh` walks `results/`
-  / `data/` to confirm no persisted `NEBULAReconstructor` objects
+  / `data/` to confirm no persisted `NEBULAReco` objects
   exist; if any are found, decision deferred to follow-up.
 
 ## 9. Risks and mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|-----------|
-| `NEBULAReconstructor` regression in physics output after refactor | low | high | golden-file test `test_NEBULAReco_legacy_compat` runs both old and new on a captured fixture |
-| Missed call site of `NEBULAReconstructor` (especially in user scripts) | medium | low | CI grep guard rules out missed references |
+| `NEBULAReco` regression in physics output after refactor | low | high | golden-file test `test_NEBULAReco_legacy_compat` runs both old and new on a captured fixture |
+| Missed call site of `NEBULAReco` (especially in user scripts) | medium | low | CI grep guard rules out missed references |
 | NEBULA-Plus absolute Z is a brainstorming-chosen value, not surveyed | high | medium | exposed via Messenger (`/samurai/geometry/NEBULAPlus/Position`) so mac override is one-line; LPC alignment can be substituted later without a rebuild |
 | 22-bar walls X asymmetry might confuse users | low | low | document the −60 mm offset in `nebula_and_nebula_plus.tex` |
 | `BC400` vs `EJ200` material substitution | low | low | both PVT-based; effective light yield difference ~1 %; we use `G4_PLASTIC_SC_VINYLTOLUENE` consistent with NEBULA |
@@ -459,7 +459,7 @@ sanity-check during implementation).
    `test_vis_with_nebula_plus.sh`.
 
 2. **Reco refactor**. Extract `NEBULABaseReco`, rename
-   `NEBULAReconstructor` to `NEBULAReco`, sweep call sites. Delete the
+   `NEBULAReco` to `NEBULAReco`, sweep call sites. Delete the
    old files. CI grep. Tests:
    `test_NEBULABaseReco_refactor`, `test_NEBULAReco_legacy_compat`.
 

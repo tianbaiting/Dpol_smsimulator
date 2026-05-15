@@ -49,7 +49,7 @@ protected:
     // Derived classes supply the detector-specific hit extraction.
     virtual std::vector<NEBULAHit> ExtractHits() = 0;
 
-    // Shared algorithm steps ported from legacy NEBULAReconstructor.
+    // Shared algorithm steps ported from legacy NEBULAReco.
     std::vector<std::vector<NEBULAHit>> ClusterHits(const std::vector<NEBULAHit>& hits);
     RecoNeutron  ReconstructFromCluster(const std::vector<NEBULAHit>& cluster);
     double       CalculateBeta(double flightLength, double tof);
@@ -60,7 +60,7 @@ protected:
     const GeometryManager& fGeoManager;
     TVector3 fTargetPosition{0, 0, 0};
 
-    // Defaults match legacy NEBULAReconstructor constructor values exactly.
+    // Defaults match legacy NEBULAReco constructor values exactly.
     double fTimeWindow       = 10.0;   // ns
     double fEnergyThreshold  = 1.0;    // MeV
     double fPositionSmearing = 5.0;    // mm

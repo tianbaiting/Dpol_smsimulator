@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-// [EN] Helpers to rotate NEBULAReconstructor results from the Geant4 lab frame
+// [EN] Helpers to rotate NEBULAReco results from the Geant4 lab frame
 // into the event-generator "beam-as-Z" (target) frame. Mirrors the
 // PDCFrameRotation API in libs/analysis_pdc_reco/ — applied at the same write-stage
 // in apps/run_reconstruction/main.cc to keep neutron and proton in the same frame

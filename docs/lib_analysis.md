@@ -14,7 +14,7 @@ This document summarizes the `libs/analysis` module structure and runtime flow b
 1. `EventDataReader` opens a ROOT file and exposes event branches (`FragSimData`, optional `NEBULAPla`, optional `beam`).
 2. `GeometryManager` parses detector and target geometry from a Geant4 macro.
 3. `PDCSimAna` reconstructs charged-track points (PDC1/PDC2) into a `RecoEvent`.
-4. `NEBULAReconstructor` clusters NEBULA hits and reconstructs neutron kinematics into `RecoEvent`.
+4. `NEBULAReco` clusters NEBULA hits and reconstructs neutron kinematics into `RecoEvent`.
 5. `TargetReconstructor` back-propagates reconstructed tracks through `MagneticField` to estimate target momentum.
 6. `EventDisplay` renders geometry, hits, tracks, and reconstruction results in ROOT EVE.
 
@@ -56,7 +56,7 @@ Reconstructs PDC hits into a `RecoEvent`:
 - Computes centers-of-mass for U/V planes
 - Provides smeared hits for detector resolution studies
 
-### NEBULAReconstructor (libs/analysis/include/NEBULAReconstructor.hh)
+### NEBULAReco (libs/analysis/include/NEBULAReco.hh)
 Neutron reconstruction pipeline:
 - hit extraction, clustering, TOF-based energy estimate
 - `ReconstructNeutrons()` returns a list of `RecoNeutron`

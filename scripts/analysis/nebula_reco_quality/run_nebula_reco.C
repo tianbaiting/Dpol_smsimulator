@@ -1,6 +1,6 @@
 // Standalone NEBULA-only reconstruction over the px-py scan g4output.
 // Pairs each g4output event with its truth momentum from the input shard
-// (sequential 1:1 by event index), then runs NEBULAReconstructor on the
+// (sequential 1:1 by event index), then runs NEBULAReco on the
 // NEBULAPla TClonesArray and emits a per-event summary tree.
 //
 // Usage (interpreted):
@@ -15,7 +15,7 @@
 // Implementation strategy for NEBULAPla:
 //   The g4output stores NEBULAPla in split TTree mode.  We read hit count and
 //   fQAveCal directly from TLeaf objects so no TArtNEBULAPla class dictionary
-//   is needed.  NEBULAReconstructor is called with a nullptr TClonesArray to
+//   is needed.  NEBULAReco is called with a nullptr TClonesArray to
 //   get the reconstructed-neutron count; however, because the reconstructor
 //   requires a populated TClonesArray we instead use the split branches to
 //   reconstruct hits manually and count clusters by time window — or, simpler,
@@ -24,7 +24,7 @@
 //
 // NOTE: n_reco_neutrons / first_hit_mult require a loaded TClonesArray of
 // TArtNEBULAPla which in turn requires the full TArtNEBULAPla dictionary.
-// Those fields are filled via NEBULAReconstructor if the class is available,
+// Those fields are filled via NEBULAReco if the class is available,
 // otherwise they are set to -1 to indicate "not reconstructed".
 
 #include "TFile.h"
@@ -42,7 +42,7 @@
 // Project headers — available via ROOT_INCLUDE_PATH set by setup.sh.
 // In ACLiC mode these are compiled normally; in interpreted mode cling
 // must be able to find them.
-#include "NEBULAReconstructor.hh"
+#include "NEBULAReco.hh"
 #include "GeometryManager.hh"
 #include "RecoEvent.hh"
 #include "TBeamSimData.hh"
@@ -94,7 +94,7 @@ void run_nebula_reco(const char* g4out_path,
     t_g4->SetBranchStatus("NEBULAPla",          1);  // count branch
     t_g4->SetBranchStatus("NEBULAPla.fQAveCal", 1);
 
-    // Also activate the full TClonesArray branch for NEBULAReconstructor
+    // Also activate the full TClonesArray branch for NEBULAReco
     // (it's the same branch, just accessed differently; split mode means
     // GetEntry reads all sub-branches when the parent branch is enabled)
     TClonesArray *nebPla = nullptr;
@@ -113,7 +113,7 @@ void run_nebula_reco(const char* g4out_path,
 
     // --- NEBULA reconstructor (default settings, target at origin) ---
     GeometryManager gm;
-    NEBULAReconstructor nebreco(gm);
+    NEBULAReco nebreco(gm);
     nebreco.SetTargetPosition(TVector3(0, 0, 0));
 
     // --- output file + summary tree ---
@@ -178,7 +178,7 @@ void run_nebula_reco(const char* g4out_path,
             }
         }
 
-        // Run NEBULAReconstructor on the populated TClonesArray
+        // Run NEBULAReco on the populated TClonesArray
         std::vector<RecoNeutron> neutrons = nebreco.ReconstructNeutrons(nebPla);
         n_reco_n   = static_cast<int>(neutrons.size());
         first_mult = (n_reco_n > 0) ? neutrons[0].hitMultiplicity : 0;

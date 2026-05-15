@@ -59,7 +59,7 @@ build/bin/reconstruct_target_momentum \
 The geometry macro matches the training geometry (target tilt $3^\circ$). 6-way parallel, 32 cells $\times$ 176 reco tasks took 97 s.
 
 \subsection*{2.3 Neutron source}
-The NN backend reconstructs only the proton; the neutron still goes through the original \texttt{NEBULAReconstructor} ($\beta$ method + \texttt{NEBULAFrameRotation::RotateRecoNeutronsToTargetFrame} from commit \texttt{806cd6a}; see \texttt{ypol\_phys\_20260428\_zh.tex} \S2.3 for detail).
+The NN backend reconstructs only the proton; the neutron still goes through the original \texttt{NEBULAReco} ($\beta$ method + \texttt{NEBULAFrameRotation::RotateRecoNeutronsToTargetFrame} from commit \texttt{806cd6a}; see \texttt{ypol\_phys\_20260428\_zh.tex} \S2.3 for detail).
 
 \subsection*{2.4 Extraction \& joining}
 \texttt{02\_extract\_observables.C} writes per-event truth + NN proton + NEBULA neutron from each reco root into one CSV row.
@@ -241,7 +241,7 @@ Full bootstrap CIs are in \texttt{build/test\_output/nn\_breakup\_phys\_20260503
 \textbf{NEBULA neutron}: $\Delta p_z$ med $-9.83$ hw $8.72$ MeV/$c$ --- the same $\beta$-method nonlinear bias seen in the elastic report \S1.1. $\Delta p_x$ shows a clear double-peak (central dip); the cause comes from the NEBULA bar geometry plus the reconstruction chain:
 \begin{itemize}[nosep]
     \item Each NEBULA bar has a $12\times 12$ cm cross-section and its long axis is along $Y$ (vertical, 1.8 m); 60 bars are stacked side-by-side along $X$, with 2 $Z$ layers. In \texttt{NEBULASimDataConverter\_TArtNEBULAPla.cc}, \textbf{X = bar geometric centre} (discrete, 12 cm pitch), \textbf{Y = $0.5\,\Delta t\, v_\text{scinti}$ from PMT end-to-end time difference} (continuous), $Z$ = layer centre. So the reco position is discrete in $X$; the time difference gives $Y$, not $X$.
-    \item \texttt{NEBULAReconstructor::ApplyPositionSmearing} adds a 5 mm Gaussian which is far smaller than the 12 cm bar pitch, so the discreteness is essentially preserved. $12$ cm / $L_\text{NEBULA}=7.25$ m $\times |\vec p|\approx 600$ MeV/$c$ $\to$ a rectangle of $\sim\pm 5$ MeV/$c$ in $\Delta p_x$, consistent with what is observed.
+    \item \texttt{NEBULAReco::ApplyPositionSmearing} adds a 5 mm Gaussian which is far smaller than the 12 cm bar pitch, so the discreteness is essentially preserved. $12$ cm / $L_\text{NEBULA}=7.25$ m $\times |\vec p|\approx 600$ MeV/$c$ $\to$ a rectangle of $\sim\pm 5$ MeV/$c$ in $\Delta p_x$, consistent with what is observed.
     \item The central dip arises from the mix of single-bar and multi-bar cluster events. A multi-bar cluster (energy-weighted centroid) pulls bar-boundary events back close to truth; if the downstream analysis keeps only clean events (e.g.\ \texttt{n\_reco\_neutrons==1}), this central population is removed, leaving the rectangle with a hollow centre. The effect is more pronounced in breakup than in elastic simply because NEBULA hit rate is higher and the 1.2 M-event statistics fully expose the discrete structure.
 \end{itemize}
 

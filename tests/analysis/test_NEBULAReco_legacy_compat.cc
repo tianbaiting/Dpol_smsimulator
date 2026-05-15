@@ -1,7 +1,7 @@
 // tests/analysis/test_NEBULAReco_legacy_compat.cc
 //
 // After the Phase 2 refactor, NEBULAReco (the new class derived from
-// NEBULABaseReco) must reproduce the legacy NEBULAReconstructor's
+// NEBULABaseReco) must reproduce the legacy NEBULAReco's
 // outputs bit-for-bit on the same input.
 //
 // This test is initially RED (NEBULAReco doesn't exist yet); it goes

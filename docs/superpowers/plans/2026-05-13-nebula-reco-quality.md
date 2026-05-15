@@ -596,8 +596,8 @@ Create `docs/reports/reconstruction/nebula/nebula_reco_quality_20260513_zh.tex` 
   - §2.2 Data path trace
     - L1 Geant4 SimData stores continuous `fPrePosition` — cite `libs/smg4lib/src/data/src/NEBULASimDataConverter_TArtNEBULAPla.cc:80-86`
     - L2 Converter overwrites X with bar center — cite same file `:156`
-    - L3 Reconstructor's 5 mm smearing leaves discreteness — cite `libs/analysis/src/NEBULAReconstructor.cc:295-305`
-    - L4 Multi-bar cluster pulls boundary events to truth — cite `NEBULAReconstructor.cc:206-218`
+    - L3 Reconstructor's 5 mm smearing leaves discreteness — cite `libs/analysis/src/NEBULAReco.cc:295-305`
+    - L4 Multi-bar cluster pulls boundary events to truth — cite `NEBULAReco.cc:206-218`
     - L5 Downstream `n_reco_neutrons==1` filter removes multi-bar group — cite `scripts/analysis/nn_breakup_phys/03_analyze_r_breakup.py`
   - §2.3 Key split figure: embed `fig_A2_dpx_split_mult.pdf`, explain
   - §2.4 NEBULA reco-x distribution: embed `fig_A3_nebula_x_discrete.pdf`, explain
@@ -1332,7 +1332,7 @@ Expected: 32 root files (one per shard), total size on the order of 10-30 GB.
 
 The reconstruction binary `reconstruct_target_momentum` walks the same g4output and produces a separate `_reco.root`. For our scan we only need `n_reco_neutrons` from the reco side; we can either:
 - (a) Run `reconstruct_target_momentum` against each `pxpy_scan_shard*.root`, or
-- (b) Run NEBULAReconstructor directly on the g4output via a minimal ROOT macro.
+- (b) Run NEBULAReco directly on the g4output via a minimal ROOT macro.
 
 Approach (a) reuses production infrastructure but pulls in NN proton reco (unneeded). Approach (b) is leaner. We pick (b) — a small dedicated macro.
 
@@ -1344,14 +1344,14 @@ Approach (a) reuses production infrastructure but pulls in NN proton reco (unnee
 Create `scripts/analysis/nebula_reco_quality/run_nebula_reco.C`:
 ```cpp
 // Standalone NEBULA-only reconstruction over the px-py scan g4output.
-// Reads NEBULAPla from input, runs NEBULAReconstructor, writes a tiny
+// Reads NEBULAPla from input, runs NEBULAReco, writes a tiny
 // summary tree (truth_px/py/pz, n_nebula_hits, nebula_sumE, n_reco_neutrons,
 // first_neutron_hit_mult).
 //
 // Usage:
 //   root -l -b -q 'run_nebula_reco.C("input.root","summary.root")'
 
-#include "NEBULAReconstructor.hh"
+#include "NEBULAReco.hh"
 #include "GeometryManager.hh"
 #include "RecoEvent.hh"
 #include "TFile.h"
@@ -1375,7 +1375,7 @@ void run_nebula_reco(const char* input_root, const char* out_root) {
     t_in->SetBranchAddress("NEBULAPla", &nebPla);
 
     GeometryManager gm;
-    NEBULAReconstructor nebreco(gm);
+    NEBULAReco nebreco(gm);
     nebreco.SetTargetPosition(TVector3(0,0,0));
 
     TFile *fout = TFile::Open(out_root, "RECREATE");

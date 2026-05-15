@@ -242,7 +242,7 @@ QMD 生成 elastic d+A → p + n 事件后过 Geant4 探测器模拟，每 cell 
 
 \subsection*{2.3 NEBULA 中子重建详解}
 
-源代码: \texttt{libs/analysis/include/NEBULAReconstructor.hh}, \texttt{libs/analysis/src/NEBULAReconstructor.cc}, frame rotation \texttt{libs/analysis/include/NEBULAFrameRotation.hh}; 调用入口在 \texttt{apps/run\_reconstruction/main.cc:502}。
+源代码: \texttt{libs/analysis/include/NEBULAReco.hh}, \texttt{libs/analysis/src/NEBULAReco.cc}, frame rotation \texttt{libs/analysis/include/NEBULAFrameRotation.hh}; 调用入口在 \texttt{apps/run\_reconstruction/main.cc:502}。
 
 \paragraph{输入} \texttt{TClonesArray$\to$TArtNEBULAPla}, 来自 Geant4 + ANAROOT 的 NEBULA 击中数据, 每个 hit 含:
 \begin{itemize}[nosep]

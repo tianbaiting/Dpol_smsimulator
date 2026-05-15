@@ -8,7 +8,7 @@
 
 `nn_breakup_phys_20260503_zh.tex` §5.4 报告了 NEBULA neutron 重建的 Δp_x 出现明显的双峰（中央 dip），并初步把成因指向 NEBULA bar 沿 X 方向 12 cm 步长的离散结构与下游 `n_reco_neutrons==1` filter 的叠加。同份报告也观察到 NEBULA 在 tight cut 子集上的命中率仅 18–22% (ypol) / 22–32% (zpol)，但没有系统量化命中率随 (p_x, p_y) 的变化，这使得下游 R = N(Δp_x>0)/N(Δp_x<0) 的 px 不对称 cut 难以判断是物理信号还是探测器接受度偏置。
 
-本设计把这两个遗留问题作为一个独立调查闭环，**只读不改**（不改 NEBULAReconstructor / Converter），产出一份 zh 报告。
+本设计把这两个遗留问题作为一个独立调查闭环，**只读不改**（不改 NEBULAReco / Converter），产出一份 zh 报告。
 
 ## 2. 产出物
 
@@ -31,8 +31,8 @@
 2. **链路逐级展开**（每级一张图 + 一段源码引用）：
    - L1 — Geant4 SimData 层 (`fPrePosition`)：simdata-level x 分布连续。引用 `libs/smg4lib/src/data/src/NEBULASimDataConverter_TArtNEBULAPla.cc:80-86`（缓存 simdata.pos）。
    - L2 — Converter 把 X 替换为 bar 中心：hit-level x 分布出现 60 根 12 cm 步长的离散峰。引用 `NEBULASimDataConverter_TArtNEBULAPla.cc:156`（`x = prm->fPosition.x() + NEBULAParameter->fPosition.x()`）。
-   - L3 — `NEBULAReconstructor::ApplyPositionSmearing` 5 mm 高斯，远小于 60 mm 半 bar 宽，离散性几乎没被抹掉。引用 `libs/analysis/src/NEBULAReconstructor.cc:295-305`。
-   - L4 — Cluster 多 bar 合并：能量加权质心把边界事件拉回真值附近。引用 `NEBULAReconstructor.cc:206-218`（加权质心计算）。
+   - L3 — `NEBULAReco::ApplyPositionSmearing` 5 mm 高斯，远小于 60 mm 半 bar 宽，离散性几乎没被抹掉。引用 `libs/analysis/src/NEBULAReco.cc:295-305`。
+   - L4 — Cluster 多 bar 合并：能量加权质心把边界事件拉回真值附近。引用 `NEBULAReco.cc:206-218`（加权质心计算）。
    - L5 — 下游 `n_reco_neutrons==1` filter：砍掉多 bar 群体 → 中央 dip。引用 `scripts/analysis/nn_breakup_phys/03_analyze_r_breakup.py` 中的 NEBULA-hit 子集定义。
 3. **关键拆分图**：把 Δp_x 按 `n_hits_in_cluster` (1 vs ≥2) 分开画，验证：
    - 单 bar cluster (n=1)：双峰，落在 ±60/L·|p| ≈ ±5 MeV/c 两端
@@ -45,7 +45,7 @@
      - (c) 用 bar 内沉积能量做亚 bar 重建 — 需要 simdata 级别信息，工作量大
 
 ### 3.3 不做的事
-- 不调 NEBULAReconstructor 任何参数
+- 不调 NEBULAReco 任何参数
 - 不重跑 ypol/zpol 物理 R 表
 
 ## 4. Part B：truth-only (px,py) 效率扫描
@@ -96,7 +96,7 @@ source setup.sh
 - **ε_det(px, py)** = N(NEBULASimData 至少有一个 hit 且 ΣE > 1 MeV) / N_total
   - 从 sim_deuteron 输出的 NEBULASimData 直接统计。
 - **ε_reco(px, py)** = N(reco neutrons ≥ 1) / N_total
-  - 从 reconstruct_target_momentum / 直接调 NEBULAReconstructor 后的 reco root 统计。
+  - 从 reconstruct_target_momentum / 直接调 NEBULAReco 后的 reco root 统计。
 
 ### 4.4 条件效率与瓶颈识别
 - ε_det|geom = ε_det / ε_geom — Geant4 物理探测效率
@@ -121,7 +121,7 @@ source setup.sh
 总计：3–4 个工作日。
 
 ## 6. 不做的事（明示）
-- 不改 NEBULAReconstructor / Converter 任何代码
+- 不改 NEBULAReco / Converter 任何代码
 - 不重跑 ypol/zpol 物理分析
 - 不动 RK 路径
 - 不做 Veto 详细分析
@@ -130,6 +130,6 @@ source setup.sh
 ## 7. 参考
 - `nn_breakup_phys_20260503_zh.tex` §5.4 — 双峰现象与初步成因
 - `libs/smg4lib/src/data/src/NEBULASimDataConverter_TArtNEBULAPla.cc` — bar 中心赋值逻辑
-- `libs/analysis/src/NEBULAReconstructor.cc` — cluster + smearing 重建逻辑
+- `libs/analysis/src/NEBULAReco.cc` — cluster + smearing 重建逻辑
 - `configs/simulation/geometry/NEBULA_Detectors_Dayone.csv` — bar 位置表
 - `data/simulation/ips_wrl/sn124_3deg_1.15T_offset0/macros/neutron_px_scan_pz627_offset0.mac` — 已有 neutron gun 扫描参考

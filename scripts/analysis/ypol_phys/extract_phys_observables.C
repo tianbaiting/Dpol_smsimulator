@@ -71,7 +71,7 @@ void extract_phys_observables(const char* input_path, const char* output_csv_pat
         // Reco neutron from RecoEvent.neutrons[0]. p_n = m_n * gamma * beta
         // along neu.direction. Frame: assumes RecoNeutron has already been
         // rotated into the target frame at write-time by NEBULAFrameRotation
-        // (in apps/run_reconstruction/main.cc post NEBULAReconstructor::ProcessEvent).
+        // (in apps/run_reconstruction/main.cc post NEBULAReco::ProcessEvent).
         int n_reco_neutrons = 0;
         double rpxn_=0, rpyn_=0, rpzn_=0, ren_=0, rbeta_=0;
         if (re) {

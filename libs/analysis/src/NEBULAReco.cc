@@ -8,7 +8,7 @@
 ClassImp(NEBULAReco)
 
 // ---------------------------------------------------------------------------
-// ExtractHits — ported verbatim from NEBULAReconstructor::ExtractHits().
+// ExtractHits — ported verbatim from NEBULAReco::ExtractHits().
 // Reads from fNebHits (set via SetInput / ReconstructNeutrons overload).
 // wall_tag is left at 0 (no Layer info available in the reflection path).
 // ---------------------------------------------------------------------------
@@ -41,7 +41,7 @@ std::vector<NEBULAHit> NEBULAReco::ExtractHits() {
             SM_TRACE("对象 {} 的数据结构: (Dump output suppressed)", i);
         }
 
-        // 使用 ROOT 反射机制读取字段 (与 legacy NEBULAReconstructor 完全相同)
+        // 使用 ROOT 反射机制读取字段 (与 legacy NEBULAReco 完全相同)
         try {
             TClass* cls = obj->IsA();
             if (cls) {

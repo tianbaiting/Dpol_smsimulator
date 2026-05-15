@@ -11,7 +11,7 @@
 #include "MagneticField.hh"
 #include "ParticleTrajectory.hh"
 #include "TargetReconstructor.hh"
-#include "NEBULAReconstructor.hh"
+#include "NEBULAReco.hh"
 
 // 主函数 - 安全版本，不会陷入循环
 void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool interactive = false) {
@@ -126,9 +126,9 @@ void run_display_safe(Long64_t event_id = 0, bool show_trajectories = true, bool
         event.eventID = event_id; // 确保显示正确的事件号
         
         // NEBULA中子重建
-        static NEBULAReconstructor* s_nebulaRecon = nullptr;
+        static NEBULAReco* s_nebulaRecon = nullptr;
         if (!s_nebulaRecon) {
-            s_nebulaRecon = new NEBULAReconstructor(geo);
+            s_nebulaRecon = new NEBULAReco(geo);
             s_nebulaRecon->SetTargetPosition(geo.GetTargetPosition());
             s_nebulaRecon->SetTimeWindow(10.0);     // 10 ns时间窗口
             s_nebulaRecon->SetEnergyThreshold(1.0); // 1 MeV能量阈值

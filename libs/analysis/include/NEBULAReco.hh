@@ -7,7 +7,7 @@ class TClonesArray;
 
 // Single-detector NEBULA reconstruction.
 // Consumes the `NEBULAPla` branch (same reflection-based extraction as the
-// legacy NEBULAReconstructor). Drop-in replacement for the legacy class.
+// legacy NEBULAReco). Drop-in replacement for the legacy class.
 class NEBULAReco : public NEBULABaseReco {
 public:
     explicit NEBULAReco(const GeometryManager& geo) : NEBULABaseReco(geo) {}
