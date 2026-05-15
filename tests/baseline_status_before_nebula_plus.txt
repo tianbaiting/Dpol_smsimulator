@@ -1,0 +1,35 @@
+# Baseline test status before nebula-plus-impl work
+# Captured at branch nebula-plus-impl base (commit fdea315)
+# Date: 2026-05-15
+# Command: ctest -L "unit|analysis"
+#
+# 38 total tests; 18 passed; 20 failed (pre-existing, NEBULA-Plus-unrelated)
+#
+# Regression rule:
+#   - Tests that PASSED must still pass after NEBULA-Plus work
+#   - Tests that FAILED here are out of scope; not on the hook to fix
+#   - New NEBULA-Plus tests must pass
+#
+PASSING (must stay green):
+  #1  DeutDetectorConstructionDefaults.TargetDisabledByDefault
+  #2  QMDInputMetadataIndices.FUserDoubleLayoutIsStable
+  #3  QMDInputMetadataIndices.FUserIntLayoutIsStable
+  #4  QMDRotation.PhiNpFromComponentsIdentity
+  #5  QMDRotation.ApplyXYRotationZeroIsIdentity
+  #6  QMDRotation.ApplyXYRotationHalfPi
+  #7  QMDRotation.WrapTwoPiInRange
+  #8  test_no_bare_target_macros
+  #24 PDCMomentumReconstructorTest.RuntimeParsesRkModesAndRejectsRemovedMatrixBackend
+  #25 PDCMomentumReconstructorTest.NeuralNetworkInferenceWorksWithoutMagField
+  #26 PDCMomentumReconstructorTest.NeuralNetworkInferenceAppliesTargetDenormalization
+  #27 PDCMomentumReconstructorTest.RKTwoPointBackpropUsesAnalyzerWithFixedTarget
+  #28 PDCMomentumReconstructorTest.RKFixedTargetPdcOnlyUsesTwoPointLossWithFixedVertex
+  #29 PDCMomentumReconstructorTest.RKFixedTargetPdcOnlySupportsAnisotropicWireSigmas
+  (+ remaining PDCErrorAnalysis tests #30-#33)
+
+PRE-EXISTING FAILURES (out of scope; "Subprocess aborted"):
+  #9-#17  ParticleTrajectoryTest.*  (9 cases)
+  #18-#23 TargetReconstructorTest.* (6 cases)
+  #34-#35 TargetReconstructorRealDataTest.* (2 cases)
+  #36-#38 test_TargetReconstructor_{Visualization,RealData_Visualization,Performance}
+
