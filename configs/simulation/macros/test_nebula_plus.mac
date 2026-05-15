@@ -1,0 +1,63 @@
+# Smoke test: activate both NEBULA and NEBULA-Plus geometry, run 1 event
+# Usage: ./bin/sim_deuteron configs/simulation/macros/test_nebula_plus.mac
+
+/control/getEnv SMSIMDIR
+
+#-----------------------------------
+# Dipole magnet field
+/samurai/geometry/Dipole/Angle 30 deg
+/samurai/geometry/Dipole/FieldFile {SMSIMDIR}/configs/simulation/geometry/filed_map/180626-1,20T-3000.bin
+/samurai/geometry/Dipole/FieldFactor 1
+
+#-----------------------------------
+# Target (disabled for smoke test)
+/samurai/geometry/Target/SetTarget false
+/samurai/geometry/Target/Material Sn
+/samurai/geometry/Target/Size 80 80 30 mm
+/samurai/geometry/Target/Position -2.43 0.00 -90.79 cm
+/samurai/geometry/Target/Angle 5.00 deg
+
+#-----------------------------------
+# PDCs
+/samurai/geometry/PDC/Angle 65 deg
+/samurai/geometry/PDC/Position1 0 0 400 cm
+/samurai/geometry/PDC/Position2 0 0 500 cm
+
+#-----------------------------------
+# Beam dump (disabled)
+/samurai/geometry/Dump/SetDump false
+/samurai/geometry/Dump/Angle 36.67 deg
+/samurai/geometry/Dump/Position -0.93 -25.00 0.00 cm
+
+#-----------------------------------
+# NEBULA (existing detector)
+/samurai/geometry/NEBULA/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Dayone.csv
+/samurai/geometry/NEBULA/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
+
+#-----------------------------------
+# NEBULA-Plus (new detector — P1.13 smoke test)
+/samurai/geometry/NEBULAPlus/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_samurai21.csv
+/samurai/geometry/NEBULAPlus/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_Detectors_samurai21.csv
+
+#-----------------------------------
+# Commit geometry
+/samurai/geometry/FillAir true
+/samurai/geometry/Update
+
+#-----------------------------------
+# Output
+/action/file/OverWrite y
+/action/file/SaveDirectory data/simulation/output_tree
+/action/file/RunName nebula_plus_smoke
+
+#-----------------------------------
+# Beam: pencil, neutron, 200 MeV, upstream
+/tracking/storeTrajectory 0
+/action/gun/Type Pencil
+/action/gun/SetBeamParticleName neutron
+/action/gun/Energy 200 MeV
+/action/gun/Position 0 0 -200 cm
+
+#-----------------------------------
+# 1 event smoke test
+/run/beamOn 1
