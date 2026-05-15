@@ -61,3 +61,21 @@ target_link_libraries(test_qmd_rotation PRIVATE
 gtest_discover_tests(test_qmd_rotation
     PROPERTIES LABELS "unit"
 )
+
+# RED-phase test for NEBULAPlusSimParameterReader (P1.4).
+# Compile will fail until P1.5 implements the reader header + source.
+add_executable(test_NEBULAPlusSimParameterReader
+    test_NEBULAPlusSimParameterReader.cc
+)
+target_link_libraries(test_NEBULAPlusSimParameterReader PRIVATE
+    sim_deuteron_core
+    smg4lib
+    GTest::gtest
+    GTest::gtest_main
+    ${Geant4_LIBRARIES}
+    ${ROOT_LIBRARIES}
+)
+gtest_discover_tests(test_NEBULAPlusSimParameterReader
+    PROPERTIES LABELS "unit"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
