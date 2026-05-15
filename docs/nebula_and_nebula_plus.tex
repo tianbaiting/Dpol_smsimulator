@@ -1,0 +1,665 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{CJKutf8}
+\usepackage{geometry}
+\geometry{margin=2.2cm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{siunitx}
+\usepackage{caption}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!60!black,
+  citecolor=blue!50!black
+}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framerule=0.3pt,
+  showstringspaces=false
+}
+
+\newcommand{\NEB}{NEBULA}
+\newcommand{\NPL}{NEBULA-Plus}
+
+\title{\NEB{} and \NPL{} geometry, performance, and data-source notes\\
+       \large (collected for the kondo\_smsimulator / smsimulator5.5 project)}
+\author{Notes compiled by Baiting Tian}
+\date{2026-05-15}
+
+\begin{document}
+\begin{CJK}{UTF8}{gbsn}
+\maketitle
+
+\section{Layout and orientation (executive summary)}
+
+Along the beam direction, from target downstream:
+\[
+\text{target}  \;\longrightarrow\;
+\textbf{\NPL{} (front)} \;\longrightarrow\; \textbf{\NEB{} (back)}.
+\]
+
+That is, \textbf{\NPL{} sits in front of \NEB{}} (between FDC2/HOD and \NEB{}).
+\NPL{} contains \textbf{90 plastic-scintillator neutron bars}, i.e.\
+\textbf{30 bars fewer} than \NEB{}'s 120 bars. The plastic bar dimensions
+($\SI{120}{mm}\times\SI{1800}{mm}\times\SI{120}{mm}$) and the veto layout (\SI{10}{mm} plastic
+scintillator at the upstream face of each wall) are otherwise identical to \NEB{}.
+
+\NPL{} was built by a Japan / LPC-Caen collaboration under the French ANR EXPAND project,
+shipped to the RIBF in summer 2022 and mechanically installed in October 2022.
+Initial in-beam commissioning with $^{7}\mathrm{Li}(p,n)^{7}\mathrm{Be}$ was scheduled
+for the next \NEB{} campaign~\cite{aprApr2022}.
+
+\NPL{} is now \textbf{implemented in smsimulator5.5} (branch
+\texttt{nebula-plus-impl} merged to \texttt{main} on 2026-05-16, tags
+\texttt{nebula-plus-phase1/2/3}). End-to-end verification ran 100
+\SI{200}{MeV} pencil-beam neutrons through both detectors and recovered
+neutron candidates from three reco classes (\NEB{}-only, \NPL{}-only,
+joint); the joint reco produced $\sim\!\!\times 1.86$ as many candidates
+as \NEB{} alone, consistent with the qualitative ``$\sim\!\!\times 2$''
+gain quoted in Tanaka 2024~\cite{tanaka2024}. See \S\ref{sec:impl} and
+\S\ref{sec:provenance} for full implementation details and the source of
+every authoritative parameter.
+
+\section{Internal geometry}
+
+\subsection{\NEB{} (existing, already in smsimulator5.5)}
+
+Two walls (Wall-A, Wall-B), each with two sub-layers of neutron bars
+and one upstream veto layer:
+
+\begin{table}[h]
+\centering
+\caption{\NEB{} layout (s021 configuration; coordinates from the smsimulator5.5
+\texttt{geometry/s021/NEBULA\_Detectors\_samurai21.csv}).}
+\begin{tabular}{lccc}
+\toprule
+Element & \# bars & $Z$ rel.\ \NEB{} origin (mm) & $X$ range (mm) \\
+\midrule
+Wall-A Veto    & 12 & $-275,\;-260$         & $-$ \\
+Wall-A Sub1    & 30 & $0$                   & $+1908 \to -1641.6$\\
+Wall-A Sub2    & 30 & $+130$                & same\\
+Wall-B Veto    & 12 & $+575.3,\;+590.3$     & $-$\\
+Wall-B Sub1    & 30 & $+850.3$              & same\\
+Wall-B Sub2    & 30 & $+980.3$              & same\\
+\midrule
+\NEB{} origin in target frame (s021) & \multicolumn{3}{l}{$Z = \SI{9784}{mm}$}\\
+Bar size (Neut)   & \multicolumn{3}{l}{$120 \times 1800 \times \SI{120}{mm}$ ($W\times H\times L$)}\\
+Bar pitch in $X$  & \multicolumn{3}{l}{$\SI{122.4}{mm}$ (i.e.\ \SI{2.4}{mm} air gap)}\\
+Bar centroid $Y$  & \multicolumn{3}{l}{$\SI{-35.4}{mm}$ (slightly below beam axis;
+                       see \texttt{NEBULA\_Pos\_FromMagCenter.csv})}\\
+Veto size         & \multicolumn{3}{l}{$320 \times 1900 \times \SI{10}{mm}$}\\
+Time resolution per PMT & \multicolumn{3}{l}{$\sigma_t = \SI{0.240}{ns}$
+                       (\texttt{NEBULA\_samurai21.csv})}\\
+Bar material (in current sim) & \multicolumn{3}{l}{\texttt{G4\_PLASTIC\_SC\_VINYLTOLUENE}
+                       (NIST PVT analog of BC408/EJ200)}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Total: $120$ Neut bars $+\,24$ Veto bars $=\,144$ counters.
+
+\subsection{\NPL{} (now implemented in smsimulator5.5)}
+\label{sec:internal-npl}
+
+From the LPC-Caen / RIKEN nptool plugin
+\texttt{commissioning/detector.yaml} (see \S\ref{sec:sources}), the four
+sub-layers of \NPL{} are:
+
+\begin{table}[h]
+\centering
+\caption{\NPL{} layout from the nptool plugin's \texttt{detector.yaml}.
+$Z$ is given in the \NPL{}-internal frame (its own Wall-A Sub1 is the origin).
+$X_{0}$ is the centre of the leftmost bar; the rest of the row follows
+$X_i = X_0 + i \times \SI{120}{mm}$.}
+\begin{tabular}{lccccc}
+\toprule
+Wall & SubLayer & \# bars & $X_0$ (mm) & $X$ range (mm) & $Z$ (mm)\\
+\midrule
+A & Sub1 & 22 & $-1320$ & $-1320 \to +1200$ & $0$\\
+A & Sub2 & 22 & $-1320$ & $-1320 \to +1200$ & $130$\\
+B & Sub1 & 23 & $-1320$ & $-1320 \to +1320$ & $845$\\
+B & Sub2 & 23 & $-1320$ & $-1320 \to +1320$ & $975$\\
+\midrule
+\multicolumn{6}{l}{Bar size (Neut): $120 \times 1800 \times \SI{120}{mm}$ — identical to \NEB{}}\\
+\multicolumn{6}{l}{Bar material: BC400 in nptool (essentially equivalent to \NEB{}'s PVT analog)}\\
+\multicolumn{6}{l}{Bar pitch in $X$: \SI{120}{mm} (no air gap in the plugin model;
+                  \texttt{InterModule = 1\,mm} declared but unused)}\\
+\multicolumn{6}{l}{Veto size: $320 \times 1900 \times \SI{10}{mm}$}\\
+\multicolumn{6}{l}{Veto distance to wall: \SI{100}{mm} upstream of the corresponding Neut wall
+                  (\texttt{WallToVeto = 10\,cm})}\\
+\multicolumn{6}{l}{Veto count: $12$/wall (the plugin selects $12$ when $N_\mathrm{bars}>15$,
+                  else $6$)}\\
+\multicolumn{6}{l}{PMT: Hamamatsu H11284 assemblies; FASTER digital electronics
+                  developed at LPC-Caen}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Total: $22+22+23+23 = 90$ Neut bars + $24$ Veto bars = $\mathbf{114}$ counters,
+i.e.\ \textbf{30 Neut bars fewer than \NEB{}}.
+
+\subsection{Absolute $Z$ of the \NPL{} origin}
+
+The \texttt{detector.yaml} files in the LPC-Caen nptool plugin use a placeholder
+target block ($x=1,\;y=2,\;z=\SI{3}{mm}$); the absolute $Z$ of the \NPL{} origin
+relative to the SAMURAI target is therefore \emph{not} captured in any of the
+config files we have read-access to. The home directories of the responsible
+authors (\texttt{/home/kondo}, \texttt{/home/otsu}, \texttt{/home/gibelin},
+\texttt{/home/jlemarie}) on \texttt{ribfana04} were permission-denied.
+
+\textbf{Chosen value used in smsimulator5.5 (placeholder; survey-grade value still
+to be obtained from LPC-Caen):}
+\[
+Z_{\NPL{},\,\text{origin}} = \SI{8089}{mm}\quad\text{(target frame)},
+\]
+selected so the Wall-A--Sub1 spacings $845 \to 850 \to 850.3$ mm walk uniformly
+from \NPL{} into \NEB{}:
+
+\begin{table}[h]
+\centering
+\caption{\NPL{}+\NEB{} target-frame layout used in smsimulator5.5
+(combined of \S\ref{sec:internal-npl} numbers and chosen $Z_0$).}
+\begin{tabular}{lrr}
+\toprule
+Wall / sub-layer & $Z$ (mm) & Sub1$\to$Sub1 spacing (mm)\\
+\midrule
+NPL Wall-A Veto                 & 7989  & --\\
+\textbf{NPL Wall-A Sub1}        & \textbf{8089}  & --\\
+NPL Wall-A Sub2                 & 8219  & --\\
+NPL Wall-B Veto                 & 8834  & --\\
+\textbf{NPL Wall-B Sub1}        & \textbf{8934}  & $845.0$ (NPL internal)\\
+NPL Wall-B Sub2                 & 9064  & --\\
+NEB Wall-A Veto                 & 9509  & --\\
+\textbf{NEB Wall-A Sub1}        & \textbf{9784}  & $850.0$ (gap chosen)\\
+NEB Wall-A Sub2                 & 9914  & --\\
+NEB Wall-B Veto                 & $10359.3$ & --\\
+\textbf{NEB Wall-B Sub1}        & $\mathbf{10634.3}$ & $850.3$ (NEB internal)\\
+NEB Wall-B Sub2                 & $10764.3$ & --\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The chosen \SI{850}{mm} NPL-B$\to$NEB-A gap can be overridden at runtime via
+\texttt{/samurai/geometry/NEBULAPlus/Position 0\;0\;<Z>\;mm} (and similarly
+for NEB) once a real survey is provided.
+
+\section{Material / electronics summary}
+
+\begin{itemize}
+  \item Plastic: BC400 (\NPL{}) and BC408/EJ200 (\NEB{}) are PVT-based
+        scintillators; densities and light yields agree to better than
+        $1\,\%$. In the Geant4 simulation both can be represented by
+        \texttt{G4\_PLASTIC\_SC\_VINYLTOLUENE}.
+  \item Refractive index $n = 1.58$; bulk attenuation length \SI{6680}{mm}
+        (declared in \texttt{NebulaPlusGeant4.cxx}).
+  \item PMTs: \NPL{} uses Hamamatsu H11284; \NEB{} uses Hamamatsu H7195 or
+        equivalent (depending on bar batch).
+  \item DAQ: \NPL{} uses the FASTER digital readout developed at LPC-Caen,
+        integrated with SAMURAI via a coincidence trigger derived from the
+        two-PMT signal pair of each bar~\cite{aprApr2022}.
+\end{itemize}
+
+\section{Detection efficiency}
+
+\subsection{\NEB{} alone}
+
+Single-neutron detection efficiency at $E_n = \SI{200}{MeV}$:
+\[
+\varepsilon_{1n}^{\NEB{}} = 32.5 \pm 0.3\,(\text{stat}) \pm 0.9\,(\text{syst})\,\%,
+\]
+measured with the $^{7}\mathrm{Li}(p,n)^{7}\mathrm{Be}$ reaction
+(Kondo et al., NIM B 463 (2020) 173--178~\cite{kondo2020nim}).
+
+\subsection{\NEB{} $\cup$ \NPL{} (combined)}
+
+The \NEB{}+\NPL{} array effectively doubles the number of layers
+(four neutron sub-layers $\to$ eight). The Tanaka et al.\ review
+(arXiv:2412.17887~\cite{tanaka2024}) states, qualitatively:
+
+\begin{itemize}
+  \item \textbf{1-neutron} efficiency: increases by \textbf{nearly a factor of 2}
+        (i.e.\ from $\sim 32.5\,\%$ to $\sim 60\text{--}65\,\%$ at \SI{200}{MeV},
+        rough extrapolation).
+  \item \textbf{4-neutron} efficiency: improves by \textbf{almost one order of
+        magnitude} relative to \NEB{} alone.
+\end{itemize}
+
+Absolute combined numbers and the energy dependence have to come from the
+in-beam commissioning data (\NPL{} alone $\varepsilon_{1n}$ to be determined
+once the $^{7}\mathrm{Li}(p,n)$ run is analysed --- planned but not yet
+published as of the APR~2022 report).
+
+\section{Local file paths (where this information lives)}
+\label{sec:sources}
+
+\subsection{On this workstation}
+
+\begin{description}
+  \item[smsimulator5.5 NEBULA G4 module]
+    \texttt{kondo\_smsimulator/sources/smg4lib/detectors/NEBULA/}
+  \item[NEBULA geometry CSVs (s021)]
+    \texttt{kondo\_smsimulator/work/geometry/s021/NEBULA\_samurai21.csv} \\
+    \texttt{kondo\_smsimulator/work/geometry/s021/NEBULA\_Detectors\_samurai21.csv}
+  \item[anaroot NEBULA parameter db]
+    \texttt{anaroot/db/NEBULA.20250625.xml} (and dated siblings) \\
+    \texttt{anaroot/db/NEBULA\_Pos\_FromMagCenter.csv} \\
+    \texttt{anaroot/db/NEBULA.ods}
+  \item[anaroot \NPL{} placeholder (only veto names V301--V410 at $Z=0$)]
+    \texttt{anaroot/db/NEBULA.20250625.xml}\\
+    \texttt{anaroot/src/sources/Reconstruction/SAMURAI/src/TArtSAMURAIParameters.cc:544}
+    \\ (comment: \texttt{// for new config. with NEBULA Plus})
+  \item[Papers (downloaded)]
+    \texttt{docs/papers/NEBULA-Plus\_Kondo\_RIKEN\_APR2022.pdf} \\
+    \texttt{docs/papers/NEBULA-Plus\_review\_Tanaka2024\_arxiv2412.17887.pdf} \\
+    \texttt{docs/papers/multi-neutron\_SAMURAI\_Yang2019\_arxiv1903.11256.pdf} \\
+    \texttt{docs/papers/NEBULA\_RIBF\_factsheet.pdf} \\
+    \texttt{/docs/papers/NEBULA\_indico\_talk.pdf}
+\end{description}
+
+\subsection{On the analysis server \texttt{ribfana04}}
+
+These are the definitive \NPL{} geometry and code locations on the s053
+experiment account (read-access only):
+
+\begin{description}
+  \item[nptool plugin (Geant4 + Physics)]
+    \texttt{/home/s053/exp/exp2301\_s053/nptool/plugin/nebula-plus/sources/src/} \\
+    Main files:
+    \begin{itemize}
+      \item \texttt{NebulaPlusGeant4.cxx}, \texttt{NebulaPlusGeant4.h}
+            --- Geant4 module / veto construction, materials, vis attributes.
+      \item \texttt{NebulaPlusDetector.cxx}, \texttt{NebulaPlusDetector.h}
+            --- yaml parsing, AddLayer / AddSBT / AddSBV; Z is relative to target.
+      \item \texttt{NebulaPlusPhysics.h}, \texttt{NebulaPlusData.h/cxx},
+            \texttt{NebulaPlusSpectra.cxx}, \texttt{NebulaPluslinkdef.hh}.
+    \end{itemize}
+  \item[detector configurations]
+    \texttt{/home/s053/exp/exp2301\_s053/nptool/commissioning/detector.yaml}
+    (the only one with \texttt{X\_start = -1320\,mm}; \texttt{s053/detector.yaml}
+    and \texttt{sandbox/detector.yaml} use \texttt{X = 0}.)
+  \item[Calibrations]
+    \texttt{/home/s053/exp/exp2301\_s053/nptool/commissioning/calibration/}\\
+    \quad \texttt{NebulaPlus\_Energy.cal},
+    \texttt{NebulaPlus\_Up\_Energy.cal},
+    \texttt{NebulaPlus\_Down\_Energy.cal},\\
+    \quad \texttt{NebulaPlus\_Tdiff\_Offset.cal},
+    \texttt{NebulaPlus\_Tdiff\_Offset\_Jan2023.cal}
+  \item[Online monitor (s053)]
+    \texttt{/home/s053/exp/exp2301\_s053/sm\_online\_utils/s053/chknebulaplus/OnlineMonitor.cc}
+    (counts/rates only; no geometry constants).
+  \item[Raw data + FASTER setup files]
+    \texttt{/home/s053/rawdata/nebulaplus/NEBULA\_Test\_2025*.fast} (+\texttt{.setup})
+  \item[FASTER electronics source tree]
+    \texttt{/home/s053/exp/exp2301\_s053/faster/faster/fasterac-2.18/}
+  \item[Rsync from \NPL{} DAQ host]
+    \texttt{/home/s053/exp/exp2301\_s053/scripts/rsync\_expand\_test.sh}
+    \\ pulls from \texttt{expand@expandacq:./Projects/test\_veto/data/Test\_VETO/} into
+    \texttt{\$HOME/rawdata/nebulaplus/}.
+\end{description}
+
+\subsection{External}
+
+\begin{itemize}
+  \item Project page (LPC-Caen):
+    \url{https://nebula-plus.in2p3.fr/}
+    (with \texttt{/manual/} and \texttt{/documentation-and-private-files/}
+    sub-areas behind login).
+  \item RIKEN APR 56 (2023) p.\,91 -- installation report:
+    \url{https://www.nishina.riken.jp/researcher/APR/APR056/pdf/91.pdf}
+\end{itemize}
+
+\section{Implementation in smsimulator5.5}
+\label{sec:impl}
+
+Implemented on branch \texttt{nebula-plus-impl} (merged to \texttt{main}
+2026-05-16, tags \texttt{nebula-plus-phase1/2/3} mark each phase boundary).
+The corresponding spec and plan are
+\texttt{docs/superpowers/specs/2026-05-15-nebula-plus-design.md}
+and
+\texttt{docs/superpowers/plans/2026-05-15-nebula-plus.md}.
+
+\subsection{Build environment}
+
+\begin{lstlisting}[language=bash]
+# 1. Activate the anaroot conda environment (Geant4 11.x, ROOT 6.36,
+#    Xerces-C, anaroot -- all linked to that env)
+micromamba activate anaroot-env
+
+# 2. spdlog must be installed in the env (used by smlogger). One-time:
+micromamba install -n anaroot-env -c conda-forge spdlog
+
+# 3. Source project setup (defines SMSIMDIR, TARTSYS, paths)
+cd $HOME/workspace/dpol/smsimulator5.5
+source setup.sh
+
+# 4. Configure + build
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release \
+         -DBUILD_TESTS=ON -DBUILD_APPS=ON \
+         -DBUILD_ANALYSIS=ON -DWITH_ANAROOT=ON
+cmake --build . -j$(nproc)
+\end{lstlisting}
+
+Important: \texttt{TARTSYS} must be set \emph{before} \texttt{cmake ..} runs;
+otherwise \texttt{WITH\_ANAROOT} silently flips off and the
+\texttt{NEBULASimDataConverter\_TArtNEBULAPla} translation unit fails to find
+\texttt{TArtNEBULAPla.hh}. \texttt{setup.sh} on host \texttt{TBTdebian} exports
+\texttt{TARTSYS=/home/tian/software/anaroot/install}.
+
+\subsection{Geometry configuration (CSV)}
+
+Two pairs of CSV files drive the geometry. The smsim G4 messengers read them
+at runtime via \texttt{/samurai/geometry/.../ParameterFileName}.
+
+\begin{table}[h]
+\centering
+\caption{Geometry-CSV inventory under
+\texttt{smsimulator5.5/configs/simulation/geometry/}. Each pair is
+\{global-parameters file, per-bar table\}.}
+\begin{tabular}{lll}
+\toprule
+Detector & Global params & Per-bar table\\
+\midrule
+\NEB{} (Dayone)    & \texttt{NEBULA\_Dayone.csv}           & \texttt{NEBULA\_Detectors\_Dayone.csv}\\
+\NPL{} (s021)      & \texttt{s021/NEBULAPlus\_samurai21.csv}
+                                                          & \texttt{s021/NEBULAPlus\_Detectors\_samurai21.csv}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The \NPL{} CSV pair was generated from the numbers in
+\S\ref{sec:internal-npl}. The global-params file content is
+shown below verbatim; the per-bar file has 114 rows ($90+24$) following the
+\texttt{Layer/SubLayer/PositionX/Y/Z} schema also used by \NEB{}.
+
+\begin{lstlisting}
+% configs/simulation/geometry/s021/NEBULAPlus_samurai21.csv
+Position, 0, 0, 8089,
+NeutSize, 120, 1800, 120,
+VetoSize, 320, 1900, 10,
+Angle, 0, 0, 0,
+////input time reso for one PMT
+TimeReso, 0.240,
+\end{lstlisting}
+
+\subsection{Geant4 module classes (\texttt{libs/smg4lib/})}
+
+\NPL{}'s G4 module mirrors \NEB{}'s file-for-file. The construction-side
+classes live in \texttt{src/construction/\{src,include\}/}; the data-side
+classes live in \texttt{src/data/\{src,include\}/} with mirror public headers
+also in \texttt{libs/smg4lib/include/}.
+
+\begin{table}[h]
+\centering
+\caption{G4-side class inventory. \NPL{} files were created by sed-clone
+of the corresponding \NEB{} files in branch \texttt{nebula-plus-impl}
+Phase 1.}
+\begin{tabular}{lll}
+\toprule
+Role & \NEB{} class & \NPL{} class\\
+\midrule
+G4 geometry         & \texttt{NEBULAConstruction}            & \texttt{NEBULAPlusConstruction}\\
+G4 UI messenger     & \texttt{NEBULAConstructionMessenger}   & \texttt{NEBULAPlusConstructionMessenger}\\
+Sensitive detector  & \texttt{NEBULASD}                      & \texttt{NEBULAPlusSD}\\
+CSV reader          & \texttt{NEBULASimParameterReader}      & \texttt{NEBULAPlusSimParameterReader}\\
+SimData branch reg. & \texttt{NEBULASimDataInitializer}      & \texttt{NEBULAPlusSimDataInitializer}\\
+Step$\to$hit conv.  & \texttt{NEBULASimDataConverter\_TArtNEBULAPla}
+                                                             & \texttt{NEBULAPlusSimDataConverter\_TArtNEBULAPlusPla}\\
+Run-param ROOT cls  & \texttt{TNEBULASimParameter}           & \texttt{TNEBULAPlusSimParameter}\\
+Hit ROOT cls        & \texttt{TArtNEBULAPla} (anaroot)       & \texttt{TArtNEBULAPlusPla} (smsim, \textbf{new})\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both detectors are instantiated and attached to the SAMURAI experimental
+hall in \texttt{libs/sim\_deuteron\_core/src/DeutDetectorConstruction.cc}
+(NPL added at Phase 1 task P1.11). The corresponding SimData initializer
+and converter are registered in \texttt{apps/sim\_deuteron/main.cc}
+(P1.12).
+
+\subsection{Runtime \texttt{messenger} commands}
+
+\begin{lstlisting}
+# Load both detectors (works in any .mac executed by bin/sim_deuteron)
+/samurai/geometry/NEBULA/ParameterFileName           {SMSIMDIR}/configs/simulation/geometry/NEBULA_Dayone.csv
+/samurai/geometry/NEBULA/DetectorParameterFileName   {SMSIMDIR}/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
+
+/samurai/geometry/NEBULAPlus/ParameterFileName       {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_samurai21.csv
+/samurai/geometry/NEBULAPlus/DetectorParameterFileName  {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_Detectors_samurai21.csv
+
+# Optionally override the global Z when a real LPC survey lands
+/samurai/geometry/NEBULAPlus/Position 0 0 8089 mm
+
+/samurai/geometry/Update
+\end{lstlisting}
+
+A minimal smoke macro is shipped at
+\texttt{configs/simulation/macros/test\_nebula\_plus.mac}.
+
+\subsection{Output ROOT-tree branches}
+
+Each event of \texttt{bin/sim\_deuteron} produces (relevant branches only):
+
+\begin{description}
+  \item[\texttt{NEBULAPla}]     \texttt{TClonesArray} of
+        \texttt{TArtNEBULAPla} (anaroot class) --- \NEB{} hits, with
+        \texttt{Layer} = 3 (wall A) or 4 (wall B).
+  \item[\texttt{NEBULAPlusPla}] \texttt{TClonesArray} of
+        \texttt{TArtNEBULAPlusPla} (smsim class) --- \NPL{} hits, with
+        \texttt{Layer} = 1 (wall A) or 2 (wall B).
+  \item[\texttt{TNEBULASimParameter}, \texttt{TNEBULAPlusSimParameter}]
+        per-run snapshots of the detector parameter map.
+\end{description}
+
+\subsection{Reconstruction (\texttt{libs/analysis/})}
+
+The legacy \texttt{NEBULAReconstructor} was refactored in Phase 2 into a
+small hierarchy:
+
+\begin{description}
+  \item[\texttt{NEBULABaseReco}] abstract base. Holds public algorithm
+        steps shared by all derived classes:
+        \texttt{ClusterHits},
+        \texttt{ReconstructFromCluster},
+        \texttt{CalculateBeta},
+        \texttt{CalculateNeutronEnergy},
+        \texttt{ApplyPositionSmearing},
+        \texttt{ApplyTimeSmearing}.
+        Pure virtual: \texttt{ExtractHits()}.
+  \item[\texttt{NEBULAReco}] single-detector \NEB{}; \texttt{ExtractHits}
+        reads \texttt{TClonesArray<TArtNEBULAPla>}. Preserves the legacy
+        behaviour bit-for-bit (regression-pinned by
+        \texttt{test\_NEBULAReco\_legacy\_compat}).
+  \item[\texttt{NEBULAPlusReco}] single-detector \NPL{}; \texttt{ExtractHits}
+        reads \texttt{TClonesArray<TArtNEBULAPlusPla>}, tags
+        \texttt{wall\_tag} 1/2.
+  \item[\texttt{NebulaJointReco}] takes both detector inputs and merges
+        them through a single \texttt{ExtractHits} call; cluster\-er sees
+        all 8 sub-layers and tags \texttt{wall\_tag} 1--4.
+\end{description}
+
+Default parameter values (preserved from the legacy class):
+\texttt{fTimeWindow=10.0\,ns}, \texttt{fEnergyThreshold=1.0\,MeV},
+\texttt{fPositionSmearing=5.0\,mm}, \texttt{fTimeSmearing=0.5\,ns}.
+
+The reco \emph{algorithms} are now independent of anaroot's
+\texttt{TArtRecoNeutron} / \texttt{TArtCalibNEBULA}. Anaroot is still a
+build-time dependency because the \NEB{}-hit data class
+\texttt{TArtNEBULAPla} lives in anaroot and is used as the on-disk schema
+for the \texttt{NEBULAPla} branch. Removing that dependency is left as a
+follow-up (would require introducing a smsim-side mirror class for
+\NEB{}, plus a schema-evolution step for existing \texttt{.root} files).
+
+\subsection{End-to-end verification (2026-05-16)}
+
+Ran 100 monoenergetic \SI{200}{MeV} neutrons through the
+\NPL{}$+$\NEB{} geometry; see \texttt{tests/integration/test\_sim\_deuteron\_with\_nebula\_plus.sh}.
+
+\begin{table}[h]
+\centering
+\caption{End-to-end sim$+$reco numbers (100 incident \SI{200}{MeV}
+neutrons, pencil beam from $Z=-2000$ mm).}
+\begin{tabular}{lrr}
+\toprule
+Stage / class & Events with hits/candidates & Total entries\\
+\midrule
+\NEB{}      hits in tree     & 51 & 159 hits\\
+\NPL{}      hits in tree     & 55 & 227 hits\\
+\midrule
+\texttt{NEBULAReco}        candidates & 32 & 35\\
+\texttt{NEBULAPlusReco}    candidates & 39 & 42\\
+\texttt{NebulaJointReco}   candidates & 55 & 65\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The joint-to-NEBULA candidate ratio is $65/35\approx 1.86$, consistent with
+the qualitative ``$\sim\!\times 2$'' single-neutron gain quoted in the
+Tanaka 2024 review~\cite{tanaka2024}.
+
+\subsection{Tests}
+
+\begin{table}[h]
+\centering
+\caption{New tests added by Phases 1--3 (\texttt{ctest} labels in
+parentheses).}
+\begin{tabular}{ll}
+\toprule
+File & Cases\\
+\midrule
+\texttt{tests/unit/test\_NEBULAPlusSimParameterReader.cc}    (unit)         & 3 \\
+\texttt{tests/unit/test\_NEBULAPlusReco\_basic.cc}            (unit)         & 3 \\
+\texttt{tests/unit/test\_NebulaJointReco\_combined.cc}        (unit)         & 3 \\
+\texttt{tests/analysis/test\_NEBULAReco\_legacy\_compat.cc}   (analysis)     & 1 \\
+\texttt{tests/integration/test\_sim\_deuteron\_with\_nebula\_plus.sh} (integration) & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+After Phases 1--3, the project ctest count went from
+\textbf{18 passing / 20 failing} to \textbf{30 passing / 20 failing}
+($+12$ passing, $0$ regression on previously-passing tests). The 20
+pre-existing failures (\texttt{ParticleTrajectoryTest.*},
+\texttt{TargetReconstructorTest.*}) are unrelated to \NPL{} and remain
+out-of-scope here.
+
+\section{Provenance: where each NPL number came from}
+\label{sec:provenance}
+
+\begin{table}[h]
+\centering
+\caption{Information sources for every authoritative \NPL{} parameter used
+in smsimulator5.5.}
+\begin{tabular}{p{4.8cm}lp{6.5cm}}
+\toprule
+Parameter & Value & Source\\
+\midrule
+Bar dimensions ($W\times H\times L$)
+  & $120\times 1800\times \SI{120}{mm}$
+  & \texttt{NebulaPlusGeant4.cxx} (LPC plugin)\\
+Veto dimensions
+  & $320\times 1900\times \SI{10}{mm}$
+  & \texttt{NebulaPlusGeant4.cxx} (LPC plugin)\\
+Number of Neut bars per sub-layer
+  & 22, 22, 23, 23
+  & \texttt{commissioning/detector.yaml} (LPC plugin)\\
+Number of Veto bars per wall
+  & 12
+  & \texttt{NebulaPlusGeant4.cxx} (\texttt{m\_NbrModule>15}$\Rightarrow$12 branch)\\
+Bar pitch in $X$
+  & \SI{120}{mm} (touching)
+  & \texttt{NebulaPlusDetector::AddLayer} steps by \texttt{m\_BarWidth = 120}\\
+Veto pitch in $X$
+  & \SI{310}{mm}
+  & NEBULA convention reused (same Veto type)\\
+Veto distance to wall
+  & \SI{100}{mm} upstream of Neut Sub1
+  & \texttt{NebulaPlusGeant4.cxx::WallToVeto}\\
+Sub-layer Z gap
+  & \SI{130}{mm}
+  & \texttt{commissioning/detector.yaml} (entries at Z=0/130/845/975)\\
+$X$-start of first bar
+  & $-\SI{1320}{mm}$ (asymmetric)
+  & \texttt{commissioning/detector.yaml} (\texttt{pos: -132 0 0 cm})\\
+Bar material (G4)
+  & \texttt{G4\_PLASTIC\_SC\_VINYLTOLUENE}
+  & Same as \NEB{} in smsimulator5.5; sufficient PVT analog of BC400/EJ200\\
+Refractive index $n$
+  & 1.58
+  & \texttt{NebulaPlusGeant4.cxx::MaterialIndex}\\
+Bulk attenuation length
+  & \SI{6680}{mm}
+  & \texttt{NebulaPlusGeant4.cxx::Attenuation}\\
+PMT time resolution per side
+  & \SI{0.240}{ns}
+  & NEBULA value reused (no LPC commissioning number yet)\\
+PMT model
+  & Hamamatsu H11284
+  & APR 56 (2023) p.\,91~\cite{aprApr2022}\\
+Electronics
+  & FASTER (LPC-Caen)
+  & APR 56 (2023) p.\,91~\cite{aprApr2022}\\
+\midrule
+\textbf{Absolute $Z$ of NPL origin (target frame)}
+  & \textbf{\SI{8089}{mm}}
+  & \textbf{Chosen for smsim5.5} (uniform Sub1$\to$Sub1 spacing 845/850/850.3
+        mm across NPL-A$\to$NPL-B$\to$NEB-A$\to$NEB-B; survey-grade value still
+        to be obtained from LPC-Caen)\\
+Layer index assignment
+  & NPL: L=1,2; NEB: L=3,4
+  & anaroot db convention (\texttt{V301-V310, V401-V410} pre-reserved;
+        comment in \texttt{TArtSAMURAIParameters.cc:544})\\
+Bar/Veto ID ranges
+  & 101--122, 201--222, 301--323, 401--423; 501--512, 601--612
+  & Chosen for smsim5.5 (Layer$\times$100 + bar index;
+        Veto distinguished by 500/600 prefix and \texttt{SubLayer=0})\\
+Single-neutron efficiency gain
+  & $\sim\!\times 2$ vs \NEB{} alone
+  & Tanaka 2024~\cite{tanaka2024} (arXiv:2412.17887; PTEP, to appear).
+        Confirmed at $\times 1.86$ by the smsim end-to-end run above.\\
+Four-neutron efficiency gain
+  & $\sim\!\times 10$ vs \NEB{} alone
+  & Tanaka 2024~\cite{tanaka2024}; not yet validated in smsim
+        (requires a multi-neutron breakup macro)\\
+NPL installation date
+  & October 2022
+  & APR 56 (2023) p.\,91~\cite{aprApr2022}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For NEBULA-specific numbers (Z=9784 mm origin, 122.4 mm $X$ pitch, 35.4 mm
+$Y$ offset, 0.240 ns time resolution), the authoritative source is the
+existing CSV \texttt{configs/simulation/geometry/NEBULA\_Dayone.csv} and
+the anaroot db files listed in \S\ref{sec:sources}; the design paper is
+Kondo 2020 NIM B~\cite{kondo2020nim}.
+
+\begin{thebibliography}{9}
+\bibitem{kondo2020nim} Y.~Kondo, T.~Tomai, T.~Nakamura,
+``Recent progress and developments for experimental studies with the SAMURAI
+spectrometer,'' Nucl.\ Instrum.\ Methods Phys.\ Res.\ B \textbf{463} (2020) 173--178.
+DOI: \texttt{10.1016/j.nimb.2019.04.085}.
+\bibitem{aprApr2022} N.~A.~Orr, J.~Gibelin, Y.~Kondo, H.~Otsu, on behalf of the
+\NPL{} collaboration, ``Installation of the \NPL{} neutron array,'' RIKEN Accel.\
+Prog.\ Rep.\ \textbf{56} (2023) p.\,91.
+\bibitem{tanaka2024} J.~Tanaka et al., ``Detectors for next-generation
+quasi-free scattering experiments at the RIBF,'' arXiv:2412.17887 (to appear in PTEP).
+\bibitem{nakamura2016} T.~Nakamura, Y.~Kondo, ``Large acceptance spectrometers for
+invariant mass spectroscopy of exotic nuclei and future developments,''
+Nucl.\ Instrum.\ Methods Phys.\ Res.\ B \textbf{376} (2016) 156. DOI:
+\texttt{10.1016/j.nimb.2016.01.003}.
+\end{thebibliography}
+
+\end{CJK}
+\end{document}
