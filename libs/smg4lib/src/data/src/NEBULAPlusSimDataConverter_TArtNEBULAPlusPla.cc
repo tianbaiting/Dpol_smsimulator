@@ -109,13 +109,9 @@ int NEBULAPlusSimDataConverter_TArtNEBULAPlusPla::ConvertSimData()
     TArtNEBULAPlusPla *pla = new ((*fNEBULAPlusPlaArray)[npla]) TArtNEBULAPlusPla;
 
     // store converted data
-    pla->SetID(ID);
-    pla->SetLayer(prm->fLayer);
-    pla->SetSubLayer(prm->fSubLayer);
-    pla->SetDetectorName(prm->GetName());
-    pla->SetDetPos(prm->fPosition.x() + NEBULAPlusParameter->fPosition.x(), 0);
-    pla->SetDetPos(prm->fPosition.y() + NEBULAPlusParameter->fPosition.y(), 1);
-    pla->SetDetPos(prm->fPosition.z() + NEBULAPlusParameter->fPosition.z(), 2);
+    pla->fID       = ID;
+    pla->fLayer    = prm->fLayer;
+    pla->fSubLayer = prm->fSubLayer;
 
     if (fIncludeResolution)
     {
@@ -159,23 +155,19 @@ int NEBULAPlusSimDataConverter_TArtNEBULAPlusPla::ConvertSimData()
       Double_t y = 0.5 * dt * V_scinti + prm->fPosition.y()
                    + NEBULAPlusParameter->fPosition.y();
 
-      pla->SetPos(x, 0);
-      pla->SetPos(y, 1);
-      pla->SetPos(z, 2);
-      pla->SetTAveCal(t);
-      pla->SetQUCal(qu);
-      pla->SetQDCal(qd);
-      pla->SetQAveCal(q);
+      pla->fPos.SetXYZ(x, y, z);
+      pla->fTime = t;
+      pla->fQU   = qu;
+      pla->fQD   = qd;
+      pla->fEdep = q;
     }
     else // without resolutions
     {
-      pla->SetPos(data.pos.x(), 0);
-      pla->SetPos(data.pos.y(), 1);
-      pla->SetPos(data.pos.z(), 2);
-      pla->SetTAveCal(data.t);
-      pla->SetQAveCal(data.q);
-      pla->SetQUCal(data.q);
-      pla->SetQDCal(data.q);
+      pla->fPos  = data.pos;
+      pla->fTime = data.t;
+      pla->fEdep = data.q;
+      pla->fQU   = data.q;
+      pla->fQD   = data.q;
     }
   }
 
