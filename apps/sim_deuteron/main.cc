@@ -40,8 +40,10 @@
 #include "BeamSimDataInitializer.hh"
 #include "FragSimDataInitializer.hh"
 #include "NEBULASimDataInitializer.hh"
+#include "NEBULAPlusSimDataInitializer.hh"
 
 #include "NEBULASimDataConverter_TArtNEBULAPla.hh"
+#include "NEBULAPlusSimDataConverter_TArtNEBULAPlusPla.hh"
 #include "FragSimDataConverter_Basic.hh"
 #include "EventTruthConverter.hh"
 
@@ -103,8 +105,10 @@ int main(int argc,char** argv)
   simDataManager->RegistInitializer(new BeamSimDataInitializer);
   simDataManager->RegistInitializer(new FragSimDataInitializer);
   simDataManager->RegistInitializer(new NEBULASimDataInitializer);
+  simDataManager->RegistInitializer(new NEBULAPlusSimDataInitializer);
   simDataManager->RegistConverter(new FragSimDataConverter_Basic);
   simDataManager->RegistConverter(new NEBULASimDataConverter_TArtNEBULAPla);
+  simDataManager->RegistConverter(new NEBULAPlusSimDataConverter_TArtNEBULAPlusPla);
   simDataManager->RegistConverter(new EventTruthConverter);
 
   G4UserRunAction* userRunAction = new RunActionBasic;
