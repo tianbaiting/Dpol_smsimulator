@@ -1,0 +1,639 @@
+\documentclass[a4paper,11pt]{ctexart}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{siunitx}
+\usepackage{caption}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!60!black,
+  citecolor=blue!50!black
+}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framerule=0.3pt,
+  showstringspaces=false
+}
+
+\newcommand{\NEB}{NEBULA}
+\newcommand{\NPL}{NEBULA-Plus}
+
+\title{\NEB{} 与 \NPL{} 几何、性能与数据来源整理\\
+       \large （为 kondo\_smsimulator / smsimulator5.5 项目编写）}
+\author{Baiting Tian}
+\date{2026-05-16}
+
+\begin{document}
+\maketitle
+
+\section{布局与方向（执行摘要）}
+
+沿束流方向，从靶向下游：
+\[
+\text{靶} \;\longrightarrow\;
+\textbf{\NPL{}（前）} \;\longrightarrow\; \textbf{\NEB{}（后）}.
+\]
+
+也就是说 \textbf{\NPL{} 位于 \NEB{} 前面}（在 FDC2/HOD 与 \NEB{} 之间）。
+\NPL{} 包含 \textbf{90 根塑料闪烁条}，比 \NEB{} 的 120 根少 \textbf{30 根}。
+单根塑料条尺寸（$\SI{120}{mm}\times\SI{1800}{mm}\times\SI{120}{mm}$）以及
+每堵墙上游 \SI{10}{mm} 厚的塑料 Veto 与 \NEB{} 完全一致。
+
+\NPL{} 由日本 / LPC-Caen 合作组在法国 ANR EXPAND 项目下建造，
+2022 年夏运抵 RIBF，10 月完成机械安装。首次在束试运行
+（$^{7}\mathrm{Li}(p,n)^{7}\mathrm{Be}$ 反应）安排在下一轮 \NEB{}
+实验中~\cite{aprApr2022}。
+
+\NPL{} 现已 \textbf{在 smsimulator5.5 中实现完毕}（分支
+\texttt{nebula-plus-impl} 已于 2026-05-16 合并到 \texttt{main}，
+对应标签 \texttt{nebula-plus-phase1/2/3}）。端到端验证以
+100 个 \SI{200}{MeV} 铅笔束中子穿过两个探测器，三个 reco 类
+（仅 \NEB{}、仅 \NPL{}、联合）都能输出中子候选；联合 reco 的候选数
+约为单 \NEB{} 的 $\sim\!\!\times 1.86$，与 Tanaka 2024 综述
+~\cite{tanaka2024} 给出的"$\sim\!\!\times 2$" 定性增益一致。
+详见 \S\ref{sec:impl} 实现细节，以及 \S\ref{sec:provenance}
+每条参数的来源。
+
+\section{内部几何}
+
+\subsection{\NEB{}（smsimulator5.5 中已有）}
+
+两堵墙（Wall-A、Wall-B），每堵两层中子条，前面一层 Veto：
+
+\begin{table}[h]
+\centering
+\caption{\NEB{} 布局（s021 配置；坐标来自 smsimulator5.5
+\texttt{geometry/s021/NEBULA\_Detectors\_samurai21.csv}）。}
+\begin{tabular}{lccc}
+\toprule
+元素 & 条数 & 相对 \NEB{} 原点的 $Z$ (mm) & $X$ 范围 (mm) \\
+\midrule
+Wall-A Veto    & 12 & $-275,\;-260$         & $-$ \\
+Wall-A Sub1    & 30 & $0$                   & $+1908 \to -1641.6$\\
+Wall-A Sub2    & 30 & $+130$                & 同上\\
+Wall-B Veto    & 12 & $+575.3,\;+590.3$     & $-$ \\
+Wall-B Sub1    & 30 & $+850.3$              & 同上\\
+Wall-B Sub2    & 30 & $+980.3$              & 同上\\
+\midrule
+\NEB{} 原点在 target 系（s021） & \multicolumn{3}{l}{$Z = \SI{9784}{mm}$}\\
+单根尺寸（Neut） & \multicolumn{3}{l}{$120 \times 1800 \times \SI{120}{mm}$（$W\times H\times L$）}\\
+$X$ 方向条间距 & \multicolumn{3}{l}{$\SI{122.4}{mm}$（即 \SI{2.4}{mm} 空气间隔）}\\
+$Y$ 中心 & \multicolumn{3}{l}{$\SI{-35.4}{mm}$（略低于束流轴；
+                       见 \texttt{NEBULA\_Pos\_FromMagCenter.csv}）}\\
+Veto 尺寸 & \multicolumn{3}{l}{$320 \times 1900 \times \SI{10}{mm}$}\\
+单 PMT 时间分辨 & \multicolumn{3}{l}{$\sigma_t = \SI{0.240}{ns}$
+                       （\texttt{NEBULA\_samurai21.csv}）}\\
+单根材料（当前 sim） & \multicolumn{3}{l}{\texttt{G4\_PLASTIC\_SC\_VINYLTOLUENE}
+                       （NIST 提供的 PVT 模型，等价 BC408/EJ200）}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+合计：120 Neut + 24 Veto = 144 个探测元件。
+
+\subsection{\NPL{}（现已在 smsimulator5.5 中实现）}
+\label{sec:internal-npl}
+
+来自 LPC-Caen / RIKEN 的 nptool 插件文件
+\texttt{commissioning/detector.yaml}（详见 \S\ref{sec:sources}），\NPL{}
+的四个 sub-layer 为：
+
+\begin{table}[h]
+\centering
+\caption{\NPL{} 内部布局，来自 nptool 插件的 \texttt{detector.yaml}。
+$Z$ 为 \NPL{} 自身原点系下的偏移（自身 Wall-A Sub1 为原点）。
+$X_{0}$ 为最左边一根的中心；其余条按 $X_i = X_0 + i \times \SI{120}{mm}$。}
+\begin{tabular}{lccccc}
+\toprule
+墙 & SubLayer & 条数 & $X_0$ (mm) & $X$ 范围 (mm) & $Z$ (mm)\\
+\midrule
+A & Sub1 & 22 & $-1320$ & $-1320 \to +1200$ & $0$\\
+A & Sub2 & 22 & $-1320$ & $-1320 \to +1200$ & $130$\\
+B & Sub1 & 23 & $-1320$ & $-1320 \to +1320$ & $845$\\
+B & Sub2 & 23 & $-1320$ & $-1320 \to +1320$ & $975$\\
+\midrule
+\multicolumn{6}{l}{单根尺寸（Neut）：$120 \times 1800 \times \SI{120}{mm}$，与 \NEB{} 一致}\\
+\multicolumn{6}{l}{材料：nptool 中为 BC400（本质上与 \NEB{} 的 PVT 等价）}\\
+\multicolumn{6}{l}{$X$ 条间距：\SI{120}{mm}（无空气间隔；
+                  \texttt{InterModule = 1\,mm} 声明了但未使用）}\\
+\multicolumn{6}{l}{Veto 尺寸：$320 \times 1900 \times \SI{10}{mm}$}\\
+\multicolumn{6}{l}{Veto 距墙：\SI{100}{mm}（Neut 上游；\texttt{WallToVeto = 10\,cm}）}\\
+\multicolumn{6}{l}{Veto 数量：每墙 12 根（插件按 \texttt{m\_NbrModule>15} 分支选 12，否则 6）}\\
+\multicolumn{6}{l}{PMT：Hamamatsu H11284；电子学为 LPC-Caen 开发的 FASTER 数字 DAQ}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+合计：$22+22+23+23 = 90$ Neut + 24 Veto = $\mathbf{114}$ 个，
+\textbf{比 \NEB{} 少 30 根 Neut}。
+
+\subsection{\NPL{} 原点的绝对 $Z$}
+
+LPC-Caen nptool 插件里的 \texttt{detector.yaml} 用了占位 target
+（$x=1,\;y=2,\;z=\SI{3}{mm}$），所以 \NPL{} 原点相对于 SAMURAI
+target 的绝对 $Z$ 在我们能读到的配置文件里 \emph{都没有}。
+负责该几何的人（\texttt{/home/kondo}、\texttt{/home/otsu}、
+\texttt{/home/gibelin}、\texttt{/home/jlemarie}）在 \texttt{ribfana04}
+上的 home 目录我们没有读权限。
+
+\textbf{smsimulator5.5 中采用的取值（占位；等 LPC-Caen 给出真实
+survey 数据再覆盖）：}
+\[
+Z_{\NPL{},\,\text{原点}} = \SI{8089}{mm}\quad\text{（target 系）}.
+\]
+该值的选取理由：让所有四堵墙的 Wall-A--Sub1 \emph{间距} 沿束流
+均匀走 $845 \to 850 \to 850.3$ mm，从 \NPL{} 平滑过渡到 \NEB{}：
+
+\begin{table}[h]
+\centering
+\caption{smsimulator5.5 中使用的 \NPL{}+\NEB{} 在 target 系下的整体
+布局（\S\ref{sec:internal-npl} 的内部数与所选 $Z_0$ 合并）。}
+\begin{tabular}{lrr}
+\toprule
+墙 / sub-layer & $Z$ (mm) & Sub1$\to$Sub1 间距 (mm)\\
+\midrule
+NPL Wall-A Veto                 & 7989  & --\\
+\textbf{NPL Wall-A Sub1}        & \textbf{8089}  & --\\
+NPL Wall-A Sub2                 & 8219  & --\\
+NPL Wall-B Veto                 & 8834  & --\\
+\textbf{NPL Wall-B Sub1}        & \textbf{8934}  & $845.0$（NPL 内部）\\
+NPL Wall-B Sub2                 & 9064  & --\\
+NEB Wall-A Veto                 & 9509  & --\\
+\textbf{NEB Wall-A Sub1}        & \textbf{9784}  & $850.0$（NPL$\to$NEB 间距，自选）\\
+NEB Wall-A Sub2                 & 9914  & --\\
+NEB Wall-B Veto                 & $10359.3$ & --\\
+\textbf{NEB Wall-B Sub1}        & $\mathbf{10634.3}$ & $850.3$（NEB 内部）\\
+NEB Wall-B Sub2                 & $10764.3$ & --\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+NPL-B$\to$NEB-A 取 \SI{850}{mm} 的间距是 brainstorming 阶段选的，
+将来拿到真实 survey 后可以在运行时通过
+\texttt{/samurai/geometry/NEBULAPlus/Position 0\;0\;<Z>\;mm}
+（NEB 同样）覆盖，无需重编译。
+
+\section{材料与电子学小结}
+
+\begin{itemize}
+  \item 塑料：BC400（\NPL{}）和 BC408/EJ200（\NEB{}）都是 PVT 基闪烁体；
+        密度和光产额差异在 $1\,\%$ 以内。Geant4 中两者都用
+        \texttt{G4\_PLASTIC\_SC\_VINYLTOLUENE} 表示即可。
+  \item 折射率 $n = 1.58$；体衰减长度 \SI{6680}{mm}（在
+        \texttt{NebulaPlusGeant4.cxx} 中声明）。
+  \item PMT：\NPL{} 用 Hamamatsu H11284；\NEB{} 视分批不同用
+        Hamamatsu H7195 或同型号。
+  \item DAQ：\NPL{} 用 LPC-Caen 开发的 FASTER 数字读出，
+        通过 bar 上下 PMT 信号对的符合触发与 SAMURAI 主 DAQ
+        集成~\cite{aprApr2022}。
+\end{itemize}
+
+\section{探测效率}
+
+\subsection{单 \NEB{}}
+
+\SI{200}{MeV} 中子的单中子探测效率：
+\[
+\varepsilon_{1n}^{\NEB{}} = 32.5 \pm 0.3\,(\text{stat}) \pm 0.9\,(\text{syst})\,\%,
+\]
+通过 $^{7}\mathrm{Li}(p,n)^{7}\mathrm{Be}$ 反应测得
+（Kondo 等，NIM B 463 (2020) 173--178~\cite{kondo2020nim}）。
+
+\subsection{\NEB{} $\cup$ \NPL{}（联合）}
+
+\NEB{}+\NPL{} 阵列把中子层数从 4 翻到 8。Tanaka 等综述
+（arXiv:2412.17887~\cite{tanaka2024}）给出定性结果：
+
+\begin{itemize}
+  \item \textbf{单中子}效率：\textbf{约提升 2 倍}
+        （即由 \SI{200}{MeV} 的 $\sim 32.5\,\%$ 涨到约 $60$--$65\,\%$，
+        粗略外推）。
+  \item \textbf{四中子}效率：相对单 \NEB{} \textbf{提升约 1 个量级}。
+\end{itemize}
+
+绝对联合数与能量依赖关系要等在束试运行的数据
+（\NPL{} 的单中子 $\varepsilon_{1n}$ 待 $^{7}\mathrm{Li}(p,n)$
+run 分析后给出 —— APR~2022 报告时尚未发布）。
+
+\section{文件路径（信息存放位置）}
+\label{sec:sources}
+
+\subsection{本机}
+
+\begin{description}
+  \item[smsimulator5.5 NEBULA G4 模块]
+    \texttt{kondo\_smsimulator/sources/smg4lib/detectors/NEBULA/}
+  \item[NEBULA 几何 CSV（s021）]
+    \texttt{kondo\_smsimulator/work/geometry/s021/NEBULA\_samurai21.csv} \\
+    \texttt{kondo\_smsimulator/work/geometry/s021/NEBULA\_Detectors\_samurai21.csv}
+  \item[anaroot NEBULA 参数 db]
+    \texttt{anaroot/db/NEBULA.20250625.xml}（及历史日期版本）\\
+    \texttt{anaroot/db/NEBULA\_Pos\_FromMagCenter.csv} \\
+    \texttt{anaroot/db/NEBULA.ods}
+  \item[anaroot \NPL{} 占位（仅 V301--V410 这些 Veto 名，Z=0）]
+    \texttt{anaroot/db/NEBULA.20250625.xml}\\
+    \texttt{anaroot/src/sources/Reconstruction/SAMURAI/src/TArtSAMURAIParameters.cc:544}
+    \\（注释：\texttt{// for new config. with NEBULA Plus}）
+  \item[下载的论文]
+    \texttt{docs/papers/NEBULA-Plus\_Kondo\_RIKEN\_APR2022.pdf} \\
+    \texttt{docs/papers/NEBULA-Plus\_review\_Tanaka2024\_arxiv2412.17887.pdf} \\
+    \texttt{docs/papers/multi-neutron\_SAMURAI\_Yang2019\_arxiv1903.11256.pdf} \\
+    \texttt{docs/papers/NEBULA\_RIBF\_factsheet.pdf} \\
+    \texttt{docs/papers/NEBULA\_indico\_talk.pdf}
+\end{description}
+
+\subsection{分析服务器 \texttt{ribfana04}}
+
+s053 实验账号下的 \NPL{} 权威几何与代码（只读权限）：
+
+\begin{description}
+  \item[nptool 插件（Geant4 + Physics）]
+    \texttt{/home/s053/exp/exp2301\_s053/nptool/plugin/nebula-plus/sources/src/} \\
+    关键文件：
+    \begin{itemize}
+      \item \texttt{NebulaPlusGeant4.cxx}、\texttt{NebulaPlusGeant4.h}
+            —— Geant4 模块 / Veto 构造、材料、可视化属性。
+      \item \texttt{NebulaPlusDetector.cxx}、\texttt{NebulaPlusDetector.h}
+            —— yaml 解析、AddLayer / AddSBT / AddSBV；$Z$ 相对 target。
+      \item \texttt{NebulaPlusPhysics.h}、\texttt{NebulaPlusData.h/cxx}、
+            \texttt{NebulaPlusSpectra.cxx}、\texttt{NebulaPluslinkdef.hh}。
+    \end{itemize}
+  \item[探测器配置 yaml]
+    \texttt{/home/s053/exp/exp2301\_s053/nptool/commissioning/detector.yaml}
+    （唯一带 \texttt{X\_start = -1320\,mm} 的版本；\texttt{s053/detector.yaml}
+    和 \texttt{sandbox/detector.yaml} 用 \texttt{X = 0}。）
+  \item[标定文件]
+    \texttt{/home/s053/exp/exp2301\_s053/nptool/commissioning/calibration/}\\
+    \quad \texttt{NebulaPlus\_Energy.cal}、
+    \texttt{NebulaPlus\_Up\_Energy.cal}、
+    \texttt{NebulaPlus\_Down\_Energy.cal}、\\
+    \quad \texttt{NebulaPlus\_Tdiff\_Offset.cal}、
+    \texttt{NebulaPlus\_Tdiff\_Offset\_Jan2023.cal}
+  \item[在线监控（s053）]
+    \texttt{/home/s053/exp/exp2301\_s053/sm\_online\_utils/s053/chknebulaplus/OnlineMonitor.cc}
+    （只画 count/rate，无几何常数）。
+  \item[原始数据 + FASTER setup]
+    \texttt{/home/s053/rawdata/nebulaplus/NEBULA\_Test\_2025*.fast}
+    (+\texttt{.setup})
+  \item[FASTER 电子学源]
+    \texttt{/home/s053/exp/exp2301\_s053/faster/faster/fasterac-2.18/}
+  \item[\NPL{} DAQ 主机 rsync]
+    \texttt{/home/s053/exp/exp2301\_s053/scripts/rsync\_expand\_test.sh}
+    \\ 从 \texttt{expand@expandacq:./Projects/test\_veto/data/Test\_VETO/}
+    拖到 \texttt{\$HOME/rawdata/nebulaplus/}。
+\end{description}
+
+\subsection{外部}
+
+\begin{itemize}
+  \item LPC-Caen 项目页：\url{https://nebula-plus.in2p3.fr/}
+        （\texttt{/manual/} 和 \texttt{/documentation-and-private-files/}
+        需登录访问）。
+  \item RIKEN APR 56 (2023) p.\,91 安装报告：
+        \url{https://www.nishina.riken.jp/researcher/APR/APR056/pdf/91.pdf}
+\end{itemize}
+
+\section{smsimulator5.5 中的实现}
+\label{sec:impl}
+
+工作在 \texttt{nebula-plus-impl} 分支上完成，2026-05-16 合并到
+\texttt{main}（标签 \texttt{nebula-plus-phase1/2/3} 标识每个阶段
+终点）。对应的设计文档与实施计划见
+\texttt{docs/superpowers/specs/2026-05-15-nebula-plus-design.md}
+与
+\texttt{docs/superpowers/plans/2026-05-15-nebula-plus.md}。
+
+\subsection{构建环境}
+
+\begin{lstlisting}[language=bash]
+# 1. 激活 conda 环境（Geant4 11.x、ROOT 6.36、Xerces-C、anaroot
+#    都链到该环境）
+micromamba activate anaroot-env
+
+# 2. spdlog 必须装到该环境（smlogger 依赖）。一次性命令：
+micromamba install -n anaroot-env -c conda-forge spdlog
+
+# 3. 加载项目设置（定义 SMSIMDIR、TARTSYS、各路径）
+cd $HOME/workspace/dpol/smsimulator5.5
+source setup.sh
+
+# 4. 配置 + 构建
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release \
+         -DBUILD_TESTS=ON -DBUILD_APPS=ON \
+         -DBUILD_ANALYSIS=ON -DWITH_ANAROOT=ON
+cmake --build . -j$(nproc)
+\end{lstlisting}
+
+注意：\texttt{TARTSYS} 必须在 \texttt{cmake ..} 之前设好，
+否则 \texttt{WITH\_ANAROOT} 会静默关闭，
+\texttt{NEBULASimDataConverter\_TArtNEBULAPla} 这条编译单元
+会找不到 \texttt{TArtNEBULAPla.hh}。\texttt{setup.sh} 在
+\texttt{TBTdebian} 主机上导出 \texttt{TARTSYS=/home/tian/software/anaroot/install}。
+
+\subsection{几何配置（CSV）}
+
+两对 CSV 文件驱动几何配置。smsim G4 messenger 在运行时通过
+\texttt{/samurai/geometry/.../ParameterFileName} 读取它们。
+
+\begin{table}[h]
+\centering
+\caption{\texttt{smsimulator5.5/configs/simulation/geometry/} 下的
+几何 CSV 清单。每对都是 \{整体参数, 每根条参数\}。}
+\begin{tabular}{lll}
+\toprule
+探测器 & 整体参数 & 每根条参数\\
+\midrule
+\NEB{}（Dayone） & \texttt{NEBULA\_Dayone.csv}           & \texttt{NEBULA\_Detectors\_Dayone.csv}\\
+\NPL{}（s021）   & \texttt{s021/NEBULAPlus\_samurai21.csv}
+                                                          & \texttt{s021/NEBULAPlus\_Detectors\_samurai21.csv}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\NPL{} 这一对 CSV 是根据 \S\ref{sec:internal-npl} 的数值生成的。
+整体参数文件全文如下；每根条文件有 114 行（$90+24$），列结构
+（\texttt{Layer/SubLayer/PositionX/Y/Z}）与 \NEB{} 完全一致。
+
+\begin{lstlisting}
+% configs/simulation/geometry/s021/NEBULAPlus_samurai21.csv
+Position, 0, 0, 8089,
+NeutSize, 120, 1800, 120,
+VetoSize, 320, 1900, 10,
+Angle, 0, 0, 0,
+////input time reso for one PMT
+TimeReso, 0.240,
+\end{lstlisting}
+
+\subsection{Geant4 模块（\texttt{libs/smg4lib/}）}
+
+\NPL{} 的 G4 模块与 \NEB{} 一一对应。构造侧类放在
+\texttt{src/construction/\{src,include\}/}；数据侧类放在
+\texttt{src/data/\{src,include\}/}，公开镜像头文件也在
+\texttt{libs/smg4lib/include/}。
+
+\begin{table}[h]
+\centering
+\caption{G4 侧类对照表。\NPL{} 文件在 Phase 1 通过 sed 克隆对应
+\NEB{} 文件生成。}
+\begin{tabular}{lll}
+\toprule
+作用 & \NEB{} 类 & \NPL{} 类\\
+\midrule
+G4 几何             & \texttt{NEBULAConstruction}            & \texttt{NEBULAPlusConstruction}\\
+G4 UI messenger     & \texttt{NEBULAConstructionMessenger}   & \texttt{NEBULAPlusConstructionMessenger}\\
+Sensitive detector  & \texttt{NEBULASD}                      & \texttt{NEBULAPlusSD}\\
+CSV 读取            & \texttt{NEBULASimParameterReader}      & \texttt{NEBULAPlusSimParameterReader}\\
+SimData branch 注册 & \texttt{NEBULASimDataInitializer}      & \texttt{NEBULAPlusSimDataInitializer}\\
+Step$\to$hit 转换   & \texttt{NEBULASimDataConverter\_TArtNEBULAPla}
+                                                             & \texttt{NEBULAPlusSimDataConverter\_TArtNEBULAPlusPla}\\
+Run 参数 ROOT 类    & \texttt{TNEBULASimParameter}           & \texttt{TNEBULAPlusSimParameter}\\
+Hit ROOT 类         & \texttt{TArtNEBULAPla}（anaroot）      & \texttt{TArtNEBULAPlusPla}（smsim，\textbf{新建}）\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+两个探测器在 \texttt{libs/sim\_deuteron\_core/src/DeutDetectorConstruction.cc}
+中被同时实例化并挂入 SAMURAI 实验厅（NPL 由 Phase 1 任务 P1.11 加入）；
+对应的 SimData initializer 和 converter 在
+\texttt{apps/sim\_deuteron/main.cc} 中注册（P1.12）。
+
+\subsection{运行时 messenger 命令}
+
+\begin{lstlisting}
+# 同时加载两个探测器（任何被 bin/sim_deuteron 执行的 .mac 都能用）
+/samurai/geometry/NEBULA/ParameterFileName           {SMSIMDIR}/configs/simulation/geometry/NEBULA_Dayone.csv
+/samurai/geometry/NEBULA/DetectorParameterFileName   {SMSIMDIR}/configs/simulation/geometry/NEBULA_Detectors_Dayone.csv
+
+/samurai/geometry/NEBULAPlus/ParameterFileName       {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_samurai21.csv
+/samurai/geometry/NEBULAPlus/DetectorParameterFileName  {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_Detectors_samurai21.csv
+
+# 拿到真实 LPC survey 后可以覆盖整体 Z
+/samurai/geometry/NEBULAPlus/Position 0 0 8089 mm
+
+/samurai/geometry/Update
+\end{lstlisting}
+
+最小 smoke macro 在
+\texttt{configs/simulation/macros/test\_nebula\_plus.mac}。
+
+\subsection{输出 ROOT 树分支}
+
+\texttt{bin/sim\_deuteron} 每个事件输出（相关分支）：
+
+\begin{description}
+  \item[\texttt{NEBULAPla}]     \texttt{TClonesArray} of
+        \texttt{TArtNEBULAPla}（anaroot 类）—— \NEB{} hits，
+        \texttt{Layer} = 3（A 墙）或 4（B 墙）。
+  \item[\texttt{NEBULAPlusPla}] \texttt{TClonesArray} of
+        \texttt{TArtNEBULAPlusPla}（smsim 类）—— \NPL{} hits，
+        \texttt{Layer} = 1（A 墙）或 2（B 墙）。
+  \item[\texttt{TNEBULASimParameter}、\texttt{TNEBULAPlusSimParameter}]
+        每个 run 写一份的探测器参数快照。
+\end{description}
+
+\subsection{重建（\texttt{libs/analysis/}）}
+
+原 \texttt{NEBULAReconstructor} 在 Phase 2 重构成一个小的类层级：
+
+\begin{description}
+  \item[\texttt{NEBULABaseReco}] 抽象基类。承载所有派生类共用的
+        算法步骤：
+        \texttt{ClusterHits}、
+        \texttt{ReconstructFromCluster}、
+        \texttt{CalculateBeta}、
+        \texttt{CalculateNeutronEnergy}、
+        \texttt{ApplyPositionSmearing}、
+        \texttt{ApplyTimeSmearing}。
+        纯虚：\texttt{ExtractHits()}。
+  \item[\texttt{NEBULAReco}] 单 \NEB{} 重建；\texttt{ExtractHits}
+        读 \texttt{TClonesArray<TArtNEBULAPla>}，bit-for-bit 保留原
+        \texttt{NEBULAReconstructor} 的行为（用
+        \texttt{test\_NEBULAReco\_legacy\_compat} 做回归保护）。
+  \item[\texttt{NEBULAPlusReco}] 单 \NPL{} 重建；\texttt{ExtractHits}
+        读 \texttt{TClonesArray<TArtNEBULAPlusPla>}，并给
+        hit 打 \texttt{wall\_tag} 1/2。
+  \item[\texttt{NebulaJointReco}] 接收两个探测器的输入并合并通过
+        一次 \texttt{ExtractHits} 喂给基类；聚类时一次看到
+        8 个 sub-layer，\texttt{wall\_tag} 标 1--4。
+\end{description}
+
+默认参数（保留原 legacy 类的值）：
+\texttt{fTimeWindow=10.0\,ns}、\texttt{fEnergyThreshold=1.0\,MeV}、
+\texttt{fPositionSmearing=5.0\,mm}、\texttt{fTimeSmearing=0.5\,ns}。
+
+重建 \emph{算法本身}已经不依赖 anaroot 的
+\texttt{TArtRecoNeutron} / \texttt{TArtCalibNEBULA}。anaroot 仍是
+构建依赖，因为 \NEB{} hit 的数据类
+\texttt{TArtNEBULAPla} 在 anaroot 中，是 \texttt{NEBULAPla} 分支的
+落盘 schema。如果要彻底脱离 anaroot，需要再写一个 smsim 端的
+\NEB{} hit 镜像类，并对已有 .root 做 schema 迁移 —— 留作后续。
+
+\subsection{端到端验证（2026-05-16）}
+
+100 个 \SI{200}{MeV} 单能中子穿过 \NPL{}$+$\NEB{} 几何；详见
+\texttt{tests/integration/test\_sim\_deuteron\_with\_nebula\_plus.sh}。
+
+\begin{table}[h]
+\centering
+\caption{sim$+$reco 端到端数（100 个入射 \SI{200}{MeV} 中子，
+铅笔束从 $Z=-2000$ mm 发出）。}
+\begin{tabular}{lrr}
+\toprule
+阶段 / 类 & 有 hit/候选的事件数 & 总数\\
+\midrule
+\NEB{} 树里的 hits        & 51 & 159 hits\\
+\NPL{} 树里的 hits        & 55 & 227 hits\\
+\midrule
+\texttt{NEBULAReco}      候选数 & 32 & 35\\
+\texttt{NEBULAPlusReco}  候选数 & 39 & 42\\
+\texttt{NebulaJointReco} 候选数 & 55 & 65\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+联合 / \NEB{}-only 的候选数之比 $65/35\approx 1.86$，
+与 Tanaka 2024 综述~\cite{tanaka2024} 中"$\sim\!\!\times 2$"
+的定性单中子增益一致。
+
+\subsection{测试}
+
+\begin{table}[h]
+\centering
+\caption{Phase 1--3 新增的测试（括号里是 \texttt{ctest} 标签）。}
+\begin{tabular}{ll}
+\toprule
+文件 & 用例数\\
+\midrule
+\texttt{tests/unit/test\_NEBULAPlusSimParameterReader.cc}    (unit)         & 3 \\
+\texttt{tests/unit/test\_NEBULAPlusReco\_basic.cc}            (unit)         & 3 \\
+\texttt{tests/unit/test\_NebulaJointReco\_combined.cc}        (unit)         & 3 \\
+\texttt{tests/analysis/test\_NEBULAReco\_legacy\_compat.cc}   (analysis)     & 1 \\
+\texttt{tests/integration/test\_sim\_deuteron\_with\_nebula\_plus.sh} (integration) & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Phase 1--3 完成后，项目 ctest 计数从 \textbf{18 通过 / 20 失败} 涨到
+\textbf{30 通过 / 20 失败}（$+12$ 通过，$0$ 回归）。其余 20 个
+失败（\texttt{ParticleTrajectoryTest.*}、
+\texttt{TargetReconstructorTest.*}）是 \NPL{} 工作之前就已存在
+的问题，不在本项目范围。
+
+\section{参数溯源：每个 NPL 数值的来源}
+\label{sec:provenance}
+
+\begin{table}[h]
+\centering
+\caption{smsimulator5.5 中用到的所有权威 \NPL{} 参数及其来源。}
+\begin{tabular}{p{4.4cm}lp{6.8cm}}
+\toprule
+参数 & 值 & 来源\\
+\midrule
+单根尺寸（$W\times H\times L$）
+  & $120\times 1800\times \SI{120}{mm}$
+  & \texttt{NebulaPlusGeant4.cxx}（LPC 插件）\\
+Veto 尺寸
+  & $320\times 1900\times \SI{10}{mm}$
+  & \texttt{NebulaPlusGeant4.cxx}（LPC 插件）\\
+每 sub-layer Neut 条数
+  & 22、22、23、23
+  & \texttt{commissioning/detector.yaml}（LPC 插件）\\
+每墙 Veto 条数
+  & 12
+  & \texttt{NebulaPlusGeant4.cxx}（\texttt{m\_NbrModule>15}$\Rightarrow$12 分支）\\
+$X$ 方向条间距
+  & \SI{120}{mm}（紧贴）
+  & \texttt{NebulaPlusDetector::AddLayer} 步长 \texttt{m\_BarWidth = 120}\\
+$X$ 方向 Veto 间距
+  & \SI{310}{mm}
+  & 沿用 \NEB{} 约定（Veto 是同型号）\\
+Veto 到墙距离
+  & \SI{100}{mm}（Neut Sub1 上游）
+  & \texttt{NebulaPlusGeant4.cxx::WallToVeto}\\
+Sub-layer 间 Z 距离
+  & \SI{130}{mm}
+  & \texttt{commissioning/detector.yaml}（Z=0/130/845/975）\\
+最左边一根的 $X$ 起点
+  & $-\SI{1320}{mm}$（不对称）
+  & \texttt{commissioning/detector.yaml}（\texttt{pos: -132 0 0 cm}）\\
+单根材料（G4）
+  & \texttt{G4\_PLASTIC\_SC\_VINYLTOLUENE}
+  & smsimulator5.5 中与 \NEB{} 一致；作为 BC400/EJ200 PVT 等价材料足够\\
+折射率 $n$
+  & 1.58
+  & \texttt{NebulaPlusGeant4.cxx::MaterialIndex}\\
+体衰减长度
+  & \SI{6680}{mm}
+  & \texttt{NebulaPlusGeant4.cxx::Attenuation}\\
+每侧 PMT 时间分辨
+  & \SI{0.240}{ns}
+  & 沿用 \NEB{} 值（LPC 标定数尚未拿到）\\
+PMT 型号
+  & Hamamatsu H11284
+  & APR 56 (2023) p.\,91~\cite{aprApr2022}\\
+电子学
+  & FASTER（LPC-Caen）
+  & APR 56 (2023) p.\,91~\cite{aprApr2022}\\
+\midrule
+\textbf{NPL 原点的绝对 $Z$（target 系）}
+  & \textbf{\SI{8089}{mm}}
+  & \textbf{smsim5.5 自选}（让所有 Sub1$\to$Sub1 间距沿
+        NPL-A$\to$NPL-B$\to$NEB-A$\to$NEB-B 均匀走 845/850/850.3 mm；
+        LPC 真实 survey 拿到后再覆盖）\\
+Layer 索引约定
+  & NPL：L=1,2；NEB：L=3,4
+  & anaroot db 已预留的约定（\texttt{V301--V310, V401--V410}
+        Veto 名预占；\texttt{TArtSAMURAIParameters.cc:544} 处注释）\\
+Bar / Veto ID 范围
+  & 101--122、201--222、301--323、401--423；501--512、601--612
+  & smsim5.5 自定（Layer$\times$100 + 条序号；
+        Veto 用 500/600 前缀 + \texttt{SubLayer=0} 区分）\\
+单中子效率增益
+  & $\sim\!\times 2$（相对单 \NEB{}）
+  & Tanaka 2024~\cite{tanaka2024}（arXiv:2412.17887；PTEP 待刊）。
+        smsim 端到端测得 $\times 1.86$，与论文定性一致。\\
+四中子效率增益
+  & $\sim\!\times 10$（相对单 \NEB{}）
+  & Tanaka 2024~\cite{tanaka2024}；smsim 尚未验证
+        （需多中子破碎反应的 macro）\\
+NPL 安装时间
+  & 2022 年 10 月
+  & APR 56 (2023) p.\,91~\cite{aprApr2022}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\NEB{} 自身的数值（原点 Z=9784 mm、$X$ 间距 122.4 mm、$Y$ 偏置
+$-35.4$ mm、时间分辨 0.240 ns）来自现有 CSV
+\texttt{configs/simulation/geometry/NEBULA\_Dayone.csv}
+以及 \S\ref{sec:sources} 中列出的 anaroot db 文件；设计文档为
+Kondo 2020 NIM B~\cite{kondo2020nim}。
+
+\begin{thebibliography}{9}
+\bibitem{kondo2020nim} Y.~Kondo, T.~Tomai, T.~Nakamura,
+``Recent progress and developments for experimental studies with the SAMURAI
+spectrometer,'' Nucl.\ Instrum.\ Methods Phys.\ Res.\ B \textbf{463} (2020) 173--178.
+DOI: \texttt{10.1016/j.nimb.2019.04.085}.
+\bibitem{aprApr2022} N.~A.~Orr, J.~Gibelin, Y.~Kondo, H.~Otsu, on behalf of the
+\NPL{} collaboration, ``Installation of the \NPL{} neutron array,'' RIKEN Accel.\
+Prog.\ Rep.\ \textbf{56} (2023) p.\,91.
+\bibitem{tanaka2024} J.~Tanaka et al., ``Detectors for next-generation
+quasi-free scattering experiments at the RIBF,'' arXiv:2412.17887（PTEP 待刊）。
+\bibitem{nakamura2016} T.~Nakamura, Y.~Kondo, ``Large acceptance spectrometers for
+invariant mass spectroscopy of exotic nuclei and future developments,''
+Nucl.\ Instrum.\ Methods Phys.\ Res.\ B \textbf{376} (2016) 156. DOI:
+\texttt{10.1016/j.nimb.2016.01.003}.
+\end{thebibliography}
+
+\end{document}
