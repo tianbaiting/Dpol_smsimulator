@@ -7,6 +7,8 @@
 #pragma link C++ class TDetectorSimParameter+;
 #pragma link C++ class TFragSimParameter+;
 #pragma link C++ class TNEBULASimParameter+;
+#pragma link C++ class TNEBULAPlusSimParameter+;
+#pragma link C++ class TArtNEBULAPlusPla+;
 #pragma link C++ class TRunSimParameter+;
 #pragma link C++ class TSimData+;
 #pragma link C++ class TSimParameter+;
