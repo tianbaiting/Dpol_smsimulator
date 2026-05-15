@@ -10,6 +10,8 @@
 #pragma link C++ class PDCSimAna+;
 #pragma link C++ class NEBULABaseReco+;
 #pragma link C++ class NEBULAReco+;
+#pragma link C++ class NEBULAPlusReco+;
+#pragma link C++ class NebulaJointReco+;
 #pragma link C++ class RecoEvent+;
 #pragma link C++ class RecoTrack+;
 #pragma link C++ class RecoHit+;

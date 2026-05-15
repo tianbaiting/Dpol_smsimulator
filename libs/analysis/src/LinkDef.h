@@ -18,5 +18,9 @@
 #pragma link C++ class TargetReconstructor+;
 
 #pragma link C++ struct NEBULAHit+;
+#pragma link C++ class NEBULABaseReco+;
+#pragma link C++ class NEBULAReco+;
+#pragma link C++ class NEBULAPlusReco+;
+#pragma link C++ class NebulaJointReco+;
 
 #endif
