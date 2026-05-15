@@ -106,6 +106,23 @@ gtest_discover_tests(test_PDCErrorAnalysis
         LABELS "unit;analysis;reconstruction;pdc;error"
 )
 
+# NEBULAReco 向后兼容黄金测试 (P2.2 RED — NEBULAReco.hh not yet created)
+add_executable(test_NEBULAReco_legacy_compat
+    test_NEBULAReco_legacy_compat.cc
+)
+
+target_link_libraries(test_NEBULAReco_legacy_compat PRIVATE
+    analysis
+    GTest::gtest
+    GTest::gtest_main
+    ${ROOT_LIBRARIES}
+)
+
+gtest_discover_tests(test_NEBULAReco_legacy_compat
+    PROPERTIES LABELS "analysis"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 # TargetReconstructor 真实数据测试
 add_executable(test_TargetReconstructor_RealData
     test_TargetReconstructor_RealData.cc
