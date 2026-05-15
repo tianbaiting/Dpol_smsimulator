@@ -19,6 +19,8 @@
 #include "DipoleConstruction.hh"
 #include "PDCConstruction.hh"
 #include "NEBULAConstruction.hh"
+#include "NEBULAPlusConstruction.hh"
+#include "NEBULAPlusSD.hh"
 #include "IPSConstruction.hh"
 #include "ExitWindowNConstruction.hh"
 #include "ExitWindowC2Construction.hh"  
@@ -65,8 +67,9 @@ DeutDetectorConstruction::DeutDetectorConstruction()
 
   fDipoleConstruction = new DipoleConstruction();
   fPDCConstruction    = new PDCConstruction();
-  fNEBULAConstruction = new NEBULAConstruction();
-  fIPSConstruction    = new IPSConstruction();
+  fNEBULAConstruction     = new NEBULAConstruction();
+  fNEBULAPlusConstruction = new NEBULAPlusConstruction();
+  fIPSConstruction        = new IPSConstruction();
   fExitWindowNConstruction = new ExitWindowNConstruction();
   fNeutronWinSD = 0;
   fExitWindowC2Construction = new ExitWindowC2Construction();
@@ -81,6 +84,7 @@ DeutDetectorConstruction::~DeutDetectorConstruction()
   delete fDipoleConstruction;
   delete fPDCConstruction;
   delete fNEBULAConstruction;
+  delete fNEBULAPlusConstruction;
   delete fIPSConstruction;
   delete fExitWindowNConstruction;
   delete fExitWindowC2Construction;
@@ -302,6 +306,26 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
   if (fNEBULAConstruction->DoesVetoExist()){
     G4LogicalVolume *veto_log = fNEBULAConstruction->GetLogicVeto();
     veto_log->SetSensitiveDetector(fNEBULASD);
+  }
+
+  //------------------------------ NEBULA-Plus
+  fNEBULAPlusConstruction->ConstructSub();
+  fNEBULAPlusConstruction->PutNEBULAPlus(expHall_log);
+
+  // Sensitive Detector
+  if (fNEBULAPlusSD==0){
+    fNEBULAPlusSD = new NEBULAPlusSD("/NEBULAPlus");
+    SDMan->AddNewDetector(fNEBULAPlusSD);
+  }
+
+  if (fNEBULAPlusConstruction->DoesNeutExist()){
+    G4LogicalVolume *neut_log = fNEBULAPlusConstruction->GetLogicNeut();
+    neut_log->SetSensitiveDetector(fNEBULAPlusSD);
+  }
+
+  if (fNEBULAPlusConstruction->DoesVetoExist()){
+    G4LogicalVolume *veto_log = fNEBULAPlusConstruction->GetLogicVeto();
+    veto_log->SetSensitiveDetector(fNEBULAPlusSD);
   }
 
   //------------------------------ PDCs 

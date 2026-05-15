@@ -7,6 +7,7 @@ class DeutDetectorConstructionMessenger;
 class DipoleConstruction;
 class PDCConstruction;
 class NEBULAConstruction;
+class NEBULAPlusConstruction;
 class IPSConstruction;
 class ExitWindowNConstruction;
 class ExitWindowC2Construction;
@@ -71,8 +72,9 @@ private:
 
   DipoleConstruction *fDipoleConstruction;
   PDCConstruction    *fPDCConstruction;
-  NEBULAConstruction *fNEBULAConstruction;
-  IPSConstruction    *fIPSConstruction;
+  NEBULAConstruction     *fNEBULAConstruction;
+  NEBULAPlusConstruction *fNEBULAPlusConstruction;
+  IPSConstruction        *fIPSConstruction;
 
   G4String      fTargetMat;
   G4ThreeVector fTargetPos;   // position at laboratory coordinate in mm
@@ -92,6 +94,7 @@ private:
   G4VSensitiveDetector* fPDCSD_X = 0;
   G4VSensitiveDetector* fPDCSD_V = 0;
   G4VSensitiveDetector* fNEBULASD = 0;
+  G4VSensitiveDetector* fNEBULAPlusSD = 0;
   G4VSensitiveDetector* fIPSSD = 0;
 
   ExitWindowNConstruction *fExitWindowNConstruction;  
