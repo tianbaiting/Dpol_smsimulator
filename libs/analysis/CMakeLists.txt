@@ -22,7 +22,6 @@ set(ANALYSIS_DICT_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/include/PDCSimAna.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/NEBULABaseReco.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/NEBULAReco.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/NEBULAReconstructor.hh
 )
 
 # 生成 ROOT 字典

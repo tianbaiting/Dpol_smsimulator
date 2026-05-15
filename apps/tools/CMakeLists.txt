@@ -95,16 +95,3 @@ if(EXISTS ${ANALYZE_PDC_RK_ERROR_SRC})
     )
     install(TARGETS analyze_pdc_rk_error RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
-
-# Golden fixture dumper for Phase 2 NEBULA reco regression tests (P2.1)
-set(DUMP_NEBULA_GOLDEN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/dump_nebula_reco_golden.cc)
-if(EXISTS ${DUMP_NEBULA_GOLDEN_SRC})
-    add_executable(dump_nebula_reco_golden ${DUMP_NEBULA_GOLDEN_SRC})
-    target_link_libraries(dump_nebula_reco_golden PRIVATE
-        analysis
-        smlogger
-        spdlog::spdlog
-        ${ROOT_LIBRARIES}
-    )
-    install(TARGETS dump_nebula_reco_golden RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-endif()

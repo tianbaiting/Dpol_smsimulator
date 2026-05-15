@@ -16,7 +16,6 @@
 #pragma link C++ class ParticleTrajectory+;
 #pragma link C++ class ParticleTrajectory::TrajectoryPoint+;
 #pragma link C++ class TargetReconstructor+;
-#pragma link C++ class NEBULAReconstructor+;
 
 #pragma link C++ struct NEBULAHit+;
 

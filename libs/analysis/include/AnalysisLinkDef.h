@@ -8,7 +8,6 @@
 #pragma link C++ class MagneticField+;
 #pragma link C++ class EventProcessor+;
 #pragma link C++ class PDCSimAna+;
-#pragma link C++ class NEBULAReconstructor+;
 #pragma link C++ class NEBULABaseReco+;
 #pragma link C++ class NEBULAReco+;
 #pragma link C++ class RecoEvent+;
