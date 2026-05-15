@@ -79,3 +79,33 @@ gtest_discover_tests(test_NEBULAPlusSimParameterReader
     PROPERTIES LABELS "unit"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+
+add_executable(test_NEBULAPlusReco_basic
+    test_NEBULAPlusReco_basic.cc
+)
+target_link_libraries(test_NEBULAPlusReco_basic PRIVATE
+    analysis
+    smg4lib
+    GTest::gtest
+    GTest::gtest_main
+    ${ROOT_LIBRARIES}
+)
+gtest_discover_tests(test_NEBULAPlusReco_basic
+    PROPERTIES LABELS "unit"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+add_executable(test_NebulaJointReco_combined
+    test_NebulaJointReco_combined.cc
+)
+target_link_libraries(test_NebulaJointReco_combined PRIVATE
+    analysis
+    smg4lib
+    GTest::gtest
+    GTest::gtest_main
+    ${ROOT_LIBRARIES}
+)
+gtest_discover_tests(test_NebulaJointReco_combined
+    PROPERTIES LABELS "unit"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
