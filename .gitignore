@@ -8,11 +8,15 @@ lib/
 
 # Results and temporary files
 results/
+logs/
 *.pyc
 __pycache__/
 .pytest_cache/
+.Trash-1000/
+.claude/
 /20[0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]/
 /cmake_test_discovery_*.json
+scripts/simulation/_macros/
 
 # Data files (too large for git)
 data/
