@@ -1,0 +1,64 @@
+# =========================================================================
+# =========================================================================
+#
+# Geometry for the SAMURAI Dayone experiment with NEBULA-Plus
+#
+#-----------------------------------
+
+/control/getEnv SMSIMDIR
+# field map file
+/samurai/geometry/Dipole/Angle 30 deg
+/control/execute {SMSIMDIR}/configs/simulation/DbeamTest/detailMag1to1.2T/geometry_B115T.mac
+/samurai/geometry/Dipole/FieldFactor 1
+
+# Target
+/samurai/geometry/Target/SetTarget false
+/samurai/geometry/Target/Material Sn
+/samurai/geometry/Target/Size 80 80 30 mm
+/samurai/geometry/Target/Position -1.2488 0.0009 -106.9458 cm
+# /samurai/geometry/Target/Position -2.43 0.00 -0.79 cm
+/samurai/geometry/Target/Angle 3.00 deg
+
+#   fTargetPosCmd = new G4UIcmdWith3VectorAndUnit("/samurai/geometry/Target/Position",this);
+#   fTargetPosCmd->SetGuidance("Set Position of Target");
+#   fTargetPosCmd->SetGuidance("  -65 0 -615*mm (default)");
+#   fTargetPosCmd->SetUnitCategory("Length");
+#   fTargetPosCmd->SetParameterName("x","y","z",true);
+#   fTargetPosCmd->SetDefaultValue(G4ThreeVector(-65,0,615*mm));
+#   fTargetPosCmd->AvailableForStates(G4State_Idle);
+
+#-----------------------------------
+# PDCs
+# Z should be distance from MAGcenter to PDC Z=0 plane
+# /samurai/geometry/PDC/Angle 42.5 deg
+# /samurai/geometry/PDC/Position1 -100 0 300 cm
+# /samurai/geometry/PDC/Position2 -100 0 400 cm
+
+/samurai/geometry/PDC/Angle 69 deg
+/samurai/geometry/PDC/Position1 70 0 400 cm
+/samurai/geometry/PDC/Position2 70 0 500 cm
+
+#-----------------------------------
+# Dump
+# Z should be distance from MAGcenter to the beam dump Z=0 plane
+/samurai/geometry/Dump/SetDump false
+/samurai/geometry/Dump/Angle 36.67 deg
+/samurai/geometry/Dump/Position -0.93 -25.00 0.00 cm
+
+#-----------------------------------
+# NEBULA
+/samurai/geometry/NEBULA/ParameterFileName geometry/NEBULA_Dayone.csv
+/samurai/geometry/NEBULA/DetectorParameterFileName geometry/NEBULA_Detectors_Dayone.csv
+
+#-----------------------------------
+# NEBULA-Plus
+/samurai/geometry/NEBULAPlus/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_samurai21.csv
+/samurai/geometry/NEBULAPlus/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_Detectors_samurai21.csv
+
+#-----------------------------------
+# UPDATE (should be called after changing geometry)
+/samurai/geometry/FillAir true
+/samurai/geometry/Update
+
+# Automatically determine detector positions
+# /samurai/geometry/AutoConfig geometry/5deg_1.2T.mac
