@@ -1,0 +1,45 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=18mm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\title{ImQMD Reaction-Class Fractions and z-pol Breakup Profiles}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\section*{Scope}
+The y-pol sample is \texttt{data/qmdrawdata/qmdrawdata/20260413ypol/}: $^{112}$Sn and $^{124}$Sn at 190 MeV/u, $\gamma=0.50\ldots0.85$, ynp/ypn, RP360. Each \texttt{reactiontype.dat} row contributes one ImQMD event. The denominator is the total number of rows in that file.
+The z-pol Sn112/Sn124 b-discrete files do not carry \texttt{reactiontype.dat} labels.  For z-pol, this note reports $P_{\mathrm{breakup}}(b)=N_{\mathrm{dbreak}}(b)/N_{\mathrm{header}}(b)$ from \texttt{dbreakbXX.dat}; it is not the same observable as the y-pol reaction-class fraction.
+\section*{y-pol reaction categories}
+The four labels present in the files are \texttt{dkeep}, \texttt{break}, \texttt{spall}, and \texttt{other}. For Sn112 the largest break fraction is 45.1\% at g080 ynp; for Sn124 it is 50.5\% at g085 ypn.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{../../../results/imqmd_reaction_category/ypol_reaction_type_fraction_Sn112.png}
+\caption{Reaction-type fractions for y-pol $^{112}$Sn.}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{../../../results/imqmd_reaction_category/ypol_reaction_type_fraction_Sn124.png}
+\caption{Reaction-type fractions for y-pol $^{124}$Sn.}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.88\linewidth]{../../../results/imqmd_reaction_category/ypol_reaction_type_trends.png}
+\caption{Gamma trends after averaging ynp and ypn at fixed target and gamma.}
+\end{figure}
+\section*{z-pol breakup probability}
+The largest z-pol b-discrete probability in the scanned Sn112 files is 100.0\% at g100 zpn, b=10 fm. For Sn124 the largest value is 99.9\% at g100 zpn, b=10 fm.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{../../../results/imqmd_reaction_category/zpol_breakup_probability_Sn112.png}
+\caption{Stored breakup probability profile for z-pol $^{112}$Sn b-discrete files.}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{../../../results/imqmd_reaction_category/zpol_breakup_probability_Sn124.png}
+\caption{Stored breakup probability profile for z-pol $^{124}$Sn b-discrete files.}
+\end{figure}
+\section*{Artifacts}
+CSV tables and figures are written under \texttt{\detokenize{../../../results/imqmd_reaction_category}}.
+\end{document}
