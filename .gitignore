@@ -11,6 +11,8 @@ results/
 *.pyc
 __pycache__/
 .pytest_cache/
+/20[0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]/
+/cmake_test_discovery_*.json
 
 # Data files (too large for git)
 data/
