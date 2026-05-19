@@ -75,9 +75,13 @@ target_link_libraries(test_NEBULAPlusSimParameterReader PRIVATE
     ${Geant4_LIBRARIES}
     ${ROOT_LIBRARIES}
 )
+target_compile_definitions(test_NEBULAPlusSimParameterReader PRIVATE
+    SMSIM_NEBULA_PLUS_PARAM_CSV="${CMAKE_SOURCE_DIR}/configs/simulation/geometry/s021/NEBULAPlus_samurai21.csv"
+    SMSIM_NEBULA_PLUS_BARS_CSV="${CMAKE_SOURCE_DIR}/configs/simulation/geometry/s021/NEBULAPlus_Detectors_samurai21.csv"
+)
 gtest_discover_tests(test_NEBULAPlusSimParameterReader
     PROPERTIES LABELS "unit"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
 add_executable(test_NEBULAPlusReco_basic
@@ -92,7 +96,7 @@ target_link_libraries(test_NEBULAPlusReco_basic PRIVATE
 )
 gtest_discover_tests(test_NEBULAPlusReco_basic
     PROPERTIES LABELS "unit"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
 add_executable(test_NebulaJointReco_combined
@@ -107,5 +111,5 @@ target_link_libraries(test_NebulaJointReco_combined PRIVATE
 )
 gtest_discover_tests(test_NebulaJointReco_combined
     PROPERTIES LABELS "unit"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )

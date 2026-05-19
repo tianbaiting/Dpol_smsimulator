@@ -117,10 +117,14 @@ target_link_libraries(test_NEBULAReco_legacy_compat PRIVATE
     GTest::gtest_main
     ${ROOT_LIBRARIES}
 )
+target_compile_definitions(test_NEBULAReco_legacy_compat PRIVATE
+    SMSIM_NEBULA_RECO_INPUT_FIXTURE="${CMAKE_SOURCE_DIR}/tests/fixtures/nebula_reco_input.root"
+    SMSIM_NEBULA_RECO_GOLDEN_FIXTURE="${CMAKE_SOURCE_DIR}/tests/fixtures/nebula_reco_golden.root"
+)
 
 gtest_discover_tests(test_NEBULAReco_legacy_compat
     PROPERTIES LABELS "analysis"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
 # TargetReconstructor 真实数据测试

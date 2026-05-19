@@ -16,8 +16,8 @@
 
 namespace {
 
-const char* kParamCsv = "configs/simulation/geometry/s021/NEBULAPlus_samurai21.csv";
-const char* kBarsCsv  = "configs/simulation/geometry/s021/NEBULAPlus_Detectors_samurai21.csv";
+const char* kParamCsv = SMSIM_NEBULA_PLUS_PARAM_CSV;
+const char* kBarsCsv  = SMSIM_NEBULA_PLUS_BARS_CSV;
 
 // Helper: retrieve the auto-registered parameter object.
 TNEBULAPlusSimParameter* GetParam() {

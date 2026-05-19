@@ -20,8 +20,8 @@
 
 namespace {
 
-const char* kInputPath  = "tests/fixtures/nebula_reco_input.root";
-const char* kGoldenPath = "tests/fixtures/nebula_reco_golden.root";
+const char* kInputPath  = SMSIM_NEBULA_RECO_INPUT_FIXTURE;
+const char* kGoldenPath = SMSIM_NEBULA_RECO_GOLDEN_FIXTURE;
 
 TEST(NEBULARecoLegacyCompat, MatchesGoldenFixture) {
     TFile* fgold = TFile::Open(kGoldenPath);
