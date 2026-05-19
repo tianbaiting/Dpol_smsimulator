@@ -257,15 +257,15 @@ echo "[run_formal_training] output directory: ${OUT_DIR}"
 echo "[run_formal_training] geometry: ${GEOM_ABS}"
 echo "[run_formal_training] python runner: ${PY_RUN[*]}"
 
-printf -v GEN_TRAIN_CALL '%s+(%d,%d,%.10g,%.10g,%.10g,%.10g,%.10g,%.10g,"%s")' \
+printf -v GEN_TRAIN_CALL '%s+(%d,%d,%.10g,%.10g,%.10g,%.10g,%.10g,%.10g,"%s",%.10g)' \
     "${GEN_TREE_MACRO}" "${TRAIN_EVENTS}" "${TRAIN_SEED}" "${R_MAX_MEVC}" "${PZ_MIN_MEVC}" "${PZ_MAX_MEVC}" \
-    "${TARGET_X_MM}" "${TARGET_Y_MM}" "${TARGET_Z_MM}" "${TREE_TRAIN}"
-printf -v GEN_VAL_CALL '%s+(%d,%d,%.10g,%.10g,%.10g,%.10g,%.10g,%.10g,"%s")' \
+    "${TARGET_X_MM}" "${TARGET_Y_MM}" "${TARGET_Z_MM}" "${TREE_TRAIN}" "${TARGET_ANGLE_DEG}"
+printf -v GEN_VAL_CALL '%s+(%d,%d,%.10g,%.10g,%.10g,%.10g,%.10g,%.10g,"%s",%.10g)' \
     "${GEN_TREE_MACRO}" "${VAL_EVENTS}" "${VAL_SEED}" "${R_MAX_MEVC}" "${PZ_MIN_MEVC}" "${PZ_MAX_MEVC}" \
-    "${TARGET_X_MM}" "${TARGET_Y_MM}" "${TARGET_Z_MM}" "${TREE_VAL}"
-printf -v GEN_TEST_CALL '%s+(%d,%d,%.10g,%.10g,%.10g,%.10g,%.10g,%.10g,"%s")' \
+    "${TARGET_X_MM}" "${TARGET_Y_MM}" "${TARGET_Z_MM}" "${TREE_VAL}" "${TARGET_ANGLE_DEG}"
+printf -v GEN_TEST_CALL '%s+(%d,%d,%.10g,%.10g,%.10g,%.10g,%.10g,%.10g,"%s",%.10g)' \
     "${GEN_TREE_MACRO}" "${TEST_EVENTS}" "${TEST_SEED}" "${R_MAX_MEVC}" "${PZ_MIN_MEVC}" "${PZ_MAX_MEVC}" \
-    "${TARGET_X_MM}" "${TARGET_Y_MM}" "${TARGET_Z_MM}" "${TREE_TEST}"
+    "${TARGET_X_MM}" "${TARGET_Y_MM}" "${TARGET_Z_MM}" "${TREE_TEST}" "${TARGET_ANGLE_DEG}"
 
 run_root_macro "${GEN_TRAIN_CALL}"
 run_root_macro "${GEN_VAL_CALL}"
@@ -396,6 +396,8 @@ manifest = {
         ],
     },
     "momentum_sampling": {
+        "frame": "target",
+        "rotation_to_lab_deg": float(os.environ["TARGET_ANGLE_DEG"]),
         "px_py": {
             "shape": "uniform_disk",
             "r_max_mevc": float(os.environ["R_MAX_MEVC"]),

@@ -1,4 +1,7 @@
-// [EN] Usage: root -l -q 'scripts/reconstruction/nn_target_momentum/generate_tree_input_disk_pz.C+(10000,20260227,150,500,700,-12.4883,0.0089,-1069.4585,"tree_input.root")' / [CN] 用法: root -l -q 'scripts/reconstruction/nn_target_momentum/generate_tree_input_disk_pz.C+(10000,20260227,150,500,700,-12.4883,0.0089,-1069.4585,"tree_input.root")'
+// [EN] Usage: root -l -q 'scripts/reconstruction/nn_target_momentum/generate_tree_input_disk_pz.C+(10000,20260227,150,500,700,-12.4883,0.0089,-1069.4585,"tree_input.root",3.0)' / [CN] 用法: root -l -q 'scripts/reconstruction/nn_target_momentum/generate_tree_input_disk_pz.C+(10000,20260227,150,500,700,-12.4883,0.0089,-1069.4585,"tree_input.root",3.0)'
+//
+// [EN] target_angle_deg samples the (px,py) disk and pz range in target frame, then RotateY(+angle) into lab frame for the gun, so that downstream build_dataset.C's RotateY(-angle) recovers exactly the target-frame disk as training labels. Pass 0 to keep the legacy lab-frame disk behavior.
+// [CN] target_angle_deg：先在靶系撒 (px,py) 圆盘 + pz 区间，再 RotateY(+angle) 转到 lab 系作为 gun，使 build_dataset.C 的 RotateY(-angle) 还原出干净的靶系圆盘 label。传 0 即退回旧的 lab 系采样。
 
 #include "TBeamSimData.hh"
 
@@ -23,7 +26,8 @@ void generate_tree_input_disk_pz(
     double vertex_x_mm = -12.4883,
     double vertex_y_mm = 0.0089,
     double vertex_z_mm = -1069.4585,
-    const char* out_root = "data/nn_target_momentum/tree_input_disk_pz.root"
+    const char* out_root = "data/nn_target_momentum/tree_input_disk_pz.root",
+    double target_angle_deg = 0.0
 ) {
     if (!out_root) {
         std::cerr << "[generate_tree_input_disk_pz] output path is null" << std::endl;
@@ -41,6 +45,12 @@ void generate_tree_input_disk_pz(
         std::cerr << "[generate_tree_input_disk_pz] invalid pz range" << std::endl;
         return;
     }
+    if (!std::isfinite(target_angle_deg)) {
+        std::cerr << "[generate_tree_input_disk_pz] invalid target_angle_deg" << std::endl;
+        return;
+    }
+
+    const double target_angle_rad = target_angle_deg * M_PI / 180.0;
 
     const std::filesystem::path out_path(out_root);
     if (!out_path.parent_path().empty()) {
@@ -72,12 +82,21 @@ void generate_tree_input_disk_pz(
     for (Long64_t i = 0; i < n_events; ++i) {
         gBeamSimDataArray->clear();
 
-        // [EN] Sample radius as sqrt(U) to enforce uniform density over disk area. / [CN] 半径按sqrt(U)采样以保证圆盘面积均匀分布。
+        // [EN] Sample radius as sqrt(U) to enforce uniform density over disk area. (px_t, py_t, pz_t) live in the target frame. / [CN] 半径按sqrt(U)采样以保证圆盘面积均匀分布。(px_t, py_t, pz_t) 定义在靶系。
         const double radius = std::sqrt(rng.Uniform(0.0, 1.0)) * r_max_mevc;
         const double phi = rng.Uniform(0.0, kTwoPi);
-        const double px = radius * std::cos(phi);
-        const double py = radius * std::sin(phi);
-        const double pz = rng.Uniform(pz_min_mevc, pz_max_mevc);
+        const double px_target = radius * std::cos(phi);
+        const double py_target = radius * std::sin(phi);
+        const double pz_target = rng.Uniform(pz_min_mevc, pz_max_mevc);
+
+        // [EN] Rotate from target frame back to lab frame: lab = R_y(+angle) · target. Geant4 gun fires in lab; build_dataset.C undoes this with R_y(-angle). / [CN] 由靶系旋回 lab 系：lab = R_y(+angle) · target。Geant4 在 lab 系发射，build_dataset.C 用 R_y(-angle) 反旋拿到靶系 label。
+        TVector3 p_lab(px_target, py_target, pz_target);
+        if (target_angle_rad != 0.0) {
+            p_lab.RotateY(target_angle_rad);
+        }
+        const double px = p_lab.X();
+        const double py = p_lab.Y();
+        const double pz = p_lab.Z();
 
         const double e = std::sqrt(px * px + py * py + pz * pz + kProtonMassMeV * kProtonMassMeV);
         TLorentzVector p4(px, py, pz, e);
@@ -98,5 +117,7 @@ void generate_tree_input_disk_pz(
     std::cout << "[generate_tree_input_disk_pz] seed=" << seed << std::endl;
     std::cout << "[generate_tree_input_disk_pz] r_max_mevc=" << r_max_mevc << std::endl;
     std::cout << "[generate_tree_input_disk_pz] pz_range=[" << pz_min_mevc << ", " << pz_max_mevc << "]" << std::endl;
+    std::cout << "[generate_tree_input_disk_pz] target_angle_deg=" << target_angle_deg
+              << " (disk sampled in target frame, rotated to lab for gun)" << std::endl;
     std::cout << "[generate_tree_input_disk_pz] output=" << out_root << std::endl;
 }
