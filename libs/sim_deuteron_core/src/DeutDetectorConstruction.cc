@@ -135,7 +135,8 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
 
   G4double expHall_x = 7.0*m;
   G4double expHall_y = 5*0.5*m;
-  G4double expHall_z = 10.0*m;
+  // [EN] s021 NEBULA reaches z ~= 10.82 m, so the world needs downstream margin. / [CN] s021 NEBULA 最远到 z 约 10.82 m，因此 world 需要下游余量。
+  G4double expHall_z = 12.0*m;
 
   G4Box* expHall_box
     = new G4Box{"expHall_box", expHall_x, expHall_y, expHall_z};

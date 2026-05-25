@@ -33,6 +33,7 @@
 /vis/modeling/trajectories/create/drawByCharge
 /vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
 /vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1
+/tracking/storeTrajectory 1
 
 
 # /action/gun/Type Gaus
@@ -78,9 +79,10 @@
 
 
 /action/gun/Type Pencil
+# /action/gun/Position 0 0 -200 cm
 /action/gun/SetBeamParticleName neutron
 /action/gun/Energy 190 MeV
-/run/beamOn 10
+/run/beamOn 1
 
 
 # 运行事件  

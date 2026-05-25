@@ -1,7 +1,7 @@
 # =========================================================================
 # =========================================================================
 #
-# Geometry for the SAMURAI Dayone experiment with NEBULA-Plus
+# Geometry for the SAMURAI s021 experiment with NEBULA-Plus
 #
 #-----------------------------------
 
@@ -47,8 +47,8 @@
 
 #-----------------------------------
 # NEBULA
-/samurai/geometry/NEBULA/ParameterFileName geometry/NEBULA_Dayone.csv
-/samurai/geometry/NEBULA/DetectorParameterFileName geometry/NEBULA_Detectors_Dayone.csv
+/samurai/geometry/NEBULA/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULA_samurai21.csv
+/samurai/geometry/NEBULA/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULA_Detectors_samurai21.csv
 
 #-----------------------------------
 # NEBULA-Plus

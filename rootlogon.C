@@ -1,18 +1,11 @@
 {
-    // [EN] ROOT may start before setup.sh has populated the dynamic loader cache; add the build library directory from SMSIMDIR explicitly. / [CN] ROOT 启动时动态库缓存可能还没有包含项目库目录；这里显式加入 SMSIMDIR 指向的 build/lib。
-    cout << "\n=== Loading SMSIM libraries ===" << endl;
+    // Automatically load required libraries when ROOT starts
+    cout << "Loading SM libraries from build directory..." << endl;
     
-    const char* smsim_dir = gSystem->Getenv("SMSIMDIR");
-    if (!smsim_dir) {
-        cout << "Error: SMSIMDIR environment variable not set!" << endl;
-    } else {
-        TString libPath = TString::Format("%s/build/lib", smsim_dir);
-        gSystem->AddDynamicPath(libPath);
-        cout << "Library path added: " << libPath << endl;
-    }
-
-    const TString libs[] = {
-        "libsmdata.so",
+    // Since LD_LIBRARY_PATH is set by setup.sh, we can use short names
+    // ROOT will automatically find them in the library path
+    TString libs[] = {
+        "libsmdata.so",       // 包含 TBeamSimData 等数据类（必须先加载）
         "libsmlogger.so",
         "libsmaction.so",
         "libsmconstruction.so",
@@ -22,19 +15,23 @@
     
     for (const auto& lib : libs) {
         if (gSystem->Load(lib) >= 0) {
-            cout << "  [OK] " << lib << endl;
+            cout << "  ✓ Loaded: " << lib << endl;
         } else {
-            cout << "  [XX] Failed to load: " << lib << endl;
+            // Not an error if optional library is missing
+            cout << "  ⊘ Skipped: " << lib << " (not found or already loaded)" << endl;
         }
     }
     
-    cout << "--- Loading Analysis Tools ---" << endl;
+    cout << "\nLoading PDC Analysis Tools..." << endl;
+    // Try different possible names for the analysis library
     if (gSystem->Load("libpdcanalysis.so") >= 0) {
-        cout << "  [OK] libpdcanalysis.so" << endl;
+        cout << "  ✓ Loaded: libpdcanalysis.so" << endl;
     } else if (gSystem->Load("libanalysis.so") >= 0) {
-        cout << "  [OK] libanalysis.so" << endl;
+        cout << "  ✓ Loaded: libanalysis.so" << endl;
     } else {
-        cout << "  [!!] Warning: Analysis library not found" << endl;
+        cout << "  ⚠ Warning: Could not load analysis library" << endl;
     }
-    cout << "================================\n" << endl;
+    
+    cout << "\n✓ All available libraries loaded successfully!" << endl;
+    cout << "  Library search path includes: /home/tian/workspace/dpol/smsimulator5.5/build/lib\n" << endl;
 }

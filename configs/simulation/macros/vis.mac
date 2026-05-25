@@ -13,7 +13,7 @@
 
 # Load geometry
 # /control/execute {SMSIMDIR}/configs/simulation/geometry/5deg_1.2T.mac
-/control/execute {SMSIMDIR}/configs/simulation/geometry/3deg_1.15T.mac
+/control/execute {SMSIMDIR}/configs/simulation/geometry/3deg1.15Tnebulaplus.mac
 # /control/execute geometry/geom_deuteron.mac
 
 # Z-X view
@@ -33,6 +33,7 @@
 /vis/modeling/trajectories/create/drawByCharge
 /vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
 /vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1
+/tracking/storeTrajectory 1
 
 
 # /action/gun/Type Gaus
@@ -78,9 +79,10 @@
 
 
 /action/gun/Type Pencil
+/action/gun/Position 0 0 -200 cm
 /action/gun/SetBeamParticleName neutron
 /action/gun/Energy 190 MeV
-/run/beamOn 10
+/run/beamOn 1
 
 
 # 运行事件  
