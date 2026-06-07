@@ -138,15 +138,15 @@ B & Sub2 & 23 & $-1320$ & $-1320 \to +1320$ & $975$\\
 \multicolumn{6}{l}{Veto size: $320 \times 1900 \times \SI{10}{mm}$}\\
 \multicolumn{6}{l}{Veto distance to wall: \SI{100}{mm} upstream of the corresponding Neut wall
                   (\texttt{WallToVeto = 10\,cm})}\\
-\multicolumn{6}{l}{Veto count: $12$/wall (the plugin selects $12$ when $N_\mathrm{bars}>15$,
-                  else $6$)}\\
+\multicolumn{6}{l}{Veto count: $10$/wall (online-monitor Spectra uses 20-bin VETO ID histogram,
+                   i.e.\ $2\times10$)}\\
 \multicolumn{6}{l}{PMT: Hamamatsu H11284 assemblies; FASTER digital electronics
                   developed at LPC-Caen}\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Total: $22+22+23+23 = 90$ Neut bars + $24$ Veto bars = $\mathbf{114}$ counters,
+Total: $22+22+23+23 = 90$ Neut bars + $20$ Veto bars = $\mathbf{110}$ counters,
 i.e.\ \textbf{30 Neut bars fewer than \NEB{}}.
 
 \subsection{Absolute $Z$ of the \NPL{} origin}
@@ -380,7 +380,7 @@ Detector & Global params & Per-bar table\\
 
 The \NPL{} CSV pair was generated from the numbers in
 \S\ref{sec:internal-npl}. The global-params file content is
-shown below verbatim; the per-bar file has 114 rows ($90+24$) following the
+shown below verbatim; the per-bar file has 110 rows ($90+20$) following the
 \texttt{Layer/SubLayer/PositionX/Y/Z} schema also used by \NEB{}.
 
 \begin{lstlisting}

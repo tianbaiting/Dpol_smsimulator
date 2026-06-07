@@ -128,13 +128,13 @@ B & Sub2 & 23 & $-1320$ & $-1320 \to +1320$ & $975$\\
                   \texttt{InterModule = 1\,mm} 声明了但未使用）}\\
 \multicolumn{6}{l}{Veto 尺寸：$320 \times 1900 \times \SI{10}{mm}$}\\
 \multicolumn{6}{l}{Veto 距墙：\SI{100}{mm}（Neut 上游；\texttt{WallToVeto = 10\,cm}）}\\
-\multicolumn{6}{l}{Veto 数量：每墙 12 根（插件按 \texttt{m\_NbrModule>15} 分支选 12，否则 6）}\\
+\multicolumn{6}{l}{Veto 数量：每墙 10 根（在线监测 Spectra 中 VETO ID 直方图为 20 bins，即 $2\times10$）}\\
 \multicolumn{6}{l}{PMT：Hamamatsu H11284；电子学为 LPC-Caen 开发的 FASTER 数字 DAQ}\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-合计：$22+22+23+23 = 90$ Neut + 24 Veto = $\mathbf{114}$ 个，
+合计：$22+22+23+23 = 90$ Neut + 20 Veto = $\mathbf{110}$ 个，
 \textbf{比 \NEB{} 少 30 根 Neut}。
 
 \subsection{\NPL{} 原点的绝对 $Z$}
@@ -362,7 +362,7 @@ cmake --build . -j$(nproc)
 \end{table}
 
 \NPL{} 这一对 CSV 是根据 \S\ref{sec:internal-npl} 的数值生成的。
-整体参数文件全文如下；每根条文件有 114 行（$90+24$），列结构
+整体参数文件全文如下；每根条文件有 110 行（$90+20$），列结构
 （\texttt{Layer/SubLayer/PositionX/Y/Z}）与 \NEB{} 完全一致。
 
 \begin{lstlisting}

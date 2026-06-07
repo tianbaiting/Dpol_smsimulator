@@ -61,7 +61,7 @@ TEST(NEBULAPlusSimParameterReaderTest, ReadsBarTable) {
         if (kv.second.fDetectorType == "Veto") ++n_veto;
     }
     EXPECT_EQ(90, n_neut);
-    EXPECT_EQ(24, n_veto);
+    EXPECT_EQ(20, n_veto);
 }
 
 // ---------------------------------------------------------------
