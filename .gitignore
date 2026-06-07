@@ -19,7 +19,7 @@ __pycache__/
 scripts/simulation/_macros/
 
 # Data files (too large for git)
-data/
+/data/
 configs/simulation/geometry/filed_map/
 d_work/geometry/filed_map/
 *.dat
