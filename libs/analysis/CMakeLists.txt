@@ -56,6 +56,7 @@ target_include_directories(analysis PUBLIC
 # 链接依赖
 target_link_libraries(analysis PUBLIC
     smlogger
+    smdata
     ${ROOT_LIBRARIES}
 )
 

@@ -32,6 +32,8 @@ struct LogConfig {
     std::string pattern = "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%n] %v";
 };
 
+LogConfig MakeLogConfigFromEnvironment(LogConfig config);
+
 // 日志管理器（单例）
 class Logger {
 public:

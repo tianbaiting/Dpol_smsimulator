@@ -31,6 +31,7 @@ void NEBULAPlusSimParameterReader::ReadNEBULAPlusParameters(const char* PrmFileN
 	  <<std::endl;
     return;
   }
+  fNEBULAPlusSimParameter->fParameterFileName = PrmFileName;
 
   for (int iline=0;iline<(int)PrmArray.size();++iline){
       std::vector<TString> str_line = PrmArray[iline];
@@ -72,6 +73,7 @@ void NEBULAPlusSimParameterReader::ReadNEBULAPlusDetectorParameters(const char* 
 	  <<std::endl;
     return;
   }
+  fNEBULAPlusSimParameter->fDetectorParameterFileName = PrmFileName;
 
   std::map<int,TDetectorSimParameter> *Map = &(fNEBULAPlusSimParameter->fNEBULAPlusDetectorParameterMap);
 

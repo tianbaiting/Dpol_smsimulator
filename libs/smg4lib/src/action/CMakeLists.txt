@@ -12,6 +12,7 @@ add_library(smaction SHARED ${ACTION_SOURCES})
 # 设置包含目录
 target_include_directories(smaction PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smlogger/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/smg4lib/src/data/include>
     $<INSTALL_INTERFACE:include>
@@ -19,6 +20,7 @@ target_include_directories(smaction PUBLIC
 
 # 链接依赖
 target_link_libraries(smaction PUBLIC
+    smlogger
     smdata
     ${ROOT_LIBRARIES}
     ${Geant4_LIBRARIES}

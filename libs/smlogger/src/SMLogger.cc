@@ -6,7 +6,48 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
+#include <algorithm>
+#include <cctype>
+#include <cstdlib>
+
 namespace SMLogger {
+namespace {
+
+std::string ToUpper(std::string text) {
+    std::transform(text.begin(), text.end(), text.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+    return text;
+}
+
+bool ParseLogLevel(const char* value, LogLevel* level) {
+    if (!value || !level) return false;
+    const std::string text = ToUpper(value);
+    if (text == "TRACE") { *level = LogLevel::TRACE; return true; }
+    if (text == "DEBUG") { *level = LogLevel::DEBUG; return true; }
+    if (text == "INFO") { *level = LogLevel::INFO; return true; }
+    if (text == "WARN" || text == "WARNING") { *level = LogLevel::WARN; return true; }
+    if (text == "ERROR") { *level = LogLevel::ERROR; return true; }
+    if (text == "CRITICAL") { *level = LogLevel::CRITICAL; return true; }
+    if (text == "OFF") { *level = LogLevel::OFF; return true; }
+    return false;
+}
+
+}  // namespace
+
+LogConfig MakeLogConfigFromEnvironment(LogConfig config) {
+    LogLevel level = config.level;
+    if (ParseLogLevel(std::getenv("SM_LOG_LEVEL"), &level)) {
+        config.level = level;
+    }
+
+    const char* log_file = std::getenv("SM_LOG_FILE");
+    if (log_file && log_file[0] != '\0') {
+        config.file = true;
+        config.filename = log_file;
+    }
+
+    return config;
+}
 
 Logger& Logger::Instance() {
     static Logger instance;

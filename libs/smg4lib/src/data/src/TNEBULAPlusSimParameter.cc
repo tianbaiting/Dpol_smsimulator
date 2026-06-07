@@ -10,13 +10,16 @@ TNEBULAPlusSimParameter::TNEBULAPlusSimParameter(TString name)
   fIsLoaded(false),
   fNeutNum(0), fVetoNum(0), fLayerNum(0), fSubLayerNum(0),
   fNeutNumPerLayer(0), fVetoNumPerLayer(0),
+  fNeutNumPerSubLayer(0), fVetoNumPerSubLayer(0),
   fPosition(0,0,0), fNeutSize(12,180,12), fVetoSize(32,1,190),
   fSize(200,200,200), fAngle(0,0,0),
   fTimeReso(0.17*sqrt(2)),// ns
   fV_scinti(158),   //mm/ns
   fAttLen_Neut(6680),// mm
   fAttLen_Veto(2580),// mmm
-  fQ_factor(1)
+  fQ_factor(1),
+  fParameterFileName(""),
+  fDetectorParameterFileName("")
 {
   std::cout<<"TNEBULAPlusSimParameter"<<std::endl;
 }
@@ -47,7 +50,9 @@ std::ostream& operator<<(std::ostream& out,  const TNEBULAPlusSimParameter& prm)
       << "fVetoSize="       <<prm.fVetoSize.x() <<" "<<prm.fVetoSize.y() <<" "<<prm.fVetoSize.z() <<" "
       << "fAngle="          <<prm.fAngle.x()<<" "<<prm.fAngle.y()<<" "<<prm.fAngle.z()<<" "
       << "fTimeReso="       <<prm.fTimeReso<<" "
-      << "fQ_factor="       <<prm.fQ_factor<<" ";
+      << "fQ_factor="       <<prm.fQ_factor<<" "
+      << "fParameterFileName=" << prm.fParameterFileName << " "
+      << "fDetectorParameterFileName=" << prm.fDetectorParameterFileName << " ";
   return out;
 }
 //____________________________________________________________________
@@ -67,6 +72,8 @@ void TNEBULAPlusSimParameter::Print(Option_t*) const
 	    << "fAngle="          <<fAngle.x()<<" "<<fAngle.y()<<" "<<fAngle.z()<<" "
             << "fTimeReso="       <<fTimeReso<<" "
             << "fQ_factor="       <<fQ_factor<<" "
+            << "fParameterFileName=" << fParameterFileName << " "
+            << "fDetectorParameterFileName=" << fDetectorParameterFileName << " "
 	    << std::endl;
 }
 //____________________________________________________________________

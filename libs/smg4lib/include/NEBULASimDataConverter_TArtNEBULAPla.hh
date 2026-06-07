@@ -32,6 +32,7 @@ public:
 
 protected:
   bool fIncludeResolution;
+  bool fDetectorEnabled;
 
   TNEBULASimParameter *fNEBULASimParameter;
   TClonesArray *fNEBULASimDataArray;  // Each element is a hit

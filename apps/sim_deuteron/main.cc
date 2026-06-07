@@ -71,6 +71,14 @@
 
 int main(int argc,char** argv)
 {
+  SMLogger::LogConfig logConfig;
+  logConfig.async = false;
+  logConfig.console = true;
+  logConfig.file = true;
+  logConfig.filename = "sim_deuteron.log";
+  logConfig.level = SMLogger::LogLevel::INFO;
+  SMLogger::Logger::Instance().Initialize(SMLogger::MakeLogConfigFromEnvironment(logConfig));
+
   // Construct the default run manager
   G4RunManager * runManager = new G4RunManager;
 

@@ -21,6 +21,11 @@ public:
     }
     using NEBULABaseReco::ReconstructNeutrons;
 
+    void ProcessEvent(TClonesArray* npl_hits, RecoEvent& event) {
+        SetInput(npl_hits);
+        NEBULABaseReco::ProcessEvent(event);
+    }
+
 protected:
     std::vector<NEBULAHit> ExtractHits() override;
 

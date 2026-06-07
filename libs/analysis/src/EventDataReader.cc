@@ -2,10 +2,15 @@
 #include "SMLogger.hh"
 #include "TSystem.h"
 #include "TBeamSimData.hh"
+#include "TNEBULAPlusSimParameter.hh"
+#include "TNEBULASimParameter.hh"
 
 EventDataReader::EventDataReader(const char* filePath) 
     : m_file(nullptr), m_tree(nullptr), m_fragSimDataArray(nullptr), m_nebulaDataArray(nullptr),
-      m_beamDataVector(nullptr), m_currentEvent(-1), m_totalEvents(0), m_filePath(filePath) 
+      m_nebulaPlusDataArray(nullptr), m_beamDataVector(nullptr),
+      m_nebulaParameter(nullptr), m_nebulaPlusParameter(nullptr),
+      m_hasNEBULABranch(false), m_hasNEBULAPlusBranch(false),
+      m_currentEvent(-1), m_totalEvents(0), m_filePath(filePath) 
 {
     // It is good practice to load libraries in the main macro,
     // but loading here ensures the class is self-contained.
@@ -30,12 +35,25 @@ EventDataReader::EventDataReader(const char* filePath)
     // Try to set NEBULA branch
     // [EN] NEBULAPla is optional; allow analysis to run without NEBULA data. / [CN] NEBULAPla是可选分支，允许无NEBULA数据时继续分析。
     if (m_tree->GetBranch("NEBULAPla")) {
+        m_hasNEBULABranch = true;
         m_tree->SetBranchAddress("NEBULAPla", &m_nebulaDataArray);
         SM_INFO("EventDataReader: Found NEBULAPla branch");
     } else {
         SM_DEBUG("EventDataReader: No NEBULAPla branch found in file");
         m_nebulaDataArray = nullptr;
     }
+
+    if (m_tree->GetBranch("NEBULAPlusPla")) {
+        m_hasNEBULAPlusBranch = true;
+        m_tree->SetBranchAddress("NEBULAPlusPla", &m_nebulaPlusDataArray);
+        SM_INFO("EventDataReader: Found NEBULAPlusPla branch");
+    } else {
+        SM_DEBUG("EventDataReader: No NEBULAPlusPla branch found in file");
+        m_nebulaPlusDataArray = nullptr;
+    }
+
+    m_nebulaParameter = dynamic_cast<TNEBULASimParameter*>(m_file->Get("NEBULAParameter"));
+    m_nebulaPlusParameter = dynamic_cast<TNEBULAPlusSimParameter*>(m_file->Get("NEBULAPlusParameter"));
     
     // Try to set beam branch using vector<TBeamSimData> format
     // [EN] Beam vector is optional and only present in newer simulation outputs. / [CN] beam向量是可选的，仅出现在较新的模拟输出中。

@@ -20,6 +20,7 @@
 #include "PDCConstruction.hh"
 #include "NEBULAConstruction.hh"
 #include "NEBULAPlusConstruction.hh"
+#include "NeutronDetectorSimConfig.hh"
 #include "NEBULAPlusSD.hh"
 #include "IPSConstruction.hh"
 #include "ExitWindowNConstruction.hh"
@@ -34,6 +35,8 @@
 
 #include "SimDataManager.hh"
 #include "TFragSimParameter.hh"
+#include "TNEBULAPlusSimParameter.hh"
+#include "TNEBULASimParameter.hh"
 
 #include "G4SystemOfUnits.hh"//Geant4.10
 #include "G4GeometryManager.hh"
@@ -289,44 +292,55 @@ G4VPhysicalVolume* DeutDetectorConstruction::Construct()
     fIPSConstruction->GetActiveLogicalVolume()->SetSensitiveDetector(fIPSSD);
   }
 
+  auto* nebula_prm = static_cast<TNEBULASimParameter*>(
+      simDataManager->FindParameter("NEBULAParameter"));
+  auto* nebula_plus_prm = static_cast<TNEBULAPlusSimParameter*>(
+      simDataManager->FindParameter("NEBULAPlusParameter"));
+  const bool nebula_enabled = sim_deuteron::IsNEBULAEnabled(nebula_prm);
+  const bool nebula_plus_enabled = sim_deuteron::IsNEBULAPlusEnabled(nebula_plus_prm);
+
   //------------------------------ NEBULA
-  fNEBULAConstruction->ConstructSub();
-  fNEBULAConstruction->PutNEBULA(expHall_log);
+  if (nebula_enabled) {
+    fNEBULAConstruction->ConstructSub();
+    fNEBULAConstruction->PutNEBULA(expHall_log);
 
-  // Sensitive Detector
-  if (fNEBULASD==0){
-    fNEBULASD = new NEBULASD("/NEBULA");
-    SDMan->AddNewDetector(fNEBULASD);
-  }
+    // Sensitive Detector
+    if (fNEBULASD==0){
+      fNEBULASD = new NEBULASD("/NEBULA");
+      SDMan->AddNewDetector(fNEBULASD);
+    }
 
-  if (fNEBULAConstruction->DoesNeutExist()){
-    G4LogicalVolume *neut_log = fNEBULAConstruction->GetLogicNeut();
-    neut_log->SetSensitiveDetector(fNEBULASD);
-  }
+    if (fNEBULAConstruction->DoesNeutExist()){
+      G4LogicalVolume *neut_log = fNEBULAConstruction->GetLogicNeut();
+      neut_log->SetSensitiveDetector(fNEBULASD);
+    }
 
-  if (fNEBULAConstruction->DoesVetoExist()){
-    G4LogicalVolume *veto_log = fNEBULAConstruction->GetLogicVeto();
-    veto_log->SetSensitiveDetector(fNEBULASD);
+    if (fNEBULAConstruction->DoesVetoExist()){
+      G4LogicalVolume *veto_log = fNEBULAConstruction->GetLogicVeto();
+      veto_log->SetSensitiveDetector(fNEBULASD);
+    }
   }
 
   //------------------------------ NEBULA-Plus
-  fNEBULAPlusConstruction->ConstructSub();
-  fNEBULAPlusConstruction->PutNEBULAPlus(expHall_log);
+  if (nebula_plus_enabled) {
+    fNEBULAPlusConstruction->ConstructSub();
+    fNEBULAPlusConstruction->PutNEBULAPlus(expHall_log);
 
-  // Sensitive Detector
-  if (fNEBULAPlusSD==0){
-    fNEBULAPlusSD = new NEBULAPlusSD("/NEBULAPlus");
-    SDMan->AddNewDetector(fNEBULAPlusSD);
-  }
+    // Sensitive Detector
+    if (fNEBULAPlusSD==0){
+      fNEBULAPlusSD = new NEBULAPlusSD("/NEBULAPlus");
+      SDMan->AddNewDetector(fNEBULAPlusSD);
+    }
 
-  if (fNEBULAPlusConstruction->DoesNeutExist()){
-    G4LogicalVolume *neut_log = fNEBULAPlusConstruction->GetLogicNeut();
-    neut_log->SetSensitiveDetector(fNEBULAPlusSD);
-  }
+    if (fNEBULAPlusConstruction->DoesNeutExist()){
+      G4LogicalVolume *neut_log = fNEBULAPlusConstruction->GetLogicNeut();
+      neut_log->SetSensitiveDetector(fNEBULAPlusSD);
+    }
 
-  if (fNEBULAPlusConstruction->DoesVetoExist()){
-    G4LogicalVolume *veto_log = fNEBULAPlusConstruction->GetLogicVeto();
-    veto_log->SetSensitiveDetector(fNEBULAPlusSD);
+    if (fNEBULAPlusConstruction->DoesVetoExist()){
+      G4LogicalVolume *veto_log = fNEBULAPlusConstruction->GetLogicVeto();
+      veto_log->SetSensitiveDetector(fNEBULAPlusSD);
+    }
   }
 
   //------------------------------ PDCs 

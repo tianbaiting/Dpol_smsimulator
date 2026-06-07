@@ -1,6 +1,7 @@
 #include "NEBULASimDataConverter_TArtNEBULAPla.hh"
 
 //#include "TNEBULASimData.hh"
+#include "NeutronDetectorSimConfig.hh"
 #include "TSimData.hh"
 #include "TNEBULASimParameter.hh"
 #include "SimDataManager.hh"
@@ -17,7 +18,11 @@
 //____________________________________________________________________
 NEBULASimDataConverter_TArtNEBULAPla::NEBULASimDataConverter_TArtNEBULAPla(TString name)
     : SimDataConverter(name),
-      fIncludeResolution(true)
+      fIncludeResolution(true),
+      fDetectorEnabled(false),
+      fNEBULASimParameter(nullptr),
+      fNEBULASimDataArray(nullptr),
+      fNEBULAPlaArray(nullptr)
 {
 }
 
@@ -34,9 +39,16 @@ int NEBULASimDataConverter_TArtNEBULAPla::Initialize()
   fNEBULASimParameter = (TNEBULASimParameter *)sman->FindParameter("NEBULAParameter");
   if (fNEBULASimParameter == 0)
   {
-    std::cout << "NEBULASimDataConveter_TArtNEBULAPla : NEBULAParameter is not found."
+    std::cout << "NEBULASimDataConveter_TArtNEBULAPla : NEBULAParameter is not found, converter disabled."
               << std::endl;
-    return 1;
+    fDetectorEnabled = false;
+    return 0;
+  }
+  fDetectorEnabled = sim_deuteron::IsNEBULAEnabled(fNEBULASimParameter);
+  if (!fDetectorEnabled) {
+    std::cout << "NEBULASimDataConveter_TArtNEBULAPla : NEBULAParameter is not loaded, converter disabled."
+              << std::endl;
+    return 0;
   }
 
   Int_t NumOfDetector = fNEBULASimParameter->fNeutNum + fNEBULASimParameter->fVetoNum;
@@ -57,13 +69,14 @@ int NEBULASimDataConverter_TArtNEBULAPla::Initialize()
 //____________________________________________________________________
 int NEBULASimDataConverter_TArtNEBULAPla::DefineBranch(TTree *tree)
 {
-  if (fDataStore)
+  if (fDataStore && fDetectorEnabled)
     tree->Branch("NEBULAPla", &fNEBULAPlaArray);
   return 0;
 }
 //____________________________________________________________________
 int NEBULASimDataConverter_TArtNEBULAPla::ConvertSimData()
 {
+  if (!fDetectorEnabled) return 0;
   fDataBufferMap.clear();
 
   std::map<int,tmp_data>::iterator it;
@@ -184,7 +197,7 @@ int NEBULASimDataConverter_TArtNEBULAPla::ConvertSimData()
 //____________________________________________________________________
 int NEBULASimDataConverter_TArtNEBULAPla::ClearBuffer()
 {
-  fNEBULAPlaArray->Delete();
+  if (fNEBULAPlaArray) fNEBULAPlaArray->Delete();
   return 0;
 }
 //____________________________________________________________________

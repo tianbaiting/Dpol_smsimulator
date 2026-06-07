@@ -113,3 +113,30 @@ gtest_discover_tests(test_NebulaJointReco_combined
     PROPERTIES LABELS "unit"
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+add_executable(test_NeutronDetectorConfig
+    test_NeutronDetectorConfig.cc
+)
+target_link_libraries(test_NeutronDetectorConfig PRIVATE
+    analysis
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_NeutronDetectorConfig
+    PROPERTIES LABELS "unit"
+)
+
+add_executable(test_NeutronDetectorSimConfig
+    test_NeutronDetectorSimConfig.cc
+)
+target_link_libraries(test_NeutronDetectorSimConfig PRIVATE
+    sim_deuteron_core
+    smg4lib
+    GTest::gtest
+    GTest::gtest_main
+    ${Geant4_LIBRARIES}
+    ${ROOT_LIBRARIES}
+)
+gtest_discover_tests(test_NeutronDetectorSimConfig
+    PROPERTIES LABELS "unit"
+)

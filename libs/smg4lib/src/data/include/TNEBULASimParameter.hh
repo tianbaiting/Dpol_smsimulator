@@ -43,6 +43,8 @@ public:
   Double_t fAttLen_Neut;// Attenuation length for Neut (mm)
   Double_t fAttLen_Veto;// Attenuation length for Neut (mm)
   Double_t fQ_factor;// correction factor for light output
+  TString  fParameterFileName;
+  TString  fDetectorParameterFileName;
 
   //       ID  parameter
   std::map<int,TDetectorSimParameter> fNEBULADetectorParameterMap;

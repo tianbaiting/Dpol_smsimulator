@@ -3,6 +3,9 @@
 #include "MagneticField.hh"
 #include "NEBULAFrameRotation.hh"
 #include "NEBULAReco.hh"
+#include "NEBULAPlusReco.hh"
+#include "NebulaJointReco.hh"
+#include "NeutronDetectorConfig.hh"
 #include "PDCFrameRotation.hh"
 #include "PDCSimAna.hh"
 #include "PDCMomentumReconstructor.hh"
@@ -10,6 +13,8 @@
 #include "RecoEvent.hh"
 #include "SMLogger.hh"
 #include "TBeamSimData.hh"
+#include "TNEBULAPlusSimParameter.hh"
+#include "TNEBULASimParameter.hh"
 
 #include "TFile.h"
 #include "TNamed.h"
@@ -29,6 +34,7 @@
 
 namespace fs = std::filesystem;
 namespace reco = analysis::pdc::anaroot_like;
+namespace neutron = analysis::neutron;
 
 namespace {
 
@@ -59,6 +65,7 @@ struct CliOptions {
     std::string nn_model_json;
     std::string magnetic_field_map;
     reco::RuntimeBackend backend = reco::RuntimeBackend::kAuto;
+    neutron::NeutronDetectorMode neutron_detector_mode = neutron::NeutronDetectorMode::kAuto;
     int max_files = 0;
     int max_iterations = 40;
     double pdc_sigma_u_mm = 2.0;
@@ -85,6 +92,8 @@ struct FileStats {
     long long processed_events = 0;
     long long pdc_hit_events = 0;
     long long nebula_hit_events = 0;
+    long long nebula_plus_hit_events = 0;
+    long long neutron_reco_events = 0;
     long long proton_reco_events = 0;
     long long reco_proton_count = 0;
 };
@@ -96,6 +105,8 @@ struct RunStats {
     long long processed_events = 0;
     long long pdc_hit_events = 0;
     long long nebula_hit_events = 0;
+    long long nebula_plus_hit_events = 0;
+    long long neutron_reco_events = 0;
     long long proton_reco_events = 0;
     long long reco_proton_count = 0;
 };
@@ -141,6 +152,7 @@ void PrintUsage(const char* argv0) {
         << "                   [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
         << "                   [--rk-step-mm V] [--max-iterations N] [--tolerance-mm V]\n"
         << "                   [--center-brho-tm V] [--rk-fit-mode two-point-backprop|fixed-target-pdc-only|three-point-free]\n"
+        << "                   [--neutron-detectors auto|none|nebula|nebula-plus|joint]\n"
         << "                   [--rk-write-errors on|off] [--rk-write-laplace on|off]\n"
         << "                   [--momentum-prior-mev-c V --momentum-prior-sigma-mev-c V]\n"
         << "\n"
@@ -149,6 +161,7 @@ void PrintUsage(const char* argv0) {
         << "                   [--nn-model-json FILE] [--magnetic-field-map FILE] [--magnet-rotation-deg DEG]\n"
         << "                   [--max-files N] [--pdc-sigma-u-mm V] [--pdc-sigma-v-mm V] [--pdc-angle-deg V]\n"
         << "                   [--target-sigma-mm V] [--p-min-mevc V] [--p-max-mevc V]\n"
+        << "                   [--neutron-detectors auto|none|nebula|nebula-plus|joint]\n"
         << "                   [--rk-write-errors on|off] [--rk-write-laplace on|off]\n";
 }
 
@@ -193,6 +206,8 @@ CliOptions ParseArgs(int argc, char* argv[]) {
                 );
             }
             opts.backend = parsed;
+        } else if (arg == "--neutron-detectors" && i + 1 < argc) {
+            opts.neutron_detector_mode = neutron::ParseNeutronDetectorMode(argv[++i]);
         } else if (arg == "--max-files" && i + 1 < argc) {
             opts.max_files = ParseInt(argv[++i], "--max-files");
         } else if (arg == "--max-iterations" && i + 1 < argc) {
@@ -321,6 +336,54 @@ fs::path BuildOutputPath(const fs::path& input_file, const fs::path& input_dir, 
     return out;
 }
 
+fs::path BuildLogPath(const fs::path& output_file) {
+    fs::path log_path = output_file;
+    log_path.replace_extension(".log");
+    return log_path;
+}
+
+void EnsureParentDirectory(const fs::path& file_path) {
+    const fs::path parent = file_path.parent_path();
+    if (!parent.empty()) {
+        fs::create_directories(parent);
+    }
+}
+
+neutron::DetectorAvailability BuildDetectorAvailability(const EventDataReader& reader) {
+    neutron::DetectorAvailability availability;
+    availability.has_nebula_branch = reader.HasNEBULABranch();
+    availability.has_nebula_plus_branch = reader.HasNEBULAPlusBranch();
+
+    const auto* nebula = reader.GetNEBULAParameter();
+    const auto* nebula_plus = reader.GetNEBULAPlusParameter();
+    availability.metadata_available = (nebula != nullptr || nebula_plus != nullptr);
+    if (nebula) {
+        availability.nebula_parameter_loaded = nebula->fIsLoaded;
+        availability.nebula_detector_count = nebula->fNeutNum + nebula->fVetoNum;
+    }
+    if (nebula_plus) {
+        availability.nebula_plus_parameter_loaded = nebula_plus->fIsLoaded;
+        availability.nebula_plus_detector_count = nebula_plus->fNeutNum + nebula_plus->fVetoNum;
+    }
+    return availability;
+}
+
+void LogNeutronRecoConfig(const neutron::DetectorAvailability& availability,
+                          const neutron::ResolvedNeutronDetectorMode& resolved) {
+    SM_INFO("Reconstruction neutron detector configuration:");
+    SM_INFO("  RecoNeutronRequestedMode={}",
+            neutron::NeutronDetectorModeName(resolved.requested_mode));
+    SM_INFO("  RecoNeutronEffectiveMode={}",
+            neutron::NeutronDetectorModeName(resolved.effective_mode));
+    SM_INFO("  RecoNeutronUsedMetadata={}", resolved.used_metadata ? "true" : "false");
+    SM_INFO("  InputHasNEBULAPla={}", availability.has_nebula_branch ? "true" : "false");
+    SM_INFO("  InputHasNEBULAPlusPla={}", availability.has_nebula_plus_branch ? "true" : "false");
+    SM_INFO("  InputNEBULADetectorCount={}", availability.nebula_detector_count);
+    SM_INFO("  InputNEBULAPlusDetectorCount={}", availability.nebula_plus_detector_count);
+    SM_INFO("  IgnoredNEBULABranch={}", resolved.ignored_nebula_branch ? "true" : "false");
+    SM_INFO("  IgnoredNEBULAPlusBranch={}", resolved.ignored_nebula_plus_branch ? "true" : "false");
+}
+
 bool ProcessSingleFile(const fs::path& input_file,
                        const fs::path& output_file,
                        const std::string& log_tag,
@@ -329,9 +392,12 @@ bool ProcessSingleFile(const fs::path& input_file,
                        bool write_rk_laplace,
                        PDCSimAna& pdc_ana,
                        NEBULAReco& nebula_reco,
+                       NEBULAPlusReco& nebula_plus_reco,
+                       NebulaJointReco& nebula_joint_reco,
                        reco::PDCMomentumReconstructor& proton_reco,
                        const reco::RecoConfig& proton_config,
                        const reco::TargetConstraint& target_constraint,
+                       neutron::NeutronDetectorMode requested_neutron_mode,
                        double target_angle_rad,
                        FileStats* stats) {
     if (!stats) {
@@ -344,7 +410,12 @@ bool ProcessSingleFile(const fs::path& input_file,
         return false;
     }
 
-    fs::create_directories(output_file.parent_path());
+    const neutron::DetectorAvailability detector_availability = BuildDetectorAvailability(reader);
+    const neutron::ResolvedNeutronDetectorMode neutron_mode =
+        neutron::ResolveNeutronDetectorMode(requested_neutron_mode, detector_availability);
+    LogNeutronRecoConfig(detector_availability, neutron_mode);
+
+    EnsureParentDirectory(output_file);
     TFile out(output_file.c_str(), "RECREATE");
     if (out.IsZombie()) {
         std::cerr << "[" << log_tag << "] failed to create output file: " << output_file << std::endl;
@@ -498,17 +569,42 @@ bool ProcessSingleFile(const fs::path& input_file,
         }
 
         TClonesArray* nebula_hits = reader.GetNEBULAHits();
-        if (nebula_hits && nebula_hits->GetEntries() > 0) {
-            nebula_reco.ProcessEvent(nebula_hits, reco_event);
+        TClonesArray* nebula_plus_hits = reader.GetNEBULAPlusHits();
+        const bool nebula_has_hits = nebula_hits && nebula_hits->GetEntries() > 0;
+        const bool nebula_plus_has_hits = nebula_plus_hits && nebula_plus_hits->GetEntries() > 0;
+        if (nebula_has_hits) {
             ++stats->nebula_hit_events;
-            // [EN] Rotate reco neutron direction(s) from lab frame to target
-            // (beam-as-Z) frame so reco_neutron is in the same frame as
-            // truth_neutron_p4. Mirrors the proton-side rotation done at
-            // RotateRecoResultToTargetFrame below. Without this, NEBULA
-            // direction carries a systematic Δpx ≈ -p_z·sin(α_tgt) ~ -33 MeV/c
-            // bias relative to truth_neutron_p4.
-            // [CN] 把 reco neutron 方向从 lab 系旋到靶系，与 truth_neutron_p4
-            // 同坐标系；不做此旋转 reco_pxn 会有 -33 MeV/c 系统偏。
+        }
+        if (nebula_plus_has_hits) {
+            ++stats->nebula_plus_hit_events;
+        }
+
+        const std::size_t neutron_count_before = reco_event.neutrons.size();
+        switch (neutron_mode.effective_mode) {
+            case neutron::NeutronDetectorMode::kNone:
+                break;
+            case neutron::NeutronDetectorMode::kNebula:
+                if (nebula_has_hits) {
+                    nebula_reco.ProcessEvent(nebula_hits, reco_event);
+                }
+                break;
+            case neutron::NeutronDetectorMode::kNebulaPlus:
+                if (nebula_plus_has_hits) {
+                    nebula_plus_reco.ProcessEvent(nebula_plus_hits, reco_event);
+                }
+                break;
+            case neutron::NeutronDetectorMode::kJoint:
+                if (nebula_has_hits || nebula_plus_has_hits) {
+                    nebula_joint_reco.SetInputs(nebula_hits, nebula_plus_hits);
+                    nebula_joint_reco.ProcessEvent(reco_event);
+                }
+                break;
+            case neutron::NeutronDetectorMode::kAuto:
+                break;
+        }
+        if (reco_event.neutrons.size() > neutron_count_before) {
+            ++stats->neutron_reco_events;
+            // [EN] Rotate reco neutron direction(s) from lab frame to target (beam-as-Z) frame so reco_neutron matches truth_neutron_p4. / [CN] 把重建中子方向从 lab 系旋到靶系，使 reco_neutron 与 truth_neutron_p4 的坐标系一致。
             analysis::nebula::RotateRecoNeutronsToTargetFrame(reco_event,
                                                               target_angle_rad);
         }
@@ -617,17 +713,44 @@ bool ProcessSingleFile(const fs::path& input_file,
     }
 
     const std::string processed_events_text = std::to_string(stats->processed_events);
+    const std::string nebula_detector_count_text = std::to_string(detector_availability.nebula_detector_count);
+    const std::string nebula_plus_detector_count_text =
+        std::to_string(detector_availability.nebula_plus_detector_count);
     TNamed info_input("InputFile", input_file.c_str());
     TNamed info_backend("ProtonRecoBackend", backend_name.c_str());
     TNamed info_events("ProcessedEvents", processed_events_text.c_str());
     TNamed info_rk_errors("RkErrorBranches", write_rk_errors ? "true" : "false");
     TNamed info_rk_laplace("RkLaplaceBranches",
                            (write_rk_errors && write_rk_laplace) ? "true" : "false");
+    TNamed info_neutron_requested("RecoNeutronRequestedMode",
+                                  neutron::NeutronDetectorModeName(neutron_mode.requested_mode).c_str());
+    TNamed info_neutron_effective("RecoNeutronEffectiveMode",
+                                  neutron::NeutronDetectorModeName(neutron_mode.effective_mode).c_str());
+    TNamed info_neutron_used_metadata("RecoNeutronUsedMetadata",
+                                      neutron_mode.used_metadata ? "true" : "false");
+    TNamed info_has_nebula("InputHasNEBULAPla", detector_availability.has_nebula_branch ? "true" : "false");
+    TNamed info_has_nebula_plus("InputHasNEBULAPlusPla",
+                                detector_availability.has_nebula_plus_branch ? "true" : "false");
+    TNamed info_ignored_nebula("IgnoredNEBULABranch",
+                               neutron_mode.ignored_nebula_branch ? "true" : "false");
+    TNamed info_ignored_nebula_plus("IgnoredNEBULAPlusBranch",
+                                    neutron_mode.ignored_nebula_plus_branch ? "true" : "false");
+    TNamed info_nebula_count("InputNEBULADetectorCount", nebula_detector_count_text.c_str());
+    TNamed info_nebula_plus_count("InputNEBULAPlusDetectorCount", nebula_plus_detector_count_text.c_str());
     info_input.Write();
     info_backend.Write();
     info_events.Write();
     info_rk_errors.Write();
     info_rk_laplace.Write();
+    info_neutron_requested.Write();
+    info_neutron_effective.Write();
+    info_neutron_used_metadata.Write();
+    info_has_nebula.Write();
+    info_has_nebula_plus.Write();
+    info_ignored_nebula.Write();
+    info_ignored_nebula_plus.Write();
+    info_nebula_count.Write();
+    info_nebula_plus_count.Write();
 
     out.cd();
     reco_tree.Write();
@@ -639,13 +762,6 @@ bool ProcessSingleFile(const fs::path& input_file,
 
 int main(int argc, char* argv[]) {
     try {
-        SMLogger::LogConfig log_config;
-        log_config.async = false;
-        log_config.console = true;
-        log_config.file = false;
-        log_config.level = SMLogger::LogLevel::WARN;
-        SMLogger::Logger::Instance().Initialize(log_config);
-
         const CliOptions opts = ParseArgs(argc, argv);
         const bool single_file_mode = !opts.input_file.empty();
         const fs::path input_dir(opts.input_dir);
@@ -675,10 +791,32 @@ int main(int argc, char* argv[]) {
             throw std::runtime_error("magnetic-field-map does not exist: " + magnetic_field_map.string());
         }
         if (single_file_mode) {
-            fs::create_directories(output_file_single.parent_path());
+            EnsureParentDirectory(output_file_single);
         } else {
             fs::create_directories(output_dir);
         }
+
+        const fs::path log_file = single_file_mode
+            ? BuildLogPath(output_file_single)
+            : output_dir / (std::string(kLogTag) + ".log");
+        EnsureParentDirectory(log_file);
+        SMLogger::LogConfig log_config;
+        log_config.async = false;
+        log_config.console = true;
+        log_config.file = true;
+        log_config.filename = log_file.string();
+        log_config.level = SMLogger::LogLevel::INFO;
+        SMLogger::Logger::Instance().Initialize(SMLogger::MakeLogConfigFromEnvironment(log_config));
+
+        SM_INFO("Reconstruction run configuration:");
+        SM_INFO("  InputMode={}", single_file_mode ? "single-file" : "directory");
+        SM_INFO("  InputPath={}", single_file_mode ? input_file_single.string() : input_dir.string());
+        SM_INFO("  OutputPath={}", single_file_mode ? output_file_single.string() : output_dir.string());
+        SM_INFO("  LogFile={}", log_file.string());
+        SM_INFO("  GeometryMacro={}", geometry_macro.string());
+        SM_INFO("  ProtonRecoBackend={}", backend_name);
+        SM_INFO("  RecoNeutronRequestedMode={}",
+                neutron::NeutronDetectorModeName(opts.neutron_detector_mode));
 
         GeometryManager geometry;
         if (!reco::LoadGeometryFromMacro(geometry, geometry_macro.string())) {
@@ -700,6 +838,16 @@ int main(int argc, char* argv[]) {
         nebula_reco.SetTargetPosition(geometry.GetTargetPosition());
         nebula_reco.SetTimeWindow(10.0);
         nebula_reco.SetEnergyThreshold(1.0);
+
+        NEBULAPlusReco nebula_plus_reco(geometry);
+        nebula_plus_reco.SetTargetPosition(geometry.GetTargetPosition());
+        nebula_plus_reco.SetTimeWindow(10.0);
+        nebula_plus_reco.SetEnergyThreshold(1.0);
+
+        NebulaJointReco nebula_joint_reco(geometry);
+        nebula_joint_reco.SetTargetPosition(geometry.GetTargetPosition());
+        nebula_joint_reco.SetTimeWindow(10.0);
+        nebula_joint_reco.SetEnergyThreshold(1.0);
 
         reco::PDCMomentumReconstructor proton_reco(magnetic_field.get());
         reco::RuntimeOptions runtime_options;
@@ -756,9 +904,12 @@ int main(int argc, char* argv[]) {
                                               opts.rk_write_laplace,
                                               pdc_ana,
                                               nebula_reco,
+                                              nebula_plus_reco,
+                                              nebula_joint_reco,
                                               proton_reco,
                                               proton_config,
                                               target_constraint,
+                                              opts.neutron_detector_mode,
                                               geometry.GetTargetAngleRad(),
                                               &file_stats);
             if (!ok) {
@@ -769,6 +920,8 @@ int main(int argc, char* argv[]) {
             run_stats.processed_events += file_stats.processed_events;
             run_stats.pdc_hit_events += file_stats.pdc_hit_events;
             run_stats.nebula_hit_events += file_stats.nebula_hit_events;
+            run_stats.nebula_plus_hit_events += file_stats.nebula_plus_hit_events;
+            run_stats.neutron_reco_events += file_stats.neutron_reco_events;
             run_stats.proton_reco_events += file_stats.proton_reco_events;
             run_stats.reco_proton_count += file_stats.reco_proton_count;
         }
@@ -778,6 +931,8 @@ int main(int argc, char* argv[]) {
         std::cout << "[" << kLogTag << "] events processed: " << run_stats.processed_events << "/" << run_stats.total_events << std::endl;
         std::cout << "[" << kLogTag << "] pdc-hit ratio: " << (run_stats.pdc_hit_events * 100.0 / denom) << "%" << std::endl;
         std::cout << "[" << kLogTag << "] nebula-hit ratio: " << (run_stats.nebula_hit_events * 100.0 / denom) << "%" << std::endl;
+        std::cout << "[" << kLogTag << "] nebula-plus-hit ratio: " << (run_stats.nebula_plus_hit_events * 100.0 / denom) << "%" << std::endl;
+        std::cout << "[" << kLogTag << "] neutron-reco ratio: " << (run_stats.neutron_reco_events * 100.0 / denom) << "%" << std::endl;
         std::cout << "[" << kLogTag << "] proton-reco ratio: " << (run_stats.proton_reco_events * 100.0 / denom) << "%" << std::endl;
         std::cout << "[" << kLogTag << "] reco proton count: " << run_stats.reco_proton_count << std::endl;
         SMLogger::Logger::Instance().Shutdown();

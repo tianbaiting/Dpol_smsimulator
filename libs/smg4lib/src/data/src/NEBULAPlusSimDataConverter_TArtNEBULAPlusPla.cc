@@ -1,6 +1,7 @@
 #include "NEBULAPlusSimDataConverter_TArtNEBULAPlusPla.hh"
 
 //#include "TNEBULAPlusSimData.hh"
+#include "NeutronDetectorSimConfig.hh"
 #include "TSimData.hh"
 #include "TNEBULAPlusSimParameter.hh"
 #include "SimDataManager.hh"
@@ -17,7 +18,11 @@
 //____________________________________________________________________
 NEBULAPlusSimDataConverter_TArtNEBULAPlusPla::NEBULAPlusSimDataConverter_TArtNEBULAPlusPla(TString name)
     : SimDataConverter(name),
-      fIncludeResolution(true)
+      fIncludeResolution(true),
+      fDetectorEnabled(false),
+      fNEBULAPlusSimParameter(nullptr),
+      fNEBULAPlusSimDataArray(nullptr),
+      fNEBULAPlusPlaArray(nullptr)
 {
 }
 
@@ -34,9 +39,16 @@ int NEBULAPlusSimDataConverter_TArtNEBULAPlusPla::Initialize()
   fNEBULAPlusSimParameter = (TNEBULAPlusSimParameter *)sman->FindParameter("NEBULAPlusParameter");
   if (fNEBULAPlusSimParameter == 0)
   {
-    std::cout << "NEBULAPlusSimDataConveter_TArtNEBULAPlusPla : NEBULAPlusParameter is not found."
+    std::cout << "NEBULAPlusSimDataConveter_TArtNEBULAPlusPla : NEBULAPlusParameter is not found, converter disabled."
               << std::endl;
-    return 1;
+    fDetectorEnabled = false;
+    return 0;
+  }
+  fDetectorEnabled = sim_deuteron::IsNEBULAPlusEnabled(fNEBULAPlusSimParameter);
+  if (!fDetectorEnabled) {
+    std::cout << "NEBULAPlusSimDataConveter_TArtNEBULAPlusPla : NEBULAPlusParameter is not loaded, converter disabled."
+              << std::endl;
+    return 0;
   }
 
   Int_t NumOfDetector = fNEBULAPlusSimParameter->fNeutNum + fNEBULAPlusSimParameter->fVetoNum;
@@ -57,13 +69,14 @@ int NEBULAPlusSimDataConverter_TArtNEBULAPlusPla::Initialize()
 //____________________________________________________________________
 int NEBULAPlusSimDataConverter_TArtNEBULAPlusPla::DefineBranch(TTree *tree)
 {
-  if (fDataStore)
+  if (fDataStore && fDetectorEnabled)
     tree->Branch("NEBULAPlusPla", &fNEBULAPlusPlaArray);
   return 0;
 }
 //____________________________________________________________________
 int NEBULAPlusSimDataConverter_TArtNEBULAPlusPla::ConvertSimData()
 {
+  if (!fDetectorEnabled) return 0;
   fDataBufferMap.clear();
 
   std::map<int,tmp_data>::iterator it;
@@ -176,7 +189,7 @@ int NEBULAPlusSimDataConverter_TArtNEBULAPlusPla::ConvertSimData()
 //____________________________________________________________________
 int NEBULAPlusSimDataConverter_TArtNEBULAPlusPla::ClearBuffer()
 {
-  fNEBULAPlusPlaArray->Delete();
+  if (fNEBULAPlusPlaArray) fNEBULAPlusPlaArray->Delete();
   return 0;
 }
 //____________________________________________________________________

@@ -6,15 +6,22 @@
 #include "PrimaryGeneratorActionBasic.hh"
 
 #include "SimDataManager.hh"
+#include "NeutronDetectorSimConfig.hh"
+#include "SMLogger.hh"
+#include "TNEBULAPlusSimParameter.hh"
+#include "TNEBULASimParameter.hh"
 #include "TRunSimParameter.hh"
 #include "TFragSimParameter.hh"
 
 #include "TFile.h"
+#include "TNamed.h"
 #include "TTree.h"
 
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <string>
 //____________________________________________________________________
 RunActionBasic::RunActionBasic()
   : fFileOut(0) 
@@ -57,6 +64,15 @@ void RunActionBasic::BeginOfRunAction(const G4Run* aRun)
   oss << fRunSimParameter->fSaveDir
       << fRunSimParameter->fRunName
       << std::setw(4) << std::setfill('0') << id << ".root";
+  std::filesystem::path log_path(oss.str());
+  log_path.replace_extension(".log");
+  SMLogger::LogConfig log_config;
+  log_config.async = false;
+  log_config.console = true;
+  log_config.file = true;
+  log_config.filename = log_path.string();
+  log_config.level = SMLogger::LogLevel::INFO;
+  SMLogger::Logger::Instance().Initialize(SMLogger::MakeLogConfigFromEnvironment(log_config));
 
   // over write warning
   std::ifstream ifileForCheck(oss.str().c_str());
@@ -81,6 +97,30 @@ void RunActionBasic::BeginOfRunAction(const G4Run* aRun)
 
   // Initialize Output Data classes
   fSimDataManager->Initialize();
+
+  auto* nebula_prm = static_cast<TNEBULASimParameter*>(
+      fSimDataManager->FindParameter("NEBULAParameter"));
+  auto* nebula_plus_prm = static_cast<TNEBULAPlusSimParameter*>(
+      fSimDataManager->FindParameter("NEBULAPlusParameter"));
+  const bool nebula_enabled = sim_deuteron::IsNEBULAEnabled(nebula_prm);
+  const bool nebula_plus_enabled = sim_deuteron::IsNEBULAPlusEnabled(nebula_plus_prm);
+  SM_INFO("Simulation neutron detector configuration:");
+  SM_INFO("  SimNeutronDetectorMode={}",
+          sim_deuteron::SimNeutronDetectorModeName(nebula_enabled, nebula_plus_enabled));
+  SM_INFO("  SimNEBULAEnabled={}", nebula_enabled ? "true" : "false");
+  SM_INFO("  SimNEBULAPlusEnabled={}", nebula_plus_enabled ? "true" : "false");
+  if (nebula_prm) {
+    SM_INFO("  SimNEBULAParameterFile={}", nebula_prm->fParameterFileName.Data());
+    SM_INFO("  SimNEBULADetectorParameterFile={}", nebula_prm->fDetectorParameterFileName.Data());
+    SM_INFO("  SimNEBULADetectorCount={}", nebula_prm->fNeutNum + nebula_prm->fVetoNum);
+  }
+  if (nebula_plus_prm) {
+    SM_INFO("  SimNEBULAPlusParameterFile={}", nebula_plus_prm->fParameterFileName.Data());
+    SM_INFO("  SimNEBULAPlusDetectorParameterFile={}", nebula_plus_prm->fDetectorParameterFileName.Data());
+    SM_INFO("  SimNEBULAPlusDetectorCount={}", nebula_plus_prm->fNeutNum + nebula_plus_prm->fVetoNum);
+  }
+  SM_INFO("  OutputROOT={}", oss.str());
+  SM_INFO("  LogFile={}", log_path.string());
 
   // create event data branch. tree will be automatically added to current directory
   TTree* tree = new TTree(fRunSimParameter->fTreeName,
@@ -113,6 +153,42 @@ void RunActionBasic::EndOfRunAction(const G4Run* aRun)
 
   // write to file
   fSimDataManager->AddParameters(fFileOut);
+  auto* nebula_prm = static_cast<TNEBULASimParameter*>(
+      fSimDataManager->FindParameter("NEBULAParameter"));
+  auto* nebula_plus_prm = static_cast<TNEBULAPlusSimParameter*>(
+      fSimDataManager->FindParameter("NEBULAPlusParameter"));
+  const bool nebula_enabled = sim_deuteron::IsNEBULAEnabled(nebula_prm);
+  const bool nebula_plus_enabled = sim_deuteron::IsNEBULAPlusEnabled(nebula_plus_prm);
+  TNamed sim_mode("SimNeutronDetectorMode",
+                  sim_deuteron::SimNeutronDetectorModeName(nebula_enabled, nebula_plus_enabled));
+  TNamed sim_nebula_enabled("SimNEBULAEnabled", nebula_enabled ? "true" : "false");
+  TNamed sim_nebula_plus_enabled("SimNEBULAPlusEnabled", nebula_plus_enabled ? "true" : "false");
+  const std::string nebula_count = std::to_string(
+      nebula_prm ? (nebula_prm->fNeutNum + nebula_prm->fVetoNum) : 0);
+  const std::string nebula_plus_count = std::to_string(
+      nebula_plus_prm ? (nebula_plus_prm->fNeutNum + nebula_plus_prm->fVetoNum) : 0);
+  TNamed sim_nebula_count("SimNEBULADetectorCount", nebula_count.c_str());
+  TNamed sim_nebula_plus_count("SimNEBULAPlusDetectorCount", nebula_plus_count.c_str());
+  sim_mode.Write();
+  sim_nebula_enabled.Write();
+  sim_nebula_plus_enabled.Write();
+  sim_nebula_count.Write();
+  sim_nebula_plus_count.Write();
+  if (nebula_prm) {
+    TNamed sim_nebula_param("SimNEBULAParameterFile", nebula_prm->fParameterFileName.Data());
+    TNamed sim_nebula_bars("SimNEBULADetectorParameterFile",
+                           nebula_prm->fDetectorParameterFileName.Data());
+    sim_nebula_param.Write();
+    sim_nebula_bars.Write();
+  }
+  if (nebula_plus_prm) {
+    TNamed sim_nebula_plus_param("SimNEBULAPlusParameterFile",
+                                 nebula_plus_prm->fParameterFileName.Data());
+    TNamed sim_nebula_plus_bars("SimNEBULAPlusDetectorParameterFile",
+                                nebula_plus_prm->fDetectorParameterFileName.Data());
+    sim_nebula_plus_param.Write();
+    sim_nebula_plus_bars.Write();
+  }
   fFileOut->Write(0,TObject::kOverwrite);
   std::cout<< "written to "<<fFileOut->GetName()<<std::endl;
 

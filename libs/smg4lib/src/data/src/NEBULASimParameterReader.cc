@@ -31,6 +31,7 @@ void NEBULASimParameterReader::ReadNEBULAParameters(const char* PrmFileName)
 	  <<std::endl;
     return;
   }
+  fNEBULASimParameter->fParameterFileName = PrmFileName;
 
   for (int iline=0;iline<(int)PrmArray.size();++iline){
       std::vector<TString> str_line = PrmArray[iline];
@@ -72,6 +73,7 @@ void NEBULASimParameterReader::ReadNEBULADetectorParameters(const char* PrmFileN
 	  <<std::endl;
     return;
   }
+  fNEBULASimParameter->fDetectorParameterFileName = PrmFileName;
 
   std::map<int,TDetectorSimParameter> *Map = &(fNEBULASimParameter->fNEBULADetectorParameterMap);
 
@@ -207,4 +209,3 @@ void NEBULASimParameterReader::CSVToVector(const char* PrmFileName,
   ifs.close();
 }
 //______________________________________________________________________________
-
