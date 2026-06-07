@@ -48,7 +48,7 @@ planned=0
 skipped=0
 
 add_job() {
-  local input_file="$1" output_dir="$2" run_name="$3"
+  local input_file="$1" output_dir="$2" run_name="$3" config="$4"
   mkdir -p "$output_dir"
 
   local existing_size=0 cand sz
@@ -62,7 +62,7 @@ add_job() {
     return
   fi
 
-  local macro_file="${MACRO_DIR}/run_${run_name}.mac"
+  local macro_file="${MACRO_DIR}/run_${config}_${run_name}.mac"
   cat > "$macro_file" <<EOF
 /action/file/OverWrite y
 /action/file/SaveDirectory ${output_dir}/
@@ -86,7 +86,7 @@ for target in "${TARGETS[@]}"; do
       config="${target}${gamma}${pol}"
       input="${INPUT_YPOL}/${target}/${config}-RP360/dbreak.root"
       output="${OUTPUT_YPOL}/${config}"
-      [[ -f "$input" ]] && add_job "$input" "$output" "dbreak"
+      [[ -f "$input" ]] && add_job "$input" "$output" "dbreak" "$config"
     done
   done
 done
@@ -101,7 +101,7 @@ for target in "${TARGETS[@]}"; do
       [[ -d "$input_dir" ]] || continue
       for f in $(find -L "$input_dir" -type f -name "dbreakb*.root" | sort); do
         run_name="$(basename "$f" .root)"
-        add_job "$f" "$output" "$run_name"
+        add_job "$f" "$output" "$run_name" "$config"
       done
     done
   done
