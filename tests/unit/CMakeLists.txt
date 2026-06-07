@@ -32,6 +32,12 @@ add_test(NAME test_no_bare_target_macros
 )
 set_tests_properties(test_no_bare_target_macros PROPERTIES LABELS "unit")
 
+add_test(NAME test_rootlogon_portable
+    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/test_rootlogon_portable.sh ${CMAKE_SOURCE_DIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+set_tests_properties(test_rootlogon_portable PROPERTIES LABELS "unit")
+
 # QMDInputMetadata index layout regression
 add_executable(test_qmd_input_metadata_indices
     test_qmd_input_metadata_indices.cc
