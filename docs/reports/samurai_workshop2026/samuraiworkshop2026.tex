@@ -1,0 +1,575 @@
+\documentclass[aspectratio=169]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+\definecolor{dpolblue}{RGB}{31,78,121}
+\definecolor{dpolorange}{RGB}{202,109,38}
+\definecolor{dpolgreen}{RGB}{63,132,87}
+\definecolor{dpolgray}{RGB}{85,85,85}
+
+\IfFileExists{../qmdrawdataAna/img/isovector_reorientaton.png}{
+  \graphicspath{
+    {../qmdrawdataAna/img/}
+    {../qmdrawdataAna/img/PDF/}
+    {../reconstruction/momentum_reco/nn/figures/nn_breakup_phys/}
+    {../reconstruction/momentum_reco/nn/figures/ypol_phys_nn_vs_rk/}
+    {../reconstruction/momentum_reco/rk/figures/ypol_phys/}
+    {../reconstruction/momentum_reco/rk/figures/geometry/}
+  }
+}{
+  \graphicspath{
+    {docs/reports/qmdrawdataAna/img/}
+    {docs/reports/qmdrawdataAna/img/PDF/}
+    {docs/reports/reconstruction/momentum_reco/nn/figures/nn_breakup_phys/}
+    {docs/reports/reconstruction/momentum_reco/nn/figures/ypol_phys_nn_vs_rk/}
+    {docs/reports/reconstruction/momentum_reco/rk/figures/ypol_phys/}
+    {docs/reports/reconstruction/momentum_reco/rk/figures/geometry/}
+  }
+}
+
+\title[IVR and n/p Reconstruction]{
+Target-Momentum Reconstruction for Probing the Isovector Reorientation Effect
+}
+\subtitle{Polarized deuteron breakup with the SAMURAI spectrometer}
+\author{Baiting Tian}
+\institute{Tsinghua University \& RIKEN}
+\date{SAMURAI International Collaboration Workshop 2026}
+
+\newcommand{\pp}{p_{\mathrm{p}}}
+\newcommand{\pn}{p_{\mathrm{n}}}
+\newcommand{\dpx}{\Delta p_x^{\mathrm{rot}}}
+\newcommand{\Rx}{R_x^{\mathrm{rot}}}
+\newcommand{\gammastiff}{\gamma}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Message}
+  \begin{block}{Physics question}
+    Can polarized deuteron breakup provide an experimentally clean probe of the isovector potential and the symmetry-energy stiffness?
+  \end{block}
+  \vspace{0.4cm}
+  \begin{block}{Reconstruction question}
+    After Geant4, PDC proton tracking, and NEBULA neutron reconstruction, does the IVR-sensitive observable still retain its expected $\gammastiff$ dependence?
+  \end{block}
+  \vspace{0.35cm}
+  \begin{center}
+    \Large \textcolor{dpolblue}{Current answer: yes, especially for Sn124.}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Talk Outline}
+  \begin{enumerate}
+    \item Isovector reorientation effect and the observable
+    \item Why target-frame n/p momentum reconstruction is the critical step
+    \item Proton PDC and neutron NEBULA reconstruction performance
+    \item Reconstructed $\Rx(\gammastiff)$ results for y-pol and z-pol samples
+    \item Current bottleneck and next analysis steps
+  \end{enumerate}
+\end{frame}
+
+\section{Physics Case}
+
+\begin{frame}{Motivation: Isovector Dynamics at Low Density}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.58\textwidth}
+      \centering
+      \includegraphics[width=0.84\linewidth]{Esym3.png}
+      \vspace{0.05cm}
+
+      {\scriptsize Prog. Part. Nucl. Phys. 134 (2024) 104080}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \begin{itemize}
+        \item The symmetry energy is still poorly constrained away from saturation density.
+        \item Peripheral breakup of a polarized deuteron samples a dilute, asymmetric nuclear field.
+        \item The experimental signature should be differential between proton and neutron momenta.
+      \end{itemize}
+      \vspace{0.25cm}
+      \begin{block}{Goal}
+        Use a final-state p/n momentum asymmetry as a clean handle on the isovector potential.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Isovector Reorientation Effect}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.55\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{isovector_reorientaton.png}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \small
+      \begin{align*}
+        E_{\mathrm{sym}}(\rho)
+          &= \frac{C_{s,k}}{2}\left(\frac{\rho}{\rho_0}\right)^{2/3}
+           + \frac{C_{s,p}}{2}\left(\frac{\rho}{\rho_0}\right)^{\gammastiff}, \\
+        F_v &\propto \nabla U_{\mathrm{sym},1}
+             \propto \frac{dE_{\mathrm{sym}}}{d\rho}.
+      \end{align*}
+      \begin{itemize}
+        \item Neutron and proton feel opposite isovector forces near a neutron-rich target.
+        \item For a polarized deuteron, this force pair acts as a torque on the p-n axis.
+        \item The final p/n momentum difference carries the reorientation information.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Observable in the Reaction-Plane Frame}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \centering
+      \includegraphics[width=0.70\linewidth]{pol.pdf}
+
+      \vspace{0.03cm}
+      \includegraphics[width=0.70\linewidth]{unpol.pdf}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \scriptsize
+      \begin{align*}
+        \phi^{\mathrm{event}}
+          &= \mathrm{atan2}(p_{y,\mathrm{p}}+p_{y,\mathrm{n}},
+                            p_{x,\mathrm{p}}+p_{x,\mathrm{n}}), \\
+        \dpx &= p_{x,\mathrm{p}}^{\mathrm{rot}} - p_{x,\mathrm{n}}^{\mathrm{rot}}, \\
+        \Rx &= \frac{N(\dpx > 0)}{N(\dpx < 0)}.
+      \end{align*}
+      \begin{itemize}
+        \setlength\itemsep{0.03cm}
+        \item Rotate every event so $\vec p_T^{\,\mathrm{sum}}$ points along $+\hat{x}$.
+        \item $\dpx$ isolates the p-n breakup asymmetry.
+        \item $\Rx(\gammastiff)$ is the compact reconstruction benchmark.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Truth-Level Expectation}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.42\textwidth}
+      \centering
+      \includegraphics[height=0.66\textheight,keepaspectratio]{PxDiffDistribution.png}
+    \end{column}
+    \begin{column}{0.58\textwidth}
+      \centering
+      \includegraphics[height=0.56\textheight,keepaspectratio]{ratio_plot.pdf}
+      \vspace{0.04cm}
+
+      \begin{block}{Expected signature}
+        \small
+        A stiffer symmetry energy changes the p-n momentum asymmetry, visible as a monotonic trend in $\Rx$.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{Reconstruction Chain}
+
+\begin{frame}{Why Reconstruction Is the Critical Step}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.55\textwidth}
+      \centering
+      \includegraphics[width=0.98\linewidth]{onlysamuraisetup.pdf}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \begin{itemize}
+        \item IVR is defined at the breakup target, but the experiment measures detector hits downstream.
+        \item Proton momentum must be reconstructed from PDC1/PDC2 through the SAMURAI field.
+        \item Neutron momentum must be reconstructed from NEBULA position and time of flight.
+        \item The key feasibility test is whether $\Rx(\gammastiff)$ survives this detector and reconstruction chain.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{End-to-End Analysis Chain}
+  \centering
+  \begin{tikzpicture}[
+    scale=0.92,
+    transform shape,
+    node distance=0.72cm and 0.55cm,
+    box/.style={rectangle, rounded corners=2pt, draw=dpolblue, thick, align=center, minimum height=0.82cm, text width=2.35cm, fill=blue!5},
+    reco/.style={rectangle, rounded corners=2pt, draw=dpolorange, thick, align=center, minimum height=0.82cm, text width=2.35cm, fill=orange!8},
+    result/.style={rectangle, rounded corners=2pt, draw=dpolgreen, thick, align=center, minimum height=0.82cm, text width=2.35cm, fill=green!8},
+    arrow/.style={-{Latex[length=2.2mm]}, thick}
+  ]
+    \node[box] (qmd) {QMD input\\Sn112/Sn124\\$\gammastiff=0.5\ldots0.8$};
+    \node[box, right=of qmd] (g4) {Geant4\\SAMURAI\\detector response};
+    \node[reco, right=of g4] (pdc) {PDC proton\\target momentum\\RK or NN};
+    \node[reco, below=of pdc] (nebula) {NEBULA neutron\\$\beta$ method\\target-frame rotation};
+    \node[result, right=of pdc] (obs) {$\dpx$\\and\\$\Rx(\gammastiff)$};
+    \draw[arrow] (qmd) -- (g4);
+    \draw[arrow] (g4) -- (pdc);
+    \draw[arrow] (g4) |- (nebula);
+    \draw[arrow] (pdc) -- (obs);
+    \draw[arrow] (nebula) -| (obs);
+  \end{tikzpicture}
+
+  \vspace{0.25cm}
+  \begin{block}{This talk}
+    Focus on the reconstructed p/n momenta and whether the IVR-sensitive $\Rx$ trend is preserved.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Proton Target-Momentum Reconstruction}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.53\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{residuals_grid_tail_linear.png}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \small
+      \begin{table}
+        \centering
+        \begin{tabular}{lrr}
+          \toprule
+          Component & NN median & NN half-width \\
+          \midrule
+          $\Delta p_x$ & $-0.81$ & $6.01$ \\
+          $\Delta p_y$ & $+0.52$ & $1.37$ \\
+          $\Delta p_z$ & $+1.61$ & $6.25$ \\
+          \bottomrule
+        \end{tabular}
+      \end{table}
+      \vspace{-0.15cm}
+      {\scriptsize Unit: MeV/$c$, y-pol elastic all-air sample.}
+
+      \begin{itemize}
+        \item NN uses PDC1/PDC2 hit positions as a direct map to target-frame proton momentum.
+        \item Core resolution is comparable to RK.
+        \item NN avoids the catastrophic RK tail in a small fraction of difficult events.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Neutron Reconstruction and Current Limitations}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.56\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.64\textheight,keepaspectratio]{residuals_per_particle_ypol.png}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \scriptsize
+      \begin{itemize}
+        \item NEBULA neutron momentum is reconstructed from hit position, time of flight, and target position.
+        \item A target-frame rotation is required to compare reco neutron with truth neutron.
+        \item Current y-pol breakup diagnostics:
+      \end{itemize}
+      \begin{table}
+        \centering
+        \scriptsize
+        \begin{tabular}{lrr}
+          \toprule
+          Channel & Median & Half-width \\
+          \midrule
+          n $\Delta p_x$ & bar structure & few MeV/$c$ \\
+          n $\Delta p_z$ & $-9.83$ & $8.72$ \\
+          \bottomrule
+        \end{tabular}
+      \end{table}
+      \begin{block}{Main issue}
+        \scriptsize
+        NEBULA acceptance and bar granularity affect full-reco observables more strongly than proton momentum smearing.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Three Reconstruction Variants Used for $\Rx$}
+  \begin{table}
+    \centering
+    \small
+    \begin{tabular}{p{0.18\linewidth}p{0.72\linewidth}}
+      \toprule
+      Variant & Definition \\
+      \midrule
+      A truth & Truth proton and truth neutron momenta after reaction-plane rotation. \\
+      B mixed reco & Reconstructed proton; neutron uses NEBULA reco when hit exists, otherwise truth neutron fallback. \\
+      C full reco & Reconstructed proton and reconstructed neutron only on the NEBULA-hit subset. \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+  \vspace{0.25cm}
+  \begin{itemize}
+    \item B mixed reco isolates whether proton reconstruction washes out the IVR signal.
+    \item C full reco shows the visible-window observable under the present NEBULA acceptance.
+    \item The gap between B and C is mostly a neutron acceptance problem, not a proton PDC problem.
+  \end{itemize}
+\end{frame}
+
+\section{Reconstructed IVR Signal}
+
+\begin{frame}{Main Result: y-Polarized Sn124}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.62\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{r_vs_gamma_ypol_tight.png}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \begin{block}{Sn124, tight cut}
+        \[
+          \Rx: 0.57 \rightarrow 0.32
+        \]
+        from $\gammastiff=0.5$ to $0.8$.
+      \end{block}
+      \begin{itemize}
+        \item The reconstructed mixed observable follows truth within $<3\%$ for y-pol.
+        \item Sn124 shows a much clearer $\gammastiff$ dependence than Sn112.
+        \item Proton target-momentum reconstruction preserves the IVR-sensitive trend.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Main Result: z-Polarized Sn124}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.62\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{r_vs_gamma_zpol_tight.png}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \begin{block}{Sn124, tight cut}
+        \[
+          \Rx: 1.36 \rightarrow 0.30
+        \]
+        from $\gammastiff=0.5$ to $0.8$.
+      \end{block}
+      \begin{itemize}
+        \item z-pol shows an even larger dynamic range in Sn124.
+        \item Mixed reco is typically within $5\%$ of truth; the largest low-stat deviation is about $11\%$.
+        \item Sn112 z-pol remains statistics limited and non-monotonic in loose cuts.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{$\Delta p_x^{\mathrm{rot}}$ Distributions}
+  \centering
+  \includegraphics[width=0.86\linewidth]{px_diff_hist_ypol_tight.png}
+  \vspace{0.15cm}
+
+  \begin{itemize}
+    \item Truth and mixed reco distributions overlap closely across target and $\gammastiff$ cells.
+    \item Full reco is shifted by NEBULA-hit selection and should be interpreted as a visible-window observable.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{What Limits the Full Reconstruction?}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.5\textwidth}
+      \begin{block}{Observed bottleneck order}
+        \begin{center}
+          \small
+          NEBULA acceptance\\[-0.05cm]
+          $\gg$ proton smearing $>$ neutron smearing
+        \end{center}
+      \end{block}
+      \begin{itemize}
+        \item PDC proton reconstruction is not the dominant limitation for $\Rx$.
+        \item NEBULA loses part of the neutron phase space in the relevant $p_{x,n}$ window.
+        \item A simple $1/\epsilon$ correction cannot recover events outside acceptance.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \includegraphics[width=0.92\linewidth]{reco_vs_truth_2d_ypol.png}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Interpretation for the Experiment}
+  \begin{enumerate}
+    \item The IVR-sensitive $\Rx(\gammastiff)$ trend survives detector simulation and proton target-momentum reconstruction.
+    \item Sn124 is the clearest target in the present y-pol and z-pol samples.
+    \item The proton arm is ready for physics-level analysis comparisons between RK and NN.
+    \item The next systematic effort should focus on NEBULA visible-window strategy, reaction-plane reconstruction from reco momenta, and acceptance-limited $\Rx$ definitions.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Summary}
+  \begin{itemize}
+    \item Isovector reorientation converts the neutron-proton force difference into an experimentally accessible breakup momentum asymmetry.
+    \item The compact observable is $\Rx = N(\dpx>0)/N(\dpx<0)$ in the reaction-plane frame.
+    \item NN proton reconstruction gives $\sim 6$ MeV/$c$ core resolution in $p_x$ and $p_z$ and preserves $\Rx(\gammastiff)$.
+    \item y-pol Sn124 and z-pol Sn124 both retain strong monotonic $\gammastiff$ dependence after reconstruction.
+    \item The dominant remaining issue is NEBULA acceptance/systematics, not PDC proton momentum reconstruction.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \centering
+  \Huge Thanks
+
+  \vspace{0.6cm}
+  \Large Questions?
+\end{frame}
+
+\appendix
+\setbeamertemplate{footline}{}
+\section*{Backup}
+
+\begin{frame}{Backup: Potential Link to Symmetry Energy}
+  \small
+  \begin{align*}
+    E_{\mathrm{sym}}(\rho)
+      &= \frac{1}{6}
+        \frac{\partial [t(k)+U_0(\rho,k)]}{\partial k}\bigg|_{k_F} k_F
+       + \frac{1}{2}U_{\mathrm{sym},1}(\rho,k_F), \\
+      &= \frac{k_F^2}{6m_0^*(\rho,k_F)}
+       + \frac{1}{2}U_{\mathrm{sym},1}(\rho,k_F).
+  \end{align*}
+  \begin{itemize}
+    \item The potential part of $E_{\mathrm{sym}}$ is directly related to the isovector single-particle potential.
+    \item The IVR torque is driven by the gradient of this isovector potential.
+  \end{itemize}
+  \[
+    F_v \propto \nabla U_{\mathrm{sym},1}
+        \propto \frac{dE_{\mathrm{sym}}}{d\rho}.
+  \]
+\end{frame}
+
+\begin{frame}{Backup: NN Proton Model}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Input}
+        PDC1 and PDC2 hit positions:
+        \[
+          (x_1,y_1,z_1,x_2,y_2,z_2).
+        \]
+      \end{block}
+      \begin{block}{Output}
+        Target-frame proton momentum:
+        \[
+          (p_x,p_y,p_z)_{\mathrm{target}}.
+        \]
+      \end{block}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \begin{itemize}
+        \item MLP: $6 \rightarrow 128 \rightarrow 128 \rightarrow 64 \rightarrow 3$.
+        \item Training domain: $p_T \le 100$ MeV/$c$, $p_z \in [560,680]$ MeV/$c$.
+        \item Breakup truth coverage: y-pol $97.4\%$, z-pol $91.3\%$ inside training domain.
+        \item C++ inference runs through \texttt{reconstruct\_target\_momentum --backend nn}.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Backup: RK vs NN Proton Residuals}
+  \small
+  \begin{table}
+    \centering
+    \begin{tabular}{lrrrr}
+      \toprule
+      Component & RK hw & RK RMSE & NN hw & NN RMSE \\
+      \midrule
+      $\Delta p_x$ & 5.86 & 17.08 & 6.01 & 11.73 \\
+      $\Delta p_y$ & 1.52 &  1.88 & 1.37 &  1.82 \\
+      $\Delta p_z$ & 5.88 & 46.36 & 6.25 & 13.43 \\
+      $\Delta|\vec p|$ & 5.86 & 39.91 & 6.26 & 10.77 \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+  \vspace{0.1cm}
+  \begin{itemize}
+    \item Half-width is the robust core scale.
+    \item RMSE exposes large non-Gaussian tails.
+    \item RK has a small catastrophic tail; NN has slightly larger median bias but much smaller tail.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Backup: NEBULA $\beta$ Reconstruction}
+  \small
+  \begin{align*}
+    L &= |\vec r_{\mathrm{cluster}}-\vec r_{\mathrm{target}}|, \\
+    \beta &= \frac{L/t}{c}, \\
+    p_n &= m_n \frac{\beta}{\sqrt{1-\beta^2}}.
+  \end{align*}
+  \begin{itemize}
+    \item Cluster position and time are energy-weighted from NEBULA hits.
+    \item A target-frame rotation is applied after lab-frame reconstruction.
+    \item Current simulation settings use 5 mm position smearing and 0.5 ns timing smearing.
+    \item The $p_z$ bias is consistent with the sensitivity of $p=m\gamma\beta$ to time-of-flight errors and missing upstream corrections.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Backup: y-Pol $\Rx$ Table}
+  \centering
+  \scriptsize
+  \begin{tabular}{ll|ccc|ccc|ccc}
+    \toprule
+    & & \multicolumn{3}{c|}{loose} & \multicolumn{3}{c|}{mid} & \multicolumn{3}{c}{tight} \\
+    Target & $\gammastiff$ & truth & mixed & full & truth & mixed & full & truth & mixed & full \\
+    \midrule
+    Sn112 & 0.5 & 0.226 & 0.225 & 0.755 & 0.249 & 0.253 & 0.740 & 0.308 & 0.313 & 1.156 \\
+    Sn112 & 0.6 & 0.226 & 0.226 & 0.768 & 0.252 & 0.256 & 0.755 & 0.263 & 0.267 & 0.919 \\
+    Sn112 & 0.7 & 0.217 & 0.216 & 0.737 & 0.242 & 0.246 & 0.729 & 0.226 & 0.229 & 0.758 \\
+    Sn112 & 0.8 & 0.212 & 0.212 & 0.705 & 0.238 & 0.242 & 0.696 & 0.219 & 0.221 & 0.719 \\
+    Sn124 & 0.5 & 0.291 & 0.292 & 0.979 & 0.329 & 0.335 & 0.975 & 0.566 & 0.571 & 1.830 \\
+    Sn124 & 0.6 & 0.265 & 0.266 & 0.915 & 0.300 & 0.305 & 0.911 & 0.475 & 0.481 & 1.462 \\
+    Sn124 & 0.7 & 0.245 & 0.245 & 0.821 & 0.276 & 0.281 & 0.821 & 0.377 & 0.381 & 1.079 \\
+    Sn124 & 0.8 & 0.228 & 0.229 & 0.792 & 0.256 & 0.260 & 0.783 & 0.316 & 0.320 & 0.891 \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Backup: z-Pol $\Rx$ Table}
+  \centering
+  \scriptsize
+  \begin{tabular}{ll|ccc|ccc|ccc}
+    \toprule
+    & & \multicolumn{3}{c|}{loose} & \multicolumn{3}{c|}{mid} & \multicolumn{3}{c}{tight} \\
+    Target & $\gammastiff$ & truth & mixed & full & truth & mixed & full & truth & mixed & full \\
+    \midrule
+    Sn112 & 0.5 & 0.147 & 0.141 & 0.220 & 0.142 & 0.152 & 0.269 & 0.213 & 0.218 & 0.466 \\
+    Sn112 & 0.6 & 0.091 & 0.086 & 0.136 & 0.097 & 0.103 & 0.175 & 0.154 & 0.160 & 0.345 \\
+    Sn112 & 0.7 & 0.165 & 0.166 & 0.233 & 0.076 & 0.089 & 0.149 & 0.115 & 0.116 & 0.208 \\
+    Sn112 & 0.8 & 0.290 & 0.296 & 0.363 & 0.050 & 0.065 & 0.111 & 0.079 & 0.095 & 0.199 \\
+    Sn124 & 0.5 & 0.949 & 0.841 & 1.233 & 0.941 & 0.935 & 1.536 & 1.363 & 1.343 & 3.622 \\
+    Sn124 & 0.6 & 0.531 & 0.462 & 0.631 & 0.606 & 0.594 & 0.867 & 0.885 & 0.829 & 1.563 \\
+    Sn124 & 0.7 & 0.351 & 0.335 & 0.435 & 0.355 & 0.371 & 0.532 & 0.507 & 0.532 & 0.982 \\
+    Sn124 & 0.8 & 0.312 & 0.312 & 0.374 & 0.225 & 0.249 & 0.341 & 0.298 & 0.325 & 0.532 \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Backup: Polarization Monitoring Context}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.5\textwidth}
+      \centering
+      \includegraphics[width=0.94\linewidth]{Ratio_vs_pzz.pdf}
+
+      {\small Longitudinal tensor polarization}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \includegraphics[width=0.94\linewidth]{R_LRUD_vs_pyy.pdf}
+
+      {\small Vertical tensor polarization}
+    \end{column}
+  \end{columns}
+  \vspace{0.2cm}
+  \begin{center}
+    Polarization monitoring remains an independent prerequisite for turning $\Rx$ into an experimental IVR observable.
+  \end{center}
+\end{frame}
+
+\end{document}
