@@ -1,0 +1,28 @@
+/vis/open VRML2FILE
+/tracking/storeTrajectory 1
+/action/file/OverWrite y
+/action/file/SaveDirectory /home/tian/workspace/dpol/smsimulator5.5/docs/reports/gamma_constraint_20260611/figures/px_sign_geant4/logs/g4output
+/action/file/RunName neutron_px_plus60
+/control/execute /home/tian/workspace/dpol/smsimulator5.5/configs/simulation/geometry/3deg1.15Tnebulaplus.mac
+/samurai/geometry/Target/SetTarget true
+/samurai/geometry/Update
+/vis/drawVolume
+/vis/viewer/set/upVector 1 0 0
+/vis/viewer/set/viewpointThetaPhi 90. 90.
+/vis/scene/add/axes 0 0 0 6000 mm
+/vis/scene/add/trajectories smooth
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 3
+/vis/modeling/trajectories/drawByCharge-0/set 0 blue
+/vis/scene/endOfEventAction accumulate
+/vis/viewer/set/autoRefresh false
+/action/gun/Type Tree
+/action/gun/tree/InputFileName /home/tian/workspace/dpol/smsimulator5.5/docs/reports/gamma_constraint_20260611/figures/px_sign_geant4/inputs/neutron_px_plus60.root
+/action/gun/tree/TreeName tree
+/action/gun/tree/beamOn 1
+/vis/viewer/set/autoRefresh true
+/vis/viewer/refresh
+/vis/viewer/update
+/vis/viewer/flush
+exit

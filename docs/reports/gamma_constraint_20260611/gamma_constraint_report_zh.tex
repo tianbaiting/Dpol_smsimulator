@@ -1,0 +1,461 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{ctex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{caption}
+
+\graphicspath{{figures/}}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+\setlist[itemize]{nosep,leftmargin=1.8em}
+\setlist[enumerate]{nosep,leftmargin=1.8em}
+
+\title{\textbf{190 MeV/u 极化氘核破裂实验对 $\gamma$ 约束的技术报告}}
+\author{Baiting Tian}
+\date{2026 年 6 月 11 日}
+
+\begin{document}
+\maketitle
+
+\section*{数据口径}
+
+\begin{itemize}
+  \item 本地代码仓库: \texttt{/home/tian/workspace/dpol/smsimulator5.5}
+  \item NEBULA-Plus 重建样本: {\footnotesize\path{/home/tian/workspace/sshDir/spana03/Dpol_smsimulator/data/reconstruction/nebulaplus_nn_joint_20260609_012854}}
+  \item folding 诊断表: \texttt{checks/observables/folding\_diagnostics/}
+  \item 本报告图表: \texttt{docs/reports/gamma\_constraint\_20260611/figures/}
+\end{itemize}
+
+\section*{结论}
+
+当前模拟和重建样本支持下面的判断。
+
+\begin{enumerate}
+  \item 以 Sn124 为主靶时，\texttt{tight + |p\_x,n| < 60 MeV/c} 的 folded visible-window observable 仍保留明显的 $\gamma$ 依赖。ypol 中 folded reco 的 $R$ 从 $\gamma=0.5$ 到 $0.8$ 约为 $12.48 \to 4.99$；zpol 约为 $6.38 \to 0.56$。
+  \item 在 15 mm 直径 Sn124 靶、1.2 g 库存、$1.0\times 10^7$ pps、16 h 的 planning anchor 下，即使用当前模拟给出的保守 usable-event survival，ypol 仍约有 $2.75\times 10^5$ 个可用 $R$ 事件，zpol 约有 $1.88\times 10^6$ 个。
+  \item 当前模型点之间最难分开的相邻 $\gamma$ 间隔是 ypol 的 $g070 \to g080$，按纯统计 3$\sigma$ 只需要约 $2.8\times 10^3$ 个 usable $R$ 事件。统计量不是主要瓶颈。
+  \item 主要风险不是统计，而是 detector folding 的系统误差。新的 diagnostics 已经把 event-selection survival、neutron $p_x$--$p_y$ efficiency、$p_{x,n}$ 和 $\Delta p_x$ response matrix、reaction-plane migration、sign migration、最终 $R$ ladder 分开画出。truth $R$ 和 reco $R$ 不是同一个物理量；当前最稳的路线是把每个理论 $\gamma$ 都通过同一套 Geant4 + reconstruction chain folding 后再和实验数据比较。
+  \item PDC 几何按最终生效配置处理: NEBULA-Plus macro 在执行基础几何后显式设置 PDC angle 为 69 deg 并 \texttt{Update}。日志里的 65 deg 是前序设置，后续被 69 deg 覆盖。
+\end{enumerate}
+
+\section{坐标系、$p_x$ 和反应平面角度约定}
+
+lab frame 是 Geant4/SAMURAI world frame，也是 NEBULA-Plus macro 里的探测器坐标系: $+Z$ 沿名义束流下游，$+Y$ 竖直，$+X$ 是水平色散方向。下面的 event-display 图横轴是 lab $Z$，纵轴是 lab $X$，所以上方就是 lab $+X$。target/input frame 是生成粒子和 target-momentum reconstruction 使用的动量坐标系。除非图或文字明确写 ``lab''，本报告里的 $p_x$ 都指 $p_x^{\mathrm{tgt}}$，也就是 $p_{x,n}$ fiducial cut 和 response plot 里使用的 target-frame 分量。
+
+当前 target angle 是 $\theta_{\mathrm{tgt}}=3^\circ$。Geant4 primary generator 把粒子放在靶中心，并把输入的 target-frame 动量方向绕 lab $Y$ 轴转 $-\theta_{\mathrm{tgt}}$:
+\[
+  \mathbf p^{\mathrm{lab}} =
+  R_y(-\theta_{\mathrm{tgt}})\,\mathbf p^{\mathrm{tgt}} .
+\]
+因此 target-frame 正 $p_x$ 表示在共同的 target-angle rotation 之前，动量有指向 lab $+X$ 的分量。对 $p_y=0$ 的简单符号检查，
+\[
+  p_x^{\mathrm{lab}}
+  =
+  p_x^{\mathrm{tgt}}\cos\theta_{\mathrm{tgt}}
+  -
+  p_z^{\mathrm{tgt}}\sin\theta_{\mathrm{tgt}} ,
+\]
+这里使用的就是模拟里的旋转约定。
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_plus60.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_minus60.png}
+  \end{minipage}
+  \caption{target-frame neutron $p_x=\pm60$ MeV/$c$ 的 Geant4 WRL-to-PNG 投影，输入为 $p_y=0$、$p_z=627$ MeV/$c$。横轴是 lab $Z$ 下游，纵轴是 lab $X$。正 $p_x^{\mathrm{tgt}}$ 在 $-3^\circ$ target rotation 后仍向 lab $+X$ 一侧偏，负 $p_x^{\mathrm{tgt}}$ 向 lab $-X$ 一侧偏。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_plus100.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_minus100.png}
+  \end{minipage}
+  \caption{同样的 Geant4 符号检查，target-frame neutron $p_x=\pm100$ MeV/$c$。更大的 $|p_x|$ 给出更大的 lab-$X$ 偏转，说明重建 $p_{x,n}$ 图中使用的正负号约定是自洽的。}
+\end{figure}
+
+这里有两种反应平面角度，不能混用。第一种是 generator/model angle $b_\phi$，它来自 QMD/event metadata；在 y-pol raw sample 中它等于记录的 \texttt{rpphi} modulo $2\pi$，随机旋转样本中则使用 event record 里的 randomized plane angle。这个角是 truth/model plane label，适合做 generator consistency check。
+
+当前 folded observable 使用的是逐事件的运动学平面。定义
+\[
+  \mathbf k_{\mathrm{out}}
+  =
+  \mathbf p_p + \mathbf p_n,
+  \qquad
+  \mathbf k_{\mathrm{out},T}
+  =
+  (k_{\mathrm{out},x}, k_{\mathrm{out},y}) .
+\]
+因为 $\mathbf k_{\mathrm{in}}$ 定义 target-frame 的束流轴，$(\mathbf k_{\mathrm{in}},\mathbf k_{\mathrm{out}})$ 反应平面的方位角就是
+\[
+  \phi_k
+  =
+  \operatorname{atan2}
+  \left(k_{\mathrm{out},y}, k_{\mathrm{out},x}\right)
+  =
+  \operatorname{atan2}
+  \left(p_{y,p}+p_{y,n}, p_{x,p}+p_{x,n}\right).
+\]
+如果改用 momentum transfer $\mathbf q=\mathbf k_{\mathrm{in}}-\mathbf k_{\mathrm{out}}$ 来定义横向方向，那么横向方位角会相差 $\pi$；这个约定不能和当前 $R$ 定义混在一起。
+
+$\Delta p_x$ 使用的旋转是
+\[
+  \begin{pmatrix}
+    p_x^{\mathrm{rot}} \\
+    p_y^{\mathrm{rot}}
+  \end{pmatrix}
+  =
+  R_z(-\phi_k)
+  \begin{pmatrix}
+    p_x \\
+    p_y
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    p_x\cos\phi_k + p_y\sin\phi_k \\
+    -p_x\sin\phi_k + p_y\cos\phi_k
+  \end{pmatrix}.
+\]
+最终观测量定义为
+\[
+  \Delta p_x
+  =
+  p_{x,p}^{\mathrm{rot}} - p_{x,n}^{\mathrm{rot}},
+  \qquad
+  R
+  =
+  \frac{N(\Delta p_x>0)}{N(\Delta p_x<0)} .
+\]
+
+\section{Observable 和物理逻辑}
+
+目标是用极化氘核在靶附近受到的 p/n isovector force difference，观察 breakup 后 p/n 相对动量在反应平面中的偏置。每个事件先定义横向总动量方向:
+\[
+  \phi = \operatorname{atan2}
+  \left(
+    p_{y,p}+p_{y,n},
+    p_{x,p}+p_{x,n}
+  \right).
+\]
+把 p 和 n 的动量旋转到该 event plane 后，定义
+\[
+  \Delta p_x = p_{x,p}^{\mathrm{rot}} - p_{x,n}^{\mathrm{rot}},
+  \qquad
+  R = \frac{N(\Delta p_x > 0)}{N(\Delta p_x < 0)}.
+\]
+
+实验中可直接测到的是 folded observable:
+\[
+  N_{\mathrm{reco},j}
+  =
+  \sum_i K_{ji} N_{\mathrm{true},i} + b_j .
+\]
+这里 $K_{ji}$ 包含 NEBULA/NEBULA-Plus acceptance、分辨率、重建效率、PDC proton reconstruction、reaction-plane migration 和 cuts。因此一般有
+\[
+  R_{\mathrm{reco}} \ne R_{\mathrm{truth}}.
+\]
+本报告不把 $R_{\mathrm{reco}}$ 直接解释为 truth-level $R$，而是看同一 folded 口径下 $R(\gamma)$ 是否足够分开。
+
+\section{当前最有说服力的 gamma 敏感性}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{sn124_tight_px60_r_vs_gamma_expected_stat.png}
+  \caption{Sn124, tight, $|p_{x,n}|<60$ MeV/$c$ 的 truth 与 folded reco $R(\gamma)$。}
+\end{figure}
+
+Sn124, \texttt{tight + |p\_x,n| < 60 MeV/c}, folded reco plane:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrr}
+\toprule
+pol & $\gamma$ & $N_{\mathrm{sim}}$ & $R_{\mathrm{folded}}$ \\
+\midrule
+ypol & 0.5 & 2305 & 12.48 \\
+ypol & 0.6 & 2422 & 7.81 \\
+ypol & 0.7 & 2451 & 5.85 \\
+ypol & 0.8 & 2338 & 4.99 \\
+zpol & 0.5 & 354 & 6.38 \\
+zpol & 0.6 & 275 & 3.10 \\
+zpol & 0.7 & 343 & 1.66 \\
+zpol & 0.8 & 478 & 0.56 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+这个图的重点不是 truth 和 reco 完全一致，而是 folded reco 曲线本身仍然随 $\gamma$ 单调变化，并且间隔远大于 16 h beamtime 下的统计误差。
+
+\section{Detector folding 技术诊断}
+
+这里要回答的问题不是 ``reco $R$ 是否等于 truth $R$''，而是 reco $R$ 是否是一个可建模、可闭合检验的 folded observable。当前 diagnostics 把 folding 拆成 event selection、neutron visible-window efficiency、reconstruction response、reaction-plane migration 和最终 $R$ ladder。当前输出还没有独立的逐层 proton detector efficiency 表；proton/PDC 对反应平面的影响通过 reconstructed event plane、response matrix，以及 $R$ ladder 中 \texttt{reco\_truth\_plane} 到 \texttt{reco\_plane} 的变化来评估。
+
+\subsection{event selection 和 visible-window survival}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{sn124_selection_passrates.png}
+  \caption{Sn124 selection pass rate 随 $\gamma$ 的变化。最后进入 folded $R$ 的是 tight 且 NEBULA-visible 的小分支。}
+\end{figure}
+
+Sn124 pooled ypol 的 raw-to-tight 和 raw-to-NEBULA-visible 比例约为 $2.59\%$ 和 $0.571\%$；zpol 约为 $16.1\%$ 和 $3.93\%$。这些数值只作为当前 full simulation 给出的 usable-event survival，不等同于实验中的 coincidence efficiency calibration。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{survival_flow_tight_px60.png}
+  \caption{tight px60 diagnostic sample 内的 survival flow。truth fiducial 由 visible-window 定义决定，后续两步分别看 neutron hit 和 reconstructed-fiducial survival。}
+\end{figure}
+
+pooled tight px60 中，ypol 从 selected events 到 truth fiducial、neutron hit、reco fiducial 的比例分别是 $0.266$、$0.172$、$0.181$；zpol 分别是 $0.301$、$0.179$、$0.193$。reco fiducial 略高于 hit truth fiducial 是因为 fiducial 条件在重建后定义，存在边界迁移。
+
+\subsection{neutron efficiency 的 px-py 和 Delta-px 相空间}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{neutron_efficiency_2d_pxn_vs_pyn_tight_px60.png}
+  \caption{tight px60 下 truth $p_{x,n}$ 与 truth $p_{y,n}$ 的二维 neutron efficiency。白色区域是当前 diagnostic 中没有可用统计的相空间。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{neutron_efficiency_2d_pxn_vs_dpx_tight_px60.png}
+  \caption{tight px60 下 truth $p_{x,n}$ 与 truth $\Delta p_x$ 的二维 neutron efficiency。这张图直接说明 neutron acceptance 如何进入 $R$ 的 numerator/denominator。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{neutron_efficiency_1d_tight_px60.png}
+  \caption{至少有 20 个 truth events 的 bin 中，一维 neutron hit 和 reco fiducial efficiency。在 populated core 中，efficiency 大约为 0.55--0.70，并不是 1。}
+\end{figure}
+
+visible sample 不是 breakup phase space 的均匀切片。tight px60 的主要 populated 区域在负 $p_{x,n}$，efficiency 同时随 $p_{x,n}$ 和 $\Delta p_x$ 变化。因此 proposal 里不应说实验直接测到了 truth-level $R$；更稳的说法是: 每个理论 $\gamma$ 点都用同一套 efficiency/response folding，再和实验 folded observable 比较。
+
+\subsection{sign-dependent neutron efficiency 和 px60 选择}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{ypol_tight_neutron_efficiency_balance.png}
+  \caption{tight selection 下的 neutron sign efficiency balance。ypol 给出稳定的 sign-balance 对比；zpol tight 的正 $p_{x,n}$ 分支在当前 MC diagnostic 中统计太少。}
+\end{figure}
+
+ypol tight 的 neutron hit efficiency:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+fiducial & $\epsilon(p_{x,n}>0)$ & $\epsilon(p_{x,n}<0)$ & relative difference \\
+\midrule
+px60 & 0.678 & 0.644 & 0.050 \\
+px100 & 0.677 & 0.293 & 0.791 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\texttt{px100} 会保留一个 NEBULA 很难看到的负 $p_{x,n}$ 分支，导致 $R$ 被 detector efficiency 强烈扭曲。\texttt{px60} 不是消除所有 detector effect，而是把 ypol 中最严重的 sign-dependent efficiency 降到可建模、可做 closure test 的范围。当前 zpol tight 的 sign-balance 数值不能过度解释，因为正 $p_{x,n}$ 分支在该 diagnostic 表里只有 3 个事件。
+
+\subsection{momentum response 和 reaction-plane response}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{response_matrices_tight_px60.png}
+  \caption{tight px60 下 reconstructed $p_{x,n}$ 和 reconstructed $\Delta p_x$ 的 conditional response matrix。青色线是对角线；黑色区域是没有可用 diagnostic 统计的 bin。}
+\end{figure}
+
+核心相空间中，$\Delta p_x$ response 在 ypol/zpol 都接近对角线；$p_{x,n}$ response 在接受分支较窄，但有低概率尾巴和边界效应。这说明 smearing 需要 folding，但一阶偏置主要仍来自 neutron visible-window selection。
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{dphi_reco_truth_ypol_tight_px60.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{dphi_reco_truth_zpol_tight_px60.png}
+  \end{minipage}
+  \caption{ypol/zpol tight px60 的 reconstructed minus truth reaction-plane angle。这是 proton/PDC 驱动的 event-plane reconstruction 对 $R$ 的直接诊断。}
+\end{figure}
+
+\subsection{folding 在哪里改变 R}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{r_ladder_summary_tight_px60.png}
+  \caption{ypol/zpol tight px60 的 $R$ ladder。该图把 truth、neutron hit acceptance、truth-plane reconstruction、fully reconstructed event plane 分开。}
+\end{figure}
+
+pooled ypol tight px60:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+stage & $N$ & $N_{\mathrm{pos}}$ & $N_{\mathrm{neg}}$ & $R$ \\
+\midrule
+truth & 24323 & 21626 & 2697 & 8.02 \\
+hit\_truth & 15751 & 14349 & 1402 & 10.23 \\
+reco\_truth\_plane & 16509 & 14476 & 2033 & 7.12 \\
+reco\_plane & 16509 & 14408 & 2101 & 6.86 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+最大的变化发生在最终 event-plane reconstruction 之前: neutron hit acceptance 和 reconstructed visible-window definition 已经显著改变 observable。\texttt{reco\_truth\_plane} 到 \texttt{reco\_plane} 的变化较小，说明当前样本中 PDC/reaction-plane reconstruction 不是 $R$ bias 的主导项。
+
+\subsection{sign migration 不是主导项}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\linewidth]{sign_migration_summary_tight.png}
+  \caption{tight selection 下，$\Delta p_x$ sign-flip probability 随 neutron visible-window size 的变化。}
+\end{figure}
+
+tight px60 的 sign-migration probabilities:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrr}
+\toprule
+pol & truth sign & $P(\mathrm{reco\ negative})$ & $P(\mathrm{reco\ positive})$ \\
+\midrule
+ypol & negative & 0.954 & 0.046 \\
+ypol & positive & 0.00265 & 0.997 \\
+zpol & negative & 0.896 & 0.104 \\
+zpol & positive & 0.046 & 0.954 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+这说明在已经进入 visible window 的事件中，$\Delta p_x$ 符号翻转不是主导误差。主导误差仍然是哪些 neutron kinematics 能被探测并通过 reconstructed fiducial selection。
+
+\section{统计量和束流时间}
+
+当前 beamtime planning anchor:
+\begin{itemize}
+  \item beam energy: 190 MeV/u
+  \item beam intensity: $1.0\times 10^7$ pps
+  \item SRC harmonic: 6
+  \item bunch spacing: 33.62 ns
+  \item planning breakup cross section: 550 mb
+  \item planning detected-coincidence efficiency: 4.65\%
+\end{itemize}
+
+Sn124 1.2 g 库存下的 15 mm 圆盘:
+\begin{itemize}
+  \item 等效厚度: 0.929 mm
+  \item detected coincidence rate: 843 Hz
+  \item 16 h detected coincidences: $4.86\times 10^7$
+\end{itemize}
+
+用当前 full simulation 的保守 usable-event survival 继续折算:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+pol & useful fraction & 16 h usable $R$ events & worst adjacent-$\gamma$ 3$\sigma$ $N$ \\
+\midrule
+ypol & 0.00566 & $2.75\times 10^5$ & $2.77\times 10^3$ \\
+zpol & 0.03869 & $1.88\times 10^6$ & $1.31\times 10^2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{sn124_beamtime_reach_tight_px60.png}
+  \caption{Sn124 库存靶方案下，tight px60 visible-window selection 后的 usable $R$ event reach。}
+\end{figure}
+
+即使采用 20 mm 圆盘、同样 1.2 g 库存，16 h 后 ypol usable $R$ events 仍在 $10^5$ 量级以上。统计上可以做 $\gamma$ 约束；最终误差预算会由 detector response、neutron efficiency 和理论模型 folding 误差控制。
+
+pile-up 方面，旧 planning 的 3 mm reference thickness 下每 bucket detected coincidence mean 约 $9.16\times 10^{-5}$。15 mm 库存方案 rate 更低，因此 single-bucket pile-up 不是当前主瓶颈。仍需检查电子学积分窗是否跨多个 bucket。
+
+\section{建议的 gamma 约束流程}
+
+推荐主线如下:
+\begin{enumerate}
+  \item 对每个 $\gamma$ 的 QMD 输出，跑同一套 Geant4 几何、NEBULA-Plus detector response、PDC NN proton reconstruction、neutron reconstruction。
+  \item 用同一 selection 定义实验和模型的 folded observable: $|p_{x,n}^{\mathrm{reco}}| < 60$ MeV/$c$，并使用 tight event selection；优先使用 Sn124。
+  \item 对实验数据构造
+  \[
+    R_{\mathrm{exp}}
+    =
+    \frac{N(\Delta p_x^{\mathrm{reco}}>0)}
+         {N(\Delta p_x^{\mathrm{reco}}<0)}.
+  \]
+  \item 对模型构造 $R_{\mathrm{model,folded}}(\gamma)$。
+  \item 用 likelihood 或 $\chi^2$ 做约束:
+  \[
+    \chi^2(\gamma)
+    =
+    \frac{
+      \left[
+        R_{\mathrm{exp}} - R_{\mathrm{model,folded}}(\gamma)
+      \right]^2
+    }{
+      \sigma_{\mathrm{stat}}^2
+      + \sigma_{\mathrm{detector}}^2
+      + \sigma_{\mathrm{model}}^2
+    }.
+  \]
+  \item 组合 ypol/zpol 和 Sn112/Sn124 时，要先确认每个通道的 folding closure 和系统误差，不要只按统计误差合并。
+\end{enumerate}
+
+这一路线的优点是避免不稳定 unfolding。只有在 closure test 证明 response matrix 可逆、效率没有近零区域主导时，再把 unfolded truth-level $R$ 作为附加结果。
+
+\section{还缺什么}
+
+当前不能过度宣称的部分:
+\begin{itemize}
+  \item $\eta_{\mathrm{coin}}=4.65\%$ 仍是 manuscript planning anchor。本地 selected-breakup validation 可复现的是约 37.9\% acceptance，两者口径不同，proposal 里必须写清楚。
+  \item Sn112/Sn124 的 target-specific breakup cross section 仍需要用统一 ImQMD shell integration 抽取，而不是只用 Sn124 anchor 平移。
+  \item 还没有真实实验的 neutron efficiency calibration、time offset、threshold、cross-talk、fake neutron 和 accidental background。
+  \item detector response 的系统误差还没有通过 toy closure 或 pseudo-data closure 量化。
+  \item 当前报告使用的是 simulation truth-defined cuts 和 reco-defined visible window 的混合诊断；最终实验分析要把所有实验端 cuts 写成 reco-only 版本，并用 simulation 做 truth 对照。
+\end{itemize}
+
+\section{推荐给 proposal 或报告的表述}
+
+可以写:
+\begin{quote}
+在 Sn124 上，经过 NEBULA-Plus detector response、PDC NN proton reconstruction 和 neutron reconstruction 后，\texttt{tight + |p\_x,n|<60 MeV/c} 的 folded $R$ observable 仍保留强 $\gamma$ 依赖。按当前 15 mm/1.2 g Sn target、$1.0\times 10^7$ pps、16 h planning，统计量比相邻 $\gamma$ 点 3$\sigma$ 区分所需事件数高两个数量级以上。因此实验对 $\gamma$ 的约束可行性主要取决于 detector folding 的系统控制，而不是统计量。
+\end{quote}
+
+不应该写:
+\begin{quote}
+reco $R$ 已经等于 truth $R$。
+\end{quote}
+
+更准确的表述是:
+\begin{quote}
+实验应比较 folded data 与 folded model；truth-level $R$ 只作为物理解释和 closure-test 参考。
+\end{quote}
+
+\end{document}
