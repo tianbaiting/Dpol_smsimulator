@@ -38,6 +38,13 @@
   \item Figures used in this report: \texttt{docs/reports/gamma\_constraint\_20260611/figures/}
 \end{itemize}
 
+\paragraph{Data provenance}
+Three-stage pipeline (all figures in this report use the same sample): \\
+(1) QMD simulation: d+Sn 190 MeV/u, $\gamma=\{0.5,0.6,0.7,0.8\}$, targets Sn112+Sn124, y-pol (phi\_random) + z-pol (b\_discrete). \\
+(2) Breakup extraction: \texttt{breakup\_nn\_targetframe\_20260607\_180428} (2026-06-07 18:04). \\
+(3) NEBULA-Plus + PDC NN joint reconstruction: \texttt{nebulaplus\_nn\_joint\_20260609\_012854} (2026-06-09 01:28). \\
+All figure scripts (\texttt{make\_cut\_diagnostics\_figures.py}, \texttt{plot\_nebulaplus\_reco.py}) read stage~(3) directly via uproot --- 176 \texttt{*\_reco.root} files (\texttt{recoTree}), filtered by \texttt{truth\_has\_proton \& truth\_has\_neutron \& nn\_status==0}. Sn124 event counts: y-pol $1.68\times10^6$ (16 files), z-pol $3.75\times10^4$ (160 files).
+
 \section*{Executive Summary}
 
 The current simulation and reconstruction sample support the following statements.
@@ -191,21 +198,23 @@ For Sn124 with the tight selection and $|p_{x,n}|<60$ MeV/$c$, the folded recons
 
 \begin{table}[H]
 \centering
-\begin{tabular}{llrr}
+\begin{tabular}{llrrrrr}
 \toprule
-polarization & $\gamma$ & $N_{\mathrm{sim}}$ & $R_{\mathrm{folded}}$ \\
+polarization & $\gamma$ & $N_{+}$ & $N_{-}$ & $R_{\mathrm{folded}}$ & $\sigma(R)_{\mathrm{sim}}$ & $\sigma(R)_{16\mathrm{h}}$ \\
 \midrule
-y-pol & 0.5 & 2305 & 12.48 \\
-y-pol & 0.6 & 2422 & 7.81 \\
-y-pol & 0.7 & 2451 & 5.85 \\
-y-pol & 0.8 & 2338 & 4.99 \\
-z-pol & 0.5 & 354 & 6.38 \\
-z-pol & 0.6 & 275 & 3.10 \\
-z-pol & 0.7 & 343 & 1.66 \\
-z-pol & 0.8 & 478 & 0.56 \\
+y-pol & 0.5 & 2134 & 171 & 12.48 & 0.99 & 0.091 \\
+y-pol & 0.6 & 2147 & 275 & 7.81 & 0.50 & 0.047 \\
+y-pol & 0.7 & 2093 & 358 & 5.85 & 0.33 & 0.032 \\
+y-pol & 0.8 & 1948 & 390 & 4.99 & 0.28 & 0.026 \\
+z-pol & 0.5 & 306 & 48 & 6.38 & 0.99 & 0.014 \\
+z-pol & 0.6 & 208 & 67 & 3.10 & 0.44 & 0.005 \\
+z-pol & 0.7 & 214 & 129 & 1.66 & 0.18 & 0.0025 \\
+z-pol & 0.8 & 171 & 307 & 0.56 & 0.053 & 0.0008 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+$N_{+}$/$N_{-}$ are the counts of $\Delta p_x^{\mathrm{reco}}>0$/$<0$ events, $\sigma(R)_{\mathrm{sim}}$ is the statistical error of the current MC sample, and $\sigma(R)_{16\mathrm{h}}$ is the error extrapolated to a 16 h run (formula in Sec.~5).
 
 The important point is not that truth and reconstruction are identical. The important point is that the folded reconstructed curve remains monotonic in the current Sn124 sample, and its separation is much larger than the statistical uncertainty expected for a 16 h run.
 
@@ -237,6 +246,12 @@ For pooled tight px60 events, y-pol keeps $0.266$ of selected events in the trut
   \centering
   \includegraphics[width=0.96\linewidth]{neutron_efficiency_2d_pxn_vs_pyn_tight_px60.png}
   \caption{Two-dimensional neutron efficiency in truth $p_{x,n}$ versus truth $p_{y,n}$ for tight px60. Empty white regions are outside the populated/usable diagnostic phase space.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\linewidth]{cut_diagnostics/neutron_efficiency_2d_pxn_vs_pyn_by_cut.png}
+  \caption{The same $p_{x,n}$--$p_{y,n}$ efficiency map, one row per event-quality cut (none/loose/mid/tight), columns = y-pol/z-pol (all px60 truth fiducial). From none to tight the high-efficiency region keeps essentially the same shape: the cut changes which phase-space region is sampled, not the per-bin efficiency.}
 \end{figure}
 
 \begin{figure}[H]
@@ -332,7 +347,7 @@ The largest visible change happens before the final event-plane reconstruction: 
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.95\linewidth]{sign_migration_summary_tight.png}
-  \caption{$\Delta p_x$ sign-flip probability versus neutron visible-window size for tight selections.}
+  \caption{$\Delta p_x$ sign-flip probability versus neutron visible-window size for tight selections. Sign migration is defined as the conditional probability $P(\mathrm{reco\ sign}\,|\,\mathrm{truth\ sign})$ with truth sign $=\mathrm{sgn}(\Delta p_x^{\mathrm{truth}})$ and reco sign $=\mathrm{sgn}(\Delta p_x^{\mathrm{reco}})$; the diagonal (truth$\to$same sign) is the retention rate and the off-diagonal (truth$\to$opposite sign) is the flip rate.}
 \end{figure}
 
 For tight px60, the sign-migration probabilities are:
@@ -353,6 +368,118 @@ z-pol & positive & 0.046 & 0.954 \\
 
 Within the visible window, sign flipping of $\Delta p_x$ is therefore not the main uncertainty. The leading issue is still which neutron kinematics enter the visible and reconstructable phase space.
 
+\section{Cut-System Diagnostics}
+
+The experimental observable depends on two sets of selections: the event-quality cut (\texttt{loose/mid/tight}) and the neutron visible window ($|p_{x,n}|<60/80/100$ MeV/$c$). The figures below use event-level data read directly from ROOT (\texttt{make\_cut\_diagnostics\_figures.py}, reusing the loader and cut definitions of \texttt{plot\_nebulaplus\_reco.py}) to show how these cuts change the observable and the phase-space coverage.
+
+\textbf{Cut definitions} (truth-level momenta, see \texttt{compute\_cut\_masks}; $\Sigma$ denotes p+n sum, $\phi_\Sigma=\mathrm{atan2}(p_{y,\Sigma},p_{x,\Sigma})$): \\
+y-pol --- \texttt{loose}: $|p_{y,p}-p_{y,n}|<150$ and $|p_{T,\Sigma}|>50$; \texttt{mid}: also $|p_{T,\Sigma}|<200$; \texttt{tight}: also collinearity $(\pi-|\phi_\Sigma|)<0.2$. \\
+z-pol --- \texttt{loose}: $(p_{z,p}+p_{z,n})>1150$ and $|p_{z,p}-p_{z,n}|<150$; \texttt{mid}: also $|p_{x,\Sigma}|<200$ and $|p_{T,\Sigma}|>50$; \texttt{tight}: also $(\pi-|\phi_\Sigma|)<0.5$.
+
+\subsection{$R(\gamma)$ across the 9 cut combinations}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/r_vs_gamma_cut_grid_ypol.png}
+  \caption{y-pol $R(\gamma)$ across the 9 cut combinations (rows = loose/mid/tight, columns = px60/px80/px100), Sn124. Black = truth-level $R$, blue = folded reco $R$, error bars from bootstrap.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/r_vs_gamma_cut_grid_zpol.png}
+  \caption{z-pol: the same 9-combination grid.}
+\end{figure}
+
+Key points: \texttt{loose}$\to$\texttt{tight} makes y-pol $R$ rise monotonically and z-pol $R$ fall (the event selection increasingly favors one sign); px60$\to$px100 increases $R$ (a wider visible window keeps more of the negative-$p_{x,n}$ branch that NEBULA sees poorly); the truth/reco gap is smallest at tight px60. The $\gamma$ sensitivity (slope) survives in all 9 combinations, but tight px60 gives the best truth/reco agreement.
+
+\subsection{$\Delta p_x$ shape: truth vs reco}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/dpx_truth_vs_reco_overlay_ypol.png}
+  \caption{y-pol normalized $\Delta p_x$ histograms. Black = truth (truth event plane + truth momenta), blue = reco (reco event plane + NN proton + reconstructed neutron). Red shading = $\Delta p_x>0$ ($R$ numerator), orange = $\Delta p_x<0$ ($R$ denominator). Tight px60 and mid px60 side by side.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/dpx_truth_vs_reco_overlay_zpol.png}
+  \caption{z-pol: the corresponding $\Delta p_x$ truth vs reco overlay.}
+\end{figure}
+
+The reco peak position and width are close to truth; sign migration is mostly in the tails. The y-pol asymmetry (positive side much larger than negative) is visible in both truth and reco. Each panel title reports the corresponding $R_{\mathrm{truth}}$ and $R_{\mathrm{reco}}$.
+
+\subsection{Phase-space coverage (truth level)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{cut_diagnostics/phase_density_pxn_vs_dpx.png}
+  \caption{\textbf{Truth-level} phase-space density (event counts per bin, not efficiency). Top row = loose px100, bottom row = tight px60, columns = y-pol/z-pol. It answers ``which region of truth phase space does this cut keep?''.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{cut_diagnostics/phase_density_pxn_vs_pyn.png}
+  \caption{Same, truth $p_{x,n}$ vs $p_{y,n}$ neutron transverse plane.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{cut_diagnostics/phase_density_dpx_vs_dpy.png}
+  \caption{Same, truth $\Delta p_x$ vs $(p_{y,p}-p_{y,n})$ momentum-asymmetry plane. The tight cut compresses events toward the reaction plane.}
+\end{figure}
+
+These three figures are \textbf{truth-level} phase-space densities (event counts, not efficiencies). Tight px60 carves out the narrow $|p_{x,n}|<60$ strip and concentrates $\Delta p_x$ on the positive side (y-pol); loose px100 covers a much broader region. Reco-level truth$\to$reco migration is a separate question, covered by the response matrices of Sec.~4 --- this section addresses the geometric selection of the cut, not detector smearing.
+
+\subsection{Neutron efficiency across cuts}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/neutron_efficiency_1d_by_cut_ypol.png}
+  \caption{y-pol neutron efficiency versus event-quality cut (px60 truth fiducial). Four curves = none (no event cut) / loose / mid / tight. Top row = neutron hit efficiency, bottom row = reco-fiducial efficiency; left column vs truth $p_{x,n}$, right column vs truth $\Delta p_x$. Efficiency is $\epsilon(x)=N_{\mathrm{hit}}(x\text{-bin})/N_{\mathrm{fid}}(x\text{-bin})$; only bins with $N_{\mathrm{fid}}\geq20$ are drawn.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/neutron_efficiency_1d_by_cut_zpol.png}
+  \caption{z-pol: the corresponding efficiency curves. The z-pol ``none'' curve has limited statistics in some bins.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{cut_diagnostics/neutron_efficiency_2d_pxn_vs_dpx_by_cut.png}
+  \caption{2D neutron hit efficiency in ($p_{x,n}$, $\Delta p_x$), one row per event-quality cut (none/loose/mid/tight), columns = y-pol/z-pol. All panels use the px60 truth fiducial.}
+\end{figure}
+
+Key point: from none to tight, the efficiency curve shape is largely unchanged (core $\epsilon\sim$0.55--0.70), which means the event-quality cut mainly changes \emph{which} phase-space region enters the sample (which $p_{x,n}$/$\Delta p_x$ bins have enough statistics), not the per-bin detection efficiency itself. The sign dependence of efficiency on $p_{x,n}$ (lower efficiency on the negative-$p_{x,n}$ side in y-pol) is present in both none and tight --- it is an intrinsic NEBULA-geometry feature that the event-quality cut cannot remove; only narrowing the visible window (px60) excludes the most sign-dependent region.
+
+\subsection{Neutron efficiency without px fiducial (full range)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/neutron_efficiency_1d_nofiducial_ypol.png}
+  \caption{y-pol neutron efficiency across the \textbf{full} $p_{x,n}$ range, no px fiducial. Red dashed = $\pm$60 MeV/$c$ (the px60 window boundary). Top row = neutron hit efficiency, bottom row = reco-fiducial efficiency. Four curves as before (none/loose/mid/tight).}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/neutron_efficiency_1d_nofiducial_zpol.png}
+  \caption{z-pol: the corresponding full-range efficiency curves.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\linewidth]{cut_diagnostics/neutron_efficiency_2d_pxn_vs_pyn_nofiducial.png}
+  \caption{2D neutron hit efficiency without px fiducial ($p_{x,n}$ vs $p_{y,n}$), one row per event-quality cut. Red dashed = $\pm$60 MeV/$c$.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\linewidth]{cut_diagnostics/neutron_efficiency_2d_pxn_vs_dpx_nofiducial.png}
+  \caption{Same, $p_{x,n}$ vs $\Delta p_x$.}
+\end{figure}
+
+These figures answer the core question: \emph{why is the px60 cut needed}. With the px fiducial removed, the full neutron-efficiency landscape is visible --- NEBULA efficiency is high ($\sim$0.6--0.7) on the positive-$p_{x,n}$ side but drops sharply for negative $p_{x,n}$ with $|p_{x,n}|>60$ (y-pol). This is exactly why px100 keeps a negative branch that NEBULA can barely see, distorting $R$. The px60 cut confines the analysis to the core region where both sides have efficiency $>0.5$, keeping the sign-dependent efficiency imbalance within a modelable range.
+
 \section{Statistics and Beam Time}
 
 The current beamtime planning anchor is:
@@ -372,19 +499,93 @@ For the 15 mm Sn124 target option under the 1.2 g inventory constraint:
   \item detected coincidences in 16 h: $4.86\times10^7$
 \end{itemize}
 
-After applying the conservative usable-event survival from the current full simulation:
+\subsection{QMD sample size and pass rates}
+
+The QMD sample used for the current plots (Sn124, summed over the four $\gamma$ points) is highly unbalanced between the two polarizations:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-polarization & useful fraction & 16 h usable $R$ events & worst adjacent-$\gamma$ 3$\sigma$ $N$ \\
+pol & $N_{\mathrm{raw}}$ (QMD) & $N_{\mathrm{tight}}$ & $N_{\mathrm{reco}}$(px60) & raw$\to$tight & raw$\to$reco \\
 \midrule
-y-pol & 0.00566 & $2.75\times10^5$ & $2.77\times10^3$ \\
-z-pol & 0.03869 & $1.88\times10^6$ & $1.31\times10^2$ \\
+y-pol & $1.68\times10^6$ & $4.36\times10^4$ & $9.52\times10^3$ & 2.59\% & 0.566\% \\
+z-pol & $3.75\times10^4$ & $6.04\times10^3$ & $1.45\times10^3$ & 16.1\% & 3.87\% \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+y-pol generated $1.68\times10^6$ QMD events while z-pol generated only $3.75\times10^4$ (a factor of 45 fewer). z-pol has a higher pass rate (16.1\% vs 2.59\%), but the raw sample is so small that the current z-pol plots carry large MC statistical errors ($\sigma(R)_{\mathrm{sim}}\sim0.05$--$0.99$, see Table~1). $N_{\mathrm{reco}}$ is the number of usable $R$ events actually used in the current tight-px60 plots.
+
+Comparing the 16 h experimental yield directly with the current MC plot statistics:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+pol & useful fraction & $N_{\mathrm{sim}}$ (current plot) & 16 h usable & 16 h $/$ $N_{\mathrm{sim}}$ & worst 3$\sigma$ $N_{\mathrm{req}}$ \\
+\midrule
+y-pol & 0.00566 & $9.52\times10^3$ & $2.75\times10^5$ & $\sim$29$\times$ & $2.77\times10^3$ \\
+z-pol & 0.03869 & $1.45\times10^3$ & $1.88\times10^6$ & $\sim$1.3$\times10^3\times$ & $1.31\times10^2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A 16 h run gives $\sim$29$\times$ the current y-pol plot statistics and $\sim$1300$\times$ the current z-pol statistics. The useful fraction $f_{\mathrm{useful}}=N_{\mathrm{reco}}/N_{\mathrm{raw}}$ converts detected coincidences to usable $R$ events: $N_{\mathrm{usable}}=4.86\times10^7\times f_{\mathrm{useful}}$. The $\sim$1300$\times$ z-pol gain is especially important: the current z-pol MC is severely under-sampled ($1.45\times10^3$ usable events), so the experiment will substantially improve its precision.
+
+\subsection{Statistical-error derivation}
+
+$R=N_{+}/N_{-}$ is a ratio estimator. Under a multinomial model on $N=N_{+}+N_{-}$ usable events, the delta method gives
+\[
+  \sigma(R) = (1+R)\sqrt{R/N}.
+\]
+The number of events needed for a 3$\sigma$ separation of two adjacent $\gamma$ points (using the midpoint $\bar R=\tfrac12(R_1+R_2)$ for $\sigma$) is
+\[
+  N_{\mathrm{req}} = \left[\, z_\alpha\,(1+\bar R)\sqrt{\bar R}\,/\,|\Delta R|\,\right]^2, \qquad z_\alpha=3.
+\]
+The per-interval result for the tight px60 folded reco observable is:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrrrr}
+\toprule
+pol & interval & $R_{\mathrm{left}}$ & $R_{\mathrm{right}}$ & $|\Delta R|$ & $N_{\mathrm{req}}(3\sigma)$ \\
+\midrule
+y-pol & g050$\to$g060 & 12.48 & 7.81 & 4.67 & 519 \\
+y-pol & g060$\to$g070 & 7.81 & 5.85 & 1.96 & 979 \\
+y-pol & g070$\to$g080 & 5.85 & 4.99 & 0.85 & $2.77\times10^3$ \\
+z-pol & g050$\to$g060 & 6.38 & 3.10 & 3.27 & 131 \\
+z-pol & g060$\to$g070 & 3.10 & 1.66 & 1.45 & 117 \\
+z-pol & g070$\to$g080 & 1.66 & 0.56 & 1.10 & 36 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The hardest separation is y-pol g070$\to$g080 ($\bar R=5.42$, $|\Delta R|=0.85$, needs $2.77\times10^3$ events); for z-pol it is g050$\to$g060 ($\bar R=4.74$, $|\Delta R|=3.27$, needs 131). The usable-event extrapolation chain is
+\[
+  N_{\mathrm{usable}} = \mathrm{rate}\times T \times f_{\mathrm{useful}}, \qquad
+  f_{\mathrm{useful}} = N_{\mathrm{reco\_plane}}(\mathrm{tight\,px60})/N_{\mathrm{raw}},
+\]
+so y-pol $f_{\mathrm{useful}}=0.00566$ gives $N_{\mathrm{usable}}=4.86\times10^7\times0.00566\approx2.75\times10^5$ and z-pol $f_{\mathrm{useful}}=0.0387$ gives $1.88\times10^6$. The usable/required ratio is $\approx 99\times$ for y-pol (about two orders of magnitude) and $\approx 1.4\times10^4\times$ for z-pol (about four orders of magnitude).
+
+\subsection{Statistical vs systematic comparison}
+
+Putting the three scales side by side for y-pol tight px60:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+quantity & typical value \\
+\midrule
+$\sigma_{\mathrm{stat}}(R)$ at 16 h (per $\gamma$ point) & 0.026 -- 0.091 \\
+$\Delta R_{\mathrm{detector}}$ (truth$\to$reco, per $\gamma$ point) & 1 -- 2 \\
+$\Delta R_{\mathrm{between}\,\gamma}$ (hardest interval g070$\to$g080) & 0.85 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 16 h statistical error ($\sim$0.03--0.09) is one to two orders of magnitude below the detector-folding shift ($\sim$1--2), and about an order of magnitude below the smallest $\gamma$ gap (0.85). The conclusion that ``statistics is not the bottleneck, systematics dominate'' is therefore quantitatively supported.
 
 \begin{figure}[H]
   \centering
@@ -444,7 +645,7 @@ The current report should not overstate the following points:
 
 The defensible statement is:
 \begin{quote}
-For Sn124, after NEBULA-Plus detector response, PDC NN proton reconstruction, and neutron reconstruction, the folded $R$ observable with the tight event selection and $|p_{x,n}|<60$ MeV/$c$ retains a strong $\gamma$ dependence. Under the current 15 mm/1.2 g Sn target option, $1.0\times10^7$ pps beam intensity, and 16 h planning assumption, the expected statistics exceed the 3$\sigma$ adjacent-$\gamma$ separation requirement by roughly two orders of magnitude. The feasibility of constraining $\gamma$ is therefore controlled mainly by detector-folding systematics, not by raw statistics.
+For Sn124, after NEBULA-Plus detector response, PDC NN proton reconstruction, and neutron reconstruction, the folded $R$ observable with the tight event selection and $|p_{x,n}|<60$ MeV/$c$ retains a strong $\gamma$ dependence. Under the current 15 mm/1.2 g Sn target option, $1.0\times10^7$ pps beam intensity, and 16 h planning assumption, the expected statistics exceed the 3$\sigma$ adjacent-$\gamma$ separation requirement by about two orders of magnitude for y-pol ($\sim$99$\times$) and about four orders of magnitude for z-pol ($\sim$1.4$\times10^4\times$). The feasibility of constraining $\gamma$ is therefore controlled mainly by detector-folding systematics, not by raw statistics.
 \end{quote}
 
 The following statement should not be used:

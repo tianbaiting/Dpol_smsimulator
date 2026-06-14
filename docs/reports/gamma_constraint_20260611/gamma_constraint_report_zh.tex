@@ -39,6 +39,13 @@
   \item 本报告图表: \texttt{docs/reports/gamma\_constraint\_20260611/figures/}
 \end{itemize}
 
+\paragraph{数据溯源}
+三级流水线 (本报告所有图表基于同一套样本): \\
+① QMD 模拟: d+Sn 190 MeV/u, $\gamma=\{0.5,0.6,0.7,0.8\}$, 靶 Sn112+Sn124, ypol (phi\_random) + zpol (b\_discrete)。 \\
+② breakup 提取: \texttt{breakup\_nn\_targetframe\_20260607\_180428} (2026-06-07 18:04)。 \\
+③ NEBULA-Plus + PDC NN joint 重建: \texttt{nebulaplus\_nn\_joint\_20260609\_012854} (2026-06-09 01:28)。 \\
+所有图表脚本 (\texttt{make\_cut\_diagnostics\_figures.py}, \texttt{plot\_nebulaplus\_reco.py}) 用 uproot 直接读 ③ 的 176 个 \texttt{*\_reco.root} 文件 (\texttt{recoTree})，过滤 \texttt{truth\_has\_proton \& truth\_has\_neutron \& nn\_status==0}。Sn124 事件数: ypol $1.68\times10^6$ (16 文件)，zpol $3.75\times10^4$ (160 文件)。
+
 \section*{结论}
 
 当前模拟和重建样本支持下面的判断。
@@ -192,21 +199,23 @@ Sn124, \texttt{tight + |p\_x,n| < 60 MeV/c}, folded reco plane:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{llrr}
+\begin{tabular}{llrrrrr}
 \toprule
-pol & $\gamma$ & $N_{\mathrm{sim}}$ & $R_{\mathrm{folded}}$ \\
+pol & $\gamma$ & $N_{+}$ & $N_{-}$ & $R_{\mathrm{folded}}$ & $\sigma(R)_{\mathrm{sim}}$ & $\sigma(R)_{16\mathrm{h}}$ \\
 \midrule
-ypol & 0.5 & 2305 & 12.48 \\
-ypol & 0.6 & 2422 & 7.81 \\
-ypol & 0.7 & 2451 & 5.85 \\
-ypol & 0.8 & 2338 & 4.99 \\
-zpol & 0.5 & 354 & 6.38 \\
-zpol & 0.6 & 275 & 3.10 \\
-zpol & 0.7 & 343 & 1.66 \\
-zpol & 0.8 & 478 & 0.56 \\
+ypol & 0.5 & 2134 & 171 & 12.48 & 0.99 & 0.091 \\
+ypol & 0.6 & 2147 & 275 & 7.81 & 0.50 & 0.047 \\
+ypol & 0.7 & 2093 & 358 & 5.85 & 0.33 & 0.032 \\
+ypol & 0.8 & 1948 & 390 & 4.99 & 0.28 & 0.026 \\
+zpol & 0.5 & 306 & 48 & 6.38 & 0.99 & 0.014 \\
+zpol & 0.6 & 208 & 67 & 3.10 & 0.44 & 0.005 \\
+zpol & 0.7 & 214 & 129 & 1.66 & 0.18 & 0.0025 \\
+zpol & 0.8 & 171 & 307 & 0.56 & 0.053 & 0.0008 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+$N_{+}$/$N_{-}$ 是 $\Delta p_x^{\mathrm{reco}}$ 正/负的事例数，$\sigma(R)_{\mathrm{sim}}$ 是当前 MC 样本的统计误差，$\sigma(R)_{16\mathrm{h}}$ 是外推到 16 h 束流时间后的统计误差 (公式见 \S 5)。
 
 这个图的重点不是 truth 和 reco 完全一致，而是 folded reco 曲线本身仍然随 $\gamma$ 单调变化，并且间隔远大于 16 h beamtime 下的统计误差。
 
@@ -238,6 +247,12 @@ pooled tight px60 中，ypol 从 selected events 到 truth fiducial、neutron hi
   \centering
   \includegraphics[width=0.96\linewidth]{neutron_efficiency_2d_pxn_vs_pyn_tight_px60.png}
   \caption{tight px60 下 truth $p_{x,n}$ 与 truth $p_{y,n}$ 的二维 neutron efficiency。白色区域是当前 diagnostic 中没有可用统计的相空间。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\linewidth]{cut_diagnostics/neutron_efficiency_2d_pxn_vs_pyn_by_cut.png}
+  \caption{同一 $p_{x,n}$--$p_{y,n}$ 效率图，但按 event-quality cut 分行 (none/loose/mid/tight)，列为 ypol/zpol (全部 px60 truth fiducial)。从 none 到 tight，高效率区的形状基本不变，说明 cut 改变的是采样的相空间区域而非单 bin 效率。}
 \end{figure}
 
 \begin{figure}[H]
@@ -333,7 +348,7 @@ reco\_plane & 16509 & 14408 & 2101 & 6.86 \\
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.95\linewidth]{sign_migration_summary_tight.png}
-  \caption{tight selection 下，$\Delta p_x$ sign-flip probability 随 neutron visible-window size 的变化。}
+  \caption{tight selection 下 $\Delta p_x$ sign-flip probability 随 neutron visible-window size 的变化。sign migration 定义为条件概率 $P(\mathrm{reco\ sign}\,|\,\mathrm{truth\ sign})$，其中 truth sign $=\mathrm{sgn}(\Delta p_x^{\mathrm{truth}})$、reco sign $=\mathrm{sgn}(\Delta p_x^{\mathrm{reco}})$；对角元素 (truth$\to$同号) 是保持率，非对角元素 (truth$\to$反号) 是翻转率。}
 \end{figure}
 
 tight px60 的 sign-migration probabilities:
@@ -354,6 +369,118 @@ zpol & positive & 0.046 & 0.954 \\
 
 这说明在已经进入 visible window 的事件中，$\Delta p_x$ 符号翻转不是主导误差。主导误差仍然是哪些 neutron kinematics 能被探测并通过 reconstructed fiducial selection。
 
+\section{Cut 系统诊断}
+
+实验观察量依赖两套选择: 事件选择 (\texttt{loose/mid/tight}) 和中子可见窗 ($|p_{x,n}|<60/80/100$ MeV/$c$)。下面用直接从 ROOT 读取的事件级数据 (\texttt{make\_cut\_diagnostics\_figures.py}，复用 \texttt{plot\_nebulaplus\_reco.py} 的 loader 和 cut 定义) 展示这两套 cut 怎么改变观察量和相空间覆盖。
+
+\textbf{Cut 定义} (基于 truth 动量，见 \texttt{compute\_cut\_masks}；记 $\Sigma$ 为 p+n 求和、$\phi_\Sigma=\mathrm{atan2}(p_{y,\Sigma},p_{x,\Sigma})$): \\
+ypol — \texttt{loose}: $|p_{y,p}-p_{y,n}|<150$ 且 $|p_{T,\Sigma}|>50$；\texttt{mid}: 再加 $|p_{T,\Sigma}|<200$；\texttt{tight}: 再加共线 $(\pi-|\phi_\Sigma|)<0.2$。 \\
+zpol — \texttt{loose}: $(p_{z,p}+p_{z,n})>1150$ 且 $|p_{z,p}-p_{z,n}|<150$；\texttt{mid}: 再加 $|p_{x,\Sigma}|<200$ 且 $|p_{T,\Sigma}|>50$；\texttt{tight}: 再加 $(\pi-|\phi_\Sigma|)<0.5$。
+
+\subsection{$R(\gamma)$ 在 9 组 cut 下的全貌}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/r_vs_gamma_cut_grid_ypol.png}
+  \caption{ypol $R(\gamma)$ 在 9 组 cut (行 = loose/mid/tight，列 = px60/px80/px100) 下的全貌，Sn124。黑点 = truth-level $R$，蓝点 = folded reco $R$，误差棒为 bootstrap。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/r_vs_gamma_cut_grid_zpol.png}
+  \caption{zpol 的对应 9 组 cut 网格。}
+\end{figure}
+
+要点: \texttt{loose}$\to$\texttt{tight} 使 ypol 的 $R$ 单调上升、zpol 的 $R$ 单调下降 (事件选择越来越偏向某一符号)；px60$\to$px100 使 $R$ 增大 (更大的 visible window 保留了更多 NEBULA 看不到的负 $p_{x,n}$ 分支)；reco 与 truth 的 gap 在 tight px60 最小。$\gamma$ 敏感性 (曲线斜率) 在全部 9 组里都保留，但 tight px60 的 truth/reco 一致性最好。
+
+\subsection{$\Delta p_x$ 形状: truth vs reco}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/dpx_truth_vs_reco_overlay_ypol.png}
+  \caption{ypol 归一化 $\Delta p_x$ 直方图。黑 = truth (truth 事件面 + truth 动量)，蓝 = reco (reco 事件面 + NN 质子 + reconstructed 中子)。红色背景 = $\Delta p_x>0$ ($R$ 分子)，橙色 = $\Delta p_x<0$ ($R$ 分母)。tight px60 与 mid px60 并排。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/dpx_truth_vs_reco_overlay_zpol.png}
+  \caption{zpol 的对应 $\Delta p_x$ truth vs reco 叠加。}
+\end{figure}
+
+reco 分布的峰位和宽度与 truth 接近，符号迁移主要发生在尾部；ypol 的不对称性 (正侧远大于负侧) 在 truth 和 reco 里都清楚可见。图标题里同时给出对应的 $R_{\mathrm{truth}}$ 和 $R_{\mathrm{reco}}$。
+
+\subsection{相空间覆盖 (truth level)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{cut_diagnostics/phase_density_pxn_vs_dpx.png}
+  \caption{\textbf{Truth-level} 相空间密度 (事件计数/格，不是效率)。上排 = loose px100，下排 = tight px60，列 = ypol/zpol。它回答的是 ``这套 cut 在 truth 相空间里选了哪一块区域''。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{cut_diagnostics/phase_density_pxn_vs_pyn.png}
+  \caption{同上，truth $p_{x,n}$ vs $p_{y,n}$ 中子横向平面。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.96\linewidth]{cut_diagnostics/phase_density_dpx_vs_dpy.png}
+  \caption{同上，truth $\Delta p_x$ vs $(p_{y,p}-p_{y,n})$ 动量不对称平面。tight 把事件压到反应面附近。}
+\end{figure}
+
+这三张是 \textbf{truth-level} 相空间密度 (事件计数，非效率)。tight px60 把中子 $|p_{x,n}|<60$ 的窄条切出来，$\Delta p_x$ 集中在正值侧 (ypol)；loose px100 的覆盖范围大得多。reco-level 的 truth$\to$reco 迁移是另一个问题，由 \S 4 的 response matrix 覆盖——本节看的是 cut 的几何选择，不是探测器 smearing。
+
+\subsection{不同 cut 下的 neutron efficiency}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/neutron_efficiency_1d_by_cut_ypol.png}
+  \caption{ypol neutron efficiency 随 event-quality cut 的变化 (px60 truth fiducial)。四条曲线 = none (无事件选择) / loose / mid / tight。上排 = neutron hit efficiency，下排 = reco-fiducial efficiency；左列 vs truth $p_{x,n}$，右列 vs truth $\Delta p_x$。效率定义为 $\epsilon(x)=N_{\mathrm{hit}}(x\text{-bin})/N_{\mathrm{fid}}(x\text{-bin})$，只画 $N_{\mathrm{fid}}\geq20$ 的 bin。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/neutron_efficiency_1d_by_cut_zpol.png}
+  \caption{zpol 的对应效率曲线。zpol 的 ``none'' 曲线统计有限，部分 bin 误差较大。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\linewidth]{cut_diagnostics/neutron_efficiency_2d_pxn_vs_dpx_by_cut.png}
+  \caption{Neutron hit efficiency 的二维 ($p_{x,n}$, $\Delta p_x$) 热图，按 event-quality cut 分行 (none/loose/mid/tight)，列为 ypol/zpol。全部使用 px60 truth fiducial。}
+\end{figure}
+
+要点: 从 none 到 tight，效率曲线的形状基本一致 (核心区 $\epsilon\sim$0.55--0.70)，说明 event-quality cut 主要改变的是进入样本的相空间区域 (哪些 $p_{x,n}$/$\Delta p_x$ 的 bin 有足够统计)，而不是单 bin 内的探测效率本身。效率对 $p_{x,n}$ 符号的依赖 (ypol 中负 $p_{x,n}$ 侧效率偏低) 在 none 和 tight 下都存在——这是 NEBULA 几何的固有特征，cut 无法消除，只能通过缩小 visible window (px60) 把最严重的 sign-dependent 区域排除。
+
+\subsection{无 px fiducial 的 neutron efficiency (全范围)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/neutron_efficiency_1d_nofiducial_ypol.png}
+  \caption{ypol neutron efficiency 在 \textbf{无 px fiducial} 下的全范围曲线。红色虚线 = $\pm$60 MeV/$c$ (px60 窗口边界)。上排 = neutron hit efficiency，下排 = reco-fiducial efficiency。四条曲线同前 (none/loose/mid/tight)。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{cut_diagnostics/neutron_efficiency_1d_nofiducial_zpol.png}
+  \caption{zpol 的对应全范围效率曲线。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\linewidth]{cut_diagnostics/neutron_efficiency_2d_pxn_vs_pyn_nofiducial.png}
+  \caption{无 px fiducial 的 2D neutron hit efficiency ($p_{x,n}$ vs $p_{y,n}$)，按 event-quality cut 分行。红色虚线 = $\pm$60 MeV/$c$。}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\linewidth]{cut_diagnostics/neutron_efficiency_2d_pxn_vs_dpx_nofiducial.png}
+  \caption{同上，$p_{x,n}$ vs $\Delta p_x$。}
+\end{figure}
+
+这组图回答的核心问题是: \textbf{为什么需要 px60 cut}。去掉 px fiducial 后可以看到完整的 neutron 效率景观——NEBULA 对正 $p_{x,n}$ 侧的效率较高 ($\sim$0.6--0.7)，但对负 $p_{x,n}$ 且 $|p_{x,n}|>60$ 的区域效率急剧下降 (ypol)。这正是 px100 会保留一个 NEBULA 几乎看不到的负分支、从而扭曲 $R$ 的物理原因。px60 把分析限制在两侧效率都 $>0.5$ 的核心区域，把 sign-dependent efficiency imbalance 控制在可建模范围内。
+
 \section{统计量和束流时间}
 
 当前 beamtime planning anchor:
@@ -373,19 +500,93 @@ Sn124 1.2 g 库存下的 15 mm 圆盘:
   \item 16 h detected coincidences: $4.86\times 10^7$
 \end{itemize}
 
-用当前 full simulation 的保守 usable-event survival 继续折算:
+\subsection{QMD 样本量与通过率}
+
+当前画图所用的 QMD 样本 (Sn124，4 个 $\gamma$ 点求和) 在两个极化方向上极不均衡:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-pol & useful fraction & 16 h usable $R$ events & worst adjacent-$\gamma$ 3$\sigma$ $N$ \\
+pol & $N_{\mathrm{raw}}$ (QMD) & $N_{\mathrm{tight}}$ & $N_{\mathrm{reco}}$(px60) & raw$\to$tight & raw$\to$reco \\
 \midrule
-ypol & 0.00566 & $2.75\times 10^5$ & $2.77\times 10^3$ \\
-zpol & 0.03869 & $1.88\times 10^6$ & $1.31\times 10^2$ \\
+ypol & $1.68\times10^6$ & $4.36\times10^4$ & $9.52\times10^3$ & 2.59\% & 0.566\% \\
+zpol & $3.75\times10^4$ & $6.04\times10^3$ & $1.45\times10^3$ & 16.1\% & 3.87\% \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+ypol 生成了 $1.68\times10^6$ 个 QMD 事例，zpol 只有 $3.75\times10^4$ 个 (相差 45 倍)。zpol 的通过率更高 (16.1\% vs 2.59\%)，但 raw 样本太小，导致当前 zpol 图的 MC 统计误差偏大 ($\sigma(R)_{\mathrm{sim}}\sim0.05$--$0.99$，见表 1)。$N_{\mathrm{reco}}$ 是当前 tight-px60 图实际使用的 usable $R$ 事件数。
+
+把实验 16 h 的 expected usable 事件和当前 MC 画图统计直接对比:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+pol & useful fraction & $N_{\mathrm{sim}}$ (当前图) & 16 h usable & 16 h $/$ $N_{\mathrm{sim}}$ & worst 3$\sigma$ $N_{\mathrm{req}}$ \\
+\midrule
+ypol & 0.00566 & $9.52\times10^3$ & $2.75\times10^5$ & $\sim$29$\times$ & $2.77\times10^3$ \\
+zpol & 0.03869 & $1.45\times10^3$ & $1.88\times10^6$ & $\sim$1.3$\times10^3\times$ & $1.31\times10^2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+16 h 束流下 ypol 的 usable 统计是当前图的 $\sim$29 倍，zpol 是 $\sim$1300 倍。useful fraction $f_{\mathrm{useful}}=N_{\mathrm{reco}}/N_{\mathrm{raw}}$ 把 detected coincidences 折算到 usable $R$ 事件: $N_{\mathrm{usable}}=4.86\times10^7\times f_{\mathrm{useful}}$。zpol 的 $\sim$1300 倍增益尤其关键: 当前 zpol MC 严重欠采样 ($1.45\times10^3$ usable 事件)，实验会大幅改善其精度。
+
+\subsection{统计误差推导}
+
+$R=N_{+}/N_{-}$ 是比值统计量。在 $N=N_{+}+N_{-}$ 个有效事件的多项式模型下，用 delta method 给出
+\[
+  \sigma(R) = (1+R)\sqrt{R/N}.
+\]
+相邻两个 $\gamma$ 点 3$\sigma$ 区分所需事件数 (用两端均值 $\bar R=\tfrac12(R_1+R_2)$ 估 $\sigma$) 为
+\[
+  N_{\mathrm{req}} = \left[\, z_\alpha\,(1+\bar R)\sqrt{\bar R}\,/\,|\Delta R|\,\right]^2, \qquad z_\alpha=3.
+\]
+对应 tight px60 folded reco 的逐间隔结果:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrrrr}
+\toprule
+pol & 间隔 & $R_{\mathrm{left}}$ & $R_{\mathrm{right}}$ & $|\Delta R|$ & $N_{\mathrm{req}}(3\sigma)$ \\
+\midrule
+ypol & g050$\to$g060 & 12.48 & 7.81 & 4.67 & 519 \\
+ypol & g060$\to$g070 & 7.81 & 5.85 & 1.96 & 979 \\
+ypol & g070$\to$g080 & 5.85 & 4.99 & 0.85 & $2.77\times10^3$ \\
+zpol & g050$\to$g060 & 6.38 & 3.10 & 3.27 & 131 \\
+zpol & g060$\to$g070 & 3.10 & 1.66 & 1.45 & 117 \\
+zpol & g070$\to$g080 & 1.66 & 0.56 & 1.10 & 36 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+最难区分的间隔是 ypol g070$\to$g080 ($\bar R=5.42$, $|\Delta R|=0.85$, 需 $2.77\times10^3$ 事件)；zpol 最难是 g050$\to$g060 ($\bar R=4.74$, $|\Delta R|=3.27$, 需 131)。useful-event 外推链为
+\[
+  N_{\mathrm{usable}} = \mathrm{rate}\times T \times f_{\mathrm{useful}}, \qquad
+  f_{\mathrm{useful}} = N_{\mathrm{reco\_plane}}(\mathrm{tight\,px60})/N_{\mathrm{raw}},
+\]
+ypol $f_{\mathrm{useful}}=0.00566$ 给 $N_{\mathrm{usable}}=4.86\times10^7\times0.00566\approx2.75\times10^5$；zpol $f_{\mathrm{useful}}=0.0387$ 给 $1.88\times10^6$。可用量与所需量之比: ypol $\approx 99\times$ (约两个数量级)，zpol $\approx 1.4\times10^4\times$ (约四个数量级)。
+
+\subsection{统计 vs 系统对照}
+
+把 ypol tight px60 的三个量级放在一起:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+量 & 典型值 \\
+\midrule
+$\sigma_{\mathrm{stat}}(R)$ @ 16 h (每个 $\gamma$ 点) & 0.026 -- 0.091 \\
+$\Delta R_{\mathrm{detector}}$ (truth$\to$reco, 每个 $\gamma$ 点) & 1 -- 2 \\
+$\Delta R_{\mathrm{between}\,\gamma}$ (最难间隔 g070$\to$g080) & 0.85 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+16 h 统计误差 ($\sim$0.03--0.09) 比探测器 folding 造成的 $R$ 偏移 ($\sim$1--2) 小一到两个量级，比最小 $\gamma$ 间距 (0.85) 也小约一个量级。因此 ``统计不是瓶颈、系统主导'' 这一结论有定量支撑。
 
 \begin{figure}[H]
   \centering
@@ -445,7 +646,7 @@ pile-up 方面，旧 planning 的 3 mm reference thickness 下每 bucket detecte
 
 可以写:
 \begin{quote}
-在 Sn124 上，经过 NEBULA-Plus detector response、PDC NN proton reconstruction 和 neutron reconstruction 后，\texttt{tight + |p\_x,n|<60 MeV/c} 的 folded $R$ observable 仍保留强 $\gamma$ 依赖。按当前 15 mm/1.2 g Sn target、$1.0\times 10^7$ pps、16 h planning，统计量比相邻 $\gamma$ 点 3$\sigma$ 区分所需事件数高两个数量级以上。因此实验对 $\gamma$ 的约束可行性主要取决于 detector folding 的系统控制，而不是统计量。
+在 Sn124 上，经过 NEBULA-Plus detector response、PDC NN proton reconstruction 和 neutron reconstruction 后，\texttt{tight + |p\_x,n|<60 MeV/c} 的 folded $R$ observable 仍保留强 $\gamma$ 依赖。按当前 15 mm/1.2 g Sn target、$1.0\times 10^7$ pps、16 h planning，统计量比相邻 $\gamma$ 点 3$\sigma$ 区分所需事件数: ypol 高约两个数量级 ($\sim$99$\times$)，zpol 高约四个数量级 ($\sim$1.4$\times10^4\times$)。因此实验对 $\gamma$ 的约束可行性主要取决于 detector folding 的系统控制，而不是统计量。
 \end{quote}
 
 不应该写:
