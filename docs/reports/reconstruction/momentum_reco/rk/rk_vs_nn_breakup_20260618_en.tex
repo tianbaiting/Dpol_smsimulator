@@ -18,7 +18,6 @@ This report evaluates proton reconstruction quality on the d+Sn breakup sample (
 \textbf{NN reco}: local \texttt{data/reconstruction/breakup\_nn\_20260503/}, 176 files, produced 2026-05-03 via \texttt{01\_run\_nn\_reco.sh} with the clean production model \texttt{formal\_B115T3deg/20260420\_184345}. \\
 \textbf{g4output source}: identical for both backends (verified by file size 285252607 bytes, timestamp 2026-05-01 20:16:46 +0900). Per-event entry-index alignment is valid 1:1. \\
 \textbf{Frame convention}: target frame (beam-as-Z) throughout. Truth is already target-frame; both backends' reco is rotated to target frame at write time via \texttt{RotateRecoResultToTargetFrame} (\texttt{apps/run\_reconstruction/main.cc:629-630}). No additional rotation in this analysis. \\
-\textbf{Multi-proton events}: pick candidate whose $|p|$ is closest to truth (matches \texttt{evaluate\_target\_momentum\_reco.cc:347-359}).
 
 \section{Proton reconstruction --- RK vs NN vs truth}
 \subsection{Global residuals}

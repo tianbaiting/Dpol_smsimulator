@@ -18,7 +18,6 @@
 \textbf{NN reco}: 本地 \texttt{data/reconstruction/breakup\_nn\_20260503/}, 176 文件, 2026-05-03 由 \texttt{01\_run\_nn\_reco.sh} 产出 (clean production model \texttt{formal\_B115T3deg/20260420\_184345})。\\
 \textbf{g4output}: 两种后端使用相同 g4output (已验证文件大小 285252607 字节, 时间戳 2026-05-01 20:16:46 +0900)。Per-event entry-index 1:1 对齐有效。\\
 \textbf{参考系}: target frame (beam-as-Z)。truth 已是 target frame; 两种后端的 reco 在写入时由 \texttt{RotateRecoResultToTargetFrame} 旋转至 target frame (\texttt{apps/run\_reconstruction/main.cc:629-630})。本分析无需额外旋转。\\
-\textbf{多质子事件}: 选择 $|p|$ 最接近 truth 的候选 (与 \texttt{evaluate\_target\_momentum\_reco.cc:347-359} 一致)。
 
 \section{质子重建 --- RK vs NN vs truth}
 \subsection{全局残差}

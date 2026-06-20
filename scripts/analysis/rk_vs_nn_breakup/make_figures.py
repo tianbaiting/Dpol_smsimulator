@@ -24,6 +24,8 @@ import matplotlib.pyplot as plt
 RK_COLOR = "#1f77b4"  # blue
 NN_COLOR = "#ff7f0e"  # orange
 N_COLOR = "#2ca02c"   # green
+COMPONENT_STEPS = {"x": 50.0, "y": 50.0, "z": 100.0, "p": 100.0}
+COMPONENT_MIN_WIDTHS = {"x": 400.0, "y": 300.0, "z": 900.0, "p": 1000.0}
 plt.rcParams.update({
     "figure.dpi": 130,
     "savefig.dpi": 130,
@@ -31,6 +33,111 @@ plt.rcParams.update({
     "axes.grid": True,
     "grid.alpha": 0.3,
 })
+
+
+def finite_concat(arrays):
+    values = []
+    for arr in arrays:
+        a = np.asarray(arr, dtype=float)
+        a = a[np.isfinite(a)]
+        if len(a) > 0:
+            values.append(a)
+    if not values:
+        return np.array([], dtype=float)
+    return np.concatenate(values)
+
+
+def round_down(value, step):
+    return float(np.floor(value / step) * step)
+
+
+def round_up(value, step):
+    return float(np.ceil(value / step) * step)
+
+
+def robust_axis_range(
+    arrays,
+    quantiles=(0.1, 99.9),
+    pad_fraction=0.05,
+    step=50.0,
+    lower_bound=None,
+    upper_bound=None,
+    min_width=None,
+    symmetric_zero=False,
+):
+    values = finite_concat(arrays)
+    if len(values) == 0:
+        lo = 0.0 if lower_bound is None else float(lower_bound)
+        hi = lo + (min_width if min_width is not None else step)
+        return (lo, hi)
+
+    lo, hi = np.percentile(values, quantiles)
+    if not np.isfinite(lo) or not np.isfinite(hi):
+        lo, hi = float(np.nanmin(values)), float(np.nanmax(values))
+    if hi <= lo:
+        center = 0.5 * (lo + hi)
+        half = 0.5 * (min_width if min_width is not None else step)
+        lo, hi = center - half, center + half
+
+    span = hi - lo
+    if min_width is not None and span < min_width:
+        center = 0.5 * (lo + hi)
+        half = 0.5 * min_width
+        lo, hi = center - half, center + half
+        span = hi - lo
+    pad = span * pad_fraction
+    lo -= pad
+    hi += pad
+
+    if lower_bound is not None:
+        lo = max(lo, float(lower_bound))
+    if upper_bound is not None:
+        hi = min(hi, float(upper_bound))
+    if symmetric_zero:
+        bound = max(abs(lo), abs(hi))
+        lo, hi = -bound, bound
+    if hi <= lo:
+        hi = lo + (min_width if min_width is not None else step)
+
+    lo = round_down(lo, step)
+    hi = round_up(hi, step)
+    if lower_bound is not None:
+        lo = max(lo, float(lower_bound))
+    if upper_bound is not None:
+        hi = min(hi, float(upper_bound))
+    if hi <= lo:
+        hi = lo + step
+    return (float(lo), float(hi))
+
+
+def robust_upper_limit(arrays, high_quantile=99.9, pad_fraction=0.05, step=50.0, min_upper=None):
+    values = finite_concat(arrays)
+    if len(values) == 0:
+        return float(min_upper if min_upper is not None else step)
+    hi = float(np.percentile(values, high_quantile))
+    if not np.isfinite(hi):
+        hi = float(np.nanmax(values))
+    hi = max(hi, 0.0)
+    hi *= 1.0 + pad_fraction
+    hi = round_up(hi, step)
+    if min_upper is not None:
+        hi = max(hi, float(min_upper))
+    return float(max(hi, step))
+
+
+def clipped_fraction(x, y, x_range, y_range):
+    valid = np.isfinite(x) & np.isfinite(y)
+    n = int(np.sum(valid))
+    if n == 0:
+        return 0.0
+    inside = (
+        valid
+        & (x >= x_range[0])
+        & (x <= x_range[1])
+        & (y >= y_range[0])
+        & (y <= y_range[1])
+    )
+    return (n - int(np.sum(inside))) / n * 100.0
 
 
 def load_events(path):
@@ -128,13 +235,27 @@ def plot_reco_vs_truth(events, pol, output_dir):
             rk_reco = events[f"rk_p{axis}"]
             nn_reco = events[f"nn_p{axis}"]
         m = mask & events["truth_has_proton"]
+        rk_valid = m & events["rk_has_proton"] & np.isfinite(rk_reco) & np.isfinite(truth)
+        nn_valid = m & events["nn_has_proton"] & np.isfinite(nn_reco) & np.isfinite(truth)
+        axis_range = robust_axis_range(
+            [truth[rk_valid], rk_reco[rk_valid], truth[nn_valid], nn_reco[nn_valid]],
+            step=COMPONENT_STEPS[axis],
+            lower_bound=0.0 if axis in ("z", "p") else None,
+            min_width=COMPONENT_MIN_WIDTHS[axis],
+            symmetric_zero=axis in ("x", "y"),
+        )
         for row, (reco, name, color) in enumerate([(rk_reco, "RK", RK_COLOR), (nn_reco, "NN", NN_COLOR)]):
             ax = axes[row, col]
             valid = m & events[f"{name.lower()}_has_proton"] & np.isfinite(reco) & np.isfinite(truth)
             if np.sum(valid) > 0:
-                ax.hist2d(truth[valid], reco[valid], bins=60, cmap="viridis", cmin=1)
-                lim = [min(truth[valid].min(), reco[valid].min()), max(truth[valid].max(), reco[valid].max())]
-                ax.plot(lim, lim, "r--", linewidth=0.8, alpha=0.7)
+                ax.hist2d(truth[valid], reco[valid], bins=80, range=[axis_range, axis_range], cmap="viridis", cmin=1)
+                ax.plot(axis_range, axis_range, "r--", linewidth=0.8, alpha=0.7)
+                clipped = clipped_fraction(truth[valid], reco[valid], axis_range, axis_range)
+                ax.set_title(f"{name} {label} (clipped {clipped:.2f}%)", fontsize=9)
+            else:
+                ax.set_title(f"{name} {label}", fontsize=9)
+            ax.set_xlim(axis_range)
+            ax.set_ylim(axis_range)
             ax.set_xlabel(f"truth {label}")
             ax.set_ylabel(f"{name} reco {label}")
             if col == 0:
@@ -152,13 +273,22 @@ def plot_per_event_winner(events, pol, output_dir):
     for ax, axis in zip(axes, ["x", "y", "z"]):
         rk_err = np.abs(events[f"rk_p{axis}"][mask] - events[f"truth_p{axis}"][mask])
         nn_err = np.abs(events[f"nn_p{axis}"][mask] - events[f"truth_p{axis}"][mask])
+        upper = robust_upper_limit(
+            [rk_err, nn_err],
+            high_quantile=99.9,
+            step=COMPONENT_STEPS[axis],
+            min_upper=COMPONENT_STEPS[axis],
+        )
         if len(rk_err) > 0:
-            ax.hist2d(rk_err, nn_err, bins=80, range=[[0, 150], [0, 150]], cmap="viridis", cmin=1)
-        ax.plot([0, 150], [0, 150], "r--", linewidth=0.8, alpha=0.7)
+            ax.hist2d(rk_err, nn_err, bins=80, range=[[0.0, upper], [0.0, upper]], cmap="viridis", cmin=1)
+        ax.plot([0.0, upper], [0.0, upper], "r--", linewidth=0.8, alpha=0.7)
+        ax.set_xlim(0.0, upper)
+        ax.set_ylim(0.0, upper)
         rk_wins = int(np.sum(rk_err < nn_err))
         nn_wins = int(np.sum(rk_err > nn_err))
         n = max(int(len(rk_err)), 1)
-        ax.set_title(f"$p_{axis}$: RK closer {rk_wins/n*100:.1f}%, NN closer {nn_wins/n*100:.1f}%")
+        clipped = clipped_fraction(rk_err, nn_err, (0.0, upper), (0.0, upper))
+        ax.set_title(f"$p_{axis}$: RK {rk_wins/n*100:.1f}%, NN {nn_wins/n*100:.1f}%\nclipped {clipped:.2f}%", fontsize=9)
         ax.set_xlabel("|RK - truth| [MeV/c]")
         ax.set_ylabel("|NN - truth| [MeV/c]")
     fig.suptitle(f"Per-event winner — {pol}")
@@ -174,10 +304,22 @@ def plot_rk_vs_nn_agreement(events, pol, output_dir):
     for ax, axis in zip(axes, ["x", "y", "z"]):
         rk_v = events[f"rk_p{axis}"][mask]
         nn_v = events[f"nn_p{axis}"][mask]
+        axis_range = robust_axis_range(
+            [rk_v, nn_v],
+            step=COMPONENT_STEPS[axis],
+            lower_bound=0.0 if axis == "z" else None,
+            min_width=COMPONENT_MIN_WIDTHS[axis],
+            symmetric_zero=axis in ("x", "y"),
+        )
         if len(rk_v) > 0:
-            ax.hist2d(rk_v, nn_v, bins=80, cmap="viridis", cmin=1)
-            lim = [min(rk_v.min(), nn_v.min()), max(rk_v.max(), nn_v.max())]
-            ax.plot(lim, lim, "r--", linewidth=0.8, alpha=0.7)
+            ax.hist2d(rk_v, nn_v, bins=80, range=[axis_range, axis_range], cmap="viridis", cmin=1)
+            ax.plot(axis_range, axis_range, "r--", linewidth=0.8, alpha=0.7)
+            clipped = clipped_fraction(rk_v, nn_v, axis_range, axis_range)
+            ax.set_title(f"$p_{axis}$ (clipped {clipped:.2f}%)", fontsize=9)
+        else:
+            ax.set_title(f"$p_{axis}$", fontsize=9)
+        ax.set_xlim(axis_range)
+        ax.set_ylim(axis_range)
         ax.set_xlabel(f"RK $p_{axis}$ [MeV/c]")
         ax.set_ylabel(f"NN $p_{axis}$ [MeV/c]")
     fig.suptitle(f"RK vs NN agreement — {pol}")
@@ -397,10 +539,23 @@ def plot_neutron_reco_vs_truth(events, pol, output_dir):
     for ax, axis in zip(axes, ["x", "y", "z"]):
         tv = events[f"truth_n_p{axis}"][mask]
         rv = events[f"n_p{axis}"][mask]
+        axis_range = robust_axis_range(
+            [tv, rv],
+            quantiles=(0.1, 99.5),
+            step=COMPONENT_STEPS[axis],
+            lower_bound=0.0 if axis == "z" else None,
+            min_width=COMPONENT_MIN_WIDTHS[axis],
+            symmetric_zero=axis in ("x", "y"),
+        )
         if len(tv) > 0:
-            ax.hist2d(tv, rv, bins=80, cmap="viridis", cmin=1)
-            lim = [min(tv.min(), rv.min()), max(tv.max(), rv.max())]
-            ax.plot(lim, lim, "r--", linewidth=0.8, alpha=0.7)
+            ax.hist2d(tv, rv, bins=80, range=[axis_range, axis_range], cmap="viridis", cmin=1)
+            ax.plot(axis_range, axis_range, "r--", linewidth=0.8, alpha=0.7)
+            clipped = clipped_fraction(tv, rv, axis_range, axis_range)
+            ax.set_title(f"$p_{{{axis},n}}$ (clipped {clipped:.2f}%)", fontsize=9)
+        else:
+            ax.set_title(rf"$p_{{{axis},n}}$", fontsize=9)
+        ax.set_xlim(axis_range)
+        ax.set_ylim(axis_range)
         ax.set_xlabel(rf"truth $p_{{{axis},n}}$ [MeV/c]")
         ax.set_ylabel(rf"reco $p_{{{axis},n}}$ [MeV/c]")
     fig.suptitle(f"Neutron reco vs truth — {pol}")
@@ -485,7 +640,6 @@ def write_latex(summary, output_dir, tag):
         r"\textbf{NN reco}: local \texttt{data/reconstruction/breakup\_nn\_20260503/}, 176 files, produced 2026-05-03 via \texttt{01\_run\_nn\_reco.sh} with the clean production model \texttt{formal\_B115T3deg/20260420\_184345}. \\",
         r"\textbf{g4output source}: identical for both backends (verified by file size 285252607 bytes, timestamp 2026-05-01 20:16:46 +0900). Per-event entry-index alignment is valid 1:1. \\",
         r"\textbf{Frame convention}: target frame (beam-as-Z) throughout. Truth is already target-frame; both backends' reco is rotated to target frame at write time via \texttt{RotateRecoResultToTargetFrame} (\texttt{apps/run\_reconstruction/main.cc:629-630}). No additional rotation in this analysis. \\",
-        r"\textbf{Multi-proton events}: pick candidate whose $|p|$ is closest to truth (matches \texttt{evaluate\_target\_momentum\_reco.cc:347-359}).",
         "",
         r"\section{Proton reconstruction --- RK vs NN vs truth}",
         r"\subsection{Global residuals}",
@@ -616,7 +770,6 @@ def write_latex(summary, output_dir, tag):
         r"\textbf{NN reco}: 本地 \texttt{data/reconstruction/breakup\_nn\_20260503/}, 176 文件, 2026-05-03 由 \texttt{01\_run\_nn\_reco.sh} 产出 (clean production model \texttt{formal\_B115T3deg/20260420\_184345})。\\",
         r"\textbf{g4output}: 两种后端使用相同 g4output (已验证文件大小 285252607 字节, 时间戳 2026-05-01 20:16:46 +0900)。Per-event entry-index 1:1 对齐有效。\\",
         r"\textbf{参考系}: target frame (beam-as-Z)。truth 已是 target frame; 两种后端的 reco 在写入时由 \texttt{RotateRecoResultToTargetFrame} 旋转至 target frame (\texttt{apps/run\_reconstruction/main.cc:629-630})。本分析无需额外旋转。\\",
-        r"\textbf{多质子事件}: 选择 $|p|$ 最接近 truth 的候选 (与 \texttt{evaluate\_target\_momentum\_reco.cc:347-359} 一致)。",
         "",
         r"\section{质子重建 --- RK vs NN vs truth}",
         r"\subsection{全局残差}",
