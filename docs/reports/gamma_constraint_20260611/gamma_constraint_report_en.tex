@@ -57,106 +57,6 @@ The current simulation and reconstruction sample support the following statement
   \item The PDC geometry is treated as the final effective 69 deg configuration. The NEBULA-Plus macro executes the base geometry first, then explicitly sets the PDC angle to 69 deg and calls \texttt{Update}. The 65 deg message in the logs is an earlier setting that is overwritten.
 \end{enumerate}
 
-\section{Coordinate, $p_x$, and Reaction-Plane Conventions}
-
-The lab frame is the Geant4/SAMURAI world frame used by the NEBULA-Plus macro: $+Z$ points downstream along the nominal beam direction, $+Y$ is vertical, and $+X$ is the horizontal dispersive direction shown in the event-display projections below. The target/input frame is the frame of the generated or reconstructed target momentum. Unless a label explicitly says ``lab'', $p_x$ in this report means $p_x^{\mathrm{tgt}}$, i.e. the target-frame component used for the $p_{x,n}$ fiducial cuts and response plots.
-
-The target angle is $\theta_{\mathrm{tgt}}=3^\circ$. In the Geant4 primary generator, a particle is started from the target center and the input target-frame direction is rotated by $-\theta_{\mathrm{tgt}}$ about lab $Y$:
-\[
-  \mathbf p^{\mathrm{lab}} =
-  R_y(-\theta_{\mathrm{tgt}})\,\mathbf p^{\mathrm{tgt}} .
-\]
-Therefore positive target-frame $p_x$ means an initial component toward lab $+X$ before the common target-angle rotation. For the simple $p_y=0$ sign checks,
-\[
-  p_x^{\mathrm{lab}}
-  =
-  p_x^{\mathrm{tgt}}\cos\theta_{\mathrm{tgt}}
-  -
-  p_z^{\mathrm{tgt}}\sin\theta_{\mathrm{tgt}} ,
-\]
-using the same rotation convention as the simulation.
-
-\begin{figure}[H]
-  \centering
-  \begin{minipage}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_plus60.png}
-  \end{minipage}
-  \hfill
-  \begin{minipage}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_minus60.png}
-  \end{minipage}
-  \caption{Geant4 VRML-to-PNG projections for target-frame neutron $p_x=\pm60$ MeV/$c$, with $p_y=0$ and $p_z=627$ MeV/$c$. The horizontal axis is lab $Z$ downstream; the vertical axis is lab $X$. Positive target-frame $p_x$ trends toward lab $+X$ after the $-3^\circ$ target rotation, while negative target-frame $p_x$ trends toward lab $-X$.}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \begin{minipage}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_plus100.png}
-  \end{minipage}
-  \hfill
-  \begin{minipage}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_minus100.png}
-  \end{minipage}
-  \caption{The same Geant4 sign check for target-frame neutron $p_x=\pm100$ MeV/$c$. The larger $|p_x|$ gives the expected larger lab-$X$ deflection, validating the sign convention used in the reconstructed $p_{x,n}$ plots.}
-\end{figure}
-
-Two reaction-plane azimuths must be kept separate. The generator/model angle $b_\phi$ is the reaction-plane azimuth carried by the QMD/event metadata; in the y-pol raw samples it follows the recorded \texttt{rpphi} modulo $2\pi$, while randomized samples carry the randomized plane angle in the event record. This is a truth/model-plane label and is useful for generator checks.
-
-The current folded observable instead uses the event-by-event kinematic plane. Let
-\[
-  \mathbf k_{\mathrm{out}}
-  =
-  \mathbf p_p + \mathbf p_n,
-  \qquad
-  \mathbf k_{\mathrm{out},T}
-  =
-  (k_{\mathrm{out},x}, k_{\mathrm{out},y}) .
-\]
-Because $\mathbf k_{\mathrm{in}}$ defines the target-frame beam axis, the azimuth of the $(\mathbf k_{\mathrm{in}},\mathbf k_{\mathrm{out}})$ reaction plane is
-\[
-  \phi_k
-  =
-  \operatorname{atan2}
-  \left(k_{\mathrm{out},y}, k_{\mathrm{out},x}\right)
-  =
-  \operatorname{atan2}
-  \left(p_{y,p}+p_{y,n}, p_{x,p}+p_{x,n}\right).
-\]
-If one defines a momentum-transfer vector as $\mathbf q=\mathbf k_{\mathrm{in}}-\mathbf k_{\mathrm{out}}$ instead, the transverse azimuth is shifted by $\pi$; this convention should not be mixed with the current $R$ definition.
-
-The rotation used for $\Delta p_x$ is
-\[
-  \begin{pmatrix}
-    p_x^{\mathrm{rot}} \\
-    p_y^{\mathrm{rot}}
-  \end{pmatrix}
-  =
-  R_z(-\phi_k)
-  \begin{pmatrix}
-    p_x \\
-    p_y
-  \end{pmatrix}
-  =
-  \begin{pmatrix}
-    p_x\cos\phi_k + p_y\sin\phi_k \\
-    -p_x\sin\phi_k + p_y\cos\phi_k
-  \end{pmatrix}.
-\]
-The observable is then
-\[
-  \Delta p_x
-  =
-  p_{x,p}^{\mathrm{rot}} - p_{x,n}^{\mathrm{rot}},
-  \qquad
-  R
-  =
-  \frac{N(\Delta p_x>0)}{N(\Delta p_x<0)} .
-\]
-
 \section{Observable and Physics Logic}
 
 The physics goal is to use the proton--neutron isovector force difference near the target to detect a bias in the final breakup relative momentum. For each event, the transverse reaction-plane direction is defined by
@@ -214,9 +114,159 @@ z-pol & 0.8 & 171 & 307 & 0.56 & 0.053 & 0.0008 \\
 \end{tabular}
 \end{table}
 
-$N_{+}$/$N_{-}$ are the counts of $\Delta p_x^{\mathrm{reco}}>0$/$<0$ events, $\sigma(R)_{\mathrm{sim}}$ is the statistical error of the current MC sample, and $\sigma(R)_{16\mathrm{h}}$ is the error extrapolated to a 16 h run (formula in Sec.~5).
+$N_{+}$/$N_{-}$ are the counts of $\Delta p_x^{\mathrm{reco}}>0$/$<0$ events, $\sigma(R)_{\mathrm{sim}}$ is the statistical error of the current MC sample, and $\sigma(R)_{16\mathrm{h}}$ is the error extrapolated to a 16 h run (formula in the Statistics and Beam Time section).
 
 The important point is not that truth and reconstruction are identical. The important point is that the folded reconstructed curve remains monotonic in the current Sn124 sample, and its separation is much larger than the statistical uncertainty expected for a 16 h run.
+
+\section{Statistics and Beam Time}
+
+The current beamtime planning anchor is:
+\begin{itemize}
+  \item beam energy: 190 MeV/u
+  \item beam intensity: $1.0\times10^7$ pps
+  \item SRC harmonic number: 6
+  \item bunch spacing: 33.62 ns
+  \item planning breakup cross section: 550 mb
+  \item planning detected-coincidence efficiency: 4.65\%
+\end{itemize}
+
+For the 15 mm Sn124 target option under the 1.2 g inventory constraint:
+\begin{itemize}
+  \item equivalent thickness: 0.929 mm
+  \item detected coincidence rate: 843 Hz
+  \item detected coincidences in 16 h: $4.86\times10^7$
+\end{itemize}
+
+\subsection{QMD sample size and pass rates}
+
+The QMD sample used for the current plots (Sn124, summed over the four $\gamma$ points) is highly unbalanced between the two polarizations:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+pol & $N_{\mathrm{raw}}$ (QMD) & $N_{\mathrm{tight}}$ & $N_{\mathrm{reco}}$(px60) & raw$\to$tight & raw$\to$reco \\
+\midrule
+y-pol & $1.68\times10^6$ & $4.36\times10^4$ & $9.52\times10^3$ & 2.59\% & 0.566\% \\
+z-pol & $3.75\times10^4$ & $6.04\times10^3$ & $1.45\times10^3$ & 16.1\% & 3.87\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+y-pol generated $1.68\times10^6$ QMD events while z-pol generated only $3.75\times10^4$ (a factor of 45 fewer). z-pol has a higher pass rate (16.1\% vs 2.59\%), but the raw sample is so small that the current z-pol plots carry large MC statistical errors ($\sigma(R)_{\mathrm{sim}}\sim0.05$--$0.99$, see Table~1). $N_{\mathrm{reco}}$ is the number of usable $R$ events actually used in the current tight-px60 plots.
+
+Comparing the 16 h experimental yield directly with the current MC plot statistics:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrr}
+\toprule
+pol & useful fraction & $N_{\mathrm{sim}}$ (current plot) & 16 h usable & 16 h $/$ $N_{\mathrm{sim}}$ & worst 3$\sigma$ $N_{\mathrm{req}}$ \\
+\midrule
+y-pol & 0.00566 & $9.52\times10^3$ & $2.75\times10^5$ & $\sim$29$\times$ & $2.77\times10^3$ \\
+z-pol & 0.03869 & $1.45\times10^3$ & $1.88\times10^6$ & $\sim$1.3$\times10^3\times$ & $1.31\times10^2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A 16 h run gives $\sim$29$\times$ the current y-pol plot statistics and $\sim$1300$\times$ the current z-pol statistics. The useful fraction $f_{\mathrm{useful}}=N_{\mathrm{reco}}/N_{\mathrm{raw}}$ converts detected coincidences to usable $R$ events: $N_{\mathrm{usable}}=4.86\times10^7\times f_{\mathrm{useful}}$. The $\sim$1300$\times$ z-pol gain is especially important: the current z-pol MC is severely under-sampled ($1.45\times10^3$ usable events), so the experiment will substantially improve its precision.
+
+\subsection{Statistical-error derivation}
+
+$R=N_{+}/N_{-}$ is a ratio estimator. Under a multinomial model on $N=N_{+}+N_{-}$ usable events, the delta method gives
+\[
+  \sigma(R) = (1+R)\sqrt{R/N}.
+\]
+The number of events needed for a 3$\sigma$ separation of two adjacent $\gamma$ points (using the midpoint $\bar R=\tfrac12(R_1+R_2)$ for $\sigma$) is
+\[
+  N_{\mathrm{req}} = \left[\, z_\alpha\,(1+\bar R)\sqrt{\bar R}\,/\,|\Delta R|\,\right]^2, \qquad z_\alpha=3.
+\]
+The per-interval result for the tight px60 folded reco observable is:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrrrr}
+\toprule
+pol & interval & $R_{\mathrm{left}}$ & $R_{\mathrm{right}}$ & $|\Delta R|$ & $N_{\mathrm{req}}(3\sigma)$ \\
+\midrule
+y-pol & g050$\to$g060 & 12.48 & 7.81 & 4.67 & 519 \\
+y-pol & g060$\to$g070 & 7.81 & 5.85 & 1.96 & 979 \\
+y-pol & g070$\to$g080 & 5.85 & 4.99 & 0.85 & $2.77\times10^3$ \\
+z-pol & g050$\to$g060 & 6.38 & 3.10 & 3.27 & 131 \\
+z-pol & g060$\to$g070 & 3.10 & 1.66 & 1.45 & 117 \\
+z-pol & g070$\to$g080 & 1.66 & 0.56 & 1.10 & 36 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The hardest separation is y-pol g070$\to$g080 ($\bar R=5.42$, $|\Delta R|=0.85$, needs $2.77\times10^3$ events); for z-pol it is g050$\to$g060 ($\bar R=4.74$, $|\Delta R|=3.27$, needs 131). The usable-event extrapolation chain is
+\[
+  N_{\mathrm{usable}} = \mathrm{rate}\times T \times f_{\mathrm{useful}}, \qquad
+  f_{\mathrm{useful}} = N_{\mathrm{reco\_plane}}(\mathrm{tight\,px60})/N_{\mathrm{raw}},
+\]
+so y-pol $f_{\mathrm{useful}}=0.00566$ gives $N_{\mathrm{usable}}=4.86\times10^7\times0.00566\approx2.75\times10^5$ and z-pol $f_{\mathrm{useful}}=0.0387$ gives $1.88\times10^6$. The usable/required ratio is $\approx 99\times$ for y-pol (about two orders of magnitude) and $\approx 1.4\times10^4\times$ for z-pol (about four orders of magnitude).
+
+\subsection{Statistical vs systematic comparison}
+
+Putting the three scales side by side for y-pol tight px60:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lr}
+\toprule
+quantity & typical value \\
+\midrule
+$\sigma_{\mathrm{stat}}(R)$ at 16 h (per $\gamma$ point) & 0.026 -- 0.091 \\
+$\Delta R_{\mathrm{detector}}$ (truth$\to$reco, per $\gamma$ point) & 1 -- 2 \\
+$\Delta R_{\mathrm{between}\,\gamma}$ (hardest interval g070$\to$g080) & 0.85 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 16 h statistical error ($\sim$0.03--0.09) is one to two orders of magnitude below the detector-folding shift ($\sim$1--2), and about an order of magnitude below the smallest $\gamma$ gap (0.85). The conclusion that ``statistics is not the bottleneck, systematics dominate'' is therefore quantitatively supported.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{sn124_beamtime_reach_tight_px60.png}
+  \caption{Usable $R$-event reach after the tight px60 visible-window selection for the Sn124 inventory target options.}
+\end{figure}
+
+Even with the 20 mm disk option, still using the same 1.2 g Sn inventory, the expected y-pol usable $R$ events after 16 h remain above $10^5$. The experiment is statistically capable of constraining $\gamma$ in this folded-observable strategy. The final uncertainty budget will be controlled by detector response, neutron efficiency, and model-folding systematics.
+
+For pile-up, the older 3 mm reference thickness gives a detected-coincidence mean of about $9.16\times10^{-5}$ per bucket. The 15 mm inventory option has a lower rate, so single-bucket pile-up is not the main limitation. The electronics integration window still needs to be checked for possible multi-bucket pile-up.
+
+\section{Recommended Gamma-Constraint Workflow}
+
+The recommended analysis path is:
+\begin{enumerate}
+  \item For each QMD $\gamma$ point, run the same Geant4 geometry, NEBULA-Plus detector response, PDC NN proton reconstruction, and neutron reconstruction.
+  \item Define the same folded observable for data and model: the tight event selection plus $|p_{x,n}^{\mathrm{reco}}|<60$ MeV/$c$, with Sn124 as the primary target.
+  \item Construct the experimental observable
+  \[
+    R_{\mathrm{exp}}
+    =
+    \frac{N(\Delta p_x^{\mathrm{reco}}>0)}
+         {N(\Delta p_x^{\mathrm{reco}}<0)}.
+  \]
+  \item Construct the folded model prediction $R_{\mathrm{model,folded}}(\gamma)$.
+  \item Use a likelihood or $\chi^2$:
+  \[
+    \chi^2(\gamma)
+    =
+    \frac{
+      \left[
+        R_{\mathrm{exp}} - R_{\mathrm{model,folded}}(\gamma)
+      \right]^2
+    }{
+      \sigma_{\mathrm{stat}}^2
+      + \sigma_{\mathrm{detector}}^2
+      + \sigma_{\mathrm{model}}^2
+    }.
+  \]
+  \item Combine y-pol/z-pol and Sn112/Sn124 only after each channel has its own closure test and systematic uncertainty estimate. Do not combine channels using statistical errors alone.
+\end{enumerate}
+
+This route avoids an unstable unfolding problem. An unfolded truth-level $R$ should be treated as an additional result only if closure tests demonstrate that the response matrix is sufficiently constrained and that near-zero-efficiency regions are not driving the result.
 
 \section{Detector Folding Diagnostics}
 
@@ -428,7 +478,7 @@ The reco peak position and width are close to truth; sign migration is mostly in
   \caption{Same, truth $\Delta p_x$ vs $(p_{y,p}-p_{y,n})$ momentum-asymmetry plane. The tight cut compresses events toward the reaction plane.}
 \end{figure}
 
-These three figures are \textbf{truth-level} phase-space densities (event counts, not efficiencies). Tight px60 carves out the narrow $|p_{x,n}|<60$ strip and concentrates $\Delta p_x$ on the positive side (y-pol); loose px100 covers a much broader region. Reco-level truth$\to$reco migration is a separate question, covered by the response matrices of Sec.~4 --- this section addresses the geometric selection of the cut, not detector smearing.
+These three figures are \textbf{truth-level} phase-space densities (event counts, not efficiencies). Tight px60 carves out the narrow $|p_{x,n}|<60$ strip and concentrates $\Delta p_x$ on the positive side (y-pol); loose px100 covers a much broader region. Reco-level truth$\to$reco migration is a separate question, covered by the response matrices in the Detector Folding Diagnostics section --- this section addresses the geometric selection of the cut, not detector smearing.
 
 \subsection{Neutron efficiency across cuts}
 
@@ -480,155 +530,105 @@ Key point: from none to tight, the efficiency curve shape is largely unchanged (
 
 These figures answer the core question: \emph{why is the px60 cut needed}. With the px fiducial removed, the full neutron-efficiency landscape is visible --- NEBULA efficiency is high ($\sim$0.6--0.7) on the positive-$p_{x,n}$ side but drops sharply for negative $p_{x,n}$ with $|p_{x,n}|>60$ (y-pol). This is exactly why px100 keeps a negative branch that NEBULA can barely see, distorting $R$. The px60 cut confines the analysis to the core region where both sides have efficiency $>0.5$, keeping the sign-dependent efficiency imbalance within a modelable range.
 
-\section{Statistics and Beam Time}
+\section{Technical Conventions: Coordinates, $p_x$, and Reaction Plane}
 
-The current beamtime planning anchor is:
-\begin{itemize}
-  \item beam energy: 190 MeV/u
-  \item beam intensity: $1.0\times10^7$ pps
-  \item SRC harmonic number: 6
-  \item bunch spacing: 33.62 ns
-  \item planning breakup cross section: 550 mb
-  \item planning detected-coincidence efficiency: 4.65\%
-\end{itemize}
+The lab frame is the Geant4/SAMURAI world frame used by the NEBULA-Plus macro: $+Z$ points downstream along the nominal beam direction, $+Y$ is vertical, and $+X$ is the horizontal dispersive direction shown in the event-display projections below. The target/input frame is the frame of the generated or reconstructed target momentum. Unless a label explicitly says ``lab'', $p_x$ in this report means $p_x^{\mathrm{tgt}}$, i.e. the target-frame component used for the $p_{x,n}$ fiducial cuts and response plots.
 
-For the 15 mm Sn124 target option under the 1.2 g inventory constraint:
-\begin{itemize}
-  \item equivalent thickness: 0.929 mm
-  \item detected coincidence rate: 843 Hz
-  \item detected coincidences in 16 h: $4.86\times10^7$
-\end{itemize}
-
-\subsection{QMD sample size and pass rates}
-
-The QMD sample used for the current plots (Sn124, summed over the four $\gamma$ points) is highly unbalanced between the two polarizations:
-
-\begin{table}[H]
-\centering
-\begin{tabular}{lrrrrr}
-\toprule
-pol & $N_{\mathrm{raw}}$ (QMD) & $N_{\mathrm{tight}}$ & $N_{\mathrm{reco}}$(px60) & raw$\to$tight & raw$\to$reco \\
-\midrule
-y-pol & $1.68\times10^6$ & $4.36\times10^4$ & $9.52\times10^3$ & 2.59\% & 0.566\% \\
-z-pol & $3.75\times10^4$ & $6.04\times10^3$ & $1.45\times10^3$ & 16.1\% & 3.87\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-y-pol generated $1.68\times10^6$ QMD events while z-pol generated only $3.75\times10^4$ (a factor of 45 fewer). z-pol has a higher pass rate (16.1\% vs 2.59\%), but the raw sample is so small that the current z-pol plots carry large MC statistical errors ($\sigma(R)_{\mathrm{sim}}\sim0.05$--$0.99$, see Table~1). $N_{\mathrm{reco}}$ is the number of usable $R$ events actually used in the current tight-px60 plots.
-
-Comparing the 16 h experimental yield directly with the current MC plot statistics:
-
-\begin{table}[H]
-\centering
-\begin{tabular}{lrrrrr}
-\toprule
-pol & useful fraction & $N_{\mathrm{sim}}$ (current plot) & 16 h usable & 16 h $/$ $N_{\mathrm{sim}}$ & worst 3$\sigma$ $N_{\mathrm{req}}$ \\
-\midrule
-y-pol & 0.00566 & $9.52\times10^3$ & $2.75\times10^5$ & $\sim$29$\times$ & $2.77\times10^3$ \\
-z-pol & 0.03869 & $1.45\times10^3$ & $1.88\times10^6$ & $\sim$1.3$\times10^3\times$ & $1.31\times10^2$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-A 16 h run gives $\sim$29$\times$ the current y-pol plot statistics and $\sim$1300$\times$ the current z-pol statistics. The useful fraction $f_{\mathrm{useful}}=N_{\mathrm{reco}}/N_{\mathrm{raw}}$ converts detected coincidences to usable $R$ events: $N_{\mathrm{usable}}=4.86\times10^7\times f_{\mathrm{useful}}$. The $\sim$1300$\times$ z-pol gain is especially important: the current z-pol MC is severely under-sampled ($1.45\times10^3$ usable events), so the experiment will substantially improve its precision.
-
-\subsection{Statistical-error derivation}
-
-$R=N_{+}/N_{-}$ is a ratio estimator. Under a multinomial model on $N=N_{+}+N_{-}$ usable events, the delta method gives
+The target angle is $\theta_{\mathrm{tgt}}=3^\circ$. In the Geant4 primary generator, a particle is started from the target center and the input target-frame direction is rotated by $-\theta_{\mathrm{tgt}}$ about lab $Y$:
 \[
-  \sigma(R) = (1+R)\sqrt{R/N}.
+  \mathbf p^{\mathrm{lab}} =
+  R_y(-\theta_{\mathrm{tgt}})\,\mathbf p^{\mathrm{tgt}} .
 \]
-The number of events needed for a 3$\sigma$ separation of two adjacent $\gamma$ points (using the midpoint $\bar R=\tfrac12(R_1+R_2)$ for $\sigma$) is
+Therefore positive target-frame $p_x$ means an initial component toward lab $+X$ before the common target-angle rotation. For the simple $p_y=0$ sign checks,
 \[
-  N_{\mathrm{req}} = \left[\, z_\alpha\,(1+\bar R)\sqrt{\bar R}\,/\,|\Delta R|\,\right]^2, \qquad z_\alpha=3.
+  p_x^{\mathrm{lab}}
+  =
+  p_x^{\mathrm{tgt}}\cos\theta_{\mathrm{tgt}}
+  -
+  p_z^{\mathrm{tgt}}\sin\theta_{\mathrm{tgt}} ,
 \]
-The per-interval result for the tight px60 folded reco observable is:
-
-\begin{table}[H]
-\centering
-\begin{tabular}{llrrrr}
-\toprule
-pol & interval & $R_{\mathrm{left}}$ & $R_{\mathrm{right}}$ & $|\Delta R|$ & $N_{\mathrm{req}}(3\sigma)$ \\
-\midrule
-y-pol & g050$\to$g060 & 12.48 & 7.81 & 4.67 & 519 \\
-y-pol & g060$\to$g070 & 7.81 & 5.85 & 1.96 & 979 \\
-y-pol & g070$\to$g080 & 5.85 & 4.99 & 0.85 & $2.77\times10^3$ \\
-z-pol & g050$\to$g060 & 6.38 & 3.10 & 3.27 & 131 \\
-z-pol & g060$\to$g070 & 3.10 & 1.66 & 1.45 & 117 \\
-z-pol & g070$\to$g080 & 1.66 & 0.56 & 1.10 & 36 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The hardest separation is y-pol g070$\to$g080 ($\bar R=5.42$, $|\Delta R|=0.85$, needs $2.77\times10^3$ events); for z-pol it is g050$\to$g060 ($\bar R=4.74$, $|\Delta R|=3.27$, needs 131). The usable-event extrapolation chain is
-\[
-  N_{\mathrm{usable}} = \mathrm{rate}\times T \times f_{\mathrm{useful}}, \qquad
-  f_{\mathrm{useful}} = N_{\mathrm{reco\_plane}}(\mathrm{tight\,px60})/N_{\mathrm{raw}},
-\]
-so y-pol $f_{\mathrm{useful}}=0.00566$ gives $N_{\mathrm{usable}}=4.86\times10^7\times0.00566\approx2.75\times10^5$ and z-pol $f_{\mathrm{useful}}=0.0387$ gives $1.88\times10^6$. The usable/required ratio is $\approx 99\times$ for y-pol (about two orders of magnitude) and $\approx 1.4\times10^4\times$ for z-pol (about four orders of magnitude).
-
-\subsection{Statistical vs systematic comparison}
-
-Putting the three scales side by side for y-pol tight px60:
-
-\begin{table}[H]
-\centering
-\begin{tabular}{lr}
-\toprule
-quantity & typical value \\
-\midrule
-$\sigma_{\mathrm{stat}}(R)$ at 16 h (per $\gamma$ point) & 0.026 -- 0.091 \\
-$\Delta R_{\mathrm{detector}}$ (truth$\to$reco, per $\gamma$ point) & 1 -- 2 \\
-$\Delta R_{\mathrm{between}\,\gamma}$ (hardest interval g070$\to$g080) & 0.85 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The 16 h statistical error ($\sim$0.03--0.09) is one to two orders of magnitude below the detector-folding shift ($\sim$1--2), and about an order of magnitude below the smallest $\gamma$ gap (0.85). The conclusion that ``statistics is not the bottleneck, systematics dominate'' is therefore quantitatively supported.
+using the same rotation convention as the simulation.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.9\linewidth]{sn124_beamtime_reach_tight_px60.png}
-  \caption{Usable $R$-event reach after the tight px60 visible-window selection for the Sn124 inventory target options.}
+  \begin{minipage}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_plus60.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_minus60.png}
+  \end{minipage}
+  \caption{Geant4 VRML-to-PNG projections for target-frame neutron $p_x=\pm60$ MeV/$c$, with $p_y=0$ and $p_z=627$ MeV/$c$. The horizontal axis is lab $Z$ downstream; the vertical axis is lab $X$. Positive target-frame $p_x$ trends toward lab $+X$ after the $-3^\circ$ target rotation, while negative target-frame $p_x$ trends toward lab $-X$.}
 \end{figure}
 
-Even with the 20 mm disk option, still using the same 1.2 g Sn inventory, the expected y-pol usable $R$ events after 16 h remain above $10^5$. The experiment is statistically capable of constraining $\gamma$ in this folded-observable strategy. The final uncertainty budget will be controlled by detector response, neutron efficiency, and model-folding systematics.
+\begin{figure}[H]
+  \centering
+  \begin{minipage}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_plus100.png}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{px_sign_geant4/neutron_px_minus100.png}
+  \end{minipage}
+  \caption{The same Geant4 sign check for target-frame neutron $p_x=\pm100$ MeV/$c$. The larger $|p_x|$ gives the expected larger lab-$X$ deflection, validating the sign convention used in the reconstructed $p_{x,n}$ plots.}
+\end{figure}
 
-For pile-up, the older 3 mm reference thickness gives a detected-coincidence mean of about $9.16\times10^{-5}$ per bucket. The 15 mm inventory option has a lower rate, so single-bucket pile-up is not the main limitation. The electronics integration window still needs to be checked for possible multi-bucket pile-up.
+Two reaction-plane azimuths must be kept separate. The generator/model angle $b_\phi$ is the reaction-plane azimuth carried by the QMD/event metadata; in the y-pol raw samples it follows the recorded \texttt{rpphi} modulo $2\pi$, while randomized samples carry the randomized plane angle in the event record. This is a truth/model-plane label and is useful for generator checks.
 
-\section{Recommended Gamma-Constraint Workflow}
+The current folded observable instead uses the event-by-event kinematic plane. Let
+\[
+  \mathbf k_{\mathrm{out}}
+  =
+  \mathbf p_p + \mathbf p_n,
+  \qquad
+  \mathbf k_{\mathrm{out},T}
+  =
+  (k_{\mathrm{out},x}, k_{\mathrm{out},y}) .
+\]
+Because $\mathbf k_{\mathrm{in}}$ defines the target-frame beam axis, the azimuth of the $(\mathbf k_{\mathrm{in}},\mathbf k_{\mathrm{out}})$ reaction plane is
+\[
+  \phi_k
+  =
+  \operatorname{atan2}
+  \left(k_{\mathrm{out},y}, k_{\mathrm{out},x}\right)
+  =
+  \operatorname{atan2}
+  \left(p_{y,p}+p_{y,n}, p_{x,p}+p_{x,n}\right).
+\]
+If one defines a momentum-transfer vector as $\mathbf q=\mathbf k_{\mathrm{in}}-\mathbf k_{\mathrm{out}}$ instead, the transverse azimuth is shifted by $\pi$; this convention should not be mixed with the current $R$ definition.
 
-The recommended analysis path is:
-\begin{enumerate}
-  \item For each QMD $\gamma$ point, run the same Geant4 geometry, NEBULA-Plus detector response, PDC NN proton reconstruction, and neutron reconstruction.
-  \item Define the same folded observable for data and model: the tight event selection plus $|p_{x,n}^{\mathrm{reco}}|<60$ MeV/$c$, with Sn124 as the primary target.
-  \item Construct the experimental observable
-  \[
-    R_{\mathrm{exp}}
-    =
-    \frac{N(\Delta p_x^{\mathrm{reco}}>0)}
-         {N(\Delta p_x^{\mathrm{reco}}<0)}.
-  \]
-  \item Construct the folded model prediction $R_{\mathrm{model,folded}}(\gamma)$.
-  \item Use a likelihood or $\chi^2$:
-  \[
-    \chi^2(\gamma)
-    =
-    \frac{
-      \left[
-        R_{\mathrm{exp}} - R_{\mathrm{model,folded}}(\gamma)
-      \right]^2
-    }{
-      \sigma_{\mathrm{stat}}^2
-      + \sigma_{\mathrm{detector}}^2
-      + \sigma_{\mathrm{model}}^2
-    }.
-  \]
-  \item Combine y-pol/z-pol and Sn112/Sn124 only after each channel has its own closure test and systematic uncertainty estimate. Do not combine channels using statistical errors alone.
-\end{enumerate}
-
-This route avoids an unstable unfolding problem. An unfolded truth-level $R$ should be treated as an additional result only if closure tests demonstrate that the response matrix is sufficiently constrained and that near-zero-efficiency regions are not driving the result.
+The rotation used for $\Delta p_x$ is
+\[
+  \begin{pmatrix}
+    p_x^{\mathrm{rot}} \\
+    p_y^{\mathrm{rot}}
+  \end{pmatrix}
+  =
+  R_z(-\phi_k)
+  \begin{pmatrix}
+    p_x \\
+    p_y
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    p_x\cos\phi_k + p_y\sin\phi_k \\
+    -p_x\sin\phi_k + p_y\cos\phi_k
+  \end{pmatrix}.
+\]
+The observable is then
+\[
+  \Delta p_x
+  =
+  p_{x,p}^{\mathrm{rot}} - p_{x,n}^{\mathrm{rot}},
+  \qquad
+  R
+  =
+  \frac{N(\Delta p_x>0)}{N(\Delta p_x<0)} .
+\]
 
 \section{Remaining Work}
 
