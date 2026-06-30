@@ -189,11 +189,80 @@ def make_ideal_prediction() -> None:
     plt.close(fig)
 
 
+def make_timeline() -> None:
+    """Experiment preparation timeline toward the end-of-April-2027 beamtime.
+
+    Anchors given by the speaker: full simulation is complete now (2026-07);
+    remaining hardware is the polarimeter and the target system; beamtime is
+    end of April 2027.  Intermediate phasing is a reasonable plan and can be
+    shifted; only the two anchors above are firm.
+    """
+    import datetime as dt
+    import matplotlib.dates as mdates
+
+    # (label, start, end, color, done?)
+    tasks = [
+        ("Full simulation\n& detector-level closure", "2025-09", "2026-07", "#3F8457", True),
+        ("Polarimeter\n(design, build, test)",        "2026-07", "2027-02", "#1F4E79", False),
+        ("Target system\n(holder + $^{112/124}$Sn)",  "2026-09", "2027-02", "#CA6D26", False),
+        ("Reco-defined closure\n& detector systematics", "2026-08", "2027-03", "#555555", False),
+        ("Commissioning\n(offline + beam test)",      "2027-02", "2027-04", "#7B9EAE", False),
+    ]
+    beamtime = dt.datetime(2027, 4, 28)
+    today = dt.datetime(2026, 7, 1)
+
+    fig, ax = plt.subplots(figsize=(10.5, 3.9), constrained_layout=True)
+    y = np.arange(len(tasks))[::-1]  # top-to-bottom order
+    for yi, (_, s, e, color, done) in zip(y, tasks):
+        s0 = dt.datetime.fromisoformat(s + "-01")
+        e0 = dt.datetime.fromisoformat(e + "-01")
+        width = mdates.date2num(e0) - mdates.date2num(s0)
+        ax.barh(yi, width, left=mdates.date2num(s0), height=0.55,
+                color=color, alpha=0.90 if not done else 0.55,
+                edgecolor=color, linewidth=1.5)
+        if done:
+            ax.text(mdates.date2num(e0) + 12, yi, "done", va="center", ha="left",
+                    fontsize=9, color="#3F8457", fontweight="bold")
+
+    # beamtime milestone
+    ax.scatter([mdates.date2num(beamtime)], [-1.0], marker="*", s=320,
+               color="#d62728", zorder=5, clip_on=False)
+    ax.annotate("SAMURAI beamtime\n(end of April 2027)",
+                xy=(mdates.date2num(beamtime), -1.0), xytext=(mdates.date2num(beamtime) - 95, -1.0),
+                fontsize=9.5, color="#d62728", fontweight="bold", va="center", ha="left",
+                arrowprops=dict(arrowstyle="->", color="#d62728", lw=1.4))
+
+    # today line
+    ax.axvline(mdates.date2num(today), color="#222222", linestyle="--", linewidth=1.2)
+    ax.text(mdates.date2num(today), len(tasks) - 0.3, " now", fontsize=9, color="#222222")
+
+    ax.set_yticks(list(y) + [-1.0])
+    ax.set_yticklabels([t[0].replace("\n", " ") for t in tasks] + [""])
+    ax.set_ylim(-1.7, len(tasks) - 0.3)
+    ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 4, 7, 10]))
+    _MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    ax.xaxis.set_major_formatter(
+        mdates.DateFormatter("") if False else plt.FuncFormatter(
+            lambda x, _p: f"{_MON[mdates.num2date(x).month - 1]}\n{mdates.num2date(x).year}"
+        )
+    )
+    ax.set_xlim(mdates.date2num(dt.datetime(2025, 8, 1)), mdates.date2num(dt.datetime(2027, 6, 1)))
+    ax.grid(True, axis="x", alpha=0.25)
+    ax.set_title("Toward the beamtime: simulation done, hardware and closure in progress",
+                 fontsize=12, fontweight="bold")
+
+    fig.savefig(FIGDIR / "timeline.png", dpi=220, bbox_inches="tight")
+    fig.savefig(FIGDIR / "timeline.pdf", bbox_inches="tight")
+    plt.close(fig)
+
+
 def main() -> None:
     FIGDIR.mkdir(parents=True, exist_ok=True)
     make_ideal_prediction()
     make_ideal_vs_reco()
     make_efficiency_balance()
+    make_timeline()
 
 
 if __name__ == "__main__":

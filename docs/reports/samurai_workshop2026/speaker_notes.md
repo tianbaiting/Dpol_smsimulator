@@ -86,7 +86,19 @@ pseudo-data closure.  Give the honest scope once, clearly: the observable and
 event plane are reconstructed but the quality class is still truth-defined, so
 this is a detector-level closure study.
 
-## Slide 10 -- Summary
+## Slide 10 -- Toward the Beamtime: Preparation Timeline
+
+Turn the "still required" list into a concrete schedule.  Full simulation and
+the detector-level closure are done now (2026-07).  The remaining hardware is
+the beam polarimeter, needed to monitor the vertical tensor polarization
+$p_{yy}$, and the target system --- the target holder plus the $^{112}$Sn and
+$^{124}$Sn targets.  In parallel, run the reco-defined selection closure and
+the detector-systematic studies.  Offline and beam-test commissioning lead
+into the SAMURAI beamtime, planned for the end of April 2027.  If asked, the
+intermediate phasing is a plan and can shift; only the two anchors (simulation
+done now, beamtime end of April 2027) are firm.
+
+## Slide 11 -- Summary
 
 Four points in non-technical language: a polarized deuteron converts an
 isovector force difference into a measurable asymmetry; 124Sn is the main
@@ -95,7 +107,7 @@ gamma and isotope ordering survive; the next step is a fully reconstructed
 closure and detector-systematic validation.  Bottom line: a y-polarized
 deuteron is a realistic first-stage path to testing IVR at SAMURAI.
 
-## Slide 11 -- Thanks
+## Slide 12 -- Thanks
 
 Pause for questions.  Route detailed questions to the backup sections:
 reconstruction performance to backup C, neutron acceptance to backup D, the
