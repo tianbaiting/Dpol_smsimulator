@@ -8,7 +8,7 @@
 \usepackage{hyperref}
 \usepackage{tikz}
 \usepackage{xcolor}
-\usetikzlibrary{arrows.meta,positioning}
+\usetikzlibrary{arrows.meta,positioning,calc,decorations.markings,fit}
 \pdfstringdefDisableCommands{\def\translate#1{#1}}
 
 \usetheme{Madrid}
@@ -20,13 +20,14 @@
 \definecolor{dpolorange}{RGB}{202,109,38}
 \definecolor{dpolgreen}{RGB}{63,132,87}
 \definecolor{dpolgray}{RGB}{85,85,85}
+\definecolor{protonred}{RGB}{198,60,52}
+\definecolor{neutronblue}{RGB}{52,108,176}
 
 \IfFileExists{../qmdrawdataAna/img/isovector_reorientaton.png}{
   \graphicspath{
     {figures/}
     {../qmdrawdataAna/img/}
     {../qmdrawdataAna/img/PDF/}
-    {../qmdrawdataAna/article/arxiv/}
     {../gamma_constraint_20260611/figures/}
     {../gamma_constraint_20260611/figures/cut_diagnostics/}
     {../reconstruction/momentum_reco/nn/figures/nn_breakup_phys/}
@@ -40,7 +41,6 @@
     {figures/}
     {docs/reports/qmdrawdataAna/img/}
     {docs/reports/qmdrawdataAna/img/PDF/}
-    {docs/reports/qmdrawdataAna/article/arxiv/}
     {docs/reports/gamma_constraint_20260611/figures/}
     {docs/reports/gamma_constraint_20260611/figures/cut_diagnostics/}
     {docs/reports/reconstruction/momentum_reco/nn/figures/nn_breakup_phys/}
@@ -51,23 +51,18 @@
   }
 }
 
-\title[IVR after Momentum Reconstruction]{
-  Does the IVR Signal Survive Full Momentum Reconstruction?
+\title[Can SAMURAI Observe IVR?]{
+  Can SAMURAI Observe Isovector Reorientation?
 }
-\subtitle[Detector-level y-pol closure]{
-  A detector-level y-pol closure study with
-  \texorpdfstring{$^{112}$Sn and $^{124}$Sn}{112Sn and 124Sn}\\
-  190 MeV/u with SAMURAI + NEBULA Plus
+\subtitle[A detector-level feasibility study]{
+  A detector-level feasibility study with y-polarized deuterons
+  on $^{112}$Sn and $^{124}$Sn
 }
 \author{Baiting Tian}
 \institute{Tsinghua University \& RIKEN}
 \date{SAMURAI International Collaboration Workshop 2026}
 
 \newcommand{\gpar}{\gamma}
-\newcommand{\dpxreco}{\Delta p_{x,\mathrm{reco}}^{\mathrm{rot}}}
-\newcommand{\Rxreco}{R_x^{\mathrm{reco,fid}}}
-\newcommand{\Rxfold}{R_{x,\mathrm{model}}^{\mathrm{fold,fid}}}
-\newcommand{\Ax}{A_x}
 
 \begin{document}
 
@@ -75,370 +70,269 @@
   \titlepage
 \end{frame}
 
-\begin{frame}{What Are We Trying to Establish?}
-  \small
-  \begin{block}{Physics question}
-    Can the isovector reorientation (IVR) signal from a y-polarized deuteron
-    remain observable after the realistic SAMURAI detector and
-    momentum-reconstruction chain?
-  \end{block}
+%=========================================================================
+% Slide 2 --- A Polarized Deuteron as an Isovector Probe
+%=========================================================================
+\begin{frame}{A Polarized Deuteron as an Isovector Probe}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.50\textwidth}
-      \begin{block}{Why two isotopes?}
-        $^{112}$Sn provides an isotope reference.\\
-        $^{124}$Sn provides the stronger neutron-rich response.
-      \end{block}
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \begin{block}{Current answer}
-        For $^{124}$Sn, the $\gpar$-dependent ordering survives reconstructed
-        proton, neutron, and event-plane determination in a controlled neutron
-        fiducial region.
-      \end{block}
-    \end{column}
-  \end{columns}
-  \begin{block}{Scope}
-    The observable and px60 fiducial are reconstructed; the present
-    loose/mid/tight event-quality class is still defined with truth momenta.
-  \end{block}
-  \centering
-  \footnotesize
-  This is a detector-level closure study, not yet a complete experimental
-  uncertainty analysis.
-\end{frame}
-
-\begin{frame}{Physical Picture: Isovector Reorientation}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.42\textwidth}
-      \centering
-      \includegraphics[width=0.96\linewidth]{isovector_reorientaton.png}
-    \end{column}
-    \begin{column}{0.58\textwidth}
+    \begin{column}{0.52\textwidth}
       \small
       \begin{itemize}
-        \item A polarized deuteron approaches a neutron-rich target.
-        \item Proton and neutron experience different isovector mean-field
-          forces.
-        \item The breakup fragments acquire a polarization-dependent relative
-          momentum bias.
+        \item A deuteron is a bound proton--neutron pair.
+        \item Polarization gives this pair a \emph{preferred orientation}
+              relative to the beam.
+        \item Near a neutron-rich target, proton and neutron feel
+              \emph{different} isovector forces.
+        \item After breakup, this appears as a bias in their
+              \emph{relative} momentum.
       \end{itemize}
-      \[
-        E_{\mathrm{sym}}(\rho)
-        =
-        E_{\mathrm{sym}}^{\mathrm{kin}}(\rho)
-        + C\left(\frac{\rho}{\rho_0}\right)^{\gpar}
-      \]
-      \begin{block}{Model parameter}
-        \small
-        $\gpar$ parametrizes the density dependence used in the ImQMD
-        calculation.
+      \vspace{0.1cm}
+      \begin{block}{Core idea}
+        \footnotesize
+        A polarized deuteron is an oriented proton--neutron probe of the
+        isovector field --- a femtoscopic two-particle compass.
       \end{block}
     \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Why Compare Two Tin Isotopes?}
-  \small
-  \begin{columns}[T,onlytextwidth]
     \begin{column}{0.48\textwidth}
       \centering
-      \begin{tabular}{lrrl}
+      \includegraphics[width=\linewidth,height=0.50\textheight,keepaspectratio]{d_pol_sche.png}\\[0.15cm]
+      {\footnotesize\itshape Can this proton--neutron momentum bias be
+      reconstructed at SAMURAI?}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+%=========================================================================
+% Slide 3 --- How the IVR Signal Is Formed
+%=========================================================================
+\begin{frame}{How the IVR Signal Is Formed}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.46\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,keepaspectratio]{isovector_reorientaton.png}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \small
+      \begin{itemize}
+        \item Before interaction: an oriented, polarized deuteron.
+        \item Near the target: proton and neutron feel different isovector
+              forces.
+        \item After breakup: a bias appears in their relative momentum
+              $\Delta p_x$.
+      \end{itemize}
+      \vspace{0.1cm}
+      \begin{block}{Role of $\gpar$}
+        \small
+        In the ImQMD model, $\gpar$ changes the density dependence of the
+        symmetry energy, and therefore the relative proton--neutron impulse.
+        Different $\gpar$ predicts a different $\Delta p_x$ bias.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+%=========================================================================
+% Slide 4 --- Why 112Sn and 124Sn?  (+ ideal prediction)
+%=========================================================================
+\begin{frame}{Why $^{112}$Sn and $^{124}$Sn?}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.40\textwidth}
+      \small
+      \begin{tabular}{lr}
         \toprule
-        target & $Z$ & $N$ & role \\
+        target & $N-Z$ \\
         \midrule
-        $^{112}$Sn & 50 & 62 & isotope reference \\
-        $^{124}$Sn & 50 & 74 & primary sensitivity \\
+        $^{112}$Sn & 12 \\
+        $^{124}$Sn & 24 \\
         \bottomrule
       \end{tabular}
-    \end{column}
-    \begin{column}{0.52\textwidth}
+      \vspace{0.2cm}
       \begin{itemize}
-        \item Same proton number controls much of the target charge and
-          kinematic environment.
-        \item Different neutron excess changes the isovector mean-field
-          response.
-        \item The same detector/reconstruction chain is required for a
-          controlled isotope comparison.
+        \item Same proton number ($Z=50$): same charge environment.
+        \item Different neutron excess: a stronger or weaker isovector
+              response.
+        \item $^{124}$Sn --- primary neutron-rich sensitivity.
+        \item $^{112}$Sn --- isotope reference.
       \end{itemize}
     \end{column}
+    \begin{column}{0.60\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{ideal_prediction.png}
+    \end{column}
   \end{columns}
-  \vspace{0.2cm}
-  \begin{block}{Takeaway}
-    A common detector effect should influence both isotopes, while an isovector
-    response should change with target neutron excess.  $^{124}$Sn is the
-    primary sensitivity target; $^{112}$Sn is the isotope reference.
+  \vspace{0.1cm}
+  \begin{block}{}
+    \small\centering
+    The rest of this talk asks whether this ideal ordering survives a
+    realistic SAMURAI measurement.
   \end{block}
 \end{frame}
 
-\begin{frame}{Why Start with y Polarization?}
+%=========================================================================
+% Slide 5 --- What Do We Measure?
+%=========================================================================
+\begin{frame}{What Do We Measure?}
   \small
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.55\textwidth}
-      \begin{itemize}
-        \item y-pol and z-pol are both physically valuable IVR channels.
-        \item y-pol currently has the most mature combined simulation,
-          detector folding, momentum reconstruction, and analysis baseline.
-        \item y-pol also has an established left-right-up-down (LRUD)
-          beam-monitoring strategy for vertical tensor polarization $p_{yy}$.
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.45\textwidth}
-      \begin{block}{First-stage baseline}
-        y-pol provides a realistic first-stage path to testing the IVR concept at
-        SAMURAI.
-      \end{block}
-      \begin{block}{z-pol}
-        z-pol remains a second-stage extension after successful commissioning.
-      \end{block}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Reconstructed IVR Observable}
-  \small
+  For each event we define a reaction plane from the proton and neutron
+  directions, rotate into it, and compare who receives the larger momentum
+  component along the selected axis:
   \[
-    \phi_{\mathrm{event}}^{\mathrm{reco}}
-    =
-    \operatorname{atan2}
-    \left(
-      p_{y,p}^{\mathrm{reco}}+p_{y,n}^{\mathrm{reco}},
-      p_{x,p}^{\mathrm{reco}}+p_{x,n}^{\mathrm{reco}}
-    \right)
+    \Delta p_x = p_{x,p}-p_{x,n},
+    \qquad\qquad
+    R_x = \frac{N(\Delta p_x>0)}{N(\Delta p_x<0)} .
   \]
-  \[
-    \dpxreco =
-    p_{x,p,\mathrm{reco}}^{\mathrm{rot}}
-    -
-    p_{x,n,\mathrm{reco}}^{\mathrm{rot}}
-  \]
-  \[
-    \Rxreco
-    =
-    \frac{N(\dpxreco>0)}
-         {N(\dpxreco<0)}
-  \]
-  \begin{block}{Experimental comparison}
-    \[
-      R_{x,\mathrm{data}}^{\mathrm{reco,fid}}
-      \quad\text{vs.}\quad
-      \Rxfold(\gpar)
-    \]
+  \begin{block}{In words}
+    \small
+    We do not measure the force event by event.  We count whether the proton
+    or the neutron receives the larger momentum component along the selected
+    axis.  A larger $R_x$ means a stronger proton--neutron bias.
   \end{block}
-  \centering
-  \footnotesize
-  This is a reconstructed fiducial observable, not a global truth-level ratio.
+  \vspace{0.1cm}
+  \begin{itemize}
+    \item $R_x>1$: the proton side is favoured.
+    \item $R_x$ changes with the isovector force, and therefore with $\gpar$.
+    \item In the detector-level analysis the proton momentum, neutron
+          momentum, and event plane are all reconstructed.
+  \end{itemize}
 \end{frame}
 
-\begin{frame}{From ImQMD Events to the Measured Observable}
-  \centering
-  \begin{tikzpicture}[
-    scale=0.72,
-    transform shape,
-    node distance=0.36cm,
-    box/.style={rectangle, rounded corners=2pt, draw=dpolblue, thick, align=center, minimum height=0.58cm, text width=2.25cm, fill=blue!5},
-    reco/.style={rectangle, rounded corners=2pt, draw=dpolorange, thick, align=center, minimum height=0.58cm, text width=2.25cm, fill=orange!8},
-    result/.style={rectangle, rounded corners=2pt, draw=dpolgreen, thick, align=center, minimum height=0.58cm, text width=2.25cm, fill=green!8},
-    arrow/.style={-{Latex[length=2.0mm]}, thick}
-  ]
-    \node[box] (qmd) {ImQMD\\$^{112}$Sn/$^{124}$Sn\\$\gpar=0.5\ldots0.8$};
-    \node[box, right=of qmd] (g4) {Geant4\\detector response};
-    \node[reco, right=of g4] (pdc) {PDC proton\\reco};
-    \node[reco, right=of pdc] (neu) {NEBULA + Plus\\neutron reco};
-    \node[reco, right=of neu] (plane) {reco\\event plane};
-    \node[result, right=of plane] (rx) {reco px60\\$\Rxreco$};
-    \draw[arrow] (qmd) -- (g4);
-    \draw[arrow] (g4) -- (pdc);
-    \draw[arrow] (pdc) -- (neu);
-    \draw[arrow] (neu) -- (plane);
-    \draw[arrow] (plane) -- (rx);
-  \end{tikzpicture}
-  \vspace{0.25cm}
+%=========================================================================
+% Slide 6 --- Can SAMURAI Measure the Required Information?
+%=========================================================================
+\begin{frame}{Can SAMURAI Measure the Required Information?}
+  \small
+  To build $R_x$, the experiment must reconstruct three things:
+  \begin{itemize}
+    \item the \textbf{proton momentum} --- from drift-chamber tracks (PDC);
+    \item the \textbf{neutron momentum} --- from the neutron hit position and
+          time of flight (NEBULA + NEBULA Plus);
+    \item the \textbf{event plane} --- from the proton and neutron transverse
+          momenta together.
+  \end{itemize}
   \[
-    N_{\mathrm{model,reco},j}(\gpar)
-    =
-    \sum_i K_{ji}N_{\mathrm{model,true},i}(\gpar)+b_j
+    \text{proton track} \;+\; \text{neutron hit}
+    \;\longrightarrow\; \text{proton + neutron momenta + event plane}
+    \;\longrightarrow\; R_x
   \]
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.50\textwidth}
-      \begin{block}{Current closure}
-        reco observable + reco px60 + truth-defined quality class
-      \end{block}
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \begin{block}{Final experimental analysis}
-        reco observable + reco px60 + reco-defined quality class
-      \end{block}
-    \end{column}
-  \end{columns}
+  \begin{block}{}
+    \small\centering
+    This end-to-end study uses \emph{y} polarization, for which the simulation,
+    reconstruction, and polarization monitoring are currently most mature.
+    A \emph{z}-polarization extension remains physically valuable but harder to
+    produce, transport, and monitor.
+  \end{block}
 \end{frame}
 
-\begin{frame}{Defining a Controlled Neutron Fiducial Region}
+%=========================================================================
+% Slide 7 --- The Main Experimental Challenge Is Neutron Acceptance
+%=========================================================================
+\begin{frame}{The Main Challenge: Neutron Acceptance}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.56\textwidth}
       \centering
-      \includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{ypol_tight_neutron_efficiency_balance.png}
+      \includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{neutron_efficiency_balance.png}
     \end{column}
     \begin{column}{0.44\textwidth}
-      \scriptsize
-      Neutron acceptance is strongly phase-space dependent; full phase space
-      contains near-zero-efficiency regions.
-      \[
-        \epsilon_+ = 0.678,\qquad
-        \epsilon_- = 0.644
-      \]
-      These are neutron-hit efficiencies in the truth-side
-      $|p_{x,n}|<60$ MeV/$c$ fiducial, pooled over y-pol tight events and all
-      $\gpar$ samples.
-      \begin{block}{px60}
-        \scriptsize
-        px60 means the reconstructed neutron fiducial
-        $|p_{x,n}^{\mathrm{reco}}|<60$ MeV/$c$.
-      \end{block}
-      \textbf{Takeaway:} px60 defines a fiducial detector-level measurement. It
-      does not reconstruct the unobserved full phase space.
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Where Does Detector Folding Change the Observable?}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.48\textwidth}
-      \centering
-      \includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{r_ladder_summary_tight_px60.png}
-    \end{column}
-    \begin{column}{0.52\textwidth}
-      \small
-      \begin{enumerate}
-        \item Neutron visibility/acceptance produces the largest shift.
-        \item Proton momentum reconstruction is not the dominant bottleneck.
-        \item Event-plane reconstruction adds a smaller correction.
-      \end{enumerate}
-      \begin{block}{Takeaway}
-        The absolute ratio changes, but the $\gpar$ ordering remains.
-      \end{block}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Primary Sensitivity: $^{124}$Sn}
-  \centering
-  \includegraphics[height=0.60\textheight,keepaspectratio]{ypol_main_rx_reco_fid.png}
-
-  \vspace{0.05cm}
-  \scriptsize
-  Current closure selection: truth-defined tight event-quality class +
-  reconstructed px60 fiducial.
-
-  \begin{block}{Takeaway}
-    \scriptsize
-    For $^{124}$Sn, the monotonic $\gpar$ ordering survives the complete proton,
-    neutron, and event-plane reconstruction chain.  Error bars are current MC
-    statistics only.
-  \end{block}
-\end{frame}
-
-\begin{frame}{Isotope Reference: $^{112}$Sn versus $^{124}$Sn}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.58\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{ypol_isotope_rx_reco_fid.png}
-    \end{column}
-    \begin{column}{0.42\textwidth}
       \small
       \begin{itemize}
-        \item $^{124}$Sn remains the primary sensitivity target.
-        \item $^{112}$Sn now has the same tight-px60 folded-reco table.
-        \item Both targets keep a visible y-pol $\gpar$ ordering after folding.
-        \item The high-$\gpar$ Sn112 interval is narrower and more systematics
-          sensitive.
+        \item Neutron detection efficiency is strongly phase-space dependent.
+        \item In a wide range, one side of the asymmetry becomes almost blind.
+        \item A raw asymmetry there would be dominated by acceptance, not
+              physics.
       \end{itemize}
-      \begin{block}{Scope}
-        \scriptsize
-        Reconstructed observable and reconstructed px60 fiducial; tight
-        event-quality class is still truth-defined. Sn112 planning rates use an
-        atom-density scaling placeholder.
+      \begin{block}{Our choice}
+        \small
+        Quote an observable in a well-covered region,
+        $|p_{x,n}^{\,\mathrm{reco}}|<60$~MeV/$c$, where both sides are seen.
       \end{block}
     \end{column}
   \end{columns}
+  \vspace{0.1cm}
+  \small\centering\itshape
+  Instead of correcting data back to an ideal space, each model prediction is
+  passed through the same detector and reconstruction, and compared directly.
 \end{frame}
 
-\begin{frame}{Statistical Scale versus Experimental Systematics}
-  \small
-  Closest adjacent interval in the current $^{124}$Sn y-pol folded result:
-  \[
-    \gpar=0.7\to0.8,\qquad
-    N_{\mathrm{stat},3\sigma}\simeq 2.8\times10^3 .
-  \]
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.48\textwidth}
-      \begin{block}{Planning scale}
-        Current planning anchor gives about $2.75\times10^5$ usable y-pol
-        events for $^{124}$Sn.
-      \end{block}
-    \end{column}
-    \begin{column}{0.52\textwidth}
-      \begin{block}{Not included}
-        Detector, polarization, background, and model uncertainties are not
-        included in this statistical-only estimate.
-      \end{block}
-    \end{column}
-  \end{columns}
-  \begin{block}{Systematic priorities}
-    neutron efficiency; threshold and time-of-flight $T_0$; cross-talk and fake
-    neutrons; backgrounds; $p_{yy}$ polarization; detector alignment; model
-    dependence; reconstructed quality-class migration.
+%=========================================================================
+% Slide 8 --- Main Result: Before and After the Detector
+%=========================================================================
+\begin{frame}{Main Result: the Detector Changes the Scale, Not the Ordering}
+  \centering
+  \includegraphics[height=0.50\textheight,keepaspectratio]{main_ideal_vs_reco.png}
+
+  \vspace{0.1cm}
+  \footnotesize
+  \begin{enumerate}
+    \item Detector folding changes the \emph{absolute} value of $R_x$.
+    \item The $\gpar$-dependent ordering \emph{remains visible}.
+    \item $^{124}$Sn keeps the stronger sensitivity; $^{112}$Sn stays a reference.
+  \end{enumerate}
+  \begin{block}{}
+    \footnotesize\centering
+    The central result is not $R_{\mathrm{reco}}=R_{\mathrm{truth}}$ ---
+    it is that the model and isotope ordering survive.
   \end{block}
 \end{frame}
 
-\begin{frame}{Current Status and Next Closure Step}
-  \small
+%=========================================================================
+% Slide 9 --- What Is Established and What Is Not Yet?
+%=========================================================================
+\begin{frame}{What Is Established and What Is Not Yet?}
+  \footnotesize
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \begin{block}{Established}
         \begin{itemize}
-          \item y-pol IVR observable is reconstructable.
-          \item $^{124}$Sn $\gpar$ ordering survives detector folding.
-          \item px60 provides a controlled fiducial region.
-          \item folded model comparison is the right strategy.
+          \item The IVR observable is built from reconstructed momenta.
+          \item Proton, neutron, and event plane are all reconstructed.
+          \item Detector folding changes the absolute ratio.
+          \item The $\gpar$ and isotope ordering remain visible.
+          \item $^{124}$Sn is the primary sensitivity target.
         \end{itemize}
       \end{block}
     \end{column}
     \begin{column}{0.50\textwidth}
       \begin{block}{Still required}
         \begin{itemize}
-          \item reco-defined event-quality classes,
-          \item reco-defined Sn112/Sn124 isotope closure,
-          \item Sn112 target-specific rate validation,
-          \item selection efficiency, purity, and migration,
-          \item polarization and detector-systematic pseudo-data tests.
+          \item Migrate event-quality cuts from truth to reconstructed.
+          \item Quantify efficiency, purity, and migration.
+          \item Validate $^{112}$Sn target-specific rates.
+          \item Propagate polarization uncertainty.
+          \item Study neutron threshold, cross-talk, backgrounds.
+          \item Detector/model pseudo-data closure tests.
         \end{itemize}
       \end{block}
     \end{column}
   \end{columns}
-  \centering
-  \footnotesize
-  The next decisive analysis is not another truth-level calculation. It is a
-  closure test with reconstructed quality-class definitions.
+  \begin{block}{Honest scope}
+    \centering
+    Observable, neutron momentum, and event plane are reconstructed.  The
+    event-quality class still uses truth momenta --- this is a detector-level
+    closure study, not yet the final analysis.
+  \end{block}
 \end{frame}
 
+%=========================================================================
+% Slide 10 --- Summary
+%=========================================================================
 \begin{frame}{Summary}
   \small
   \begin{enumerate}
-    \item IVR produces a polarization-dependent proton-neutron relative-momentum
-      bias near a neutron-rich target.
-    \item $^{124}$Sn is the primary sensitivity target, while $^{112}$Sn
-      provides a controlled isotope reference.
-    \item The $\gpar$-dependent ordering survives realistic detector folding and
-      full proton, neutron, and event-plane reconstruction in the px60 fiducial
-      region for $^{124}$Sn.
-    \item The experiment should compare reconstructed data with identically
-      folded model predictions; the next step is closure with reconstructed
-      quality classes and detector-systematic validation.
+    \item A polarized deuteron turns a proton--neutron isovector force
+          difference into a measurable breakup momentum asymmetry.
+    \item $^{124}$Sn provides the main neutron-rich sensitivity, while
+          $^{112}$Sn provides an isotope reference.
+    \item The SAMURAI detector changes the absolute observable, but the
+          $\gpar$ and isotope ordering survive proton, neutron, and
+          event-plane reconstruction.
+    \item The next decisive step is a fully reconstructed selection closure
+          and detector-systematic validation.
   \end{enumerate}
+  \vspace{0.2cm}
   \begin{block}{Bottom line}
-    The present study establishes detector-level observability, not yet a
-    complete experimental uncertainty budget.  A y-pol measurement provides a
-    realistic first-stage path to testing the IVR concept at SAMURAI.
+    \small\centering
+    A y-polarized deuteron provides a realistic first-stage path to testing
+    isovector reorientation at SAMURAI.
   \end{block}
 \end{frame}
 
@@ -450,74 +344,88 @@
   \Large Questions?
 \end{frame}
 
+%=========================================================================
 \appendix
-\setbeamertemplate{footline}{}
 \section*{Backup}
+\setbeamertemplate{footline}{}
 
 \begin{frame}{Backup Roadmap}
   \small
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \begin{itemize}
-        \item A: model and observable
-        \item B: reconstruction
-        \item C: neutron acceptance
-        \item D: $^{124}$Sn full numbers
+        \item A: IVR model and $\gpar$
+        \item B: observable definitions
+        \item C: reconstruction performance
+        \item D: neutron acceptance details
+        \item E: folding diagnostics
       \end{itemize}
     \end{column}
     \begin{column}{0.50\textwidth}
       \begin{itemize}
-        \item E: $^{112}$Sn and isotope comparison
-        \item F: z-pol extension
-        \item G: polarization monitoring
-        \item H: systematics and future closure
+        \item F: $^{112}$Sn / $^{124}$Sn numbers
+        \item G: statistics and beamtime
+        \item H: y-pol and z-pol
+        \item I: remaining closure and systematics
       \end{itemize}
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}{Backup A: Observable and Bounded Asymmetry}
+%---- Backup A: IVR model ----
+\begin{frame}{Backup A: Symmetry Energy and $\gpar$}
   \small
+  The symmetry term in the ImQMD energy density is parametrized as
   \[
-    \dpxreco =
-    p_{x,p,\mathrm{reco}}^{\mathrm{rot}}
-    -
-    p_{x,n,\mathrm{reco}}^{\mathrm{rot}},
-    \qquad
-    \Rxreco =
-    \frac{N(\dpxreco>0)}{N(\dpxreco<0)} .
-  \]
-  \[
-    \Ax=\frac{N_+-N_-}{N_++N_-}
-       =\frac{R_x-1}{R_x+1}.
-  \]
-  \begin{block}{Vocabulary}
-    Truth, reconstructed, folded, and unfolded observables are different
-    objects.  The main result uses a reconstructed fiducial observable.
-  \end{block}
-\end{frame}
-
-\begin{frame}{Backup A: Folding Vocabulary}
-  \small
-  \[
-    N_{\mathrm{reco},j}=\sum_iK_{ji}N_{\mathrm{true},i}+b_j .
+    E_{\mathrm{sym}}(\rho)
+    =
+    E_{\mathrm{sym}}^{\mathrm{kin}}(\rho)
+    + C\left(\frac{\rho}{\rho_0}\right)^{\gpar} .
   \]
   \begin{itemize}
-    \item truth: generator-level kinematics after physics selection,
-    \item reconstructed: variables built from detector hits,
-    \item folded: model events passed through detector response and
-      reconstruction,
-    \item unfolded: estimator of truth after response inversion and
-      regularization.
+    \item $\gpar$ controls the density dependence around and below saturation.
+    \item Larger $\gpar$ $\Rightarrow$ stiffer neutron--proton splitting at
+          sub-saturation density.
+    \item This changes the relative impulse on $p$ and $n$ near the target,
+          and therefore the predicted $\Delta p_x$ bias.
   \end{itemize}
-  \begin{block}{Current limitation}
-    The observable numerator/denominator and neutron px60 fiducial are
-    reconstructed. The loose/mid/tight event-quality class is still defined with
-    truth momenta in the current closure.
+  \begin{block}{Grid used here}
+    \small $\gpar = 0.5,\;0.6,\;0.7,\;0.8$ for both $^{112}$Sn and $^{124}$Sn.
   \end{block}
 \end{frame}
 
-\begin{frame}{Backup B: Proton and Neutron Residuals}
+%---- Backup B: observable definitions ----
+\begin{frame}{Backup B: Observable Definitions}
+  \small
+  Reconstructed event plane:
+  \[
+    \phi_{\mathrm{event}}^{\,\mathrm{reco}}
+    = \operatorname{atan2}\!\left(
+      p_{y,p}^{\,\mathrm{reco}}+p_{y,n}^{\,\mathrm{reco}},\;
+      p_{x,p}^{\,\mathrm{reco}}+p_{x,n}^{\,\mathrm{reco}}
+    \right)
+  \]
+  Rotated relative momentum and ratio:
+  \[
+    \Delta p_{x,\mathrm{reco}}^{\,\mathrm{rot}}
+    = p_{x,p,\mathrm{reco}}^{\,\mathrm{rot}}-p_{x,n,\mathrm{reco}}^{\,\mathrm{rot}},
+    \qquad
+    R_x^{\,\mathrm{reco,fid}}
+    = \frac{N(\Delta p_{x,\mathrm{reco}}^{\,\mathrm{rot}}>0)}
+           {N(\Delta p_{x,\mathrm{reco}}^{\,\mathrm{rot}}<0)} .
+  \]
+  Bounded asymmetry cross-check:
+  \[
+    A_x=\frac{N_+-N_-}{N_++N_-}=\frac{R_x-1}{R_x+1}.
+  \]
+  \begin{block}{Vocabulary}
+    \small truth = generator level; reconstructed = from detector hits;
+    folded = model passed through detector + reconstruction.
+  \end{block}
+\end{frame}
+
+%---- Backup C: reconstruction performance ----
+\begin{frame}{Backup C: Proton and Neutron Residuals}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \centering
@@ -530,11 +438,11 @@
   \end{columns}
   \vspace{0.08cm}
   \scriptsize
-  Left: NN breakup diagnostic. Right: earlier RK+NEBULA y-pol full-reco study.
+  Left: NN breakup diagnostic. Right: RK + NEBULA y-pol full-reco study.
   Half-width and RMSE should not be mixed; tails matter for RMSE.
 \end{frame}
 
-\begin{frame}{Backup B: Event-Plane Resolution}
+\begin{frame}{Backup C: Event-Plane Resolution}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.52\textwidth}
       \centering
@@ -547,11 +455,11 @@
   \end{columns}
   \vspace{0.08cm}
   \scriptsize
-  Reaction-plane migration broadens the observable but is not the leading change
-  in the R ladder.
+  Reaction-plane migration broadens the observable but is not the leading
+  change in the $R_x$ ladder.
 \end{frame}
 
-\begin{frame}{Backup B: RK vs NN Proton Cross-Check}
+\begin{frame}{Backup C: RK vs NN Proton Cross-Check}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.54\textwidth}
       \centering
@@ -559,8 +467,6 @@
     \end{column}
     \begin{column}{0.46\textwidth}
       \scriptsize
-      Strict RK--NN comparison is available on the common configuration without
-      NEBULA Plus.
       \begin{table}
         \centering
         \begin{tabular}{lrr}
@@ -574,41 +480,57 @@
           \bottomrule
         \end{tabular}
       \end{table}
-      Proton reconstruction is cross-checked and is not the dominant observable
-      shift.
+      Proton reconstruction is cross-checked and is not the dominant shift.
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}{Backup B: NN Proton Backend}
+\begin{frame}{Backup C: NN Proton Backend}
   \small
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.48\textwidth}
       \begin{block}{Inputs}
-        PDC1/PDC2 hit positions:
-        \[
-          (x_1,y_1,z_1,x_2,y_2,z_2).
-        \]
+        PDC1/PDC2 hit positions
+        $(x_1,y_1,z_1,x_2,y_2,z_2)$.
       \end{block}
       \begin{block}{Outputs}
-        Target-frame proton momentum:
-        \[
-          (p_x,p_y,p_z)_{\mathrm{target}}.
-        \]
+        Target-frame proton momentum
+        $(p_x,p_y,p_z)_{\mathrm{target}}$.
       \end{block}
     \end{column}
     \begin{column}{0.52\textwidth}
       \begin{itemize}
         \item MLP backend used through the canonical reconstruction CLI.
         \item Training domain covers the breakup kinematics used here.
-        \item NN has comparable core resolution to RK and smaller catastrophic
-          tails in the common-geometry comparison.
+        \item Comparable core resolution to RK, with smaller catastrophic
+              tails in the common-geometry comparison.
       \end{itemize}
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}{Backup C: px60, px80, px100}
+%---- Backup D: neutron acceptance ----
+\begin{frame}{Backup D: Neutron Efficiency vs Phase Space}
+  \centering
+  \includegraphics[height=0.68\textheight,keepaspectratio]{neutron_efficiency_1d_by_cut_ypol.png}
+
+  \vspace{0.08cm}
+  \scriptsize
+  Efficiency shape is similar across event-quality cuts; cuts mainly change
+  which phase-space region is populated.
+\end{frame}
+
+\begin{frame}{Backup D: 2D Efficiency and Near-Zero Regions}
+  \centering
+  \includegraphics[height=0.66\textheight,keepaspectratio]{neutron_efficiency_2d_pxn_vs_dpx_by_cut.png}
+
+  \vspace{0.08cm}
+  \scriptsize
+  The response is not uniform in $(p_{x,n},\Delta p_x)$; near-zero regions
+  make a naive $1/\epsilon$ correction unstable.
+\end{frame}
+
+\begin{frame}{Backup D: px60 / px80 / px100}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.33\textwidth}
       \centering
@@ -632,63 +554,57 @@
   negative-$p_{x,n}$ branch.
 \end{frame}
 
-\begin{frame}{Backup C: 1D Neutron Efficiency}
-  \centering
-  \includegraphics[height=0.68\textheight,keepaspectratio]{neutron_efficiency_1d_by_cut_ypol.png}
-
+\begin{frame}{Backup D: Sign Migration and Response Matrices}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.45\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{sign_migration_summary_tight.png}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{response_matrices_tight_px60.png}
+    \end{column}
+  \end{columns}
   \vspace{0.08cm}
   \scriptsize
-  Efficiency shape is similar across event-quality cuts; cuts mainly change
-  which phase-space region is populated.
+  Left: $\Delta p_x$ sign migration is small versus the neutron-visibility
+  effect. Right: response matrices for possible unfolding; the main result
+  does not rely on matrix inversion.
 \end{frame}
 
-\begin{frame}{Backup C: 2D Neutron Efficiency}
-  \centering
-  \includegraphics[height=0.66\textheight,keepaspectratio]{neutron_efficiency_2d_pxn_vs_dpx_by_cut.png}
-
-  \vspace{0.08cm}
-  \scriptsize
-  The response is not uniform in $(p_{x,n},\Delta p_x)$; this motivates folded
-  model comparison.
+%---- Backup E: folding diagnostics ----
+\begin{frame}{Backup E: The $R_x$ Ladder}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.50\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{r_ladder_summary_tight_px60.png}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \small
+      Folding steps, largest shift first:
+      \begin{enumerate}
+        \item Neutron visibility / acceptance.
+        \item Proton momentum reconstruction.
+        \item Event-plane reconstruction.
+      \end{enumerate}
+      \[
+        N_{\mathrm{reco},j}=\sum_i K_{ji}N_{\mathrm{true},i}+b_j
+      \]
+      \begin{block}{}
+        \small The absolute ratio changes; the $\gpar$ ordering remains.
+      \end{block}
+    \end{column}
+  \end{columns}
 \end{frame}
 
-\begin{frame}{Backup C: No-Fiducial Efficiency Landscape}
-  \centering
-  \includegraphics[height=0.66\textheight,keepaspectratio]{neutron_efficiency_2d_pxn_vs_dpx_nofiducial.png}
-
-  \vspace{0.08cm}
-  \scriptsize
-  Near-zero-efficiency regions make a simple $1/\epsilon$ correction or raw
-  unfolding unstable.
-\end{frame}
-
-\begin{frame}{Backup C: Sign Migration}
-  \centering
-  \includegraphics[width=0.72\linewidth]{sign_migration_summary_tight.png}
-
-  \vspace{0.08cm}
-  \scriptsize
-  In y-pol tight px60, $\Delta p_x$ sign migration is small compared with the
-  neutron visibility effect.
-\end{frame}
-
-\begin{frame}{Backup C: Response Matrices}
-  \centering
-  \includegraphics[height=0.64\textheight,keepaspectratio]{response_matrices_tight_px60.png}
-
-  \vspace{0.08cm}
-  \scriptsize
-  Response matrices are useful for closure and possible unfolding, but the main
-  result does not rely on matrix inversion.
-\end{frame}
-
-\begin{frame}{Backup D: $^{124}$Sn Full y-pol Numbers}
+%---- Backup F: Sn112 / Sn124 numbers ----
+\begin{frame}{Backup F: $^{124}$Sn y-pol Folded Numbers}
   \scriptsize
   \begin{table}
     \centering
     \begin{tabular}{lrrrrr}
       \toprule
-      $\gpar$ & $N_+$ & $N_-$ & $\Rxreco\pm\sigma_{\mathrm{MC}}$ & $\Ax$ & $N_{\mathrm{used}}$ \\
+      $\gpar$ & $N_+$ & $N_-$ & $R_x\pm\sigma_{\mathrm{MC}}$ & $A_x$ & $N_{\mathrm{used}}$ \\
       \midrule
       0.5 & 2134 & 171 & $12.48\pm0.99$ & 0.852 & 2305 \\
       0.6 & 2147 & 275 & $\phantom{0}7.81\pm0.50$ & 0.773 & 2422 \\
@@ -697,24 +613,51 @@
       \bottomrule
     \end{tabular}
   \end{table}
-  \begin{block}{Meaning}
-    These are folded reco-plane values for $^{124}$Sn y-pol tight px60, not
-    truth-level asymmetries.  Uncertainties are current MC statistics only.
+  \begin{block}{}
+    \scriptsize Folded reco-plane values for $^{124}$Sn y-pol tight px60.
+    Uncertainties are current MC statistics only.
   \end{block}
 \end{frame}
 
-\begin{frame}{Backup D: Bounded Asymmetry Cross-Check}
+\begin{frame}{Backup F: $^{112}$Sn / $^{124}$Sn Side by Side}
+  \scriptsize
+  \begin{table}
+    \centering
+    \begin{tabular}{lrrrr}
+      \toprule
+      target & $\gpar=0.5$ & $\gpar=0.6$ & $\gpar=0.7$ & $\gpar=0.8$ \\
+      \midrule
+      $^{112}$Sn & $8.64\pm0.69$ & $7.05\pm0.50$ & $5.95\pm0.41$ & $5.80\pm0.39$ \\
+      $^{124}$Sn & $12.48\pm0.99$ & $7.81\pm0.50$ & $5.85\pm0.33$ & $4.99\pm0.28$ \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+  \begin{block}{Scope}
+    \scriptsize Same production chain (SAMURAI + NEBULA + NEBULA Plus, PDC NN
+    proton, NEBULA ToF neutron, reco event plane).  Truth-defined tight
+    quality class is a shared caveat.  $^{112}$Sn rates use an atom-density
+    scaling placeholder.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Backup F: Bounded Asymmetry Cross-Check}
   \centering
-  \includegraphics[width=0.74\linewidth]{ypol_bounded_asymmetry.png}
+  \includegraphics[width=0.66\linewidth]{ypol_bounded_asymmetry.png}
 
   \vspace{0.08cm}
   \scriptsize
-  $\Ax$ is bounded and monotonic for the same reconstructed y-pol points.  It is
-  a stability cross-check, not a replacement for the primary $R_x$ result.
+  $A_x$ is bounded and monotonic for the same reconstructed y-pol points ---
+  a stability cross-check, not a replacement for $R_x$.
 \end{frame}
 
-\begin{frame}{Backup D: Adjacent Gamma Separation}
+%---- Backup G: statistics ----
+\begin{frame}{Backup G: Statistical Planning Scale}
   \scriptsize
+  Closest adjacent $\gpar$ interval in the $^{124}$Sn y-pol folded result:
+  \[
+    \gpar=0.7\to0.8,\qquad
+    N_{\mathrm{stat},3\sigma}\simeq 2.8\times10^{3}.
+  \]
   \begin{table}
     \centering
     \begin{tabular}{lrrrr}
@@ -723,17 +666,18 @@
       \midrule
       0.5$\to$0.6 & 12.48 & 7.81 & 4.67 & 519 \\
       0.6$\to$0.7 & 7.81 & 5.85 & 1.96 & 979 \\
-      0.7$\to$0.8 & 5.85 & 4.99 & 0.85 & $2.77\times10^3$ \\
+      0.7$\to$0.8 & 5.85 & 4.99 & 0.85 & $2.77\times10^{3}$ \\
       \bottomrule
     \end{tabular}
   \end{table}
-  \begin{block}{Scope}
-    This is a statistical-only planning scale, not an experimental significance
-    claim.
+  \begin{block}{}
+    \scriptsize Statistical-only planning scale; current anchor gives about
+    $2.75\times10^{5}$ usable y-pol events for $^{124}$Sn. Detector,
+    polarization, background, and model uncertainties are not included.
   \end{block}
 \end{frame}
 
-\begin{frame}{Backup D: Usable-Event Survival}
+\begin{frame}{Backup G: Usable-Event Survival}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.56\textwidth}
       \centering
@@ -741,68 +685,57 @@
     \end{column}
     \begin{column}{0.44\textwidth}
       \small
-      Planning formula:
       \[
-        N_{\mathrm{usable}}
-        =
-        \mathrm{rate}\times T\times
-        \frac{N_{\mathrm{reco\ plane}}}{N_{\mathrm{raw}}}.
+        N_{\mathrm{usable}}=\mathrm{rate}\times T\times
+        \frac{N_{\mathrm{reco\ plane}}}{N_{\mathrm{raw}}}
       \]
       For y-pol:
       \[
         \frac{N_{\mathrm{reco\ plane}}}{N_{\mathrm{raw}}}=0.00566
       \]
       \[
-        N_{\mathrm{usable}}\simeq2.75\times10^5 .
+        N_{\mathrm{usable}}\simeq2.75\times10^{5}.
       \]
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}{Backup E: Earlier $^{112}$Sn Physics-Motivation Result}
+%---- Backup H: y-pol / z-pol ----
+\begin{frame}{Backup H: y-pol and z-pol Event Quality}
+  \scriptsize
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{r_vs_gamma.png}
+      \textbf{y-pol tight}
+      \[
+      |p_{y,p}^{\,\mathrm{truth}}-p_{y,n}^{\,\mathrm{truth}}|<150
+      \]
+      \[
+      50<|\vec p_{T,p}^{\,\mathrm{truth}}+\vec p_{T,n}^{\,\mathrm{truth}}|<200
+      \]
+      \[
+      \pi-|\phi_{\mathrm{truth}}|<0.2
+      \]
     \end{column}
     \begin{column}{0.50\textwidth}
-      \small
-      This earlier NN-breakup result already showed Sn112/Sn124 reconstruction
-      behavior before the current NEBULA Plus px60 gamma-constraint tables were
-      exported.
-      \begin{block}{Use in this talk}
-        It remains useful as a reconstruction-history and physics-motivation
-        cross-check.  The main isotope statement now uses the current
-        tight-px60 folded-reco table.
-      \end{block}
+      \textbf{z-pol tight}
+      \[
+      p_{z,p}^{\,\mathrm{truth}}+p_{z,n}^{\,\mathrm{truth}}>1150
+      \]
+      \[
+      |p_{z,p}^{\,\mathrm{truth}}-p_{z,n}^{\,\mathrm{truth}}|<150
+      \]
+      \[
+      |\vec p_T^{\,\mathrm{sum}}|>50,\quad
+      \pi-|\phi_{\mathrm{truth}}|<0.5
+      \]
     \end{column}
   \end{columns}
+  \vspace{0.12cm}
+  These current classes are truth-defined and must be replaced by reconstructed
+  definitions.
 \end{frame}
 
-\begin{frame}{Backup E: Sn112/Sn124 Common-Chain Audit}
-  \scriptsize
-  \begin{table}
-    \centering
-    \begin{tabular}{ll}
-      \toprule
-      item & Sn112/Sn124 status \\
-      \midrule
-      production & NEBULA Plus joint 20260609 tables exported for both targets \\
-      geometry/backend & SAMURAI + NEBULA Plus, PDC NN proton, neutron time-of-flight \\
-      y-pol $\gpar$ grid & 0.5, 0.6, 0.7, 0.8 for both targets \\
-      observable & folded reco-plane $R_x^{\mathrm{reco,fid}}$ for both targets \\
-      selection & truth-defined tight quality class + reco px60 fiducial \\
-      remaining caveat & reco-defined quality class and Sn112 target-specific rate still pending \\
-      \bottomrule
-    \end{tabular}
-  \end{table}
-  \begin{block}{Decision}
-    A direct y-pol folded-reco isotope plot is now appropriate, with the
-    truth-defined quality-class and planning-rate caveats shown explicitly.
-  \end{block}
-\end{frame}
-
-\begin{frame}{Backup F: z-pol Folded Results}
+\begin{frame}{Backup H: z-pol Folded Results}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \centering
@@ -823,111 +756,62 @@
           \bottomrule
         \end{tabular}
       \end{table}
-      z-pol remains physically valuable but is kept as a second-stage extension.
+      z-pol is physically valuable but harder to produce, transport, and
+      monitor; kept as a second-stage extension.
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}{Backup F: y-pol and z-pol Cut Definitions}
+\begin{frame}{Backup H: Polarization Monitoring}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.50\textwidth}
+      \centering
+      \includegraphics[width=0.95\linewidth]{R_LRUD_vs_pyy.pdf}\\
+      {\scriptsize y-pol: $p_{yy}$ via LRUD asymmetry}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \centering
+      \includegraphics[width=0.95\linewidth]{Ratio_vs_pzz.pdf}\\
+      {\scriptsize z-pol: $p_{zz}$ via absolute/two-angle normalization}
+    \end{column}
+  \end{columns}
+  \vspace{0.08cm}
   \scriptsize
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.50\textwidth}
-      \textbf{y-pol tight}
-      \[
-      |p_{y,p}^{\mathrm{truth}}-p_{y,n}^{\mathrm{truth}}|<150
-      \]
-      \[
-      50<|\vec p_{T,p}^{\mathrm{truth}}+\vec p_{T,n}^{\mathrm{truth}}|<200
-      \]
-      \[
-      \pi-|\phi_{\mathrm{truth}}|<0.2 .
-      \]
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \textbf{z-pol tight}
-      \[
-      p_{z,p}^{\mathrm{truth}}+p_{z,n}^{\mathrm{truth}}>1150
-      \]
-      \[
-      |p_{z,p}^{\mathrm{truth}}-p_{z,n}^{\mathrm{truth}}|<150
-      \]
-      \[
-      |\vec p_T^{\,\mathrm{sum}}|>50,\quad
-      \pi-|\phi_{\mathrm{truth}}|<0.5 .
-      \]
-    \end{column}
-  \end{columns}
-  \vspace{0.12cm}
-  These current event-quality classes are defined with truth momenta and must be
-  replaced by reconstructed definitions.
+  $p_{yy}$ monitoring through an established LRUD asymmetry is an independent
+  prerequisite for the y-pol analysis.  $p_{zz}$ monitoring is more demanding
+  but not impossible.
 \end{frame}
 
-\begin{frame}{Backup G: y-pol Polarization Monitoring}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.50\textwidth}
-      \centering
-      \includegraphics[width=0.95\linewidth]{R_LRUD_vs_pyy.pdf}
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \small
-      Vertical tensor polarization $p_{yy}$ can be monitored through an
-      established LRUD asymmetry in deuteron-proton elastic scattering.
-      \begin{block}{Role in IVR}
-        Polarization monitoring is an independent prerequisite and must be
-        propagated into $R_x(\gpar)$.
-      \end{block}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Backup G: z-pol Monitoring Concept}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.50\textwidth}
-      \centering
-      \includegraphics[width=0.95\linewidth]{Ratio_vs_pzz.pdf}
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \small
-      Longitudinal tensor polarization $p_{zz}$ can be monitored with a more
-      demanding absolute/two-angle normalization strategy.
-      \begin{block}{Careful statement}
-        $p_{zz}$ monitoring is not impossible; it is more complex than the
-        y-pol LRUD baseline.
-      \end{block}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Backup H: Truth-Assisted Cuts}
+%---- Backup I: remaining closure and systematics ----
+\begin{frame}{Backup I: Truth-Assisted Selection}
   \small
-  \begin{block}{What is fully reconstructed now}
-    Numerator and denominator of $\Rxreco$ use reconstructed proton momentum,
-    reconstructed neutron momentum, and reconstructed event plane.
+  \begin{block}{Fully reconstructed now}
+    Numerator and denominator of $R_x$ use reconstructed proton momentum,
+    reconstructed neutron momentum, and the reconstructed event plane.
   \end{block}
-  \begin{block}{What still uses truth}
-    Event-quality classes such as transverse balance and near-backscatter
-    selection are currently defined using truth momenta in simulation. The
-    px60 fiducial used for the folded observable is already reconstructed.
+  \begin{block}{Still uses truth}
+    Event-quality classes (transverse balance, near-backscatter) are currently
+    truth-defined in simulation. The px60 fiducial is already reconstructed.
   \end{block}
   \begin{block}{Required closure}
-    Re-run with reconstructed quality-class definitions and compare efficiency,
+    Re-run with reconstructed quality-class definitions; compare efficiency,
     purity, migration, and $\gpar$ ordering against the truth-defined baseline.
   \end{block}
 \end{frame}
 
-\begin{frame}{Backup H: Detector-Systematic Checklist}
+\begin{frame}{Backup I: Detector-Systematic Checklist}
   \small
   \begin{itemize}
-    \item neutron threshold, $T_0$, timing resolution, and hit-position model,
-    \item cross-talk, fake neutron candidates, and accidental coincidences,
-    \item charge-veto and charged-particle leakage assumptions,
-    \item detector geometry and alignment variations,
-    \item background and pile-up in the relevant electronics time window,
-    \item polarization uncertainty and model/folding uncertainty.
+    \item Neutron threshold, $T_0$, timing resolution, hit-position model.
+    \item Cross-talk, fake neutron candidates, accidental coincidences.
+    \item Charge-veto and charged-particle leakage assumptions.
+    \item Detector geometry and alignment variations.
+    \item Background and pile-up in the relevant electronics time window.
+    \item Polarization uncertainty and model/folding uncertainty.
   \end{itemize}
   \begin{block}{Next analysis product}
-    Pseudo-data closure under detector and model variations, with the same
-    folded comparison used for the experimental observable.
+    \small Pseudo-data closure under detector and model variations, with the
+    same folded comparison used for the experimental observable.
   \end{block}
 \end{frame}
 
