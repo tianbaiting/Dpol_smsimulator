@@ -7,7 +7,7 @@ import argparse
 import math
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import matplotlib
 
@@ -23,15 +23,40 @@ DEFAULT_RECO_BASE = Path(
 )
 DEFAULT_OUT_DIR = Path("docs/reports/gamma_constraint_20260611/figures")
 
-SN124_TARGET = "Sn124E190"
+TARGETS = ("Sn112E190", "Sn124E190")
+TARGET_LABELS = {
+    "Sn112E190": "Sn112",
+    "Sn124E190": "Sn124",
+}
 FIDUCIAL = 60.0
 CUT = "tight"
-DETECTED_EVENTS_16H_15MM = 4.858209e7
-DETECTED_RATES_HZ = {
+SN124_DETECTED_EVENTS_16H_15MM = 4.858209e7
+SN124_DETECTED_RATES_HZ = {
     "12 mm": 1317.873521,
     "15 mm": 843.439054,
     "20 mm": 474.434468,
 }
+TARGET_RATE_SCALE = {
+    "Sn112E190": 124.0 / 112.0,
+    "Sn124E190": 1.0,
+}
+
+
+def target_label(target: str) -> str:
+    return TARGET_LABELS.get(target, target)
+
+
+def target_slug(target: str) -> str:
+    return target_label(target).lower()
+
+
+def detected_events_16h_15mm(target: str) -> float:
+    return SN124_DETECTED_EVENTS_16H_15MM * TARGET_RATE_SCALE.get(target, 1.0)
+
+
+def detected_rates_hz(target: str) -> dict[str, float]:
+    scale = TARGET_RATE_SCALE.get(target, 1.0)
+    return {label: rate * scale for label, rate in SN124_DETECTED_RATES_HZ.items()}
 
 
 def ratio_sigma(r_value: float, n_events: float) -> float:
@@ -68,11 +93,11 @@ def load_inputs(reco_base: Path) -> dict[str, Any]:
     }
 
 
-def compute_useful_fraction(cell_passrates: pd.DataFrame, r_cell: pd.DataFrame, pol: str) -> float:
-    raw = cell_passrates[(cell_passrates["pol"] == pol) & (cell_passrates["target"] == SN124_TARGET)]["N_raw"].sum()
+def compute_useful_fraction(cell_passrates: pd.DataFrame, r_cell: pd.DataFrame, pol: str, target: str) -> float:
+    raw = cell_passrates[(cell_passrates["pol"] == pol) & (cell_passrates["target"] == target)]["N_raw"].sum()
     usable = r_cell[
         (r_cell["pol"] == pol)
-        & (r_cell["target"] == SN124_TARGET)
+        & (r_cell["target"] == target)
         & (r_cell["cut"] == CUT)
         & (r_cell["px_limit"] == FIDUCIAL)
         & (r_cell["stage"] == "reco_plane")
@@ -80,99 +105,114 @@ def compute_useful_fraction(cell_passrates: pd.DataFrame, r_cell: pd.DataFrame, 
     return float(usable / raw) if raw > 0 else float("nan")
 
 
-def r_vs_gamma_table(data: dict[str, pd.DataFrame]) -> pd.DataFrame:
+def r_vs_gamma_table(data: dict[str, pd.DataFrame], targets: Sequence[str] = TARGETS) -> pd.DataFrame:
     r_cell = data["r_ladder_by_cell"]
     rows = []
-    for pol in ("ypol", "zpol"):
-        useful_fraction = compute_useful_fraction(data["cell_passrates"], r_cell, pol)
-        expected_n_15mm_16h = DETECTED_EVENTS_16H_15MM * useful_fraction
-        sub = r_cell[
-            (r_cell["pol"] == pol)
-            & (r_cell["target"] == SN124_TARGET)
-            & (r_cell["cut"] == CUT)
-            & (r_cell["px_limit"] == FIDUCIAL)
-            & (r_cell["stage"].isin(["truth", "reco_plane"]))
-        ].copy()
-        sub["gamma_value"] = sub["gamma"].map(gamma_number)
-        for _, row in sub.iterrows():
-            n_for_error = expected_n_15mm_16h if row["stage"] == "reco_plane" else row["N"]
-            rows.append(
-                {
-                    "pol": pol,
-                    "gamma": row["gamma"],
-                    "gamma_value": row["gamma_value"],
-                    "stage": row["stage"],
-                    "N_sim": int(row["N"]),
-                    "n_pos": int(row["n_pos"]),
-                    "n_neg": int(row["n_neg"]),
-                    "R": float(row["R"]),
-                    "sigma_R_sim": ratio_sigma(float(row["R"]), float(row["N"])),
-                    "expected_N_15mm_16h": expected_n_15mm_16h,
-                    "sigma_R_15mm_16h": ratio_sigma(float(row["R"]), expected_n_15mm_16h),
-                    "useful_fraction": useful_fraction,
-                }
-            )
-    return pd.DataFrame(rows)
-
-
-def separation_table(r_table: pd.DataFrame) -> pd.DataFrame:
-    rows = []
-    for pol in ("ypol", "zpol"):
-        sub = r_table[(r_table["pol"] == pol) & (r_table["stage"] == "reco_plane")].sort_values("gamma_value")
-        values = list(sub.itertuples(index=False))
-        for left, right in zip(values, values[1:]):
-            rows.append(
-                {
-                    "pol": pol,
-                    "left_gamma": left.gamma,
-                    "right_gamma": right.gamma,
-                    "R_left": left.R,
-                    "R_right": right.R,
-                    "delta_R": abs(right.R - left.R),
-                    "N_required_3sigma": required_events_for_separation(left.R, right.R, 3.0),
-                    "expected_N_15mm_16h": left.expected_N_15mm_16h,
-                }
-            )
-    return pd.DataFrame(rows)
-
-
-def aggregate_efficiency_by_sign(data: dict[str, pd.DataFrame]) -> pd.DataFrame:
-    rows = []
-    for fiducial, key in (("px60", "eff_px60"), ("px100", "eff_px100")):
-        df = data[key]
+    for target in targets:
         for pol in ("ypol", "zpol"):
-            for cut in ("loose", "mid", "tight"):
-                sub = df[(df["pol"] == pol) & (df["cut"] == cut) & (df["fiducial"] == fiducial)]
-                n_pos = sub["N_pos"].sum()
-                n_neg = sub["N_neg"].sum()
-                h_pos = sub["N_hit_pos"].sum()
-                h_neg = sub["N_hit_neg"].sum()
-                eps_pos = h_pos / n_pos if n_pos else float("nan")
-                eps_neg = h_neg / n_neg if n_neg else float("nan")
-                avg = 0.5 * (eps_pos + eps_neg)
+            useful_fraction = compute_useful_fraction(data["cell_passrates"], r_cell, pol, target)
+            expected_n_15mm_16h = detected_events_16h_15mm(target) * useful_fraction
+            sub = r_cell[
+                (r_cell["pol"] == pol)
+                & (r_cell["target"] == target)
+                & (r_cell["cut"] == CUT)
+                & (r_cell["px_limit"] == FIDUCIAL)
+                & (r_cell["stage"].isin(["truth", "reco_plane"]))
+            ].copy()
+            sub["gamma_value"] = sub["gamma"].map(gamma_number)
+            for _, row in sub.iterrows():
                 rows.append(
                     {
+                        "target": target,
                         "pol": pol,
-                        "cut": cut,
-                        "fiducial": fiducial,
-                        "N_pos": int(n_pos),
-                        "N_neg": int(n_neg),
-                        "eps_pos": eps_pos,
-                        "eps_neg": eps_neg,
-                        "rel_eff_diff": (eps_pos - eps_neg) / avg if avg else float("nan"),
+                        "gamma": row["gamma"],
+                        "gamma_value": row["gamma_value"],
+                        "stage": row["stage"],
+                        "N_sim": int(row["N"]),
+                        "n_pos": int(row["n_pos"]),
+                        "n_neg": int(row["n_neg"]),
+                        "R": float(row["R"]),
+                        "sigma_R_sim": ratio_sigma(float(row["R"]), float(row["N"])),
+                        "expected_N_15mm_16h": expected_n_15mm_16h,
+                        "sigma_R_15mm_16h": ratio_sigma(float(row["R"]), expected_n_15mm_16h),
+                        "useful_fraction": useful_fraction,
+                        "rate_scale_vs_sn124": TARGET_RATE_SCALE.get(target, 1.0),
                     }
                 )
     return pd.DataFrame(rows)
 
 
-def plot_r_vs_gamma(r_table: pd.DataFrame, out_dir: Path) -> None:
+def separation_table(r_table: pd.DataFrame, targets: Sequence[str] = TARGETS) -> pd.DataFrame:
+    rows = []
+    for target in targets:
+        for pol in ("ypol", "zpol"):
+            sub = r_table[
+                (r_table["target"] == target) & (r_table["pol"] == pol) & (r_table["stage"] == "reco_plane")
+            ].sort_values("gamma_value")
+            values = list(sub.itertuples(index=False))
+            for left, right in zip(values, values[1:]):
+                rows.append(
+                    {
+                        "target": target,
+                        "pol": pol,
+                        "left_gamma": left.gamma,
+                        "right_gamma": right.gamma,
+                        "R_left": left.R,
+                        "R_right": right.R,
+                        "delta_R": abs(right.R - left.R),
+                        "N_required_3sigma": required_events_for_separation(left.R, right.R, 3.0),
+                        "expected_N_15mm_16h": left.expected_N_15mm_16h,
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
+def aggregate_efficiency_by_sign(data: dict[str, pd.DataFrame], targets: Sequence[str] = TARGETS) -> pd.DataFrame:
+    rows = []
+    for fiducial, key in (("px60", "eff_px60"), ("px100", "eff_px100")):
+        df = data[key]
+        for target in targets:
+            for pol in ("ypol", "zpol"):
+                for cut in ("loose", "mid", "tight"):
+                    sub = df[
+                        (df["target"] == target)
+                        & (df["pol"] == pol)
+                        & (df["cut"] == cut)
+                        & (df["fiducial"] == fiducial)
+                    ]
+                    n_pos = sub["N_pos"].sum()
+                    n_neg = sub["N_neg"].sum()
+                    h_pos = sub["N_hit_pos"].sum()
+                    h_neg = sub["N_hit_neg"].sum()
+                    eps_pos = h_pos / n_pos if n_pos else float("nan")
+                    eps_neg = h_neg / n_neg if n_neg else float("nan")
+                    avg = 0.5 * (eps_pos + eps_neg)
+                    rows.append(
+                        {
+                            "target": target,
+                            "pol": pol,
+                            "cut": cut,
+                            "fiducial": fiducial,
+                            "N_pos": int(n_pos),
+                            "N_neg": int(n_neg),
+                            "eps_pos": eps_pos,
+                            "eps_neg": eps_neg,
+                            "rel_eff_diff": (eps_pos - eps_neg) / avg if avg else float("nan"),
+                        }
+                    )
+    return pd.DataFrame(rows)
+
+
+def _plot_one_target_r_vs_gamma(r_table: pd.DataFrame, target: str, out_dir: Path) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharex=True)
     for ax, pol in zip(axes, ("ypol", "zpol")):
         for stage, color, marker, label in (
             ("truth", "black", "o", "truth"),
             ("reco_plane", "C0", "s", "folded reco"),
         ):
-            sub = r_table[(r_table["pol"] == pol) & (r_table["stage"] == stage)].sort_values("gamma_value")
+            sub = r_table[
+                (r_table["target"] == target) & (r_table["pol"] == pol) & (r_table["stage"] == stage)
+            ].sort_values("gamma_value")
             yerr = sub["sigma_R_sim"] if stage == "truth" else sub["sigma_R_15mm_16h"]
             ax.errorbar(
                 sub["gamma_value"],
@@ -184,82 +224,128 @@ def plot_r_vs_gamma(r_table: pd.DataFrame, out_dir: Path) -> None:
                 capsize=3,
                 label=label,
             )
-        ax.set_title(f"Sn124 {pol}, tight, |pxn|<60 MeV/c")
+        ax.set_title(f"{target_label(target)} {pol}, tight, |pxn|<60 MeV/c")
         ax.set_xlabel("gamma")
         ax.set_ylabel("R")
         ax.grid(True, alpha=0.3)
         ax.legend(fontsize=9)
     fig.tight_layout()
-    fig.savefig(out_dir / "sn124_tight_px60_r_vs_gamma_expected_stat.png", dpi=160)
+    fig.savefig(out_dir / f"{target_slug(target)}_tight_px60_r_vs_gamma_expected_stat.png", dpi=160)
     plt.close(fig)
 
 
-def plot_beamtime_reach(r_table: pd.DataFrame, sep_table: pd.DataFrame, out_dir: Path) -> None:
+def plot_r_vs_gamma(r_table: pd.DataFrame, out_dir: Path, targets: Sequence[str] = TARGETS) -> None:
+    for target in targets:
+        _plot_one_target_r_vs_gamma(r_table, target, out_dir)
+
+    fig, axes = plt.subplots(2, 2, figsize=(11.5, 7.8), sharex=True)
+    for row, target in enumerate(targets):
+        for col, pol in enumerate(("ypol", "zpol")):
+            ax = axes[row, col]
+            for stage, color, marker, label in (
+                ("truth", "black", "o", "truth"),
+                ("reco_plane", "C0", "s", "folded reco"),
+            ):
+                sub = r_table[
+                    (r_table["target"] == target) & (r_table["pol"] == pol) & (r_table["stage"] == stage)
+                ].sort_values("gamma_value")
+                yerr = sub["sigma_R_sim"] if stage == "truth" else sub["sigma_R_15mm_16h"]
+                ax.errorbar(
+                    sub["gamma_value"],
+                    sub["R"],
+                    yerr=yerr,
+                    color=color,
+                    marker=marker,
+                    lw=1.4,
+                    capsize=3,
+                    label=label,
+                )
+            ax.set_title(f"{target_label(target)} {pol}")
+            ax.set_xlabel("gamma")
+            ax.set_ylabel("R")
+            ax.grid(True, alpha=0.3)
+            if row == 0 and col == 0:
+                ax.legend(fontsize=8)
+    fig.suptitle("tight + |pxn|<60 MeV/c, truth vs folded reco", y=0.995)
+    fig.tight_layout()
+    fig.savefig(out_dir / "sn112_sn124_tight_px60_r_vs_gamma_expected_stat.png", dpi=160)
+    plt.close(fig)
+
+
+def plot_beamtime_reach(
+    r_table: pd.DataFrame, sep_table: pd.DataFrame, out_dir: Path, targets: Sequence[str] = TARGETS
+) -> None:
     hours = np.linspace(0.05, 16.0, 220)
-    fig, ax = plt.subplots(figsize=(7.2, 4.5))
     styles = {"ypol": ("C0", "-"), "zpol": ("C3", "--")}
-    for pol in ("ypol", "zpol"):
-        fraction = r_table[(r_table["pol"] == pol) & (r_table["stage"] == "reco_plane")]["useful_fraction"].iloc[0]
-        color, ls = styles[pol]
-        for label, rate in DETECTED_RATES_HZ.items():
-            scale = {"12 mm": 1.0, "15 mm": 1.5, "20 mm": 2.0}[label]
-            ax.plot(
-                hours,
-                rate * 3600.0 * hours * fraction,
-                color=color,
-                linestyle=ls,
-                alpha=1.0 / scale,
+    for target in targets:
+        fig, ax = plt.subplots(figsize=(7.2, 4.5))
+        for pol in ("ypol", "zpol"):
+            fraction = r_table[
+                (r_table["target"] == target) & (r_table["pol"] == pol) & (r_table["stage"] == "reco_plane")
+            ]["useful_fraction"].iloc[0]
+            color, ls = styles[pol]
+            for label, rate in detected_rates_hz(target).items():
+                scale = {"12 mm": 1.0, "15 mm": 1.5, "20 mm": 2.0}[label]
+                ax.plot(
+                    hours,
+                    rate * 3600.0 * hours * fraction,
+                    color=color,
+                    linestyle=ls,
+                    alpha=1.0 / scale,
+                    lw=1.7,
+                    label=f"{pol} {label}",
+                )
+            req = sep_table[(sep_table["target"] == target) & (sep_table["pol"] == pol)]["N_required_3sigma"].max()
+            ax.axhline(req, color=color, linestyle=":", lw=1.0, label=f"{pol} worst adjacent gamma, 3sigma")
+        ax.set_yscale("log")
+        ax.set_xlabel(f"beam time on {target_label(target)} (h)")
+        ax.set_ylabel("expected usable R events")
+        ax.set_title("Statistics reach after tight px60 visible-window selection")
+        ax.grid(True, which="both", alpha=0.3)
+        ax.legend(fontsize=8, ncol=2)
+        fig.tight_layout()
+        fig.savefig(out_dir / f"{target_slug(target)}_beamtime_reach_tight_px60.png", dpi=160)
+        plt.close(fig)
+
+
+def plot_efficiency_balance(eff_table: pd.DataFrame, out_dir: Path, targets: Sequence[str] = TARGETS) -> None:
+    for target in targets:
+        sub = eff_table[(eff_table["target"] == target) & (eff_table["cut"] == "tight")].copy()
+        sub["fiducial_value"] = sub["fiducial"].str.replace("px", "", regex=False).astype(float)
+        fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
+        width = 0.35
+        xbase = np.arange(len(("px60", "px100")))
+        for i, pol in enumerate(("ypol", "zpol")):
+            pol_sub = sub[sub["pol"] == pol].sort_values("fiducial_value")
+            offset = (i - 0.5) * width
+            axes[0].bar(xbase + offset, pol_sub["eps_pos"], width / 2, label=f"{pol} pxn > 0")
+            axes[0].bar(xbase + offset + width / 2, pol_sub["eps_neg"], width / 2, label=f"{pol} pxn < 0")
+        axes[0].set_xticks(xbase + width / 4)
+        axes[0].set_xticklabels(["px60", "px100"])
+        axes[0].set_ylim(0, 1)
+        axes[0].set_ylabel("neutron hit efficiency")
+        axes[0].set_title(f"{target_label(target)} tight neutron sign efficiency")
+        axes[0].grid(True, axis="y", alpha=0.3)
+        axes[0].legend(fontsize=7, ncol=2)
+        for pol, color in (("ypol", "C0"), ("zpol", "C3")):
+            pol_sub = sub[sub["pol"] == pol].sort_values("fiducial_value")
+            axes[1].plot(
+                pol_sub["fiducial"],
+                np.abs(pol_sub["rel_eff_diff"]),
+                marker="o",
                 lw=1.7,
-                label=f"{pol} {label}",
+                color=color,
+                label=pol,
             )
-        req = sep_table[sep_table["pol"] == pol]["N_required_3sigma"].max()
-        ax.axhline(req, color=color, linestyle=":", lw=1.0, label=f"{pol} worst adjacent gamma, 3sigma")
-    ax.set_yscale("log")
-    ax.set_xlabel("beam time on Sn124 (h)")
-    ax.set_ylabel("expected usable R events")
-    ax.set_title("Statistics reach after tight px60 visible-window selection")
-    ax.grid(True, which="both", alpha=0.3)
-    ax.legend(fontsize=8, ncol=2)
-    fig.tight_layout()
-    fig.savefig(out_dir / "sn124_beamtime_reach_tight_px60.png", dpi=160)
-    plt.close(fig)
-
-
-def plot_efficiency_balance(eff_table: pd.DataFrame, out_dir: Path) -> None:
-    sub = eff_table[(eff_table["cut"] == "tight")].copy()
-    sub["fiducial_value"] = sub["fiducial"].str.replace("px", "", regex=False).astype(float)
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
-    width = 0.35
-    xbase = np.arange(len(("px60", "px100")))
-    for i, pol in enumerate(("ypol", "zpol")):
-        pol_sub = sub[sub["pol"] == pol].sort_values("fiducial_value")
-        offset = (i - 0.5) * width
-        axes[0].bar(xbase + offset, pol_sub["eps_pos"], width / 2, label=f"{pol} pxn > 0")
-        axes[0].bar(xbase + offset + width / 2, pol_sub["eps_neg"], width / 2, label=f"{pol} pxn < 0")
-    axes[0].set_xticks(xbase + width / 4)
-    axes[0].set_xticklabels(["px60", "px100"])
-    axes[0].set_ylim(0, 1)
-    axes[0].set_ylabel("neutron hit efficiency")
-    axes[0].set_title("tight neutron sign efficiency")
-    axes[0].grid(True, axis="y", alpha=0.3)
-    axes[0].legend(fontsize=7, ncol=2)
-    for pol, color in (("ypol", "C0"), ("zpol", "C3")):
-        pol_sub = sub[sub["pol"] == pol].sort_values("fiducial_value")
-        axes[1].plot(
-            pol_sub["fiducial"],
-            np.abs(pol_sub["rel_eff_diff"]),
-            marker="o",
-            lw=1.7,
-            color=color,
-            label=pol,
-        )
-    axes[1].set_ylabel("|relative efficiency difference|")
-    axes[1].set_title("sign-balance vs visible window")
-    axes[1].grid(True, axis="y", alpha=0.3)
-    axes[1].legend(fontsize=9)
-    fig.tight_layout()
-    fig.savefig(out_dir / "ypol_tight_neutron_efficiency_balance.png", dpi=160)
-    plt.close(fig)
+        axes[1].set_ylabel("|relative efficiency difference|")
+        axes[1].set_title("sign-balance vs visible window")
+        axes[1].grid(True, axis="y", alpha=0.3)
+        axes[1].legend(fontsize=9)
+        fig.tight_layout()
+        fig.savefig(out_dir / f"{target_slug(target)}_tight_neutron_efficiency_balance.png", dpi=160)
+        if target == "Sn124E190":
+            fig.savefig(out_dir / "ypol_tight_neutron_efficiency_balance.png", dpi=160)
+        plt.close(fig)
 
 
 def _grid_from_edges(df: pd.DataFrame, value_column: str) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -479,36 +565,39 @@ def plot_r_ladder_summary(r_ladder: pd.DataFrame, out_dir: Path) -> None:
     plt.close(fig)
 
 
-def plot_cell_passrate_summary(cell_passrates: pd.DataFrame, out_dir: Path) -> None:
-    sub = cell_passrates[cell_passrates["target"] == SN124_TARGET].copy()
-    sub["gamma_value"] = sub["gamma"].map(gamma_number)
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharey=True)
+def plot_cell_passrate_summary(
+    cell_passrates: pd.DataFrame, out_dir: Path, targets: Sequence[str] = TARGETS
+) -> None:
     stages = [
         ("N_loose", "loose"),
         ("N_mid", "mid"),
         ("N_tight", "tight"),
         ("N_NEBULA_in_tight", "NEBULA in tight"),
     ]
-    for ax, pol in zip(axes, ("ypol", "zpol")):
-        pol_sub = sub[sub["pol"] == pol].sort_values("gamma_value")
-        for col, label in stages:
-            ax.plot(
-                pol_sub["gamma_value"],
-                pol_sub[col] / pol_sub["N_raw"],
-                marker="o",
-                lw=1.4,
-                label=label,
-            )
-        ax.set_yscale("log")
-        ax.set_xlabel("gamma")
-        ax.set_ylabel("fraction of raw simulated events")
-        ax.set_title(f"Sn124 {pol}")
-        ax.grid(True, which="both", alpha=0.3)
-        ax.legend(fontsize=8)
-    fig.suptitle("Event-selection and NEBULA-visible pass rates", y=0.995)
-    fig.tight_layout()
-    fig.savefig(out_dir / "sn124_selection_passrates.png", dpi=160)
-    plt.close(fig)
+    for target in targets:
+        sub = cell_passrates[cell_passrates["target"] == target].copy()
+        sub["gamma_value"] = sub["gamma"].map(gamma_number)
+        fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharey=True)
+        for ax, pol in zip(axes, ("ypol", "zpol")):
+            pol_sub = sub[sub["pol"] == pol].sort_values("gamma_value")
+            for col, label in stages:
+                ax.plot(
+                    pol_sub["gamma_value"],
+                    pol_sub[col] / pol_sub["N_raw"],
+                    marker="o",
+                    lw=1.4,
+                    label=label,
+                )
+            ax.set_yscale("log")
+            ax.set_xlabel("gamma")
+            ax.set_ylabel("fraction of raw simulated events")
+            ax.set_title(f"{target_label(target)} {pol}")
+            ax.grid(True, which="both", alpha=0.3)
+            ax.legend(fontsize=8)
+        fig.suptitle("Event-selection and NEBULA-visible pass rates", y=0.995)
+        fig.tight_layout()
+        fig.savefig(out_dir / f"{target_slug(target)}_selection_passrates.png", dpi=160)
+        plt.close(fig)
 
 
 def copy_reference_figures(reco_base: Path, out_dir: Path) -> None:
@@ -537,21 +626,35 @@ def copy_reference_figures(reco_base: Path, out_dir: Path) -> None:
             shutil.copy2(src, out_dir / name)
 
 
-def write_tables(r_table: pd.DataFrame, sep_table: pd.DataFrame, eff_table: pd.DataFrame, out_dir: Path) -> None:
-    r_table.to_csv(out_dir / "sn124_tight_px60_r_table.csv", index=False)
-    sep_table.to_csv(out_dir / "sn124_tight_px60_gamma_separation.csv", index=False)
+def write_tables(
+    r_table: pd.DataFrame,
+    sep_table: pd.DataFrame,
+    eff_table: pd.DataFrame,
+    out_dir: Path,
+    targets: Sequence[str] = TARGETS,
+) -> None:
+    r_table.to_csv(out_dir / "sn112_sn124_tight_px60_r_table.csv", index=False)
+    sep_table.to_csv(out_dir / "sn112_sn124_tight_px60_gamma_separation.csv", index=False)
     eff_table.to_csv(out_dir / "neutron_sign_efficiency_summary.csv", index=False)
 
-    headline = {
-        "max_N_required_3sigma_ypol": float(sep_table[sep_table["pol"] == "ypol"]["N_required_3sigma"].max()),
-        "max_N_required_3sigma_zpol": float(sep_table[sep_table["pol"] == "zpol"]["N_required_3sigma"].max()),
-        "expected_N_15mm_16h_ypol": float(
-            r_table[(r_table["pol"] == "ypol") & (r_table["stage"] == "reco_plane")]["expected_N_15mm_16h"].iloc[0]
-        ),
-        "expected_N_15mm_16h_zpol": float(
-            r_table[(r_table["pol"] == "zpol") & (r_table["stage"] == "reco_plane")]["expected_N_15mm_16h"].iloc[0]
-        ),
-    }
+    for target in targets:
+        r_table[r_table["target"] == target].to_csv(
+            out_dir / f"{target_slug(target)}_tight_px60_r_table.csv", index=False
+        )
+        sep_table[sep_table["target"] == target].to_csv(
+            out_dir / f"{target_slug(target)}_tight_px60_gamma_separation.csv", index=False
+        )
+
+    headline = {}
+    for target in targets:
+        slug = target_slug(target)
+        for pol in ("ypol", "zpol"):
+            sep_sub = sep_table[(sep_table["target"] == target) & (sep_table["pol"] == pol)]
+            r_sub = r_table[
+                (r_table["target"] == target) & (r_table["pol"] == pol) & (r_table["stage"] == "reco_plane")
+            ]
+            headline[f"{slug}_max_N_required_3sigma_{pol}"] = float(sep_sub["N_required_3sigma"].max())
+            headline[f"{slug}_expected_N_15mm_16h_{pol}"] = float(r_sub["expected_N_15mm_16h"].iloc[0])
     pd.Series(headline).to_json(out_dir / "headline_numbers.json", indent=2)
 
 
@@ -566,21 +669,21 @@ def main() -> None:
     args = parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
     data = load_inputs(args.reco_base)
-    r_table = r_vs_gamma_table(data)
-    sep_table = separation_table(r_table)
-    eff_table = aggregate_efficiency_by_sign(data)
-    plot_r_vs_gamma(r_table, args.out_dir)
-    plot_beamtime_reach(r_table, sep_table, args.out_dir)
-    plot_efficiency_balance(eff_table, args.out_dir)
+    r_table = r_vs_gamma_table(data, TARGETS)
+    sep_table = separation_table(r_table, TARGETS)
+    eff_table = aggregate_efficiency_by_sign(data, TARGETS)
+    plot_r_vs_gamma(r_table, args.out_dir, TARGETS)
+    plot_beamtime_reach(r_table, sep_table, args.out_dir, TARGETS)
+    plot_efficiency_balance(eff_table, args.out_dir, TARGETS)
     plot_efficiency_1d(data["efficiency_1d"], args.out_dir)
     plot_efficiency_2d_maps(data["folding_dir"], args.out_dir)
     plot_response_matrices(data["folding_dir"], args.out_dir)
     plot_survival_summary(data["survival_summary"], args.out_dir)
     plot_sign_migration_summary(data["sign_migration"], args.out_dir)
     plot_r_ladder_summary(data["r_ladder"], args.out_dir)
-    plot_cell_passrate_summary(data["cell_passrates"], args.out_dir)
+    plot_cell_passrate_summary(data["cell_passrates"], args.out_dir, TARGETS)
     copy_reference_figures(args.reco_base, args.out_dir)
-    write_tables(r_table, sep_table, eff_table, args.out_dir)
+    write_tables(r_table, sep_table, eff_table, args.out_dir, TARGETS)
     print(f"gamma constraint report assets saved to {args.out_dir}")
 
 

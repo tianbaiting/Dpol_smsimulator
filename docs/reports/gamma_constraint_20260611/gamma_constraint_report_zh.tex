@@ -44,16 +44,16 @@
 1. QMD 模拟: d+Sn 190 MeV/u, $\gamma=\{0.5,0.6,0.7,0.8\}$, 靶 Sn112+Sn124, ypol (phi\_random) + zpol (b\_discrete)。 \\
 2. breakup 提取: \texttt{breakup\_nn\_targetframe\_20260607\_180428} (2026-06-07 18:04)。 \\
 3. NEBULA-Plus + PDC NN joint 重建: \texttt{nebulaplus\_nn\_joint\_20260609\_012854} (2026-06-09 01:28)。 \\
-所有图表脚本 (\texttt{make\_cut\_diagnostics\_figures.py}, \texttt{plot\_nebulaplus\_reco.py}) 用 uproot 直接读第 3 级的 176 个 \texttt{*\_reco.root} 文件 (\texttt{recoTree})，过滤 \texttt{truth\_has\_proton \& truth\_has\_neutron \& nn\_status==0}。Sn124 事件数: ypol $1.68\times10^6$ (16 文件)，zpol $3.75\times10^4$ (160 文件)。
+所有图表脚本 (\texttt{make\_cut\_diagnostics\_figures.py}, \texttt{plot\_nebulaplus\_reco.py}) 用 uproot 直接读第 3 级的 176 个 \texttt{*\_reco.root} 文件 (\texttt{recoTree})，过滤 \texttt{truth\_has\_proton \& truth\_has\_neutron \& nn\_status==0}。Sn112 事件数: ypol $1.70\times10^6$ (8 文件)，zpol $6.38\times10^4$ (80 文件)；Sn124 事件数: ypol $1.68\times10^6$ (8 文件)，zpol $3.75\times10^4$ (80 文件)。
 
 \section*{结论}
 
 当前模拟和重建样本支持下面的判断。
 
 \begin{enumerate}
-  \item 以 Sn124 为主靶时，\texttt{tight + |p\_x,n| < 60 MeV/c} 的 folded visible-window observable 仍保留明显的 $\gamma$ 依赖。ypol 中 folded reco 的 $R$ 从 $\gamma=0.5$ 到 $0.8$ 约为 $12.48 \to 4.99$；zpol 约为 $6.38 \to 0.56$。
-  \item 在 15 mm 直径 Sn124 靶、1.2 g 库存、$1.0\times 10^7$ pps、16 h 的 planning anchor 下，即使用当前模拟给出的保守 usable-event survival，ypol 仍约有 $2.75\times 10^5$ 个可用 $R$ 事件，zpol 约有 $1.88\times 10^6$ 个。
-  \item 当前模型点之间最难分开的相邻 $\gamma$ 间隔是 ypol 的 $g070 \to g080$，按纯统计 3$\sigma$ 只需要约 $2.8\times 10^3$ 个 usable $R$ 事件。统计量不是主要瓶颈。
+  \item 以 Sn124 为主靶时，\texttt{tight + |p\_x,n| < 60 MeV/c} 的 folded visible-window observable 仍保留明显的 $\gamma$ 依赖。ypol 中 folded reco 的 $R$ 从 $\gamma=0.5$ 到 $0.8$ 约为 $12.48 \to 4.99$；zpol 约为 $6.38 \to 0.56$。Sn112 同口径也已计算: ypol 约为 $8.64 \to 5.80$；zpol 约为 $1.45 \to 0.25$。
+  \item 在 15 mm 直径 Sn124 靶、1.2 g 库存、$1.0\times 10^7$ pps、16 h 的 planning anchor 下，即使用当前模拟给出的保守 usable-event survival，Sn124 ypol 仍约有 $2.75\times 10^5$ 个可用 $R$ 事件，Sn124 zpol 约有 $1.88\times 10^6$ 个。Sn112 若暂用同库存 atom-density scaling placeholder，则 ypol 约有 $2.21\times10^5$ 个，zpol 约有 $1.10\times10^6$ 个。
+  \item Sn124 当前模型点之间最难分开的相邻 $\gamma$ 间隔是 ypol 的 $g070 \to g080$，按纯统计 3$\sigma$ 只需要约 $2.8\times 10^3$ 个 usable $R$ 事件。Sn112 最难的是 ypol $g070 \to g080$，需要约 $1.04\times10^5$ 个 usable $R$ 事件；在上述 placeholder 下统计上仍可分开，但裕量只有约 $2.1\times$，明显弱于 Sn124。
   \item 主要风险不是统计，而是 detector folding 的系统误差。新的 diagnostics 已经把 event-selection survival、neutron $p_x$--$p_y$ efficiency、$p_{x,n}$ 和 $\Delta p_x$ response matrix、reaction-plane migration、sign migration、最终 $R$ ladder 分开画出。truth $R$ 和 reco $R$ 不是同一个物理量；当前最稳的路线是把每个理论 $\gamma$ 都通过同一套 Geant4 + reconstruction chain folding 后再和实验数据比较。
   \item PDC 几何按最终生效配置处理: NEBULA-Plus macro 在执行基础几何后显式设置 PDC angle 为 69 deg 并 \texttt{Update}。日志里的 65 deg 是前序设置，后续被 69 deg 覆盖。
 \end{enumerate}
@@ -91,26 +91,34 @@
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\linewidth]{sn124_tight_px60_r_vs_gamma_expected_stat.png}
-  \caption{Sn124, tight, $|p_{x,n}|<60$ MeV/$c$ 的 truth 与 folded reco $R(\gamma)$。}
+  \includegraphics[width=\linewidth]{sn112_sn124_tight_px60_r_vs_gamma_expected_stat.png}
+  \caption{Sn112/Sn124, tight, $|p_{x,n}|<60$ MeV/$c$ 的 truth 与 folded reco $R(\gamma)$。}
 \end{figure}
 
-Sn124, \texttt{tight + |p\_x,n| < 60 MeV/c}, folded reco plane:
+Sn112/Sn124, \texttt{tight + |p\_x,n| < 60 MeV/c}, folded reco plane:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{llrrrrr}
+\begin{tabular}{lllrrrrr}
 \toprule
-pol & $\gamma$ & $N_{+}$ & $N_{-}$ & $R_{\mathrm{folded}}$ & $\sigma(R)_{\mathrm{sim}}$ & $\sigma(R)_{16\mathrm{h}}$ \\
+target & pol & $\gamma$ & $N_{+}$ & $N_{-}$ & $R_{\mathrm{folded}}$ & $\sigma(R)_{\mathrm{sim}}$ & $\sigma(R)_{16\mathrm{h}}$ \\
 \midrule
-ypol & 0.5 & 2134 & 171 & 12.48 & 0.99 & 0.091 \\
-ypol & 0.6 & 2147 & 275 & 7.81 & 0.50 & 0.047 \\
-ypol & 0.7 & 2093 & 358 & 5.85 & 0.33 & 0.032 \\
-ypol & 0.8 & 1948 & 390 & 4.99 & 0.28 & 0.026 \\
-zpol & 0.5 & 306 & 48 & 6.38 & 0.99 & 0.014 \\
-zpol & 0.6 & 208 & 67 & 3.10 & 0.44 & 0.005 \\
-zpol & 0.7 & 214 & 129 & 1.66 & 0.18 & 0.0025 \\
-zpol & 0.8 & 171 & 307 & 0.56 & 0.053 & 0.0008 \\
+Sn112 & ypol & 0.5 & 1521 & 176 & 8.64 & 0.69 & 0.060 \\
+Sn112 & ypol & 0.6 & 1629 & 231 & 7.05 & 0.50 & 0.045 \\
+Sn112 & ypol & 0.7 & 1458 & 245 & 5.95 & 0.41 & 0.036 \\
+Sn112 & ypol & 0.8 & 1478 & 255 & 5.80 & 0.39 & 0.035 \\
+Sn112 & zpol & 0.5 & 80 & 55 & 1.45 & 0.25 & 0.0028 \\
+Sn112 & zpol & 0.6 & 112 & 155 & 0.72 & 0.090 & 0.0014 \\
+Sn112 & zpol & 0.7 & 95 & 250 & 0.38 & 0.046 & 0.0008 \\
+Sn112 & zpol & 0.8 & 111 & 443 & 0.25 & 0.027 & 0.0006 \\
+Sn124 & ypol & 0.5 & 2134 & 171 & 12.48 & 0.99 & 0.091 \\
+Sn124 & ypol & 0.6 & 2147 & 275 & 7.81 & 0.50 & 0.047 \\
+Sn124 & ypol & 0.7 & 2093 & 358 & 5.85 & 0.33 & 0.032 \\
+Sn124 & ypol & 0.8 & 1948 & 390 & 4.99 & 0.28 & 0.026 \\
+Sn124 & zpol & 0.5 & 306 & 48 & 6.38 & 0.99 & 0.014 \\
+Sn124 & zpol & 0.6 & 208 & 67 & 3.10 & 0.44 & 0.005 \\
+Sn124 & zpol & 0.7 & 214 & 129 & 1.66 & 0.18 & 0.0025 \\
+Sn124 & zpol & 0.8 & 171 & 307 & 0.56 & 0.053 & 0.0008 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -137,40 +145,45 @@ Sn124 1.2 g 库存下的 15 mm 圆盘:
   \item detected coincidence rate: 843 Hz
   \item 16 h detected coincidences: $4.86\times 10^7$
 \end{itemize}
+Sn112 的 16 h usable 事件数在本节只使用同库存 atom-density scaling placeholder ($124/112$)，尚未替代为 Sn112 自己的 target-specific breakup cross section。
 
 \subsection{QMD 样本量与通过率}
 
-当前画图所用的 QMD 样本 (Sn124，4 个 $\gamma$ 点求和) 在两个极化方向上极不均衡:
+当前画图所用的 QMD 样本 (4 个 $\gamma$ 点求和) 在两个极化方向上极不均衡:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lrrrrr}
+\begin{tabular}{llrrrrr}
 \toprule
-pol & $N_{\mathrm{raw}}$ (QMD) & $N_{\mathrm{tight}}$ & $N_{\mathrm{reco}}$(px60) & raw$\to$tight & raw$\to$reco \\
+target & pol & $N_{\mathrm{raw}}$ (QMD) & $N_{\mathrm{tight}}$ & $N_{\mathrm{reco}}$(px60) & raw$\to$tight & raw$\to$reco \\
 \midrule
-ypol & $1.68\times10^6$ & $4.36\times10^4$ & $9.52\times10^3$ & 2.59\% & 0.566\% \\
-zpol & $3.75\times10^4$ & $6.04\times10^3$ & $1.45\times10^3$ & 16.1\% & 3.87\% \\
+Sn112 & ypol & $1.70\times10^6$ & $4.78\times10^4$ & $6.99\times10^3$ & 2.81\% & 0.411\% \\
+Sn112 & zpol & $6.38\times10^4$ & $9.50\times10^3$ & $1.30\times10^3$ & 14.9\% & 2.04\% \\
+Sn124 & ypol & $1.68\times10^6$ & $4.36\times10^4$ & $9.52\times10^3$ & 2.59\% & 0.566\% \\
+Sn124 & zpol & $3.75\times10^4$ & $6.04\times10^3$ & $1.45\times10^3$ & 16.1\% & 3.87\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-ypol 生成了 $1.68\times10^6$ 个 QMD 事例，zpol 只有 $3.75\times10^4$ 个 (相差 45 倍)。zpol 的通过率更高 (16.1\% vs 2.59\%)，但 raw 样本太小，导致当前 zpol 图的 MC 统计误差偏大 ($\sigma(R)_{\mathrm{sim}}\sim0.05$--$0.99$，见表 1)。$N_{\mathrm{reco}}$ 是当前 tight-px60 图实际使用的 usable $R$ 事件数。
+Sn124 的 zpol raw 样本最小，只有 $3.75\times10^4$ 个；Sn112 zpol 略大，为 $6.38\times10^4$ 个。$N_{\mathrm{reco}}$ 是当前 tight-px60 图实际使用的 usable $R$ 事件数。
 
 把实验 16 h 的 expected usable 事件和当前 MC 画图统计直接对比:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lrrrrr}
+\begin{tabular}{llrrrrr}
 \toprule
-pol & useful fraction & $N_{\mathrm{sim}}$ (当前图) & 16 h usable & 16 h $/$ $N_{\mathrm{sim}}$ & worst 3$\sigma$ $N_{\mathrm{req}}$ \\
+target & pol & useful fraction & $N_{\mathrm{sim}}$ (当前图) & 16 h usable & 16 h $/$ $N_{\mathrm{sim}}$ & worst 3$\sigma$ $N_{\mathrm{req}}$ \\
 \midrule
-ypol & 0.00566 & $9.52\times10^3$ & $2.75\times10^5$ & $\sim$29$\times$ & $2.77\times10^3$ \\
-zpol & 0.03869 & $1.45\times10^3$ & $1.88\times10^6$ & $\sim$1.3$\times10^3\times$ & $1.31\times10^2$ \\
+Sn112 & ypol & 0.00411 & $6.99\times10^3$ & $2.21\times10^5$ & $\sim$32$\times$ & $1.04\times10^5$ \\
+Sn112 & zpol & 0.0204 & $1.30\times10^3$ & $1.10\times10^6$ & $\sim$840$\times$ & $2.93\times10^2$ \\
+Sn124 & ypol & 0.00566 & $9.52\times10^3$ & $2.75\times10^5$ & $\sim$29$\times$ & $2.77\times10^3$ \\
+Sn124 & zpol & 0.03869 & $1.45\times10^3$ & $1.88\times10^6$ & $\sim$1.3$\times10^3\times$ & $1.31\times10^2$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-16 h 束流下 ypol 的 usable 统计是当前图的 $\sim$29 倍，zpol 是 $\sim$1300 倍。useful fraction $f_{\mathrm{useful}}=N_{\mathrm{reco}}/N_{\mathrm{raw}}$ 把 detected coincidences 折算到 usable $R$ 事件: $N_{\mathrm{usable}}=4.86\times10^7\times f_{\mathrm{useful}}$。zpol 的 $\sim$1300 倍增益尤其关键: 当前 zpol MC 严重欠采样 ($1.45\times10^3$ usable 事件)，实验会大幅改善其精度。
+useful fraction $f_{\mathrm{useful}}=N_{\mathrm{reco}}/N_{\mathrm{raw}}$ 把 detected coincidences 折算到 usable $R$ 事件。Sn112 的 16 h usable 数值使用 $4.86\times10^7\times(124/112)\times f_{\mathrm{useful}}$；Sn124 使用 $4.86\times10^7\times f_{\mathrm{useful}}$。zpol 的实验统计增益尤其大；Sn112 ypol 的高 $\gamma$ 间隔统计裕量则明显更紧。
 
 \subsection{统计误差推导}
 
@@ -200,12 +213,30 @@ zpol & g070$\to$g080 & 1.66 & 0.56 & 1.10 & 36 \\
 \end{tabular}
 \end{table}
 
-最难区分的间隔是 ypol g070$\to$g080 ($\bar R=5.42$, $|\Delta R|=0.85$, 需 $2.77\times10^3$ 事件)；zpol 最难是 g050$\to$g060 ($\bar R=4.74$, $|\Delta R|=3.27$, 需 131)。useful-event 外推链为
+Sn112 的同口径逐间隔结果为:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrrrr}
+\toprule
+pol & 间隔 & $R_{\mathrm{left}}$ & $R_{\mathrm{right}}$ & $|\Delta R|$ & $N_{\mathrm{req}}(3\sigma)$ \\
+\midrule
+ypol & g050$\to$g060 & 8.64 & 7.05 & 1.59 & $2.19\times10^3$ \\
+ypol & g060$\to$g070 & 7.05 & 5.95 & 1.10 & $2.72\times10^3$ \\
+ypol & g070$\to$g080 & 5.95 & 5.80 & 0.15 & $1.04\times10^5$ \\
+zpol & g050$\to$g060 & 1.45 & 0.72 & 0.73 & 80 \\
+zpol & g060$\to$g070 & 0.72 & 0.38 & 0.34 & 102 \\
+zpol & g070$\to$g080 & 0.38 & 0.25 & 0.13 & 293 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Sn124 最难区分的间隔是 ypol g070$\to$g080 ($\bar R=5.42$, $|\Delta R|=0.85$, 需 $2.77\times10^3$ 事件)；Sn112 最难区分的间隔也是 ypol g070$\to$g080 ($|\Delta R|=0.15$, 需 $1.04\times10^5$ 事件)。useful-event 外推链为
 \[
   N_{\mathrm{usable}} = \mathrm{rate}\times T \times f_{\mathrm{useful}}, \qquad
   f_{\mathrm{useful}} = N_{\mathrm{reco\_plane}}(\mathrm{tight\,px60})/N_{\mathrm{raw}},
 \]
-ypol $f_{\mathrm{useful}}=0.00566$ 给 $N_{\mathrm{usable}}=4.86\times10^7\times0.00566\approx2.75\times10^5$；zpol $f_{\mathrm{useful}}=0.0387$ 给 $1.88\times10^6$。可用量与所需量之比: ypol $\approx 99\times$ (约两个数量级)，zpol $\approx 1.4\times10^4\times$ (约四个数量级)。
+Sn124 ypol $f_{\mathrm{useful}}=0.00566$ 给 $N_{\mathrm{usable}}=4.86\times10^7\times0.00566\approx2.75\times10^5$；Sn124 zpol $f_{\mathrm{useful}}=0.0387$ 给 $1.88\times10^6$。Sn112 在 atom-density scaling placeholder 下，ypol 为 $2.21\times10^5$，zpol 为 $1.10\times10^6$。
 
 \subsection{统计 vs 系统对照}
 
@@ -228,11 +259,17 @@ $\Delta R_{\mathrm{between}\,\gamma}$ (最难间隔 g070$\to$g080) & 0.85 \\
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.9\linewidth]{sn124_beamtime_reach_tight_px60.png}
+ \includegraphics[width=0.9\linewidth]{sn124_beamtime_reach_tight_px60.png}
   \caption{Sn124 库存靶方案下，tight px60 visible-window selection 后的 usable $R$ event reach。}
 \end{figure}
 
-即使采用 20 mm 圆盘、同样 1.2 g 库存，16 h 后 ypol usable $R$ events 仍在 $10^5$ 量级以上。统计上可以做 $\gamma$ 约束；最终误差预算会由 detector response、neutron efficiency 和理论模型 folding 误差控制。
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{sn112_beamtime_reach_tight_px60.png}
+  \caption{Sn112 库存靶方案下，tight px60 visible-window selection 后的 usable $R$ event reach；rate 使用 atom-density scaling placeholder。}
+\end{figure}
+
+即使采用 20 mm 圆盘、同样 1.2 g 库存，16 h 后 Sn124 和 Sn112 ypol usable $R$ events 都在 $10^5$ 量级以上。Sn124 的相邻 $\gamma$ 统计裕量很大；Sn112 ypol 的 $g070\to g080$ 间隔较窄，统计裕量只有约 $2.1\times$，因此更依赖 detector/model folding 的系统控制。
 
 pile-up 方面，旧 planning 的 3 mm reference thickness 下每 bucket detected coincidence mean 约 $9.16\times 10^{-5}$。15 mm 库存方案 rate 更低，因此 single-bucket pile-up 不是当前主瓶颈。仍需检查电子学积分窗是否跨多个 bucket。
 
@@ -241,7 +278,7 @@ pile-up 方面，旧 planning 的 3 mm reference thickness 下每 bucket detecte
 推荐主线如下:
 \begin{enumerate}
   \item 对每个 $\gamma$ 的 QMD 输出，跑同一套 Geant4 几何、NEBULA-Plus detector response、PDC NN proton reconstruction、neutron reconstruction。
-  \item 用同一 selection 定义实验和模型的 folded observable: $|p_{x,n}^{\mathrm{reco}}| < 60$ MeV/$c$，并使用 tight event selection；优先使用 Sn124。
+  \item 用同一 selection 定义实验和模型的 folded observable: $|p_{x,n}^{\mathrm{reco}}| < 60$ MeV/$c$，并使用 tight event selection；Sn124 作为主锚点，Sn112 作为独立同位素通道交叉检查。
   \item 对实验数据构造
   \[
     R_{\mathrm{exp}}
@@ -636,7 +673,7 @@ $\Delta p_x$ 使用的旋转是
 当前不能过度宣称的部分:
 \begin{itemize}
   \item $\eta_{\mathrm{coin}}=4.65\%$ 仍是 manuscript planning anchor。本地 selected-breakup validation 可复现的是约 37.9\% acceptance，两者口径不同，proposal 里必须写清楚。
-  \item Sn112/Sn124 的 target-specific breakup cross section 仍需要用统一 ImQMD shell integration 抽取，而不是只用 Sn124 anchor 平移。
+  \item Sn112/Sn124 的 target-specific breakup cross section 仍需要用统一 ImQMD shell integration 抽取；本文 Sn112 beamtime 数字暂用 atom-density scaling placeholder，不应作为最终 rate 结论。
   \item 还没有真实实验的 neutron efficiency calibration、time offset、threshold、cross-talk、fake neutron 和 accidental background。
   \item detector response 的系统误差还没有通过 toy closure 或 pseudo-data closure 量化。
   \item 当前报告使用的是 simulation truth-defined cuts 和 reco-defined visible window 的混合诊断；最终实验分析要把所有实验端 cuts 写成 reco-only 版本，并用 simulation 做 truth 对照。
@@ -646,7 +683,7 @@ $\Delta p_x$ 使用的旋转是
 
 可以写:
 \begin{quote}
-在 Sn124 上，经过 NEBULA-Plus detector response、PDC NN proton reconstruction 和 neutron reconstruction 后，\texttt{tight + |p\_x,n|<60 MeV/c} 的 folded $R$ observable 仍保留强 $\gamma$ 依赖。按当前 15 mm/1.2 g Sn target、$1.0\times 10^7$ pps、16 h planning，统计量比相邻 $\gamma$ 点 3$\sigma$ 区分所需事件数: ypol 高约两个数量级 ($\sim$99$\times$)，zpol 高约四个数量级 ($\sim$1.4$\times10^4\times$)。因此实验对 $\gamma$ 的约束可行性主要取决于 detector folding 的系统控制，而不是统计量。
+在 Sn124 上，经过 NEBULA-Plus detector response、PDC NN proton reconstruction 和 neutron reconstruction 后，\texttt{tight + |p\_x,n|<60 MeV/c} 的 folded $R$ observable 仍保留强 $\gamma$ 依赖。按当前 15 mm/1.2 g Sn target、$1.0\times 10^7$ pps、16 h planning，Sn124 统计量比相邻 $\gamma$ 点 3$\sigma$ 区分所需事件数: ypol 高约两个数量级 ($\sim$99$\times$)，zpol 高约四个数量级 ($\sim$1.4$\times10^4\times$)。Sn112 同口径 folded $R$ 也已计算；若暂用 atom-density scaling placeholder，ypol 最难间隔仍有约 $2.1\times$ 的统计裕量，zpol 裕量约 $3.7\times10^3\times$。因此实验对 $\gamma$ 的约束可行性主要取决于 detector folding 的系统控制，而不是原始统计量。
 \end{quote}
 
 不应该写:

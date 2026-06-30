@@ -1,6 +1,10 @@
 {
-  "max_N_required_3sigma_ypol":2773.8265389915,
-  "max_N_required_3sigma_zpol":131.3853449563,
-  "expected_N_15mm_16h_ypol":274994.7615827033,
-  "expected_N_15mm_16h_zpol":1879560.0336188267
+  "sn112_max_N_required_3sigma_ypol":104032.029438131,
+  "sn112_expected_N_15mm_16h_ypol":221058.4356797494,
+  "sn112_max_N_required_3sigma_zpol":293.0028571715,
+  "sn112_expected_N_15mm_16h_zpol":1097183.954296421,
+  "sn124_max_N_required_3sigma_ypol":2773.8265389915,
+  "sn124_expected_N_15mm_16h_ypol":274994.7615827033,
+  "sn124_max_N_required_3sigma_zpol":131.3853449563,
+  "sn124_expected_N_15mm_16h_zpol":1879560.0336188267
 }
