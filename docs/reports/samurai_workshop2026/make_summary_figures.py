@@ -43,7 +43,7 @@ def make_main_y_pol(rows: list[dict[str, str]]) -> None:
         linewidth=2.0,
         capsize=4,
         color="#6a6a6a",
-        label="truth fiducial reference",
+        label="truth-side fiducial reference",
     )
     ax.errorbar(
         as_float(y_reco, "gamma_value"),
@@ -53,11 +53,14 @@ def make_main_y_pol(rows: list[dict[str, str]]) -> None:
         linewidth=2.2,
         capsize=4,
         color="#1f77b4",
-        label="fully reconstructed folded observable",
+        label="fully reconstructed folded result",
     )
     ax.set_xlabel(r"symmetry-energy density-dependence parameter $\gamma$")
-    ax.set_ylabel(r"$R_x^{\mathrm{closure}}$")
-    ax.set_title(r"$^{124}$Sn y-pol, tight + $|p_{x,n}^{\mathrm{reco}}|<60$ MeV/$c$")
+    ax.set_ylabel(r"$R_x^{\mathrm{reco,fid}}$")
+    ax.set_title(
+        r"$^{124}$Sn y-pol, truth-assisted tight selection + "
+        r"$|p_{x,n}^{\mathrm{reco}}|<60$ MeV/$c$"
+    )
     ax.grid(True, alpha=0.25)
     ax.legend(frameon=False)
     ax.set_xlim(0.47, 0.83)
@@ -70,8 +73,8 @@ def make_main_y_pol(rows: list[dict[str, str]]) -> None:
         fontsize=9,
         color="#333333",
     )
-    fig.savefig(FIGDIR / "ypol_main_rx_closure.png", dpi=220)
-    fig.savefig(FIGDIR / "ypol_main_rx_closure.pdf")
+    fig.savefig(FIGDIR / "ypol_main_rx_reco_fid.png", dpi=220)
+    fig.savefig(FIGDIR / "ypol_main_rx_reco_fid.pdf")
     plt.close(fig)
 
 
