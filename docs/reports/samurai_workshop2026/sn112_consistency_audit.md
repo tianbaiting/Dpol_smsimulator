@@ -33,7 +33,7 @@ constraint report.
 | gamma grid | 0.5, 0.6, 0.7, 0.8 for both targets |
 | stage | truth and `reco_plane` exported |
 | main observable | folded reco-plane `R_x^{reco,fid}` |
-| selection | truth-assisted tight event-quality selection + reco `|p_x,n^reco| < 60 MeV/c` |
+| selection | truth-defined tight event-quality class + reco `|p_x,n^reco| < 60 MeV/c` fiducial |
 | uncertainty shown | current MC statistics; optional 16 h planning-stat projection |
 
 ## y-pol Folded Reco Values
@@ -61,8 +61,9 @@ main talk, provided the scope is stated clearly:
 
 ## Remaining Caveats
 
-- The event-quality selection is still truth-assisted.
-- A reco-only isotope closure test is still required.
+- The loose/mid/tight event-quality classes are still defined with truth
+  momenta.
+- A closure test with reconstructed event-quality classes is still required.
 - Sn112 beamtime/statistics estimates currently use an atom-density scaling
   placeholder rather than a target-specific breakup cross-section extraction.
 - Detector and model systematic variations are still not included in the

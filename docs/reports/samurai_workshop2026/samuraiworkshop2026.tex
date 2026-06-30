@@ -98,8 +98,8 @@
     \end{column}
   \end{columns}
   \begin{block}{Scope}
-    The observable is fully reconstructed, while the present event-quality
-    selection is still truth-assisted.
+    The observable and px60 fiducial are reconstructed; the present
+    loose/mid/tight event-quality class is still defined with truth momenta.
   \end{block}
   \centering
   \footnotesize
@@ -261,12 +261,12 @@
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \begin{block}{Current closure}
-        reco observable + truth-assisted quality cut
+        reco observable + reco px60 + truth-defined quality class
       \end{block}
     \end{column}
     \begin{column}{0.50\textwidth}
       \begin{block}{Final experimental analysis}
-        reco observable + reco-only quality cut
+        reco observable + reco px60 + reco-defined quality class
       \end{block}
     \end{column}
   \end{columns}
@@ -326,7 +326,7 @@
 
   \vspace{0.05cm}
   \scriptsize
-  Current closure selection: truth-assisted tight event-quality cut +
+  Current closure selection: truth-defined tight event-quality class +
   reconstructed px60 fiducial.
 
   \begin{block}{Takeaway}
@@ -354,8 +354,9 @@
       \end{itemize}
       \begin{block}{Scope}
         \scriptsize
-        Same reconstructed observable and truth-assisted tight selection;
-        Sn112 planning rates still use an atom-density scaling placeholder.
+        Reconstructed observable and reconstructed px60 fiducial; tight
+        event-quality class is still truth-defined. Sn112 planning rates use an
+        atom-density scaling placeholder.
       \end{block}
     \end{column}
   \end{columns}
@@ -385,7 +386,7 @@
   \begin{block}{Systematic priorities}
     neutron efficiency; threshold and time-of-flight $T_0$; cross-talk and fake
     neutrons; backgrounds; $p_{yy}$ polarization; detector alignment; model
-    dependence; reco-only selection migration.
+    dependence; reconstructed quality-class migration.
   \end{block}
 \end{frame}
 
@@ -405,8 +406,8 @@
     \begin{column}{0.50\textwidth}
       \begin{block}{Still required}
         \begin{itemize}
-          \item reco-only event-quality cuts,
-          \item reco-only Sn112/Sn124 isotope closure,
+          \item reco-defined event-quality classes,
+          \item reco-defined Sn112/Sn124 isotope closure,
           \item Sn112 target-specific rate validation,
           \item selection efficiency, purity, and migration,
           \item polarization and detector-systematic pseudo-data tests.
@@ -417,7 +418,7 @@
   \centering
   \footnotesize
   The next decisive analysis is not another truth-level calculation. It is a
-  fully reco-only isotope closure test.
+  closure test with reconstructed quality-class definitions.
 \end{frame}
 
 \begin{frame}{Summary}
@@ -431,8 +432,8 @@
       full proton, neutron, and event-plane reconstruction in the px60 fiducial
       region for $^{124}$Sn.
     \item The experiment should compare reconstructed data with identically
-      folded model predictions; the next step is reco-only isotope closure and
-      detector-systematic validation.
+      folded model predictions; the next step is closure with reconstructed
+      quality classes and detector-systematic validation.
   \end{enumerate}
   \begin{block}{Bottom line}
     The present study establishes detector-level observability, not yet a
@@ -510,8 +511,9 @@
       regularization.
   \end{itemize}
   \begin{block}{Current limitation}
-    The event-quality cut is still truth-assisted; the neutron px60 fiducial and
-    the observable numerator/denominator are reconstructed.
+    The observable numerator/denominator and neutron px60 fiducial are
+    reconstructed. The loose/mid/tight event-quality class is still defined with
+    truth momenta in the current closure.
   \end{block}
 \end{frame}
 
@@ -789,14 +791,14 @@
       geometry/backend & SAMURAI + NEBULA Plus, PDC NN proton, neutron time-of-flight \\
       y-pol $\gpar$ grid & 0.5, 0.6, 0.7, 0.8 for both targets \\
       observable & folded reco-plane $R_x^{\mathrm{reco,fid}}$ for both targets \\
-      selection & truth-assisted tight quality cut + reco px60 fiducial \\
-      remaining caveat & reco-only selection and Sn112 target-specific rate still pending \\
+      selection & truth-defined tight quality class + reco px60 fiducial \\
+      remaining caveat & reco-defined quality class and Sn112 target-specific rate still pending \\
       \bottomrule
     \end{tabular}
   \end{table}
   \begin{block}{Decision}
     A direct y-pol folded-reco isotope plot is now appropriate, with the
-    truth-assisted selection and planning-rate caveats shown explicitly.
+    truth-defined quality-class and planning-rate caveats shown explicitly.
   \end{block}
 \end{frame}
 
@@ -856,8 +858,8 @@
     \end{column}
   \end{columns}
   \vspace{0.12cm}
-  These current event-quality cuts are truth-assisted and must be migrated to
-  reco-only cuts.
+  These current event-quality classes are defined with truth momenta and must be
+  replaced by reconstructed definitions.
 \end{frame}
 
 \begin{frame}{Backup G: y-pol Polarization Monitoring}
@@ -903,12 +905,13 @@
     reconstructed neutron momentum, and reconstructed event plane.
   \end{block}
   \begin{block}{What still uses truth}
-    Event-quality cuts such as transverse balance and near-backscatter
-    selection are currently defined using truth momenta in simulation.
+    Event-quality classes such as transverse balance and near-backscatter
+    selection are currently defined using truth momenta in simulation. The
+    px60 fiducial used for the folded observable is already reconstructed.
   \end{block}
   \begin{block}{Required closure}
-    Re-run with reco-only cuts and compare efficiency, purity, migration, and
-    $\gpar$ ordering against the truth-assisted baseline.
+    Re-run with reconstructed quality-class definitions and compare efficiency,
+    purity, migration, and $\gpar$ ordering against the truth-defined baseline.
   \end{block}
 \end{frame}
 

@@ -65,7 +65,7 @@ def make_main_y_pol(rows: list[dict[str, str]]) -> None:
     ax.set_xlabel(r"symmetry-energy density-dependence parameter $\gamma$")
     ax.set_ylabel(r"$R_x^{\mathrm{reco,fid}}$")
     ax.set_title(
-        r"$^{124}$Sn y-pol, truth-assisted tight selection + "
+        r"$^{124}$Sn y-pol: truth-defined tight quality class; "
         r"$|p_{x,n}^{\mathrm{reco}}|<60$ MeV/$c$"
     )
     ax.grid(True, alpha=0.25)
@@ -110,7 +110,7 @@ def make_isotope_y_pol(rows: list[dict[str, str]]) -> None:
     ax.set_xlabel(r"symmetry-energy density-dependence parameter $\gamma$")
     ax.set_ylabel(r"$R_x^{\mathrm{reco,fid}}$")
     ax.set_title(
-        r"y-pol isotope comparison, truth-assisted tight selection + "
+        r"y-pol isotope comparison: truth-defined tight quality class; "
         r"$|p_{x,n}^{\mathrm{reco}}|<60$ MeV/$c$"
     )
     ax.grid(True, alpha=0.25)

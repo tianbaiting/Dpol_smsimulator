@@ -22,9 +22,10 @@ proton, neutron, and event-plane reconstruction.  The two targets have distinct
 roles: 112Sn is the isotope reference, while 124Sn is the primary neutron-rich
 sensitivity target.
 
-Stress the scope: the observable is reconstructed, but the current event-quality
-selection is still truth-assisted.  This is a detector-level closure study, not
-a complete experimental uncertainty analysis.
+Stress the scope: the observable and px60 fiducial are reconstructed, but the
+current loose/mid/tight event-quality class is still defined with truth
+momenta.  This is a detector-level closure study, not a complete experimental
+uncertainty analysis.
 
 ## Page 3 -- Physical Picture: Isovector Reorientation
 
@@ -106,10 +107,10 @@ gamma ordering remains.
 
 This is the main result.
 
-Point out the label: current closure selection means truth-assisted tight
-event-quality cut plus reconstructed px60 fiducial.  The plotted reconstructed
-points use reconstructed proton momentum, reconstructed neutron momentum, and
-the reconstructed event plane.
+Point out the label: current closure selection means a truth-defined tight
+event-quality class plus reconstructed px60 fiducial.  The plotted
+reconstructed points use reconstructed proton momentum, reconstructed neutron
+momentum, and the reconstructed event plane.
 
 The 124Sn folded observable keeps a monotonic gamma ordering.  Error bars are
 current Monte Carlo statistics only.  Do not call this an experimental
@@ -127,9 +128,9 @@ Read the plot qualitatively: both isotopes retain a visible y-pol gamma ordering
 after folding and full momentum reconstruction.  The Sn112 high-gamma interval
 is much narrower, so it is more sensitive to detector and model systematics.
 
-Keep the caveat visible: this is still a truth-assisted tight event-quality
-selection, and Sn112 planning rates currently use an atom-density scaling
-placeholder.
+Keep the caveat visible: the observable and px60 fiducial are reconstructed,
+but the tight event-quality class is still truth-defined.  Sn112 planning rates
+currently use an atom-density scaling placeholder.
 
 ## Page 12 -- Statistical Scale versus Experimental Systematics
 
@@ -142,7 +143,8 @@ usable y-pol events.
 
 The important message is that statistics are unlikely to be the dominant
 limitation.  Detector response, neutron efficiency, polarization, backgrounds,
-model dependence, and reco-only selection migration are the real priorities.
+model dependence, and reconstructed quality-class migration are the real
+priorities.
 
 ## Page 13 -- Current Status and Next Closure Step
 
@@ -153,9 +155,9 @@ survives detector folding; Sn112 now provides a same-current-chain isotope
 reference; px60 provides a controlled fiducial region; folded model comparison
 is the right strategy.
 
-Still required: reco-only cuts, efficiency and purity studies, Sn112
-target-specific rate validation, polarization uncertainty propagation, and
-detector-systematic pseudo-data tests.
+Still required: reconstructed event-quality classes, efficiency and purity
+studies, Sn112 target-specific rate validation, polarization uncertainty
+propagation, and detector-systematic pseudo-data tests.
 
 ## Page 14 -- Summary
 
@@ -244,6 +246,7 @@ complex, not impossible.
 
 ## Pages 39--40 -- Backup H: Systematics and Future Closure
 
-These are the final caveat slides.  Current event-quality cuts are
-truth-assisted.  The decisive next analysis is a reco-only closure test with
-detector and model variations.
+These are the final caveat slides.  Current event-quality classes are
+truth-defined, while the observable and px60 fiducial are already reconstructed.
+The decisive next analysis is a closure test with reconstructed quality-class
+definitions and detector/model variations.
