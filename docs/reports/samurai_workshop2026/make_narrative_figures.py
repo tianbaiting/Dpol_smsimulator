@@ -40,6 +40,7 @@ REPORT = ROOT / "docs/reports/samurai_workshop2026"
 FIGDIR = REPORT / "figures"
 ISO_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/sn112_sn124_tight_px60_r_table.csv"
 EFF_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/neutron_sign_efficiency_summary.csv"
+SEP_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/sn124_tight_px60_gamma_separation.csv"
 
 # Consistent identity across every figure: Sn112 and Sn124 always look the same.
 STYLE = {
@@ -291,6 +292,44 @@ def make_zpol_inset() -> None:
     plt.close(fig)
 
 
+def make_statistics_reach() -> None:
+    """Slide 10: statistics required vs. beamtime delivered.
+
+    Reads the Sn124 y-pol gamma-separation table.  Bars = usable events needed
+    for a 3-sigma separation of adjacent gamma intervals; the dashed line is the
+    16 h / 15 mm planning anchor.  The anchor sits about two orders of magnitude
+    above the hardest interval, i.e. statistics are not the bottleneck.
+    """
+    rows = [r for r in read_rows(SEP_TABLE) if r["pol"] == "ypol"]
+    rows = sorted(rows, key=lambda r: float(r["N_required_3sigma"]))
+    labels = [
+        r["left_gamma"].replace("g0", "0.") + r"$\to$" + r["right_gamma"].replace("g0", "0.")
+        for r in rows
+    ]
+    n_req = [float(r["N_required_3sigma"]) for r in rows]
+    anchor = float(rows[0]["expected_N_15mm_16h"])
+
+    fig, ax = plt.subplots(figsize=(7.2, 3.9), constrained_layout=True)
+    bars = ax.bar(labels, n_req, color=["#9ecae1", "#6baed6", "#3182bd"], width=0.62)
+    ax.axhline(anchor, color="#d62728", linewidth=2.0, linestyle="--",
+               label=r"16 h beamtime, 15 mm $^{124}$Sn  ($\approx 2.75\times10^5$ usable)")
+    ax.set_yscale("log")
+    ax.set_ylabel("usable y-pol events", fontsize=11)
+    ax.set_title(r"Statistics needed (3$\sigma$, adjacent $\gamma$) vs. beamtime --- $^{124}$Sn",
+                 fontsize=11.5, fontweight="bold")
+    ax.grid(True, axis="y", which="both", alpha=0.25)
+    ax.legend(frameon=False, fontsize=9, loc="upper left")
+    for bar, val in zip(bars, n_req):
+        ax.text(bar.get_x() + bar.get_width() / 2, val * 1.18,
+                f"{val:.0f}" if val < 1000 else f"{val/1000:.2f}$\\times10^3$",
+                ha="center", va="bottom", fontsize=9)
+    ax.text(len(rows) - 0.5, anchor * 0.55, r"$\sim100\times$ margin",
+            ha="right", va="top", color="#d62728", fontsize=9.5, fontweight="bold")
+    fig.savefig(FIGDIR / "statistics_reach.png", dpi=220, bbox_inches="tight")
+    fig.savefig(FIGDIR / "statistics_reach.pdf", bbox_inches="tight")
+    plt.close(fig)
+
+
 def main() -> None:
     FIGDIR.mkdir(parents=True, exist_ok=True)
     make_ideal_prediction()
@@ -298,6 +337,7 @@ def main() -> None:
     make_efficiency_balance()
     make_timeline()
     make_zpol_inset()
+    make_statistics_reach()
 
 
 if __name__ == "__main__":
