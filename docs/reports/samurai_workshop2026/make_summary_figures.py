@@ -19,6 +19,7 @@ REPORT = ROOT / "docs/reports/samurai_workshop2026"
 FIGDIR = REPORT / "figures"
 R_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/sn124_tight_px60_r_table.csv"
 SEP_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/sn124_tight_px60_gamma_separation.csv"
+ISOTOPE_R_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/sn112_sn124_tight_px60_r_table.csv"
 
 
 def read_rows(path: Path) -> list[dict[str, str]]:
@@ -31,8 +32,14 @@ def as_float(rows: list[dict[str, str]], key: str) -> list[float]:
 
 
 def make_main_y_pol(rows: list[dict[str, str]]) -> None:
-    y_truth = [r for r in rows if r["pol"] == "ypol" and r["stage"] == "truth"]
-    y_reco = [r for r in rows if r["pol"] == "ypol" and r["stage"] == "reco_plane"]
+    y_truth = [
+        r for r in rows
+        if r["pol"] == "ypol" and r["stage"] == "truth" and r.get("target", "Sn124E190") == "Sn124E190"
+    ]
+    y_reco = [
+        r for r in rows
+        if r["pol"] == "ypol" and r["stage"] == "reco_plane" and r.get("target", "Sn124E190") == "Sn124E190"
+    ]
 
     fig, ax = plt.subplots(figsize=(7.0, 4.1), constrained_layout=True)
     ax.errorbar(
@@ -75,6 +82,51 @@ def make_main_y_pol(rows: list[dict[str, str]]) -> None:
     )
     fig.savefig(FIGDIR / "ypol_main_rx_reco_fid.png", dpi=220)
     fig.savefig(FIGDIR / "ypol_main_rx_reco_fid.pdf")
+    plt.close(fig)
+
+
+def make_isotope_y_pol(rows: list[dict[str, str]]) -> None:
+    fig, ax = plt.subplots(figsize=(7.0, 4.1), constrained_layout=True)
+    styles = {
+        "Sn112E190": ("#2ca02c", "o", r"$^{112}$Sn folded reco"),
+        "Sn124E190": ("#1f77b4", "s", r"$^{124}$Sn folded reco"),
+    }
+    for target, (color, marker, label) in styles.items():
+        sub = [
+            r for r in rows
+            if r["target"] == target and r["pol"] == "ypol" and r["stage"] == "reco_plane"
+        ]
+        sub = sorted(sub, key=lambda r: float(r["gamma_value"]))
+        ax.errorbar(
+            as_float(sub, "gamma_value"),
+            as_float(sub, "R"),
+            yerr=as_float(sub, "sigma_R_sim"),
+            marker=marker,
+            linewidth=2.2,
+            capsize=4,
+            color=color,
+            label=label,
+        )
+    ax.set_xlabel(r"symmetry-energy density-dependence parameter $\gamma$")
+    ax.set_ylabel(r"$R_x^{\mathrm{reco,fid}}$")
+    ax.set_title(
+        r"y-pol isotope comparison, truth-assisted tight selection + "
+        r"$|p_{x,n}^{\mathrm{reco}}|<60$ MeV/$c$"
+    )
+    ax.grid(True, alpha=0.25)
+    ax.legend(frameon=False)
+    ax.set_xlim(0.47, 0.83)
+    ax.set_ylim(4.0, 13.5)
+    ax.text(
+        0.48,
+        4.35,
+        "Folded reco points use reconstructed proton, neutron, and event plane.\n"
+        "Error bars: current MC statistics only.",
+        fontsize=9,
+        color="#333333",
+    )
+    fig.savefig(FIGDIR / "ypol_isotope_rx_reco_fid.png", dpi=220)
+    fig.savefig(FIGDIR / "ypol_isotope_rx_reco_fid.pdf")
     plt.close(fig)
 
 
@@ -135,7 +187,9 @@ def main() -> None:
     FIGDIR.mkdir(parents=True, exist_ok=True)
     rows = read_rows(R_TABLE)
     sep_rows = read_rows(SEP_TABLE)
+    isotope_rows = read_rows(ISOTOPE_R_TABLE)
     make_main_y_pol(rows)
+    make_isotope_y_pol(isotope_rows)
     make_asymmetry(rows)
     make_required_events(sep_rows)
 

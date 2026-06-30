@@ -117,16 +117,19 @@ significance or a truth-level asymmetry.
 
 ## Page 11 -- Isotope Reference: 112Sn versus 124Sn
 
-This slide explains why 112Sn matters and why the main deck does not show a
-direct numerical isotope comparison yet.
+This slide now shows the same-current-chain y-pol isotope comparison.
 
-Say that 124Sn has the same-chain full-reco closure shown in the main result.
-The production description includes both Sn isotopes, but the locally exported
-tight-px60 folded tables available for this deck are Sn124-only.  Therefore a
-direct Sn112/Sn124 full-reco plot is not shown.
+Say that 124Sn remains the primary neutron-rich sensitivity target.  Sn112 is
+the isotope reference and now has an exported tight-px60 folded-reco table from
+the same gamma-constraint workflow.
 
-The conclusion is constructive: the identical-chain Sn112 closure is the needed
-next step for a strict isotope comparison.
+Read the plot qualitatively: both isotopes retain a visible y-pol gamma ordering
+after folding and full momentum reconstruction.  The Sn112 high-gamma interval
+is much narrower, so it is more sensitive to detector and model systematics.
+
+Keep the caveat visible: this is still a truth-assisted tight event-quality
+selection, and Sn112 planning rates currently use an atom-density scaling
+placeholder.
 
 ## Page 12 -- Statistical Scale versus Experimental Systematics
 
@@ -146,12 +149,13 @@ model dependence, and reco-only selection migration are the real priorities.
 Separate established results from required next work.
 
 Established: the y-pol observable is reconstructable; Sn124 gamma ordering
-survives detector folding; px60 provides a controlled fiducial region; folded
-model comparison is the right strategy.
+survives detector folding; Sn112 now provides a same-current-chain isotope
+reference; px60 provides a controlled fiducial region; folded model comparison
+is the right strategy.
 
-Still required: reco-only cuts, common-chain Sn112/Sn124 closure, efficiency and
-purity studies, polarization uncertainty propagation, and detector-systematic
-pseudo-data tests.
+Still required: reco-only cuts, efficiency and purity studies, Sn112
+target-specific rate validation, polarization uncertainty propagation, and
+detector-systematic pseudo-data tests.
 
 ## Page 14 -- Summary
 
@@ -168,7 +172,7 @@ complete experimental uncertainty budget.
 
 ## Page 15 -- Thanks
 
-Pause for questions.  If asked about missing direct isotope comparison, go to
+Pause for questions.  If asked about the isotope comparison details, go to
 Backup E.  If asked about z-pol, go to Backup F.  If asked about event-plane
 reconstruction, go to Backup B.
 
@@ -223,9 +227,9 @@ uncertainties only.
 
 ## Pages 33--34 -- Backup E: 112Sn and Isotope Comparison
 
-Use these to explain the current Sn112 status.  Existing Sn112 material is a
-physics-motivation reference, but not a direct quantitative comparison with the
-current Sn124 NEBULA Plus closure.
+Use these to explain both the earlier Sn112 reconstruction-history plots and the
+current common-chain audit.  The main isotope comparison now uses the exported
+tight-px60 folded-reco table for both Sn112 and Sn124.
 
 ## Pages 35--36 -- Backup F: z-pol
 

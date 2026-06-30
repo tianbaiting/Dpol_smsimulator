@@ -338,34 +338,27 @@
 \end{frame}
 
 \begin{frame}{Isotope Reference: $^{112}$Sn versus $^{124}$Sn}
-  \small
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.48\textwidth}
-      \begin{block}{$^{124}$Sn}
-        Primary neutron-rich sensitivity target.  Same-chain y-pol tight px60
-        full-reco closure is available and shown in the main result.
-      \end{block}
-      \begin{block}{$^{112}$Sn}
-        Isotope reference target.  It tests whether the response follows target
-        neutron excess rather than only generic kinematics or detector effects.
-      \end{block}
+    \begin{column}{0.58\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{ypol_isotope_rx_reco_fid.png}
     \end{column}
-    \begin{column}{0.52\textwidth}
-      \begin{block}{Current audit}
-        The production description includes Sn112 + Sn124, but the locally
-        exported tight-px60 folded tables are Sn124-only.
-      \end{block}
-      \begin{block}{Consequence}
-        A direct quantitative isotope plot is not shown in the main result yet.
-        Full folded Sn112 closure with the identical chain remains to be
-        completed.
+    \begin{column}{0.42\textwidth}
+      \small
+      \begin{itemize}
+        \item $^{124}$Sn remains the primary sensitivity target.
+        \item $^{112}$Sn now has the same tight-px60 folded-reco table.
+        \item Both targets keep a visible y-pol $\gpar$ ordering after folding.
+        \item The high-$\gpar$ Sn112 interval is narrower and more systematics
+          sensitive.
+      \end{itemize}
+      \begin{block}{Scope}
+        \scriptsize
+        Same reconstructed observable and truth-assisted tight selection;
+        Sn112 planning rates still use an atom-density scaling placeholder.
       \end{block}
     \end{column}
   \end{columns}
-  \centering
-  \footnotesize
-  A common detector effect should influence both isotopes; an isovector response
-  should change with target neutron excess.
 \end{frame}
 
 \begin{frame}{Statistical Scale versus Experimental Systematics}
@@ -413,7 +406,8 @@
       \begin{block}{Still required}
         \begin{itemize}
           \item reco-only event-quality cuts,
-          \item full Sn112/Sn124 common-chain closure,
+          \item reco-only Sn112/Sn124 isotope closure,
+          \item Sn112 target-specific rate validation,
           \item selection efficiency, purity, and migration,
           \item polarization and detector-systematic pseudo-data tests.
         \end{itemize}
@@ -763,7 +757,7 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Backup E: $^{112}$Sn Physics-Motivation Reference}
+\begin{frame}{Backup E: Earlier $^{112}$Sn Physics-Motivation Result}
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
       \centering
@@ -771,37 +765,38 @@
     \end{column}
     \begin{column}{0.50\textwidth}
       \small
-      Existing Sn112 information is useful as a physics-motivation reference,
-      but not as a direct quantitative comparison with the current Sn124
-      NEBULA Plus closure.
-      \begin{block}{Reason}
-        The locally exported tight-px60 folded tables are Sn124-only; older
-        Sn112 ROOT files come from a different reconstruction production.
+      This earlier NN-breakup result already showed Sn112/Sn124 reconstruction
+      behavior before the current NEBULA Plus px60 gamma-constraint tables were
+      exported.
+      \begin{block}{Use in this talk}
+        It remains useful as a reconstruction-history and physics-motivation
+        cross-check.  The main isotope statement now uses the current
+        tight-px60 folded-reco table.
       \end{block}
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}{Backup E: Sn112/Sn124 Consistency Audit}
+\begin{frame}{Backup E: Sn112/Sn124 Common-Chain Audit}
   \scriptsize
   \begin{table}
     \centering
-    \begin{tabular}{lll}
+    \begin{tabular}{ll}
       \toprule
-      item & current Sn124 result & Sn112 direct comparison \\
+      item & Sn112/Sn124 status \\
       \midrule
-      production & NEBULA Plus joint 20260609 & described, not exported locally \\
-      geometry & SAMURAI + NEBULA Plus & intended same \\
-      backend & PDC NN + neutron time-of-flight & intended same \\
-      y-pol $\gpar$ grid & 0.5,0.6,0.7,0.8 & intended same \\
-      cut/fiducial & truth-assisted tight + reco px60 & not verified locally \\
-      event plane & reconstructed & not verified locally \\
+      production & NEBULA Plus joint 20260609 tables exported for both targets \\
+      geometry/backend & SAMURAI + NEBULA Plus, PDC NN proton, neutron time-of-flight \\
+      y-pol $\gpar$ grid & 0.5, 0.6, 0.7, 0.8 for both targets \\
+      observable & folded reco-plane $R_x^{\mathrm{reco,fid}}$ for both targets \\
+      selection & truth-assisted tight quality cut + reco px60 fiducial \\
+      remaining caveat & reco-only selection and Sn112 target-specific rate still pending \\
       \bottomrule
     \end{tabular}
   \end{table}
   \begin{block}{Decision}
-    Do not show a direct quantitative isotope plot until Sn112 is exported and
-    checked with the identical chain.
+    A direct y-pol folded-reco isotope plot is now appropriate, with the
+    truth-assisted selection and planning-rate caveats shown explicitly.
   \end{block}
 \end{frame}
 
