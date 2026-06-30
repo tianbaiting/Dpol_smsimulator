@@ -52,11 +52,27 @@ reconstructed; keep the atan2 and rotation details for backup B.
 
 List the three ingredients needed for R_x: proton momentum from drift chambers
 (PDC), neutron momentum from hit position and time of flight (NEBULA + NEBULA
-Plus), and the event plane from the two transverse momenta.  Close by saying
-this study uses y polarization, which is the most mature, while z polarization
-is harder to produce, transport, and monitor.
+Plus), and the event plane from the two transverse momenta.  Conclude that all
+three are reconstructable at SAMURAI.  Do not dwell on y/z-pol here; the next
+slide does.
 
-## Slide 7 -- The Main Challenge: Neutron Acceptance
+## Slide 7 -- Why Start with y Polarization?
+
+Make the case for y-pol first.  z-pol is the cleaner channel: its polarization
+axis lies along the beam and is therefore always inside the reaction plane, so
+there is no event-by-event dilution.  But a longitudinally polarized deuteron
+beam is hard to produce, hard to transport (spin precession in the beamline),
+and hard to monitor ($p_{zz}$ needs absolute, two-angle normalization).  y-pol
+is measurable now: its vertical axis makes the signal modulate as cos(2psi)
+with the angle psi to the reaction plane, which dilutes a naive average, but
+because the reaction plane is reconstructed event by event we select a
+favourable psi window and recover the coherent signal.  LRUD monitoring of
+$p_{yy}$ is mature and the statistics budget (backup G) easily affords the
+angular selection.  Point at the z-pol inset: z-pol also carries a strong gamma
+dependence, so it is a valuable later extension, not abandoned.  Close: y-pol
+is the realistic first stage.
+
+## Slide 8 -- The Main Challenge: Neutron Acceptance
 
 Make one point: neutron efficiency is strongly phase-space dependent, and in a
 wide range one side of the asymmetry becomes almost blind.  Show the efficiency
@@ -66,7 +82,7 @@ in one sentence: each model prediction is passed through the same detector and
 reconstruction and compared directly.  Keep the folding matrix and detailed
 efficiency numbers in backup D and E.
 
-## Slide 8 -- Main Result: the Detector Changes the Scale, Not the Ordering
+## Slide 9 -- Main Result: the Detector Changes the Scale, Not the Ordering
 
 This is the key slide.  Show the before/after double panel: ideal model on the
 left, folded reconstructed on the right, with 112Sn and 124Sn in consistent
@@ -75,7 +91,7 @@ gamma ordering remains visible, and 124Sn keeps the stronger sensitivity while
 112Sn stays a reference.  Emphasise the central result is the survival of the
 ordering, not R_reco = R_truth.  Error bars are current MC statistics only.
 
-## Slide 9 -- What Is Established and What Is Not Yet?
+## Slide 10 -- What Is Established and What Is Not Yet?
 
 Separate established results from required next work.  Established: the
 observable is reconstructed, folding changes the absolute ratio, the gamma and
@@ -86,7 +102,7 @@ pseudo-data closure.  Give the honest scope once, clearly: the observable and
 event plane are reconstructed but the quality class is still truth-defined, so
 this is a detector-level closure study.
 
-## Slide 10 -- Toward the Beamtime: Preparation Timeline
+## Slide 11 -- Toward the Beamtime: Preparation Timeline
 
 Turn the "still required" list into a concrete schedule.  Full simulation and
 the detector-level closure are done now (2026-07).  The remaining hardware is
@@ -98,7 +114,7 @@ into the SAMURAI beamtime, planned for the end of April 2027.  If asked, the
 intermediate phasing is a plan and can shift; only the two anchors (simulation
 done now, beamtime end of April 2027) are firm.
 
-## Slide 11 -- Summary
+## Slide 12 -- Summary
 
 Four points in non-technical language: a polarized deuteron converts an
 isovector force difference into a measurable asymmetry; 124Sn is the main
@@ -107,7 +123,7 @@ gamma and isotope ordering survive; the next step is a fully reconstructed
 closure and detector-systematic validation.  Bottom line: a y-polarized
 deuteron is a realistic first-stage path to testing IVR at SAMURAI.
 
-## Slide 12 -- Thanks
+## Slide 13 -- Thanks
 
 Pause for questions.  Route detailed questions to the backup sections:
 reconstruction performance to backup C, neutron acceptance to backup D, the

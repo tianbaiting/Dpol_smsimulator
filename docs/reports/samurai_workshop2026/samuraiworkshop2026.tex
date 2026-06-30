@@ -128,10 +128,10 @@
     + C\left(\frac{\rho}{\rho_0}\right)^{\gpar} .
   \] 
       \begin{block}{Role of $\gpar$}
-        \small
-        In the ImQMD model, $\gpar$ changes the density dependence of the
-        symmetry energy, and therefore the relative proton--neutron impulse.
-        Different $\gpar$ predicts a different $\Delta p_x$ bias.
+        \footnotesize
+        In ImQMD, $\gpar$ sets the density dependence of the symmetry energy,
+        and therefore the relative proton--neutron impulse; different $\gpar$
+        predicts a different $\Delta p_x$ bias.
       \end{block}
     \end{column}
   \end{columns}
@@ -222,15 +222,55 @@
   \]
   \begin{block}{}
     \small\centering
-    This end-to-end study uses \emph{y} polarization, for which the simulation,
-    reconstruction, and polarization monitoring are currently most mature.
-    A \emph{z}-polarization extension remains physically valuable but harder to
-    produce, transport, and monitor.
+    The three ingredients needed for $R_x$ are all reconstructable at SAMURAI.
   \end{block}
 \end{frame}
 
 %=========================================================================
-% Slide 7 --- The Main Experimental Challenge Is Neutron Acceptance
+% Slide 7 --- Why Start with y Polarization?
+%=========================================================================
+\begin{frame}{Why Start with y Polarization?}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.58\textwidth}
+      \begin{block}{z-pol: cleaner physics, harder experiment}
+        \scriptsize
+        \begin{itemize}
+          \item Polarization axis along the beam $\Rightarrow$ always in the
+                reaction plane, no event-by-event dilution.
+          \item But a longitudinal beam is hard to \emph{produce},
+                \emph{transport} (spin precession), and \emph{monitor}
+                ($p_{zz}$: absolute, two-angle normalization).
+        \end{itemize}
+      \end{block}
+      \begin{block}{y-pol: measurable now}
+        \scriptsize
+        \begin{itemize}
+          \item Vertical axis $\Rightarrow$ signal modulates as
+                $\sim\!\cos(2\psi)$ with the angle $\psi$ to the reaction
+                plane, diluting a naive average.
+          \item The reaction plane is reconstructed event by event, so we
+                select a favorable $\psi$ window and recover the signal;
+                LRUD monitoring of $p_{yy}$ is mature and statistics afford
+                the selection.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \centering
+      \includegraphics[width=0.84\linewidth,keepaspectratio]{zpol_inset.png}\\[0.08cm]
+      {\scriptsize\itshape z-pol also shows a strong $\gpar$ dependence, but is
+      deferred for experimental reasons.}
+    \end{column}
+  \end{columns}
+  \vspace{-0.08cm}
+  \begin{block}{Takeaway}
+    \scriptsize\centering
+    y-pol is the realistic first stage; z-pol is a valuable later extension.
+  \end{block}
+\end{frame}
+
+%=========================================================================
+% Slide 8 --- The Main Experimental Challenge Is Neutron Acceptance
 %=========================================================================
 \begin{frame}{The Main Challenge: Neutron Acceptance}
   \begin{columns}[T,onlytextwidth]
