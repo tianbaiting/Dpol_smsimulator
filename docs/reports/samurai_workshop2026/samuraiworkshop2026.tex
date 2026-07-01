@@ -263,37 +263,58 @@
 \end{frame}
 
 %=========================================================================
-% Slide 8 --- The Main Experimental Challenge Is Neutron Acceptance
+% Slide 8 --- Proton Momentum Reconstruction
 %=========================================================================
-\begin{frame}{The Main Challenge: Neutron Acceptance}
+\begin{frame}{Proton Momentum Reconstruction: RK and NN Cross-Check}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.56\textwidth}
+    \begin{column}{0.60\textwidth}
       \centering
-      \includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{neutron_efficiency_balance.png}
+      \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{proton_residuals_ypol.png}
     \end{column}
-    \begin{column}{0.44\textwidth}
-      \small
+    \begin{column}{0.40\textwidth}
+      \footnotesize
       \begin{itemize}
-        \item Neutron detection efficiency is strongly phase-space dependent.
-        \item In a wide range, one side of the asymmetry becomes almost blind.
-        \item A raw asymmetry there would be dominated by acceptance, not
-              physics.
+        \item The proton momentum comes from the PDC track.
+        \item RK and NN give consistent core residuals in the same QMD
+              kinematic window.
+        \item The NN backend reduces the large-tail contribution that matters
+              for event-by-event reconstruction.
       \end{itemize}
-      \begin{block}{Our choice}
-        \small
-        Quote an observable in a well-covered region,
-        $|p_{x,n}^{\,\mathrm{reco}}|<60$~MeV/$c$, where both sides are seen.
+      \begin{block}{Use in this analysis}
+        \scriptsize
+        The detector-level $R_x$ uses reconstructed proton momentum.  The RK
+        comparison is an independent validation, not a separate analysis path.
       \end{block}
     \end{column}
   \end{columns}
-  \vspace{0.1cm}
-  \small\centering\itshape
-  Instead of correcting data back to an ideal space, each model prediction is
-  passed through the same detector and reconstruction, and compared directly.
 \end{frame}
 
 %=========================================================================
-% Slide 8 --- Main Result: Before and After the Detector
+% Slide 9 --- Neutron Momentum and Event Plane
+%=========================================================================
+\begin{frame}{Neutron Momentum and Event-Plane Reconstruction}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.50\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.49\textheight,keepaspectratio]{neutron_reco_vs_truth_ypol.png}\\[-0.01cm]
+      {\scriptsize Neutron momentum from NEBULA / NEBULA Plus ToF and hit position.}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.49\textheight,keepaspectratio]{dphi_reco_truth_ypol_tight_px60.png}\\[-0.01cm]
+      {\scriptsize Event plane from reconstructed proton and neutron transverse momenta.}
+    \end{column}
+  \end{columns}
+  \vspace{0.02cm}
+  \scriptsize\centering
+  Ideal reference: QMD truth quantities. Detector result: reconstructed
+  observable and fiducial-window quantities.\\
+  Event-quality class is still truth-defined in this version; neutron acceptance
+  is treated as geometry + reconstruction survival, not intrinsic counter efficiency.
+\end{frame}
+
+%=========================================================================
+% Slide 10 --- Main Result: Before and After the Detector
 %=========================================================================
 \begin{frame}{Main Result: the Detector Changes the Scale, Not the Ordering}
   \centering
@@ -599,25 +620,26 @@
   \end{columns}
 \end{frame}
 
-%---- Backup D: neutron acceptance ----
-\begin{frame}{Backup D: Neutron Efficiency vs Phase Space}
+%---- Backup D: neutron geometric and reconstruction acceptance ----
+\begin{frame}{Backup D: Neutron Acceptance vs Phase Space}
   \centering
   \includegraphics[height=0.68\textheight,keepaspectratio]{neutron_efficiency_1d_by_cut_ypol.png}
 
   \vspace{0.08cm}
   \scriptsize
-  Efficiency shape is similar across event-quality cuts; cuts mainly change
-  which phase-space region is populated.
+  This diagnostic includes geometry, hit finding, and reconstruction survival;
+  the important effect is the usable phase-space coverage, not a change in the
+  intrinsic neutron counter efficiency.
 \end{frame}
 
-\begin{frame}{Backup D: 2D Efficiency and Near-Zero Regions}
+\begin{frame}{Backup D: 2D Acceptance and Near-Zero Regions}
   \centering
   \includegraphics[height=0.66\textheight,keepaspectratio]{neutron_efficiency_2d_pxn_vs_dpx_by_cut.png}
 
   \vspace{0.08cm}
   \scriptsize
-  The response is not uniform in $(p_{x,n},\Delta p_x)$; near-zero regions
-  make a naive $1/\epsilon$ correction unstable.
+  The usable response is not uniform in $(p_{x,n},\Delta p_x)$; near-zero
+  coverage regions make a naive acceptance correction unstable.
 \end{frame}
 
 \begin{frame}{Backup D: px60 / px80 / px100}
@@ -640,7 +662,7 @@
   \end{columns}
   \vspace{0.08cm}
   \scriptsize
-  px80 improves over px100, but px60 removes most of the low-efficiency
+  px80 improves over px100, but px60 removes most of the poorly covered
   negative-$p_{x,n}$ branch.
 \end{frame}
 
