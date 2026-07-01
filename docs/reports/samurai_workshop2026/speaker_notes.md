@@ -181,6 +181,7 @@ Use backup only for expert questions.  The backup keeps the full symmetry-energy
 parameterization (A), the exact observable definitions (B), proton/neutron
 residuals and RK-versus-NN (C), the neutron acceptance maps, px60/80/100
 comparison, and selection migration (D), the truth-cut versus reco-cut closure
-(E), the full 112Sn/124Sn tables and bounded asymmetry (F), the statistical planning scale and survival
-flow (G), the z-pol folded results and polarization monitoring (H), and the
-reco-closure and detector-systematic checklists (I).
+(E), the full 112Sn/124Sn tables and bounded asymmetry (F), the statistical
+planning scale and survival flow (G), the z-pol extension status and
+polarization monitoring (H), and the reco-closure and detector-systematic
+checklists (I).

@@ -39,7 +39,6 @@ ROOT = Path(__file__).resolve().parents[3]
 REPORT = ROOT / "docs/reports/samurai_workshop2026"
 FIGDIR = REPORT / "figures"
 ISO_TABLE = REPORT / "data/rx_truth_vs_reco_selection.csv"
-ZPOL_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/sn112_sn124_tight_px60_r_table.csv"
 EFF_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/neutron_sign_efficiency_summary.csv"
 PLANNING_ANCHOR_EVENTS = 2.75e5
 
@@ -284,40 +283,6 @@ def make_timeline() -> None:
     plt.close(fig)
 
 
-def make_zpol_inset() -> None:
-    """Small inset: z-pol folded R_x vs gamma for 124Sn.
-
-    Reads the legacy isotope table (zpol + reco_plane rows).  Purpose: show on
-    the 'Why y-pol first' slide that z-pol carries a visible, even stronger,
-    gamma dependence, but is deferred for experimental reasons.
-    """
-    rows = read_rows(ZPOL_TABLE)
-    sub = sorted(
-        [r for r in rows
-         if r["target"] == "Sn124E190" and r["pol"] == "zpol" and r["stage"] == "reco_plane"],
-        key=lambda r: float(r["gamma_value"]),
-    )
-    gx = np.array([float(r["gamma_value"]) for r in sub])
-    rR = np.array([float(r["R"]) for r in sub])
-    rE = np.array([float(r["sigma_R_sim"]) for r in sub])
-
-    fig, ax = plt.subplots(figsize=(4.3, 3.0), constrained_layout=True)
-    ax.errorbar(gx, rR, yerr=rE, marker="D", linewidth=2.0, capsize=4,
-                color="#9467bd", label=r"$^{124}$Sn z-pol, folded reco")
-    ax.axhline(1.0, color="#888888", linestyle="--", linewidth=1.0)
-    ax.set_xlabel(r"$\gamma$", fontsize=11)
-    ax.set_ylabel(r"$R_x$", fontsize=11)
-    ax.set_title("z-pol: visible signal, deferred", fontsize=11, fontweight="bold")
-    ax.set_xlim(0.46, 0.84)
-    ax.set_xticks([0.5, 0.6, 0.7, 0.8])
-    ax.set_ylim(0.0, 8.5)
-    ax.grid(True, alpha=0.25)
-    ax.text(0.5, 1.25, r"$R_x=1$", fontsize=8, color="#888888")
-    fig.savefig(FIGDIR / "zpol_inset.png", dpi=220, bbox_inches="tight")
-    fig.savefig(FIGDIR / "zpol_inset.pdf", bbox_inches="tight")
-    plt.close(fig)
-
-
 def make_statistics_reach() -> None:
     """Slide 10: statistics required vs. beamtime delivered.
 
@@ -369,7 +334,6 @@ def main() -> None:
     make_ideal_vs_reco()
     make_efficiency_balance()
     make_timeline()
-    make_zpol_inset()
     make_statistics_reach()
 
 

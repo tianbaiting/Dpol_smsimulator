@@ -257,7 +257,7 @@
 %=========================================================================
 \begin{frame}{Why Start with y Polarization?}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.58\textwidth}
+    \begin{column}{0.54\textwidth}
       \begin{block}{z-pol: cleaner physics, harder experiment}
         \scriptsize
         \begin{itemize}
@@ -279,11 +279,19 @@
         \end{itemize}
       \end{block}
     \end{column}
-    \begin{column}{0.42\textwidth}
-      \centering
-      \includegraphics[width=0.84\linewidth,keepaspectratio]{zpol_inset.png}\\[0.08cm]
-      {\scriptsize\itshape z-pol also shows a strong $\gpar$ dependence, but is
-      deferred for experimental reasons.}
+    \begin{column}{0.04\textwidth}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \begin{block}{Current detector-level scope}
+        \scriptsize
+        The reco-cut closure shown in this talk is the y-pol chain:
+        reconstructed proton, neutron, event plane, fiducial, and quality cuts.
+      \end{block}
+      \begin{block}{z-pol status}
+        \scriptsize
+        z-pol remains a valuable extension, but its detector-level $R_x$ curve
+        is not used here until the same reco-cut closure is completed.
+      \end{block}
     \end{column}
   \end{columns}
   \vspace{-0.08cm}
@@ -904,33 +912,32 @@
     \end{column}
   \end{columns}
   \vspace{0.12cm}
-  The detector-level analysis applies these cuts to reconstructed momenta; the
-  virtual-breakup veto removes generator-level unphysical events only.
+  The audited detector-level $R_x$ result in this report is the y-pol reco-cut
+  closure; the z-pol cuts are listed as an extension target.
 \end{frame}
 
-\begin{frame}{Backup H: z-pol Folded Results}
+\begin{frame}{Backup H: z-pol Extension Status}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.50\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{r_ladder_vs_gamma_zpol_tight_px60.png}
+    \begin{column}{0.47\textwidth}
+      \begin{block}{Why keep z-pol?}
+        \scriptsize
+        \begin{itemize}
+          \item The spin axis is along the beam and stays in the reaction plane.
+          \item It avoids the y-pol event-by-event projection dilution.
+          \item It can become a stronger second-stage constraint if production,
+                transport, and monitoring are controlled.
+        \end{itemize}
+      \end{block}
     \end{column}
-    \begin{column}{0.50\textwidth}
-      \scriptsize
-      \begin{table}
-        \centering
-        \begin{tabular}{lrrr}
-          \toprule
-          $\gpar$ & $N_+$ & $N_-$ & $R_{\mathrm{reco}}$ \\
-          \midrule
-          0.5 & 306 & 48 & 6.38 \\
-          0.6 & 208 & 67 & 3.10 \\
-          0.7 & 214 & 129 & 1.66 \\
-          0.8 & 171 & 307 & 0.56 \\
-          \bottomrule
-        \end{tabular}
-      \end{table}
-      z-pol is physically valuable but harder to produce, transport, and
-      monitor; kept as a second-stage extension.
+    \begin{column}{0.04\textwidth}
+    \end{column}
+    \begin{column}{0.47\textwidth}
+      \begin{block}{Not used as a current result}
+        \scriptsize
+        No z-pol detector-level $R_x$ curve is quoted in this report.  Before it
+        is used, it needs the same audit now applied to y-pol: reco-defined
+        quality cuts, reco fiducial, reco event plane, and reco observable.
+      \end{block}
     \end{column}
   \end{columns}
 \end{frame}
