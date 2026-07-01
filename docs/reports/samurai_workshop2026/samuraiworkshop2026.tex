@@ -198,25 +198,51 @@
 %=========================================================================
 % Slide 6 --- Can SAMURAI Measure the Required Information?
 %=========================================================================
+% \begin{frame}{Can SAMURAI Measure the Required Information?}
+%   \small
+%   To build $R_x$, the experiment must reconstruct three things:
+%   \begin{itemize}
+%     \item the \textbf{proton momentum} --- from drift-chamber tracks (PDC);
+%     \item the \textbf{neutron momentum} --- from the neutron hit position and
+%           time of flight (NEBULA + NEBULA Plus);
+%     \item the \textbf{event plane} --- from the proton and neutron transverse
+%           momenta together.
+%   \end{itemize}
+%   \[
+%     \text{proton track} \;+\; \text{neutron hit}
+%     \;\longrightarrow\; \text{proton + neutron momenta + event plane}
+%     \;\longrightarrow\; R_x
+%   \]
+%   \begin{block}{}
+%     \small\centering
+%     The three ingredients needed for $R_x$ are all reconstructable at SAMURAI.
+%   \end{block}
+% \end{frame}
+%
 \begin{frame}{Can SAMURAI Measure the Required Information?}
-  \small
-  To build $R_x$, the experiment must reconstruct three things:
-  \begin{itemize}
-    \item the \textbf{proton momentum} --- from drift-chamber tracks (PDC);
-    \item the \textbf{neutron momentum} --- from the neutron hit position and
-          time of flight (NEBULA + NEBULA Plus);
-    \item the \textbf{event plane} --- from the proton and neutron transverse
-          momenta together.
-  \end{itemize}
-  \[
-    \text{proton track} \;+\; \text{neutron hit}
-    \;\longrightarrow\; \text{proton + neutron momenta + event plane}
-    \;\longrightarrow\; R_x
-  \]
-  \begin{block}{}
-    \small\centering
-    The three ingredients needed for $R_x$ are all reconstructable at SAMURAI.
-  \end{block}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.54\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.57\textheight,keepaspectratio]{onlysamuraisetup.pdf}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \small
+      \begin{itemize}
+        \item \textbf{Proton momentum}: reconstructed from PDC tracking after
+              the SAMURAI magnet.
+        \item \textbf{Neutron momentum}: reconstructed from NEBULA / NEBULA
+              Plus hit position and ToF.
+        \item \textbf{Event plane}: built event-by-event from the reconstructed
+              proton and neutron transverse momenta.
+      \end{itemize}
+      \begin{block}{Observable chain}
+        \scriptsize\centering
+        proton track + neutron hit\\
+        $\longrightarrow$ reconstructed momenta + event plane\\
+        $\longrightarrow$ sign of $\Delta p_x^{\rm rot}$ and $R_x$
+      \end{block}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 %=========================================================================

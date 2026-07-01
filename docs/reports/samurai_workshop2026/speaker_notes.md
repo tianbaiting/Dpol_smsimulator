@@ -50,11 +50,13 @@ reconstructed; keep the atan2 and rotation details for backup B.
 
 ## Slide 6 -- Can SAMURAI Measure the Required Information?
 
-List the three ingredients needed for R_x: proton momentum from drift chambers
-(PDC), neutron momentum from hit position and time of flight (NEBULA + NEBULA
-Plus), and the event plane from the two transverse momenta.  Conclude that all
-three are reconstructable at SAMURAI.  Do not dwell on y/z-pol here; the next
-slide does.
+Use the setup figure to connect the observable to real detector elements.  The
+proton goes through the SAMURAI magnet and is measured by the PDC tracking
+system; the neutron is measured by NEBULA / NEBULA Plus using hit position and
+ToF.  These two reconstructed momenta define the event plane event by event.
+Close with the chain: proton track plus neutron hit gives reconstructed momenta
+and event plane, then the sign of rotated Delta p_x gives R_x.  Do not dwell on
+y/z-pol here; the next slide does.
 
 ## Slide 7 -- Why Start with y Polarization?
 
