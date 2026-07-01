@@ -1,0 +1,227 @@
+{
+  "run_time_utc": "2026-07-01T15:01:09.910653+00:00",
+  "git": {
+    "branch": "add-reco-selection-closure-rx",
+    "commit": "c118101591d5ba3e8548b20df9ff4b63d232c42c",
+    "status_short": "?? docs/reports/samurai_workshop2026/data/\n?? docs/reports/samurai_workshop2026/figures/rx_primary_truth_vs_final_reco.pdf\n?? docs/reports/samurai_workshop2026/figures/rx_primary_truth_vs_final_reco.png\n?? docs/reports/samurai_workshop2026/figures/rx_truthcut_vs_recocut_ypol.pdf\n?? docs/reports/samurai_workshop2026/figures/rx_truthcut_vs_recocut_ypol.png\n?? docs/reports/samurai_workshop2026/figures/selection_efficiency_purity_vs_gamma.pdf\n?? docs/reports/samurai_workshop2026/figures/selection_efficiency_purity_vs_gamma.png\n?? docs/reports/samurai_workshop2026/figures/selection_migration_matrix_ypol.pdf\n?? docs/reports/samurai_workshop2026/figures/selection_migration_matrix_ypol.png\n?? scripts/reconstruction/nn_target_momentum/compare_truth_reco_selection_rx.py\n?? tests/analysis/test_truth_reco_selection_closure.py"
+  },
+  "parameters": {
+    "base_dir": "/tmp/spana03_nebulaplus_nn_joint_20260609_012854",
+    "pols": [
+      "ypol"
+    ],
+    "targets": [
+      "Sn112E190",
+      "Sn124E190"
+    ],
+    "cuts": [
+      "tight"
+    ],
+    "px_limit": 60.0,
+    "bootstrap": 500,
+    "max_files": null,
+    "output_dir": "docs/reports/samurai_workshop2026/data",
+    "figure_dir": "docs/reports/samurai_workshop2026/figures",
+    "old_r_table": "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/checks/observables/folding_diagnostics/r_ladder_by_cell.csv"
+  },
+  "input_files": [
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn112E190g050ynp/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn112E190g050ypn/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn112E190g060ynp/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn112E190g060ypn/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn112E190g070ynp/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn112E190g070ypn/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn112E190g080ynp/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn112E190g080ypn/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn124E190g050ynp/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn124E190g050ypn/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn124E190g060ynp/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn124E190g060ypn/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn124E190g070ynp/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn124E190g070ypn/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn124E190g080ynp/dbreak0000_reco.root",
+    "/tmp/spana03_nebulaplus_nn_joint_20260609_012854/y_pol_nebulaplus/phi_random/d+Sn124E190g080ypn/dbreak0000_reco.root"
+  ],
+  "input_file_count": 16,
+  "parent_sample": "parent sample is truth-matched p+n breakup MC",
+  "analysis_description": "reco-defined selection closure within a truth-matched simulated p+n channel",
+  "loader_note": "load_observable_frame also applies its existing reconstructed-proton status and finite-momentum prefilter before this closure analysis.",
+  "reco_selection_code_audit": {
+    "reco_valid_columns": [
+      "nn_status",
+      "n_reco_neutrons",
+      "nn_pxp",
+      "nn_pyp",
+      "reco_pxn",
+      "reco_pyn"
+    ],
+    "reco_cut_columns": [
+      "nn_pxp",
+      "nn_pyp",
+      "reco_pxn",
+      "reco_pyn",
+      "reco_valid"
+    ],
+    "final_reco_mode": "reco_cut_reco_obs uses reco_tight, reco_px60, phi_reco, reco_rot_pxp, reco_rot_pxn, and reco_dpx only."
+  },
+  "outputs": {
+    "rx_table": "docs/reports/samurai_workshop2026/data/rx_truth_vs_reco_selection.csv",
+    "selection_migration": "docs/reports/samurai_workshop2026/data/selection_migration.csv",
+    "selection_layer_migration": "docs/reports/samurai_workshop2026/data/selection_layer_migration.csv",
+    "figures": [
+      "docs/reports/samurai_workshop2026/figures/rx_truthcut_vs_recocut_ypol.png",
+      "docs/reports/samurai_workshop2026/figures/rx_truthcut_vs_recocut_ypol.pdf",
+      "docs/reports/samurai_workshop2026/figures/rx_primary_truth_vs_final_reco.png",
+      "docs/reports/samurai_workshop2026/figures/rx_primary_truth_vs_final_reco.pdf",
+      "docs/reports/samurai_workshop2026/figures/selection_efficiency_purity_vs_gamma.png",
+      "docs/reports/samurai_workshop2026/figures/selection_efficiency_purity_vs_gamma.pdf",
+      "docs/reports/samurai_workshop2026/figures/selection_migration_matrix_ypol.png",
+      "docs/reports/samurai_workshop2026/figures/selection_migration_matrix_ypol.pdf"
+    ],
+    "reproduction_check": "docs/reports/samurai_workshop2026/data/rx_truth_cut_reco_obs_reproduction_check.csv"
+  },
+  "reproduction_check": {
+    "old_stage": "reco_plane",
+    "new_mode": "truth_cut_reco_obs",
+    "rows": [
+      {
+        "pol": "ypol",
+        "target": "Sn112E190",
+        "gamma": "g050",
+        "old_N": 1697,
+        "old_n_pos": 1521,
+        "old_n_neg": 176,
+        "old_R": 8.642045454545455,
+        "new_N": 1697,
+        "new_n_pos": 1521,
+        "new_n_neg": 176,
+        "new_R": 8.642045454545455,
+        "delta_N": 0,
+        "delta_n_pos": 0,
+        "delta_n_neg": 0,
+        "delta_R": 0.0
+      },
+      {
+        "pol": "ypol",
+        "target": "Sn112E190",
+        "gamma": "g060",
+        "old_N": 1860,
+        "old_n_pos": 1629,
+        "old_n_neg": 231,
+        "old_R": 7.051948051948052,
+        "new_N": 1860,
+        "new_n_pos": 1629,
+        "new_n_neg": 231,
+        "new_R": 7.0519480519480515,
+        "delta_N": 0,
+        "delta_n_pos": 0,
+        "delta_n_neg": 0,
+        "delta_R": -8.881784197001252e-16
+      },
+      {
+        "pol": "ypol",
+        "target": "Sn112E190",
+        "gamma": "g070",
+        "old_N": 1703,
+        "old_n_pos": 1458,
+        "old_n_neg": 245,
+        "old_R": 5.951020408163266,
+        "new_N": 1703,
+        "new_n_pos": 1458,
+        "new_n_neg": 245,
+        "new_R": 5.951020408163266,
+        "delta_N": 0,
+        "delta_n_pos": 0,
+        "delta_n_neg": 0,
+        "delta_R": 0.0
+      },
+      {
+        "pol": "ypol",
+        "target": "Sn112E190",
+        "gamma": "g080",
+        "old_N": 1733,
+        "old_n_pos": 1478,
+        "old_n_neg": 255,
+        "old_R": 5.796078431372549,
+        "new_N": 1733,
+        "new_n_pos": 1478,
+        "new_n_neg": 255,
+        "new_R": 5.796078431372549,
+        "delta_N": 0,
+        "delta_n_pos": 0,
+        "delta_n_neg": 0,
+        "delta_R": 0.0
+      },
+      {
+        "pol": "ypol",
+        "target": "Sn124E190",
+        "gamma": "g050",
+        "old_N": 2305,
+        "old_n_pos": 2134,
+        "old_n_neg": 171,
+        "old_R": 12.47953216374269,
+        "new_N": 2305,
+        "new_n_pos": 2134,
+        "new_n_neg": 171,
+        "new_R": 12.47953216374269,
+        "delta_N": 0,
+        "delta_n_pos": 0,
+        "delta_n_neg": 0,
+        "delta_R": 0.0
+      },
+      {
+        "pol": "ypol",
+        "target": "Sn124E190",
+        "gamma": "g060",
+        "old_N": 2422,
+        "old_n_pos": 2147,
+        "old_n_neg": 275,
+        "old_R": 7.807272727272728,
+        "new_N": 2422,
+        "new_n_pos": 2147,
+        "new_n_neg": 275,
+        "new_R": 7.807272727272728,
+        "delta_N": 0,
+        "delta_n_pos": 0,
+        "delta_n_neg": 0,
+        "delta_R": 0.0
+      },
+      {
+        "pol": "ypol",
+        "target": "Sn124E190",
+        "gamma": "g070",
+        "old_N": 2451,
+        "old_n_pos": 2093,
+        "old_n_neg": 358,
+        "old_R": 5.846368715083799,
+        "new_N": 2451,
+        "new_n_pos": 2093,
+        "new_n_neg": 358,
+        "new_R": 5.846368715083799,
+        "delta_N": 0,
+        "delta_n_pos": 0,
+        "delta_n_neg": 0,
+        "delta_R": 0.0
+      },
+      {
+        "pol": "ypol",
+        "target": "Sn124E190",
+        "gamma": "g080",
+        "old_N": 2338,
+        "old_n_pos": 1948,
+        "old_n_neg": 390,
+        "old_R": 4.994871794871795,
+        "new_N": 2338,
+        "new_n_pos": 1948,
+        "new_n_neg": 390,
+        "new_R": 4.994871794871795,
+        "delta_N": 0,
+        "delta_n_pos": 0,
+        "delta_n_neg": 0,
+        "delta_R": 0.0
+      }
+    ],
+    "sn124_ypol_max_abs_delta_R": 0.0,
+    "sn124_ypol_counts_match": true
+  }
+}
