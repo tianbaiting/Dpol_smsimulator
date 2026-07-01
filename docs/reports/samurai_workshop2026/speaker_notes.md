@@ -102,9 +102,9 @@ Make one point: the event plane is built from reconstructed proton and neutron
 transverse momenta.  Reaction-plane migration broadens the observable but does
 not erase the gamma ordering.  State the comparison strategy: the ideal
 reference uses QMD truth quantities; the detector result uses reconstructed
-quantities for the observable and fiducial momentum window.  Keep detailed
-cut-definition caveats for backup; in the main talk, frame this as part of the
-analysis freeze and systematic-control work before beamtime.
+quantities for the observable, event plane, fiducial window, and quality cuts.
+Truth remains only for the ideal reference, reconstruction diagnostics, and the
+virtual-breakup veto that removes physically impossible generated events.
 
 ## Slide 11 -- Main Result: the Detector Changes the Scale, Not the Ordering
 
@@ -135,20 +135,22 @@ ready from the simulation side."  Say that full SAMURAI detector simulation and
 reconstruction are in place, the y-pol IVR observable is formed from
 reconstructed proton, neutron, and event-plane quantities, and the gamma and
 isotope ordering survive detector response.  Then pivot to experiment
-preparation: polarimeter, target system, analysis freeze, acceptance and
-background control, polarization systematics, and commissioning.  The point is
+preparation: polarimeter, target system, freezing the documented reco-based
+analysis configuration, acceptance and background control, polarization
+systematics, and commissioning.  The point is
 that the next step is experimental readiness, not proving the observable again
 in simulation.
 
 ## Slide 14 -- Toward the Beamtime: Preparation Timeline
 
 Turn the experiment-preparation list into a concrete schedule.  Full detector
-simulation, reconstruction, and the y-pol physics-observable study are done now
-(2026-07).  The remaining hardware is the beam polarimeter, needed to monitor
-the vertical tensor polarization
+simulation, reconstruction, reco-defined closure, and the y-pol
+physics-observable study are done now (2026-07).  The remaining hardware is the
+beam polarimeter, needed to monitor the vertical tensor polarization
 $p_{yy}$, and the target system --- the target holder plus the $^{112}$Sn and
-$^{124}$Sn targets.  In parallel, freeze analysis cuts and the systematic
-budget: acceptance, backgrounds, thresholds, and polarization uncertainty.
+$^{124}$Sn targets.  In parallel, freeze the documented reco-based analysis
+configuration and the systematic budget: acceptance, backgrounds, thresholds,
+and polarization uncertainty.
 Offline and beam-test commissioning lead into the SAMURAI beamtime, planned for
 the end of April 2027.  If asked, the intermediate phasing is a plan and can
 shift; only the two anchors (simulation done now, beamtime end of April 2027)
@@ -169,7 +171,7 @@ the simulation side; the next step is preparing the experiment.
 Pause for questions.  Route detailed questions to the backup sections:
 reconstruction performance to backup C, neutron acceptance to backup D, the
 folding ladder to backup E, isotope numbers to backup F, statistics to backup G,
-y-pol/z-pol and polarization monitoring to backup H, remaining closure and
+y-pol/z-pol and polarization monitoring to backup H, reco closure and
 systematics to backup I.
 
 ## Backup
@@ -180,4 +182,4 @@ residuals and RK-versus-NN (C), the neutron acceptance maps and px60/80/100
 comparison (D), the folding ladder and matrix equation (E), the full 112Sn/124Sn
 tables and bounded asymmetry (F), the statistical planning scale and survival
 flow (G), the z-pol folded results and polarization monitoring (H), and the
-truth-assisted-cut and detector-systematic checklists (I).
+reco-closure and detector-systematic checklists (I).

@@ -1,165 +1,187 @@
-# SAMURAI Workshop 2026 Rehearsal Script
+# SAMURAI Workshop 2026 Speak Memo
 
-This is a spoken English script for the main talk.  The intended message is:
+Use this as a rehearsal script, not as written proceedings.  The goal is to sound calm, direct, and technically mature.
 
-> The full detector simulation and reconstruction chain has been completed.  The y-polarized deuteron measurement is physics-ready from the simulation side.  The next work is experiment preparation and systematic control.
+## Memory Spine
 
-## Slide 1 -- Title
+Memorize these five sentences first.  They are the backbone of the talk.
 
-Good morning.  In this talk I want to address one very concrete question: can SAMURAI measure the isovector reorientation signal from polarized deuteron breakup, after the realistic detector response and reconstruction are included?
+1. The question is whether the IVR signal survives the realistic SAMURAI detector and reconstruction chain.
+2. The detector-level observable is fully reconstructed: proton, neutron, event plane, and reco-defined cuts.
+3. The detector changes the absolute scale of \(R_x\), but it does not erase the gamma and isotope ordering.
+4. The y-pol configuration is experimentally realistic now, and the statistics are sufficient after the angular selection.
+5. The remaining work is beamtime preparation and systematic control, not proving the observable again in simulation.
 
-The point of the talk is not only that the QMD generator predicts a signal.  That is the starting point.  The real question is whether the signal survives a realistic SAMURAI measurement: proton reconstruction, neutron reconstruction, event-plane reconstruction, acceptance, and statistics.  My conclusion is that, for the y-polarized configuration, the full simulation and reconstruction study is already in place, and the observable remains measurable.  The remaining task is to prepare the experiment and control systematics.
+## Main Script
 
-## Slide 2 -- A Polarized Deuteron as an Isovector Probe
+### Slide 1 -- Title
 
-Let me first state the physics idea in simple terms.  A deuteron is a proton-neutron two-body system.  If the deuteron is polarized, this two-body system has a preferred orientation.  When it passes close to a neutron-rich target, the proton and neutron do not feel exactly the same nuclear environment.  The difference is the isovector part of the interaction.
+Cue: state the question.
 
-After breakup, that difference can appear as a bias in the relative momentum of the proton and neutron.  So the polarized deuteron is not just a projectile.  It is an oriented proton-neutron probe of the isovector field.  The experimental question is whether this small relative-momentum bias can be reconstructed with SAMURAI.
+Good afternoon.  I want to answer one concrete question: after the full SAMURAI detector response and reconstruction are included, can we still observe the isovector reorientation signal from polarized deuteron breakup?
 
-## Slide 3 -- How the IVR Signal Is Formed
+My answer is yes, for the y-polarized configuration.  The full chain has been exercised up to the detector-level observable.  The remaining task is no longer to prove that the observable exists in simulation.  The remaining task is to prepare the experiment and control the systematics.
 
-This schematic shows the chain of the effect.  Before the interaction, the deuteron has a preferred spin alignment.  Near the target, the proton and neutron components experience different isovector impulses.  After breakup, the two fragments carry a correlated momentum asymmetry.
+### Slide 2 -- A Polarized Deuteron as an Isovector Probe
 
-In the QMD calculation, changing the symmetry-energy parameter changes the density dependence of the isovector field.  That changes the relative impulse and therefore changes the final proton-neutron momentum asymmetry.  This is what I call the isovector reorientation signal.
+Cue: build intuition.
 
-I want to emphasize that we are not measuring the force event by event.  We measure a statistical momentum asymmetry after breakup, and then ask whether its isotope and gamma dependence survives the detector.
+A deuteron is a proton-neutron two-body system.  When it is polarized, that two-body system has a preferred orientation.  Near a neutron-rich target, the proton and neutron parts do not feel exactly the same nuclear environment.  That difference is the isovector part of the interaction.
 
-## Slide 4 -- Why 112Sn and 124Sn?
+After breakup, the difference can appear as a bias in the relative momentum of the proton and neutron.  So the polarized deuteron is an oriented proton-neutron probe of the isovector field.
 
-The isotope choice is important.  The two tin targets have the same charge, Z equals 50, so the Coulomb environment is closely matched.  But the neutron excess is very different: 112Sn has N minus Z equal to 12, while 124Sn has N minus Z equal to 24.
+### Slide 3 -- How the IVR Signal Is Formed
 
-That gives us a useful pair.  124Sn should have the stronger neutron-rich isovector response, while 112Sn provides the isotope reference.  On this slide, the ideal generator-level calculation shows the expected ordering with gamma and with isotope.
+Cue: three-step mechanism.
 
-This ideal result is not the final claim.  It is the benchmark.  The rest of the talk asks a stricter question: after the SAMURAI detector response and reconstruction, does this ordering remain visible?
+This slide shows the mechanism in three steps.  First, the incoming deuteron has a preferred spin alignment.  Second, near the target, the proton and neutron receive different isovector impulses.  Third, after breakup, that difference becomes a momentum asymmetry.
 
-## Slide 5 -- What Do We Measure?
+In QMD, changing the symmetry-energy parameter changes the density dependence of the isovector field.  Therefore it changes the relative impulse, and finally the measured proton-neutron momentum asymmetry.  We do not measure the force event by event.  We measure a statistical asymmetry and ask whether its gamma dependence survives the detector.
 
-The observable is intentionally simple.  For each event, we reconstruct the proton momentum and the neutron momentum.  From them, we define the event plane.  Then we rotate the momenta into that event-plane frame and look at the relative momentum component along the selected axis.
+### Slide 4 -- Why 112Sn and 124Sn?
 
-In practice, we count whether the proton side or the neutron side wins in this rotated momentum component.  That gives a ratio, R_x.  It is a counting observable, which is useful because it is robust against some absolute normalization effects.
+Cue: isotope control.
 
-The important point for this talk is that the observable is defined from reconstructed quantities.  We need the proton momentum, the neutron momentum, and the reaction plane.  If any one of those fails, the measurement fails.  So the next slides show that these ingredients have been reconstructed and checked.
+The two tin targets give a clean comparison.  They have the same charge, \(Z=50\), so the Coulomb environment is closely matched.  But their neutron excess is different: \(N-Z=12\) for \(^{112}\)Sn and \(N-Z=24\) for \(^{124}\)Sn.
 
-## Slide 6 -- Can SAMURAI Measure the Required Information?
+This makes \(^{124}\)Sn the main neutron-rich sensitivity target, while \(^{112}\)Sn is the isotope reference.  The ideal generator-level result shows the expected gamma and isotope ordering.  The real question is whether this ordering remains after SAMURAI acceptance and reconstruction.
 
-Here is the experimental mapping.  The charged proton goes through the SAMURAI magnetic field and is measured by the PDC tracking system.  The neutron is measured by NEBULA and NEBULA Plus, using hit position and time of flight.  Together, the reconstructed proton and neutron momenta define the event plane.
+### Slide 5 -- What Do We Measure?
 
-So the analysis chain is direct: proton track plus neutron hit gives reconstructed momenta; reconstructed momenta give the event plane; the event plane gives the rotated relative momentum; and the sign of that relative momentum gives R_x.
+Cue: define \(R_x\) in words.
 
-This is the first key message.  The observable is not being evaluated with invisible truth information in the detector result.  The detector-level result is built from the reconstructed proton, neutron, and event-plane quantities.
+The observable is a counting ratio.  For each event, we reconstruct the proton momentum and neutron momentum.  These two momenta define the event plane.  Then we rotate into that plane and look at the relative momentum along the selected axis.
 
-## Slide 7 -- Why Start with y Polarization?
+We count events where the proton side is positive and events where it is negative, and form \(R_x\).  This is useful because the final observable is not a complicated fit to individual forces.  It is a reconstructed event-by-event momentum-asymmetry count.
 
-Now let me explain why I focus on y polarization.  In an ideal mathematical sense, z polarization is cleaner.  The polarization axis is approximately along the beam direction, and therefore it is naturally related to the reaction plane.  But experimentally it is harder: a longitudinally polarized deuteron beam is harder to produce, harder to transport because of spin precession, and harder to monitor because p_zz requires an absolute, two-angle normalization.
+### Slide 6 -- Can SAMURAI Measure the Required Information?
 
-The y-polarized configuration is the realistic first stage.  The price is that the vertical polarization axis is not fixed relative to the event-by-event reaction plane.  For a tensor-polarized spin-1 beam, the relevant projection is rank two, so the angular dependence is cos(2 psi)-like.  If we simply average over all reaction-plane angles, the signal is diluted.
+Cue: map observable to detectors.
 
-But this is not a fatal problem, because we reconstruct the reaction plane event by event.  We can select a favorable psi window where the tensor projection keeps the signal.  The statistics are large enough to afford this selection, and LRUD monitoring of p_yy is a mature method.  So y-pol is not the most idealized configuration, but it is the configuration that is experimentally ready.
+The required information maps directly onto SAMURAI.  The proton is bent by the SAMURAI magnet and measured by the PDC tracking system.  The neutron is measured by NEBULA and NEBULA Plus using hit position and time of flight.
 
-## Slide 8 -- Proton Momentum Reconstruction: RK and NN Cross-Check
+Together, these reconstructed momenta define the event plane.  This is the first important point: the detector-level \(R_x\) is not evaluated with hidden truth information.  It uses reconstructed proton momentum, reconstructed neutron momentum, reconstructed event plane, and reco-defined fiducial and quality cuts.  Truth remains only for the ideal reference, diagnostics, and the virtual-breakup veto.
 
-The proton reconstruction is based on the target point and the measured PDC hit or track after the magnet.  We use two independent reconstruction approaches.
+### Slide 7 -- Why Start with y Polarization?
 
-The first is RK, which means charged-particle transport through the measured magnetic field.  In other words, we propagate trajectories in the magnetic field and solve for the target momentum that is consistent with the PDC measurement.
+Cue: y-pol is practical.
 
-The second is NN, a neural-network regression trained on the same QMD-based simulation sample.  The purpose of the NN is not to replace physics with a black box.  The purpose is to provide a stable event-by-event reconstruction in the detector phase space.
+In an ideal geometry, z-pol is cleaner because the polarization axis is approximately along the beam direction.  But experimentally it is harder to produce, transport, and monitor.  In particular, \(p_{zz}\) monitoring requires a more demanding absolute normalization.
 
-The important cross-check is that RK and NN give consistent core residuals in the same y-pol kinematic window.  The NN reconstruction reduces the large-tail contribution, so I use it for the detector-level R_x result.  The RK result is an independent field-transport validation of the proton momentum scale and resolution.
+y-pol is the practical first measurement.  The vertical tensor axis gives a rank-2 projection onto the event plane, so the angular dependence is cos\(2\psi\)-like.  A naive average over all reaction-plane angles would dilute the signal.
 
-## Slide 9 -- Neutron Momentum Reconstruction
+But we reconstruct the reaction plane event by event.  That lets us select a favorable \(\psi\) window.  The projected statistics can afford this selection, and LRUD monitoring of \(p_{yy}\) is mature.  So y-pol is not the most idealized case, but it is the experimentally realistic one now.
 
-The neutron reconstruction uses NEBULA and NEBULA Plus hit information, especially position and time of flight.  This slide shows the neutron residuals directly.  The reconstruction is not perfect, but the core resolution is narrow enough for the event-plane and momentum-asymmetry analysis.
+### Slide 8 -- Proton Momentum Reconstruction
 
-Here I want to be precise about the limitation.  The issue is not that the intrinsic neutron detection efficiency suddenly changes in an arbitrary way.  The main limitation is the usable detector phase space: geometry, thresholds, hit finding, time of flight, and reconstruction survival.  In particular, the acceptance changes strongly with the neutron transverse momentum.
+Cue: two independent proton reconstructions.
 
-That is why I do not claim that the detector preserves the absolute scale of R_x.  It does not.  What I claim is that after this neutron reconstruction and acceptance folding, the gamma and isotope ordering of the signal remains visible.
+The proton momentum is constrained by the target point and the measured PDC hit or track after the magnet.  I use two independent reconstruction approaches.
 
-## Slide 10 -- Event-Plane Reconstruction
+RK means charged-particle transport through the magnetic field, solving for the target momentum consistent with the PDC measurement.  NN means a neural-network regression trained within the same simulation framework.
 
-The reaction plane is reconstructed from the proton and neutron transverse momenta.  Because both momenta have finite resolution, the reconstructed event plane is not exactly the truth plane.  This migration broadens the observable and reduces the contrast.
+The important point is the cross-check.  RK and NN agree in the core residuals in the y-pol kinematic window.  NN reduces the large tails, so it is used for the detector-level \(R_x\).  RK remains an independent field-transport validation.
 
-But the crucial question is whether the event-plane reconstruction randomizes the signal.  The answer from the full reconstruction study is no.  The event-plane migration is present and must be included, but it does not erase the ordering.
+### Slide 9 -- Neutron Momentum Reconstruction
 
-In the main analysis, the ideal reference is evaluated at generator level, while the detector-level result uses reconstructed quantities and the same reconstructed fiducial selection.  This is the correct comparison for the experiment: it tells us what SAMURAI would actually see after reconstruction.
+Cue: neutron limitation is acceptance, not arbitrary efficiency.
 
-## Slide 11 -- Main Result: the Detector Changes the Scale, Not the Ordering
+The neutron momentum is reconstructed from NEBULA and NEBULA Plus hit position and time of flight.  The residuals show that the core reconstruction is narrow enough for the event-plane and momentum-asymmetry analysis.
 
-This is the central result of the talk.  The left panel shows the ideal generator-level expectation.  The right panel shows the detector-folded and reconstructed result.
+The limitation should be described correctly.  It is mainly usable phase space: geometry, thresholds, hit finding, time of flight, and reconstruction survival.  The acceptance changes strongly with neutron transverse momentum.  That changes the absolute scale of \(R_x\), but it does not by itself destroy the physics ordering.
 
-The detector clearly changes the absolute scale.  That is expected, because acceptance, thresholds, reconstruction resolution, and event-plane migration all enter.  But the important point is that the ordering is not destroyed.  The gamma dependence remains visible, and the 124Sn response remains stronger than the 112Sn reference.
+### Slide 10 -- Event-Plane Reconstruction
 
-If the detector response killed the physics sensitivity, the reconstructed points would collapse into a featureless distribution, or the isotope and gamma ordering would disappear.  That is not what we see.  The signal is reduced, but it survives.  This is the main evidence that the y-pol measurement is feasible with SAMURAI.
+Cue: migration is included.
 
-The error bars here are current Monte Carlo statistics.  They are not the projected beamtime statistics.  I will address the real statistical scale on the next slide.
+The event plane is built from reconstructed proton and neutron transverse momenta.  Because both momenta have finite resolution, the reconstructed plane migrates relative to the generator-level plane.
 
-## Slide 12 -- Are the Statistics Sufficient?
+This migration broadens the observable and reduces contrast.  But the important test is whether it randomizes the physics signal.  It does not.  The detector-level result uses reconstructed quantities and reco-defined cuts, and the gamma ordering remains visible.
 
-The natural question is whether the remaining separation is statistically useful.  The current reconstructed points are based on the available Monte Carlo sample, roughly a few thousand folded events per gamma point.  That is why the plotted MC error bars are not the final experimental expectation.
+### Slide 11 -- Main Result
 
-For planning, the closest adjacent gamma interval requires about 2.8 times 10^3 usable events for a three-sigma statistical separation in this convention.  With a 16-hour run on the current 15 mm diameter, 1.2 g 124Sn disk target option, the projected usable y-pol sample after the current tight px60 reconstructed survival is about 2.75 times 10^5 events.
+Cue: detector changes scale, not ordering.
 
-That is about two orders of magnitude above the statistical requirement.  Therefore, I would not describe this measurement as statistics-limited.  The real work is systematic control: neutron acceptance, thresholds, background, polarization monitoring, and the final analysis cuts.
+This is the central result.
 
-This is an important change in emphasis.  We do not need to keep proving that a signal exists in simulation.  The simulation and reconstruction show that it survives.  The next question is how well we control the experimental systematics.
+The detector does not leave \(R_x\) unchanged, and we should not expect it to.  Acceptance, thresholds, reconstruction resolution, neutron phase space, and event-plane migration all change the absolute scale.
 
-## Slide 13 -- What Is Ready for the Experiment?
+The decisive question is different: does the physics ordering survive?
 
-Let me summarize what has already been done.  We have the QMD input.  We have the SAMURAI detector simulation.  We have proton reconstruction, neutron reconstruction, and event-plane reconstruction.  We have the detector-folded y-pol observable, built from reconstructed quantities.  And we have checked that the gamma and isotope ordering survives the detector response.
+It does.  The gamma dependence remains visible, and \(^{124}\)Sn remains the stronger neutron-rich response compared with \(^{112}\)Sn.  If the detector killed the sensitivity, these reconstructed points would collapse into a featureless distribution.  That is not what we see.
 
-So, from the simulation side, the y-pol observable is ready.  I do not mean that there are no systematic uncertainties.  Of course there are.  I mean that the full detector and reconstruction chain has been exercised up to the physics observable, and the observable remains sensitive.
+### Slide 12 -- Are the Statistics Sufficient?
 
-The next step is therefore experimental preparation: the beam polarimeter, the target system, the final analysis selection, the acceptance and background model, and the polarization systematic budget.  These are experiment-readiness tasks, not missing proof that the observable can be reconstructed.
+Cue: not statistics-limited.
 
-## Slide 14 -- Toward the Beamtime: Preparation Timeline
+The error bars on the previous slide are current Monte Carlo statistics, not the projected beamtime statistics.
 
-This timeline reflects that distinction.  The full detector simulation, reconstruction, and y-pol physics-observable study are done now.  The remaining tasks are the hardware and systematic-control tasks needed for beamtime.
+For planning, the closest adjacent gamma separation needs about \(2.8\times10^3\) usable events for a three-sigma statistical separation.  With a 16-hour run on the 15 mm-diameter, 1.2 g \(^{124}\)Sn disk target option, the projected y-pol sample after the current reconstructed survival is about \(2.75\times10^5\) usable events.
 
-The beam polarimeter is needed for reliable p_yy monitoring.  The target system must be finalized for both 112Sn and 124Sn.  In parallel, we should freeze the fiducial cuts and define the systematic budget for acceptance, backgrounds, thresholds, and polarization uncertainty.
+That is roughly two orders of magnitude above the statistical requirement.  So I would not describe the y-pol measurement as statistics-limited.  The real work is systematic control: neutron acceptance, thresholds, backgrounds, and polarization monitoring.
 
-Then the offline and beam-test commissioning should lead into the SAMURAI beamtime.  The message is simple: the project is moving from feasibility simulation into experiment preparation.
+### Slide 13 -- What Is Ready for the Experiment?
 
-## Slide 15 -- Summary
+Cue: simulation side is ready.
+
+Let me separate what is done from what remains.  What is done is the detector-level physics chain: QMD input, SAMURAI detector response, proton reconstruction, neutron reconstruction, event-plane reconstruction, reco-defined cuts, and the final \(R_x\) observable.
+
+The result is not only generator-level.  The y-pol observable has been formed after reconstruction, and the gamma and isotope ordering survive.  Therefore, from the simulation side, the y-pol observable is established.
+
+What remains is experimental preparation: \(p_{yy}\) polarimetry, the \(^{112}\)Sn and \(^{124}\)Sn target system, the frozen analysis configuration, and the systematic budget.
+
+### Slide 14 -- Toward the Beamtime
+
+Cue: this is experiment readiness.
+
+This timeline is not a plan to finish the simulation.  That part is done: full detector simulation, reconstruction, reco-defined closure, and the y-pol observable study.
+
+The remaining work is the normal preparation for a real beamtime.  We need the beam polarimeter for \(p_{yy}\), the tin target system, commissioning, and a systematic budget for acceptance, thresholds, backgrounds, and polarization.  In other words, the project has moved from feasibility simulation to experiment readiness.
+
+### Slide 15 -- Summary
+
+Cue: close with four points.
 
 Let me close with four points.
 
-First, a polarized deuteron provides an oriented proton-neutron probe of the isovector field.  Second, 124Sn gives the main neutron-rich sensitivity, while 112Sn provides an isotope reference with closely matched charge.  Third, after the full SAMURAI detector simulation and reconstruction, the absolute scale of R_x changes, but the gamma and isotope ordering survive.  Fourth, the projected y-pol statistics are sufficient; the next focus is systematic control and beamtime preparation.
+First, a polarized deuteron converts an isovector proton-neutron force difference into a measurable breakup momentum asymmetry.  Second, \(^{124}\)Sn provides the main neutron-rich sensitivity, with \(^{112}\)Sn as the isotope reference.  Third, after the full SAMURAI detector simulation and reconstruction, the absolute scale of \(R_x\) changes, but the gamma and isotope ordering survive.  Fourth, y-pol statistics are sufficient; the limiting issues are systematic and experimental.
 
-So my conclusion is this: the y-polarized measurement is physics-ready from the simulation side.  The full simulation and reconstruction chain has been completed to the final observable.  The task now is not to restart the simulation argument, but to prepare the experiment carefully enough to make the measurement convincing.
+So the conclusion is simple.  The y-pol measurement is physics-ready from the simulation side.  The next step is to prepare the experiment carefully enough to make the measurement convincing.
 
-Thank you.  I am happy to discuss the reconstruction, acceptance, and systematic checks in the backup slides.
+Thank you.
 
-## Short Closing Version
+## Short Version
 
-If time is short, use this closing paragraph:
+If time is short, compress the conclusion to this:
 
-The main result is not that the detector leaves the observable unchanged.  It does not.  The main result is that after realistic detector response and reconstruction, the ordering that carries the physics information remains visible.  With the projected y-pol statistics, the measurement is not limited by event count.  It is now an experiment-preparation problem: polarimetry, targets, acceptance, backgrounds, and systematic control.
+The detector does not leave the observable unchanged.  The important result is that the ordering that carries the physics information survives the realistic detector and reconstruction chain.  The y-pol statistics are sufficient, so the next task is not more proof-of-principle simulation.  It is polarimetry, targets, commissioning, and systematic control.
 
-## Backup Answers for Likely Questions
+## Q&A Bank
 
-### If asked: "What do you mean by full simulation?"
+### What do you mean by full simulation?
 
-I mean the complete chain needed for the detector-level observable: QMD event input, SAMURAI detector response, proton reconstruction through the magnetic spectrometer, neutron reconstruction with NEBULA and NEBULA Plus, event-plane reconstruction, reconstructed fiducial cuts, and the final R_x observable.  The conclusion is based on the observable after this chain, not on generator-level truth alone.
+The full detector-level chain: QMD input, SAMURAI detector response, proton reconstruction, neutron reconstruction, event-plane reconstruction, reco-defined fiducial and quality cuts, and the final \(R_x\) observable.  The detector result is not generator truth.  Truth is used for the ideal reference, diagnostics, and the virtual-breakup veto.
 
-### If asked: "Why y-pol instead of z-pol?"
+### Why y-pol first?
 
-z-pol is cleaner geometrically, but it is not the most practical near-term beam configuration because production, spin transport, and p_zz monitoring are harder.  y-pol is experimentally accessible now.  Its signal has an event-plane angular dependence, but the reaction plane is reconstructed event by event, so we can select the favorable angular window.  The projected statistics are large enough to pay that cost.
+z-pol is geometrically cleaner, but harder as a near-term beam configuration because production, spin transport, and \(p_{zz}\) monitoring are more demanding.  y-pol is available now.  Its tensor signal has a reaction-plane angular dependence, but the event plane is reconstructed event by event, and the projected statistics can afford the favorable angular selection.
 
-### If asked: "Where does the cos(2 psi) dependence come from?"
+### Where does cos\(2\psi\) come from?
 
-It comes from tensor polarization.  A spin-1 tensor polarization is a rank-2 object, so the projection of a fixed polarization axis onto the event plane has a second-harmonic angular structure, schematically cos(2 psi).  The exact sign or phase depends on the angle convention, but the important point is the rank-2, twofold angular dependence.  A naive average over all reaction-plane angles dilutes it, while event-by-event reaction-plane reconstruction lets us select the useful region.
+It comes from tensor polarization.  A spin-1 tensor polarization is a rank-2 object.  A fixed vertical tensor axis projected onto the event plane naturally gives a second-harmonic, cos\(2\psi\)-like angular dependence.  The exact sign depends on the angle convention; the important point is the rank-2 twofold structure.
 
-### If asked: "Is the NN reconstruction a black box?"
+### Is the NN reconstruction a black box?
 
-The NN is used as a regression backend for stable event-by-event proton momentum reconstruction.  It is trained and evaluated in the same simulation framework and kinematic window.  The important validation is that it is cross-checked against RK field transport, which is an independent reconstruction based on charged-particle motion through the measured magnetic field.  The two agree in the core residuals, while NN reduces large tails in the selected y-pol window.
+The NN is a regression backend for proton momentum reconstruction.  It is validated against RK field transport, which uses charged-particle motion through the magnetic field and the PDC measurement.  RK and NN agree in the core residuals; NN gives smaller large-tail contributions in the selected y-pol window.
 
-### If asked: "Is neutron efficiency the problem?"
+### Is neutron efficiency the main problem?
 
-I would phrase it as neutron acceptance and usable phase space, not as a changing intrinsic efficiency.  NEBULA and NEBULA Plus reconstruct the neutron from hit position and time of flight.  The limitation is that geometry, thresholds, hit finding, and reconstruction survival depend strongly on neutron transverse momentum.  That changes the absolute R_x scale, but the reconstructed study shows that the physics ordering survives.
+I would call it neutron acceptance and usable phase space.  The intrinsic counter efficiency is not the point.  Geometry, thresholds, hit finding, ToF, and reconstruction survival vary across neutron transverse momentum.  This changes the absolute \(R_x\) scale, but the reconstructed study shows that the gamma and isotope ordering survive.
 
-### If asked: "Are the statistics enough after the psi selection?"
+### Are statistics enough?
 
-Yes, in the current planning estimate.  The closest gamma separation needs about 2.8e3 usable events for a three-sigma statistical separation in the statistical-only convention.  The projected 16-hour 124Sn y-pol run gives about 2.75e5 usable events after the current tight px60 reconstructed survival.  So statistics are not the dominant concern; systematic control is.
+Yes for the current planning estimate.  The closest gamma separation needs about \(2.8\times10^3\) usable events for a three-sigma statistical separation, while the 16-hour \(^{124}\)Sn y-pol estimate gives about \(2.75\times10^5\) usable events.  The measurement is therefore systematic-limited rather than statistics-limited.
 
-### If asked: "What is still missing?"
+### What is still missing?
 
-What remains is not the basic simulation proof.  What remains is experimental preparation: p_yy polarimetry, target system readiness, final fiducial-cut freeze, neutron acceptance and threshold systematics, background estimates, and commissioning.  These are exactly the tasks expected before a beamtime.
+Not the basic simulation proof, and not reco closure.  What remains is experiment preparation: \(p_{yy}\) polarimetry, target readiness, commissioning, neutron acceptance and threshold systematics, background estimates, and the final systematic budget.

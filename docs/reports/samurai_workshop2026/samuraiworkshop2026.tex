@@ -51,8 +51,8 @@
   }
 }
 
-\title[Can SAMURAI Observe IVR?]{
-  Can SAMURAI Observe Isovector Reorientation?
+\title[DPol Exp]{
+  Polarized deuteron breakup experiment
 }
 \subtitle[A detector-level feasibility study]{
   A detector-level feasibility study with y-polarized deuterons
@@ -355,8 +355,8 @@
   \begin{block}{Comparison strategy}
     \scriptsize
   Ideal reference: QMD truth quantities. Detector result: reconstructed
-  observable and fiducial-window quantities.  Final cut definitions and
-  systematic variations are part of the experiment-preparation work.
+  observable, event plane, and fiducial/quality cuts. Truth is used for the
+  ideal reference, diagnostics, and the virtual-breakup veto only.
   \end{block}
 \end{frame}
 
@@ -439,7 +439,7 @@
         \begin{itemize}
           \item Beam polarimeter for reliable $p_{yy}$ monitoring.
           \item $^{112}$Sn/$^{124}$Sn target system and holder.
-          \item Freeze analysis cuts and data-quality definitions.
+          \item Document and freeze the reco-based analysis configuration.
           \item Control acceptance, neutron thresholds, backgrounds, and
                 polarization systematics.
           \item Commissioning and offline readiness before beamtime.
@@ -468,8 +468,8 @@
           physics-observable study.
     \item \textbf{Hardware remaining:} beam polarimeter (monitor $p_{yy}$) and
           the target system (holder + $^{112}$Sn/$^{124}$Sn).
-    \item \textbf{In parallel:} analysis freeze, acceptance/background checks,
-          and polarization-systematic budget.
+    \item \textbf{In parallel:} freeze the reco-based analysis configuration;
+          finalize acceptance/background and polarization-systematic budgets.
   \end{itemize}
   \begin{block}{}
     \footnotesize\centering
@@ -531,7 +531,7 @@
         \item F: $^{112}$Sn / $^{124}$Sn numbers
         \item G: statistics and beamtime
         \item H: y-pol and z-pol
-        \item I: remaining closure and systematics
+        \item I: reco closure and systematics
       \end{itemize}
     \end{column}
   \end{columns}
@@ -800,9 +800,10 @@
   \end{table}
   \begin{block}{Scope}
     \scriptsize Same production chain (SAMURAI + NEBULA + NEBULA Plus, PDC NN
-    proton, NEBULA ToF neutron, reco event plane).  Truth-defined tight
-    quality class is a shared caveat.  $^{112}$Sn rates use an atom-density
-    scaling placeholder.
+    proton, NEBULA ToF neutron, reco event plane, and reco-defined quality
+    cuts).  Truth is used only for the generator-level reference, diagnostics,
+    and the virtual-breakup veto.  $^{112}$Sn rates use an atom-density scaling
+    placeholder.
   \end{block}
 \end{frame}
 
@@ -874,32 +875,32 @@
     \begin{column}{0.50\textwidth}
       \textbf{y-pol tight}
       \[
-      |p_{y,p}^{\,\mathrm{truth}}-p_{y,n}^{\,\mathrm{truth}}|<150
+      |p_{y,p}^{\,\mathrm{reco}}-p_{y,n}^{\,\mathrm{reco}}|<150
       \]
       \[
-      50<|\vec p_{T,p}^{\,\mathrm{truth}}+\vec p_{T,n}^{\,\mathrm{truth}}|<200
+      50<|\vec p_{T,p}^{\,\mathrm{reco}}+\vec p_{T,n}^{\,\mathrm{reco}}|<200
       \]
       \[
-      \pi-|\phi_{\mathrm{truth}}|<0.2
+      \pi-|\phi_{\mathrm{reco}}|<0.2
       \]
     \end{column}
     \begin{column}{0.50\textwidth}
       \textbf{z-pol tight}
       \[
-      p_{z,p}^{\,\mathrm{truth}}+p_{z,n}^{\,\mathrm{truth}}>1150
+      p_{z,p}^{\,\mathrm{reco}}+p_{z,n}^{\,\mathrm{reco}}>1150
       \]
       \[
-      |p_{z,p}^{\,\mathrm{truth}}-p_{z,n}^{\,\mathrm{truth}}|<150
+      |p_{z,p}^{\,\mathrm{reco}}-p_{z,n}^{\,\mathrm{reco}}|<150
       \]
       \[
-      |\vec p_T^{\,\mathrm{sum}}|>50,\quad
-      \pi-|\phi_{\mathrm{truth}}|<0.5
+      |\vec p_{T,\mathrm{reco}}^{\,\mathrm{sum}}|>50,\quad
+      \pi-|\phi_{\mathrm{reco}}|<0.5
       \]
     \end{column}
   \end{columns}
   \vspace{0.12cm}
-  These current classes are truth-defined and must be replaced by reconstructed
-  definitions.
+  The detector-level analysis applies these cuts to reconstructed momenta; the
+  virtual-breakup veto removes generator-level unphysical events only.
 \end{frame}
 
 \begin{frame}{Backup H: z-pol Folded Results}
@@ -949,20 +950,22 @@
   but not impossible.
 \end{frame}
 
-%---- Backup I: remaining closure and systematics ----
-\begin{frame}{Backup I: Truth-Assisted Selection}
+%---- Backup I: reco closure and systematics ----
+\begin{frame}{Backup I: Reco-Based Closure}
   \small
-  \begin{block}{Fully reconstructed now}
+  \begin{block}{Reco-only detector observable}
     Numerator and denominator of $R_x$ use reconstructed proton momentum,
-    reconstructed neutron momentum, and the reconstructed event plane.
+    reconstructed neutron momentum, reconstructed event plane, and
+    reco-defined fiducial/quality cuts.
   \end{block}
-  \begin{block}{Still uses truth}
-    Event-quality classes (transverse balance, near-backscatter) are currently
-    truth-defined in simulation. The px60 fiducial is already reconstructed.
+  \begin{block}{Where truth remains}
+    Truth is used for the generator-level reference, residual/migration
+    diagnostics, and the virtual-breakup veto that removes physically
+    impossible generated events.
   \end{block}
-  \begin{block}{Required closure}
-    Re-run with reconstructed quality-class definitions; compare acceptance,
-    purity, migration, and $\gpar$ ordering against the truth-defined baseline.
+  \begin{block}{Closure status}
+    Reco-defined closure has been completed: the $\gpar$ and isotope ordering
+    survive with the same detector-level analysis path used for the observable.
   \end{block}
 \end{frame}
 
@@ -977,8 +980,8 @@
     \item Polarization uncertainty and model/folding uncertainty.
   \end{itemize}
   \begin{block}{Next analysis product}
-    \small Pseudo-data closure under detector and model variations, with the
-    same folded comparison used for the experimental observable.
+    \small Systematic variations around the reco-closed baseline, using the
+    same folded comparison as the experimental observable.
   \end{block}
 \end{frame}
 

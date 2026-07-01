@@ -22,8 +22,9 @@ Data consistency note
 ---------------------
 Sn112E190 and Sn124E190 rows in the isotope table share an identical production
 chain (same geometry, same proton/neutron reconstruction, same event-plane
-definition, same truth-defined tight quality class, same reco px60 fiducial).
-The truth-defined quality class is a shared caveat, not an isotope mismatch.
+definition, same reco-defined quality cuts, same reco px60 fiducial).  Truth is
+used only for the generator-level reference, detector diagnostics, and the
+virtual-breakup veto.
 """
 
 from __future__ import annotations
@@ -105,7 +106,7 @@ def make_ideal_vs_reco() -> None:
     fig.text(
         0.5, -0.02,
         "Error bars: current MC statistics only.   "
-        "Quality class is truth-defined; observable, neutron momentum, and event plane are reconstructed.",
+        "Detector points use reco-defined cuts, reconstructed momenta, and reconstructed event plane.",
         ha="center", va="top", fontsize=8.5, color="#555555",
     )
 
@@ -193,20 +194,20 @@ def make_ideal_prediction() -> None:
 def make_timeline() -> None:
     """Experiment preparation timeline toward the end-of-April-2027 beamtime.
 
-    Anchors given by the speaker: full simulation is complete now (2026-07);
-    remaining hardware is the polarimeter and the target system; beamtime is
-    end of April 2027.  Intermediate phasing is a reasonable plan and can be
-    shifted; only the two anchors above are firm.
+    Anchors given by the speaker: full simulation and reco-defined closure are
+    complete now (2026-07); remaining hardware is the polarimeter and the
+    target system; beamtime is end of April 2027.  Intermediate phasing is a
+    reasonable plan and can be shifted; only the two anchors above are firm.
     """
     import datetime as dt
     import matplotlib.dates as mdates
 
     # (label, start, end, color, done?)
     tasks = [
-        ("Full simulation\n& detector-level closure", "2025-09", "2026-07", "#3F8457", True),
+        ("Full simulation\n& reco closure", "2025-09", "2026-07", "#3F8457", True),
         ("Polarimeter\n(design, build, test)",        "2026-07", "2027-02", "#1F4E79", False),
         ("Target system\n(holder + $^{112/124}$Sn)",  "2026-09", "2027-02", "#CA6D26", False),
-        ("Reco-defined closure\n& detector systematics", "2026-08", "2027-03", "#555555", False),
+        ("Detector-systematic\nbudget & checks",      "2026-08", "2027-03", "#555555", False),
         ("Commissioning\n(offline + beam test)",      "2027-02", "2027-04", "#7B9EAE", False),
     ]
     beamtime = dt.datetime(2027, 4, 28)
@@ -250,7 +251,7 @@ def make_timeline() -> None:
     )
     ax.set_xlim(mdates.date2num(dt.datetime(2025, 8, 1)), mdates.date2num(dt.datetime(2027, 6, 1)))
     ax.grid(True, axis="x", alpha=0.25)
-    ax.set_title("Toward the beamtime: simulation done, hardware and closure in progress",
+    ax.set_title("Toward the beamtime: simulation and reco closure done",
                  fontsize=12, fontweight="bold")
 
     fig.savefig(FIGDIR / "timeline.png", dpi=220, bbox_inches="tight")
