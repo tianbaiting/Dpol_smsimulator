@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """Build the two new narrative summary figures for the SAMURAI Workshop 2026 talk.
 
-These figures support the restructured physics-first narrative.  All numbers are
-read directly from the detector-folding CSV tables; nothing is hard-coded except
-labels, colours, and axis ranges.
+These figures support the restructured physics-first narrative.  y-pol R_x
+numbers are read directly from the reco-defined selection closure table; nothing
+is hard-coded except labels, colours, and axis ranges.
 
 Inputs (single joint production chain, SAMURAI + NEBULA + NEBULA Plus):
-  - docs/reports/gamma_constraint_20260611/figures/sn112_sn124_tight_px60_r_table.csv
-      columns: target, pol, gamma, gamma_value, stage, N_sim, n_pos, n_neg,
-               R, sigma_R_sim, ...
-      stage == "truth"       -> generator-level (ideal model) R_x
-      stage == "reco_plane"  -> folded reconstructed R_x
+  - docs/reports/samurai_workshop2026/data/rx_truth_vs_reco_selection.csv
+      selection_observable_mode == "truth_cut_truth_obs" -> generator-level
+      selection_observable_mode == "reco_cut_reco_obs"   -> final reco-defined
   - docs/reports/gamma_constraint_20260611/figures/neutron_sign_efficiency_summary.csv
       columns: target, pol, cut, fiducial, N_pos, N_neg, eps_pos, eps_neg, ...
 
@@ -24,12 +22,13 @@ Sn112E190 and Sn124E190 rows in the isotope table share an identical production
 chain (same geometry, same proton/neutron reconstruction, same event-plane
 definition, same reco-defined quality cuts, same reco px60 fiducial).  Truth is
 used only for the generator-level reference, detector diagnostics, and the
-virtual-breakup veto.
+truth-matched simulated p+n parent channel.
 """
 
 from __future__ import annotations
 
 import csv
+import math
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -39,9 +38,10 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 REPORT = ROOT / "docs/reports/samurai_workshop2026"
 FIGDIR = REPORT / "figures"
-ISO_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/sn112_sn124_tight_px60_r_table.csv"
+ISO_TABLE = REPORT / "data/rx_truth_vs_reco_selection.csv"
+ZPOL_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/sn112_sn124_tight_px60_r_table.csv"
 EFF_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/neutron_sign_efficiency_summary.csv"
-SEP_TABLE = ROOT / "docs/reports/gamma_constraint_20260611/figures/sn124_tight_px60_gamma_separation.csv"
+PLANNING_ANCHOR_EVENTS = 2.75e5
 
 # Consistent identity across every figure: Sn112 and Sn124 always look the same.
 STYLE = {
@@ -55,7 +55,24 @@ def read_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(f))
 
 
-def _series(rows, target, pol, stage):
+def _series_mode(rows, target, pol, mode):
+    sub = sorted(
+        [
+            r for r in rows
+            if r["target"] == target
+            and r["pol"] == pol
+            and r["selection_observable_mode"] == mode
+        ],
+        key=lambda r: float(r["gamma_value"]),
+    )
+    return (
+        np.array([float(r["gamma_value"]) for r in sub]),
+        np.array([float(r["R"]) for r in sub]),
+        np.array([float(r["sigma_R"]) for r in sub]),
+    )
+
+
+def _series_stage(rows, target, pol, stage):
     sub = sorted(
         [r for r in rows if r["target"] == target and r["pol"] == pol and r["stage"] == stage],
         key=lambda r: float(r["gamma_value"]),
@@ -67,27 +84,35 @@ def _series(rows, target, pol, stage):
     )
 
 
+def required_events_for_separation(r_left: float, r_right: float, sigma_level: float = 3.0) -> float:
+    delta = abs(r_right - r_left)
+    if delta <= 0.0:
+        return float("inf")
+    r_mid = 0.5 * (r_left + r_right)
+    return (sigma_level * (1.0 + r_mid) * math.sqrt(r_mid) / delta) ** 2
+
+
 def make_ideal_vs_reco() -> None:
     """Figure 2: ideal model (left) vs folded reconstructed (right)."""
     rows = read_rows(ISO_TABLE)
 
     fig, (axL, axR) = plt.subplots(
-        1, 2, figsize=(11.4, 4.6), constrained_layout=True, sharey=True
+        1, 2, figsize=(11.4, 5.0), constrained_layout=True, sharey=True
     )
 
     for target, st in STYLE.items():
         # Left: ideal generator-level prediction.
-        gx, rR, rE = _series(rows, target, "ypol", "truth")
+        gx, rR, rE = _series_mode(rows, target, "ypol", "truth_cut_truth_obs")
         axL.errorbar(gx, rR, yerr=rE, marker=st["marker"], linewidth=2.2,
                      capsize=4, color=st["color"], label=st["label"])
-        # Right: folded reconstructed observable.
-        gx, rR, rE = _series(rows, target, "ypol", "reco_plane")
+        # Right: final reco-defined detector observable.
+        gx, rR, rE = _series_mode(rows, target, "ypol", "reco_cut_reco_obs")
         axR.errorbar(gx, rR, yerr=rE, marker=st["marker"], linewidth=2.2,
                      capsize=4, color=st["color"], label=st["label"])
 
     for ax, title in (
         (axL, "Ideal model prediction\n(generator level, before any detector)"),
-        (axR, "After detector + reconstruction\n(reconstructed proton, neutron, event plane)"),
+        (axR, "After detector + reconstruction\n(reco-defined selection and observable)"),
     ):
         ax.set_title(title, fontsize=11, fontweight="bold")
         ax.set_xlabel(r"symmetry-energy density dependence  $\gamma$", fontsize=11)
@@ -101,12 +126,12 @@ def make_ideal_vs_reco() -> None:
 
     fig.suptitle(
         "The detector changes the scale, not the physical ordering",
-        fontsize=13, fontweight="bold", y=1.02,
+        fontsize=12, fontweight="bold",
     )
     fig.text(
         0.5, -0.02,
         "Error bars: current MC statistics only.   "
-        "Detector points use reco-defined cuts, reconstructed momenta, and reconstructed event plane.",
+        "Detector points use reconstructed proton, neutron, event plane, and reco-defined cuts.",
         ha="center", va="top", fontsize=8.5, color="#555555",
     )
 
@@ -170,7 +195,7 @@ def make_ideal_prediction() -> None:
     rows = read_rows(ISO_TABLE)
     fig, ax = plt.subplots(figsize=(7.0, 4.4), constrained_layout=True)
     for target, st in STYLE.items():
-        gx, rR, rE = _series(rows, target, "ypol", "truth")
+        gx, rR, rE = _series_mode(rows, target, "ypol", "truth_cut_truth_obs")
         ax.errorbar(gx, rR, yerr=rE, marker=st["marker"], linewidth=2.2,
                     capsize=4, color=st["color"], label=st["label"])
     ax.set_xlabel(r"symmetry-energy density dependence  $\gamma$", fontsize=11)
@@ -262,11 +287,11 @@ def make_timeline() -> None:
 def make_zpol_inset() -> None:
     """Small inset: z-pol folded R_x vs gamma for 124Sn.
 
-    Reads the same isotope table (zpol + reco_plane rows).  Purpose: show on
+    Reads the legacy isotope table (zpol + reco_plane rows).  Purpose: show on
     the 'Why y-pol first' slide that z-pol carries a visible, even stronger,
     gamma dependence, but is deferred for experimental reasons.
     """
-    rows = read_rows(ISO_TABLE)
+    rows = read_rows(ZPOL_TABLE)
     sub = sorted(
         [r for r in rows
          if r["target"] == "Sn124E190" and r["pol"] == "zpol" and r["stage"] == "reco_plane"],
@@ -296,19 +321,26 @@ def make_zpol_inset() -> None:
 def make_statistics_reach() -> None:
     """Slide 10: statistics required vs. beamtime delivered.
 
-    Reads the Sn124 y-pol gamma-separation table.  Bars = usable events needed
-    for a 3-sigma separation of adjacent gamma intervals; the dashed line is the
-    16 h / 15 mm planning anchor.  The anchor sits about two orders of magnitude
-    above the hardest interval, i.e. statistics are not the bottleneck.
+    Computes the Sn124 y-pol final-reco gamma-separation scale.  Bars are usable
+    events needed for a 3-sigma separation of adjacent gamma intervals; the dashed line is the
+    16 h / 15 mm planning anchor.  The anchor sits about 70 times above the
+    hardest interval, i.e. statistics are not the bottleneck.
     """
-    rows = [r for r in read_rows(SEP_TABLE) if r["pol"] == "ypol"]
-    rows = sorted(rows, key=lambda r: float(r["N_required_3sigma"]))
-    labels = [
-        r["left_gamma"].replace("g0", "0.") + r"$\to$" + r["right_gamma"].replace("g0", "0.")
-        for r in rows
-    ]
-    n_req = [float(r["N_required_3sigma"]) for r in rows]
-    anchor = float(rows[0]["expected_N_15mm_16h"])
+    rows = sorted(
+        [
+            r for r in read_rows(ISO_TABLE)
+            if r["target"] == "Sn124E190"
+            and r["pol"] == "ypol"
+            and r["selection_observable_mode"] == "reco_cut_reco_obs"
+        ],
+        key=lambda r: float(r["gamma_value"]),
+    )
+    labels = []
+    n_req = []
+    for left, right in zip(rows, rows[1:]):
+        labels.append(f"{float(left['gamma_value']):.1f}" + r"$\to$" + f"{float(right['gamma_value']):.1f}")
+        n_req.append(required_events_for_separation(float(left["R"]), float(right["R"])))
+    anchor = PLANNING_ANCHOR_EVENTS
 
     fig, ax = plt.subplots(figsize=(7.2, 3.9), constrained_layout=True)
     bars = ax.bar(labels, n_req, color=["#9ecae1", "#6baed6", "#3182bd"], width=0.62)
@@ -324,7 +356,7 @@ def make_statistics_reach() -> None:
         ax.text(bar.get_x() + bar.get_width() / 2, val * 1.18,
                 f"{val:.0f}" if val < 1000 else f"{val/1000:.2f}$\\times10^3$",
                 ha="center", va="bottom", fontsize=9)
-    ax.text(len(rows) - 0.5, anchor * 0.55, r"$\sim100\times$ margin",
+    ax.text(len(n_req) - 0.5, anchor * 0.55, r"$\sim70\times$ margin",
             ha="right", va="top", color="#d62728", fontsize=9.5, fontweight="bold")
     fig.savefig(FIGDIR / "statistics_reach.png", dpi=220, bbox_inches="tight")
     fig.savefig(FIGDIR / "statistics_reach.pdf", bbox_inches="tight")

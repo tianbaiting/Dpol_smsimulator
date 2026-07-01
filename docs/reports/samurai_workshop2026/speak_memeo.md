@@ -116,9 +116,9 @@ Cue: not statistics-limited.
 
 The error bars on the previous slide are current Monte Carlo statistics, not the projected beamtime statistics.
 
-For planning, the closest adjacent gamma separation needs about $2.8\times10^3$ usable events for a three-sigma statistical separation.  With a 16-hour run on the 15 mm-diameter, 1.2 g $^{124}$Sn disk target option, the projected y-pol sample after the current reconstructed survival is about $2.75\times10^5$ usable events.
+For planning, the closest adjacent gamma separation needs about $3.7\times10^3$ usable events for a three-sigma statistical separation.  With a 16-hour run on the 15 mm-diameter, 1.2 g $^{124}$Sn disk target option, the projected y-pol sample after the current reconstructed survival is about $2.75\times10^5$ usable events.
 
-That is roughly two orders of magnitude above the statistical requirement.  So I would not describe the y-pol measurement as statistics-limited.  The real work is systematic control: neutron acceptance, thresholds, backgrounds, and polarization monitoring.
+That is roughly 70 times above the statistical requirement.  So I would not describe the y-pol measurement as statistics-limited.  The real work is systematic control: neutron acceptance, thresholds, backgrounds, and polarization monitoring.
 
 ### Slide 13 -- What Is Ready for the Experiment?
 

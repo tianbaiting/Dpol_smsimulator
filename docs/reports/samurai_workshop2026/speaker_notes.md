@@ -109,22 +109,23 @@ virtual-breakup veto that removes physically impossible generated events.
 ## Slide 11 -- Main Result: the Detector Changes the Scale, Not the Ordering
 
 This is the key slide.  Show the before/after double panel: ideal model on the
-left, folded reconstructed on the right, with 112Sn and 124Sn in consistent
-colours.  State three conclusions: the detector changes the absolute R_x, the
-gamma ordering remains visible, and 124Sn keeps the stronger sensitivity while
-112Sn stays a reference.  Emphasise the central result is the survival of the
-ordering, not R_reco = R_truth.  Error bars are current MC statistics only.
+left, final reco-defined reconstructed result on the right, with 112Sn and
+124Sn in consistent colours.  State three conclusions: the detector changes the
+absolute R_x, the gamma ordering remains visible, and 124Sn keeps the stronger
+sensitivity while 112Sn stays a reference.  Emphasise the central result is the
+survival of the ordering, not R_reco = R_truth.  Error bars are current MC
+statistics only.
 
 ## Slide 12 -- Are the Statistics Sufficient?
 
 Answer the natural question right after the main result.  The error bars shown
 reflect the current MC sample (about 2300 folded events per gamma), not the
 projected beamtime statistics.  Separating the closest adjacent gamma interval
-(0.7 to 0.8) at 3-sigma needs about 2.8e3 usable events in the statistical-only
+(0.7 to 0.8) at 3-sigma needs about 3.7e3 usable events in the statistical-only
 planning convention.  A 16 h run with the current 15 mm-diameter, 1.2 g
 124Sn disk-target planning option gives about 2.75e5 usable y-pol events after
-applying the current tight-px60 reco survival, roughly two orders of magnitude
-above the requirement.  Conclude that event counts are not the limiting factor;
+applying the current tight-px60 reco survival, roughly 70 times above the
+requirement.  Conclude that event counts are not the limiting factor;
 neutron acceptance, thresholds, polarization, and backgrounds are the key
 systematics.
 
@@ -170,16 +171,16 @@ the simulation side; the next step is preparing the experiment.
 
 Pause for questions.  Route detailed questions to the backup sections:
 reconstruction performance to backup C, neutron acceptance to backup D, the
-folding ladder to backup E, isotope numbers to backup F, statistics to backup G,
-y-pol/z-pol and polarization monitoring to backup H, reco closure and
+truth-cut versus reco-cut closure to backup E, isotope numbers to backup F,
+statistics to backup G, y-pol/z-pol and polarization monitoring to backup H, reco closure and
 systematics to backup I.
 
 ## Backup
 
 Use backup only for expert questions.  The backup keeps the full symmetry-energy
 parameterization (A), the exact observable definitions (B), proton/neutron
-residuals and RK-versus-NN (C), the neutron acceptance maps and px60/80/100
-comparison (D), the folding ladder and matrix equation (E), the full 112Sn/124Sn
-tables and bounded asymmetry (F), the statistical planning scale and survival
+residuals and RK-versus-NN (C), the neutron acceptance maps, px60/80/100
+comparison, and selection migration (D), the truth-cut versus reco-cut closure
+(E), the full 112Sn/124Sn tables and bounded asymmetry (F), the statistical planning scale and survival
 flow (G), the z-pol folded results and polarization monitoring (H), and the
 reco-closure and detector-systematic checklists (I).

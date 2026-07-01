@@ -403,11 +403,11 @@
               sample} ($\sim$2300 folded events per $\gpar$), not projected
               beamtime statistics.
         \item Separating the closest $\gpar$ interval ($0.7\!\to\!0.8$) at
-              $3\sigma$ needs $\sim$$2.8\times10^{3}$ usable events.
+              $3\sigma$ needs $\sim$$3.7\times10^{3}$ usable events.
         \item A \textbf{16 h} run with a \textbf{15 mm-diameter},
               \textbf{1.2 g} $^{124}$Sn disk delivers
               $\sim$$2.75\times10^{5}$ usable y-pol events ---
-              about $100\times$ the requirement.
+              about $70\times$ the requirement.
       \end{itemize}
       \begin{block}{Takeaway}
         \scriptsize\centering
@@ -726,51 +726,50 @@
   negative-$p_{x,n}$ branch.
 \end{frame}
 
-\begin{frame}{Backup D: Sign Migration and Response Matrices}
+\begin{frame}{Backup D: Reco Selection Migration}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.45\textwidth}
+    \begin{column}{0.48\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{sign_migration_summary_tight.png}
+      \includegraphics[width=\linewidth]{selection_efficiency_purity_vs_gamma.png}
     \end{column}
-    \begin{column}{0.55\textwidth}
+    \begin{column}{0.52\textwidth}
       \centering
-      \includegraphics[width=\linewidth]{response_matrices_tight_px60.png}
+      \includegraphics[width=\linewidth]{selection_migration_matrix_ypol.png}
     \end{column}
   \end{columns}
   \vspace{0.08cm}
   \scriptsize
-  Left: $\Delta p_x$ sign migration is small versus the neutron-visibility
-  effect. Right: response matrices for possible unfolding; the main result
-  does not rely on matrix inversion.
+  Left: reco-selection efficiency and purity relative to the truth-defined
+  reference inside the truth-matched MC parent sample. Right: Sn124 migration
+  matrix normalized as $P(\mathrm{reco\ selection}\mid\mathrm{truth\ state})$.
 \end{frame}
 
 %---- Backup E: folding diagnostics ----
-\begin{frame}{Backup E: The $R_x$ Ladder}
+\begin{frame}{Backup E: Truth-Cut vs Reco-Cut Closure}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.50\textwidth}
+    \begin{column}{0.62\textwidth}
       \centering
-      \includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{r_ladder_summary_tight_px60.png}
+      \includegraphics[width=\linewidth,height=0.70\textheight,keepaspectratio]{rx_truthcut_vs_recocut_ypol.png}
     \end{column}
-    \begin{column}{0.50\textwidth}
-      \small
-      Folding steps, largest shift first:
-      \begin{enumerate}
-        \item Neutron visibility / acceptance.
-        \item Proton momentum reconstruction.
-        \item Event-plane reconstruction.
-      \end{enumerate}
-      \[
-        N_{\mathrm{reco},j}=\sum_i K_{ji}N_{\mathrm{true},i}+b_j
-      \]
+    \begin{column}{0.38\textwidth}
+      \scriptsize
+      Four combinations separate the effects:
+      \begin{itemize}
+        \item truth cut + truth observable;
+        \item truth cut + reco observable;
+        \item reco cut + truth observable;
+        \item reco cut + reco observable.
+      \end{itemize}
       \begin{block}{}
-        \small The absolute ratio changes; the $\gpar$ ordering remains.
+        \scriptsize The final detector-level result is the reco-cut +
+        reco-observable curve; it does not use truth momenta for selection.
       \end{block}
     \end{column}
   \end{columns}
 \end{frame}
 
 %---- Backup F: Sn112 / Sn124 numbers ----
-\begin{frame}{Backup F: $^{124}$Sn y-pol Folded Numbers}
+\begin{frame}{Backup F: $^{124}$Sn y-pol Final Reco Numbers}
   \scriptsize
   \begin{table}
     \centering
@@ -778,15 +777,16 @@
       \toprule
       $\gpar$ & $N_+$ & $N_-$ & $R_x\pm\sigma_{\mathrm{MC}}$ & $A_x$ & $N_{\mathrm{used}}$ \\
       \midrule
-      0.5 & 2134 & 171 & $12.48\pm0.99$ & 0.852 & 2305 \\
-      0.6 & 2147 & 275 & $\phantom{0}7.81\pm0.50$ & 0.773 & 2422 \\
-      0.7 & 2093 & 358 & $\phantom{0}5.85\pm0.33$ & 0.708 & 2451 \\
-      0.8 & 1948 & 390 & $\phantom{0}4.99\pm0.28$ & 0.666 & 2338 \\
+      0.5 & 2123 & 167 & $12.71\pm1.02$ & 0.854 & 2290 \\
+      0.6 & 2222 & 282 & $\phantom{0}7.88\pm0.50$ & 0.775 & 2504 \\
+      0.7 & 2228 & 426 & $\phantom{0}5.23\pm0.28$ & 0.679 & 2654 \\
+      0.8 & 2128 & 464 & $\phantom{0}4.59\pm0.23$ & 0.642 & 2592 \\
       \bottomrule
     \end{tabular}
   \end{table}
   \begin{block}{}
-    \scriptsize Folded reco-plane values for $^{124}$Sn y-pol tight px60.
+    \scriptsize Final reco-defined values for $^{124}$Sn y-pol tight px60:
+    reconstructed proton, neutron, event plane, fiducial, and quality cuts.
     Uncertainties are current MC statistics only.
   \end{block}
 \end{frame}
@@ -799,17 +799,16 @@
       \toprule
       target & $\gpar=0.5$ & $\gpar=0.6$ & $\gpar=0.7$ & $\gpar=0.8$ \\
       \midrule
-      $^{112}$Sn & $8.64\pm0.69$ & $7.05\pm0.50$ & $5.95\pm0.41$ & $5.80\pm0.39$ \\
-      $^{124}$Sn & $12.48\pm0.99$ & $7.81\pm0.50$ & $5.85\pm0.33$ & $4.99\pm0.28$ \\
+      $^{112}$Sn & $8.00\pm0.60$ & $6.39\pm0.42$ & $5.39\pm0.33$ & $4.61\pm0.26$ \\
+      $^{124}$Sn & $12.71\pm1.02$ & $7.88\pm0.50$ & $5.23\pm0.28$ & $4.59\pm0.23$ \\
       \bottomrule
     \end{tabular}
   \end{table}
   \begin{block}{Scope}
     \scriptsize Same production chain (SAMURAI + NEBULA + NEBULA Plus, PDC NN
-    proton, NEBULA ToF neutron, reco event plane, and reco-defined quality
-    cuts).  Truth is used only for the generator-level reference, diagnostics,
-    and the virtual-breakup veto.  $^{112}$Sn rates use an atom-density scaling
-    placeholder.
+    proton, NEBULA ToF neutron, reco event plane, reco-defined quality cuts,
+    and reco px60 fiducial).  Truth is used only for the generator-level
+    reference, diagnostics, and the truth-matched simulated p+n parent channel.
   \end{block}
 \end{frame}
 
@@ -826,10 +825,10 @@
 %---- Backup G: statistics ----
 \begin{frame}{Backup G: Statistical Planning Scale}
   \scriptsize
-  Closest adjacent $\gpar$ interval in the $^{124}$Sn y-pol folded result:
+  Closest adjacent $\gpar$ interval in the $^{124}$Sn y-pol final reco result:
   \[
     \gpar=0.7\to0.8,\qquad
-    N_{\mathrm{stat},3\sigma}\simeq 2.8\times10^{3}.
+    N_{\mathrm{stat},3\sigma}\simeq 3.7\times10^{3}.
   \]
   \begin{table}
     \centering
@@ -837,9 +836,9 @@
       \toprule
       interval & $R_{\mathrm{left}}$ & $R_{\mathrm{right}}$ & $|\Delta R|$ & $N_{\mathrm{stat},3\sigma}$ \\
       \midrule
-      0.5$\to$0.6 & 12.48 & 7.81 & 4.67 & 519 \\
-      0.6$\to$0.7 & 7.81 & 5.85 & 1.96 & 979 \\
-      0.7$\to$0.8 & 5.85 & 4.99 & 0.85 & $2.77\times10^{3}$ \\
+      0.5$\to$0.6 & 12.71 & 7.88 & 4.83 & 506 \\
+      0.6$\to$0.7 & 7.88 & 5.23 & 2.65 & 480 \\
+      0.7$\to$0.8 & 5.23 & 4.59 & 0.64 & $3.72\times10^{3}$ \\
       \bottomrule
     \end{tabular}
   \end{table}
