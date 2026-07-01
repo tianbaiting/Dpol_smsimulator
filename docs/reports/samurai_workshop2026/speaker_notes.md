@@ -65,23 +65,28 @@ axis lies along the beam and is therefore always inside the reaction plane, so
 there is no event-by-event dilution.  But a longitudinally polarized deuteron
 beam is hard to produce, hard to transport (spin precession in the beamline),
 and hard to monitor ($p_{zz}$ needs absolute, two-angle normalization).  y-pol
-is measurable now: its vertical axis makes the signal modulate as cos(2psi)
-with the angle psi to the reaction plane, which dilutes a naive average, but
-because the reaction plane is reconstructed event by event we select a
-favourable psi window and recover the coherent signal.  LRUD monitoring of
-$p_{yy}$ is mature and the statistics budget (backup G) easily affords the
-angular selection.  Point at the z-pol inset: z-pol also carries a strong gamma
-dependence, so it is a valuable later extension, not abandoned.  Close: y-pol
+is measurable now.  For a tensor-polarized spin-1 beam, the vertical axis
+enters through a rank-2 projection onto the reaction plane, giving a
+cos(2psi)-like angular dependence.  A naive average over reaction-plane angles
+is diluted, but because the reaction plane is reconstructed event by event we
+select a favourable psi window and recover the coherent signal.  LRUD
+monitoring of $p_{yy}$ is mature and the statistics budget (backup G) easily
+affords the angular selection.  Point at the z-pol inset: z-pol also carries a
+strong gamma dependence, so it is a valuable later extension, not abandoned.
+Close: y-pol
 is the realistic first stage.
 
 ## Slide 8 -- Proton Momentum Reconstruction: RK and NN Cross-Check
 
 Make one point: the proton momentum is reconstructed from the PDC track, and
 the result is cross-checked with two independent reconstruction approaches.
-Use the residual figure rather than backend details.  Say RK and NN have
-consistent core residuals in the same QMD kinematic window; the NN backend is
-used for the detector-level $R_x$ result because it reduces the large-tail
-contribution.  Do not spend time on architecture.
+Define the names before pointing at the residuals: RK means charged-particle
+transport through the magnetic field, constrained by the target point and the
+measured PDC hit/track; NN means a neural-network regressor trained on the same
+QMD simulation.  Then say the two methods give consistent core residuals in
+the same y-pol kinematic window, while NN reduces the large-tail contribution
+and is therefore used for the detector-level $R_x$ result.  Do not spend time
+on software architecture.
 
 ## Slide 9 -- Neutron Momentum Reconstruction
 
@@ -97,9 +102,9 @@ Make one point: the event plane is built from reconstructed proton and neutron
 transverse momenta.  Reaction-plane migration broadens the observable but does
 not erase the gamma ordering.  State the comparison strategy: the ideal
 reference uses QMD truth quantities; the detector result uses reconstructed
-quantities for the observable and fiducial momentum window.  Keep the caveat
-explicit: the event-quality class is still truth-defined in this version, with
-reco-defined closure remaining.
+quantities for the observable and fiducial momentum window.  Keep detailed
+cut-definition caveats for backup; in the main talk, frame this as part of the
+analysis freeze and systematic-control work before beamtime.
 
 ## Slide 11 -- Main Result: the Detector Changes the Scale, Not the Ordering
 
@@ -116,44 +121,48 @@ Answer the natural question right after the main result.  The error bars shown
 reflect the current MC sample (about 2300 folded events per gamma), not the
 projected beamtime statistics.  Separating the closest adjacent gamma interval
 (0.7 to 0.8) at 3-sigma needs about 2.8e3 usable events in the statistical-only
-planning convention.  A 16 h beamtime on a 15 mm 124Sn target gives about
-2.75e5 usable y-pol events after applying the current tight-px60 reco survival,
-roughly two orders of magnitude above the requirement.  Conclude that event
-counts are not the limiting factor; neutron acceptance, thresholds,
-polarization, and backgrounds are the key systematics.
+planning convention.  A 16 h run with the current 15 mm-diameter, 1.2 g
+124Sn disk-target planning option gives about 2.75e5 usable y-pol events after
+applying the current tight-px60 reco survival, roughly two orders of magnitude
+above the requirement.  Conclude that event counts are not the limiting factor;
+neutron acceptance, thresholds, polarization, and backgrounds are the key
+systematics.
 
-## Slide 13 -- What Is Established and What Is Not Yet?
+## Slide 13 -- What Is Ready for the Experiment?
 
-Separate established results from required next work.  Established: the
-observable is reconstructed, folding changes the absolute ratio, the gamma and
-isotope ordering survive, 124Sn is the primary target.  Still required:
-reconstructed event-quality cuts, acceptance/purity/migration, 112Sn rate
-validation, polarization uncertainty, neutron threshold and backgrounds, and
-pseudo-data closure.  Give the honest scope once, clearly: the observable and
-event plane are reconstructed but the quality class is still truth-defined, so
-this is a detector-level closure study.
+Change the tone from "more simulation is needed" to "the y-pol observable is
+ready from the simulation side."  Say that full SAMURAI detector simulation and
+reconstruction are in place, the y-pol IVR observable is formed from
+reconstructed proton, neutron, and event-plane quantities, and the gamma and
+isotope ordering survive detector response.  Then pivot to experiment
+preparation: polarimeter, target system, analysis freeze, acceptance and
+background control, polarization systematics, and commissioning.  The point is
+that the next step is experimental readiness, not proving the observable again
+in simulation.
 
 ## Slide 14 -- Toward the Beamtime: Preparation Timeline
 
-Turn the "still required" list into a concrete schedule.  Full detector
-simulation and the truth-assisted detector-folding study are done now
+Turn the experiment-preparation list into a concrete schedule.  Full detector
+simulation, reconstruction, and the y-pol physics-observable study are done now
 (2026-07).  The remaining hardware is the beam polarimeter, needed to monitor
 the vertical tensor polarization
 $p_{yy}$, and the target system --- the target holder plus the $^{112}$Sn and
-$^{124}$Sn targets.  In parallel, run the reco-defined selection closure and
-the detector-systematic studies.  Offline and beam-test commissioning lead
-into the SAMURAI beamtime, planned for the end of April 2027.  If asked, the
-intermediate phasing is a plan and can shift; only the two anchors (simulation
-done now, beamtime end of April 2027) are firm.
+$^{124}$Sn targets.  In parallel, freeze analysis cuts and the systematic
+budget: acceptance, backgrounds, thresholds, and polarization uncertainty.
+Offline and beam-test commissioning lead into the SAMURAI beamtime, planned for
+the end of April 2027.  If asked, the intermediate phasing is a plan and can
+shift; only the two anchors (simulation done now, beamtime end of April 2027)
+are firm.
 
 ## Slide 15 -- Summary
 
 Four points in non-technical language: a polarized deuteron converts an
 isovector force difference into a measurable asymmetry; 124Sn is the main
 sensitivity and 112Sn the reference; the detector changes the scale but the
-gamma and isotope ordering survive; the next step is a fully reconstructed
-closure and detector-systematic validation.  Bottom line: a y-polarized
-deuteron is a realistic first-stage path to testing IVR at SAMURAI.
+gamma and isotope ordering survive; statistics are sufficient, so the next
+focus is experimental readiness: polarimetry, targets, commissioning, and
+systematic control.  Bottom line: the y-pol measurement is physics-ready from
+the simulation side; the next step is preparing the experiment.
 
 ## Slide 16 -- Thanks
 

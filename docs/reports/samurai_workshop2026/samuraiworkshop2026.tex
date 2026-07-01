@@ -265,13 +265,11 @@
       \begin{block}{y-pol: measurable now}
         \scriptsize
         \begin{itemize}
-          \item Vertical axis $\Rightarrow$ signal modulates as
-                $\sim\!\cos(2\psi)$ with the angle $\psi$ to the reaction
-                plane, diluting a naive average.
-          \item The reaction plane is reconstructed event by event, so we
-                select a favorable $\psi$ window and recover the signal;
-                LRUD monitoring of $p_{yy}$ is mature and statistics afford
-                the selection.
+          \item Tensor polarization is rank-2: the vertical axis projects onto
+                the reaction plane with a $\cos(2\psi)$-like dependence.
+          \item Event-by-event reaction-plane reconstruction lets us select a
+                favorable $\psi$ window; LRUD $p_{yy}$ monitoring is mature and
+                statistics afford the selection.
         \end{itemize}
       \end{block}
     \end{column}
@@ -299,18 +297,21 @@
       \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{proton_residuals_ypol.png}
     \end{column}
     \begin{column}{0.40\textwidth}
-      \footnotesize
+      \scriptsize
       \begin{itemize}
-        \item The proton momentum comes from the PDC track.
-        \item RK and NN give consistent core residuals in the same QMD
-              kinematic window.
-        \item The NN backend reduces the large-tail contribution that matters
-              for event-by-event reconstruction.
+        \item The target point and the measured PDC hit/track after the magnet
+              constrain the proton momentum.
+        \item \textbf{RK}: Using Runge-Kutta to caculate charged-particle transport in field. 
+        \item \textbf{NN}: neural-network regression trained on the geant4
+              simulation data.
+        \item The same reconstructed cuts are applied to both outputs.
+        \item Core residuals agree; NN suppresses the large tails in this
+              y-pol window.
       \end{itemize}
       \begin{block}{Use in this analysis}
         \scriptsize
-        The detector-level $R_x$ uses reconstructed proton momentum.  The RK
-        comparison is an independent validation, not a separate analysis path.
+        Detector-level $R_x$ uses NN proton reconstruction; RK is an
+        independent field-transport cross-check.
       \end{block}
     \end{column}
   \end{columns}
@@ -354,8 +355,8 @@
   \begin{block}{Comparison strategy}
     \scriptsize
   Ideal reference: QMD truth quantities. Detector result: reconstructed
-  observable and fiducial-window quantities.  Event-quality class is still
-  truth-defined in this version.
+  observable and fiducial-window quantities.  Final cut definitions and
+  systematic variations are part of the experiment-preparation work.
   \end{block}
 \end{frame}
 
@@ -397,8 +398,9 @@
               beamtime statistics.
         \item Separating the closest $\gpar$ interval ($0.7\!\to\!0.8$) at
               $3\sigma$ needs $\sim$$2.8\times10^{3}$ usable events.
-        \item A \textbf{16 h} beamtime on a \textbf{15 mm} $^{124}$Sn target
-              delivers $\sim$$2.75\times10^{5}$ usable y-pol events ---
+        \item A \textbf{16 h} run with a \textbf{15 mm-diameter},
+              \textbf{1.2 g} $^{124}$Sn disk delivers
+              $\sim$$2.75\times10^{5}$ usable y-pol events ---
               about $100\times$ the requirement.
       \end{itemize}
       \begin{block}{Takeaway}
@@ -413,40 +415,42 @@
 \end{frame}
 
 %=========================================================================
-% Slide 11 --- What Is Established and What Is Not Yet?
+% Slide 13 --- What Is Ready for the Experiment?
 %=========================================================================
-\begin{frame}{What Is Established and What Is Not Yet?}
+\begin{frame}{What Is Ready for the Experiment?}
   \footnotesize
   \begin{columns}[T,onlytextwidth]
     \begin{column}{0.50\textwidth}
-      \begin{block}{Established}
+      \begin{block}{Physics and reconstruction ready}
         \begin{itemize}
-          \item The IVR observable is built from reconstructed momenta.
-          \item Proton, neutron, and event plane are all reconstructed.
-          \item Detector folding changes the absolute ratio.
-          \item The $\gpar$ and isotope ordering remain visible.
+          \item Full SAMURAI detector simulation and reconstruction are in
+                place.
+          \item The y-pol IVR observable is built from reconstructed proton,
+                neutron, and event-plane quantities.
+          \item Detector response changes the absolute ratio, but the
+                $\gpar$ and isotope ordering survive.
           \item $^{124}$Sn is the primary sensitivity target.
+          \item Expected y-pol statistics are sufficient.
         \end{itemize}
       \end{block}
     \end{column}
     \begin{column}{0.50\textwidth}
-      \begin{block}{Still required}
+      \begin{block}{Experiment preparation}
         \begin{itemize}
-          \item Migrate event-quality cuts from truth to reconstructed.
-          \item Quantify acceptance, purity, and migration.
-          \item Validate $^{112}$Sn target-specific rates.
-          \item Propagate polarization uncertainty.
-          \item Study neutron threshold, cross-talk, backgrounds.
-          \item Detector/model pseudo-data closure tests.
+          \item Beam polarimeter for reliable $p_{yy}$ monitoring.
+          \item $^{112}$Sn/$^{124}$Sn target system and holder.
+          \item Freeze analysis cuts and data-quality definitions.
+          \item Control acceptance, neutron thresholds, backgrounds, and
+                polarization systematics.
+          \item Commissioning and offline readiness before beamtime.
         \end{itemize}
       \end{block}
     \end{column}
   \end{columns}
-  \begin{block}{Honest scope}
+  \begin{block}{Takeaway}
     \centering
-    Observable, neutron momentum, and event plane are reconstructed.  The
-    event-quality class still uses truth momenta --- this is a detector-level
-    closure study, not yet the final analysis.
+    From the simulation side, the y-pol physics observable is established; the
+    focus now moves to experiment preparation and systematic control.
   \end{block}
 \end{frame}
 
@@ -460,11 +464,12 @@
   \vspace{0.05cm}
   \footnotesize
   \begin{itemize}
-    \item \textbf{Done:} full detector simulation and truth-assisted
-          detector-folding study.
+    \item \textbf{Done:} full detector simulation, reconstruction, and y-pol
+          physics-observable study.
     \item \textbf{Hardware remaining:} beam polarimeter (monitor $p_{yy}$) and
           the target system (holder + $^{112}$Sn/$^{124}$Sn).
-    \item \textbf{In parallel:} reco-defined closure and detector systematics.
+    \item \textbf{In parallel:} analysis freeze, acceptance/background checks,
+          and polarization-systematic budget.
   \end{itemize}
   \begin{block}{}
     \footnotesize\centering
@@ -485,14 +490,14 @@
     \item The SAMURAI detector changes the absolute observable, but the
           $\gpar$ and isotope ordering survive proton, neutron, and
           event-plane reconstruction.
-    \item The next decisive step is a fully reconstructed selection closure
-          and detector-systematic validation.
+    \item Statistics are sufficient; the next focus is experimental readiness:
+          polarimetry, targets, commissioning, and systematic control.
   \end{enumerate}
   \vspace{0.2cm}
   \begin{block}{Bottom line}
     \small\centering
-    A y-polarized deuteron provides a realistic first-stage path to testing
-    isovector reorientation at SAMURAI.
+    The y-pol measurement is physics-ready from the simulation side; the next
+    step is preparing the experiment.
   \end{block}
 \end{frame}
 
@@ -833,8 +838,9 @@
   \end{table}
   \begin{block}{}
     \scriptsize Statistical-only planning scale; current anchor gives about
-    $2.75\times10^{5}$ usable y-pol events for $^{124}$Sn. Detector,
-    polarization, background, and model uncertainties are not included.
+    $2.75\times10^{5}$ usable y-pol events for a 16 h run with a
+    15 mm-diameter, 1.2 g $^{124}$Sn disk. Detector, polarization, background,
+    and model uncertainties are not included.
   \end{block}
 \end{frame}
 

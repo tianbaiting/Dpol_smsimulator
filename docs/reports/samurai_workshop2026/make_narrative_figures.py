@@ -312,7 +312,7 @@ def make_statistics_reach() -> None:
     fig, ax = plt.subplots(figsize=(7.2, 3.9), constrained_layout=True)
     bars = ax.bar(labels, n_req, color=["#9ecae1", "#6baed6", "#3182bd"], width=0.62)
     ax.axhline(anchor, color="#d62728", linewidth=2.0, linestyle="--",
-               label=r"16 h beamtime, 15 mm $^{124}$Sn  ($\approx 2.75\times10^5$ usable)")
+               label=r"16 h, 15 mm diameter / 1.2 g $^{124}$Sn  ($\approx 2.75\times10^5$ usable)")
     ax.set_yscale("log")
     ax.set_ylabel("usable y-pol events", fontsize=11)
     ax.set_title(r"Statistics needed (3$\sigma$, adjacent $\gamma$) vs. beamtime --- $^{124}$Sn",
