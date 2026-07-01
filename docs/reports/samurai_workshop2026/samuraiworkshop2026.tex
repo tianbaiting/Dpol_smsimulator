@@ -90,7 +90,7 @@
       \begin{block}{Core idea}
         \footnotesize
         A polarized deuteron is an oriented proton--neutron probe of the
-        isovector field --- a femtoscopic two-particle compass.
+        isovector field.
       \end{block}
     \end{column}
     \begin{column}{0.48\textwidth}
@@ -147,7 +147,8 @@
       \end{tabular}
       \vspace{0.2cm}
       \begin{itemize}
-        \item Same proton number ($Z=50$): same charge environment.
+        \item Same proton number ($Z=50$): closely matched Coulomb
+              environment.
         \item Different neutron excess: a stronger or weaker isovector
               response.
         \item $^{124}$Sn --- primary neutron-rich sensitivity.
@@ -391,8 +392,9 @@
     \begin{column}{0.46\textwidth}
       \footnotesize
       \begin{itemize}
-        \item Error bars on the main result are limited by the \textbf{MC
-              sample} ($\sim$2300 folded events per $\gpar$), not by physics.
+        \item Error bars on the main result reflect the current \textbf{MC
+              sample} ($\sim$2300 folded events per $\gpar$), not projected
+              beamtime statistics.
         \item Separating the closest $\gpar$ interval ($0.7\!\to\!0.8$) at
               $3\sigma$ needs $\sim$$2.8\times10^{3}$ usable events.
         \item A \textbf{16 h} beamtime on a \textbf{15 mm} $^{124}$Sn target
@@ -401,9 +403,10 @@
       \end{itemize}
       \begin{block}{Takeaway}
         \scriptsize\centering
-        Real-data error bars will be $\sim$$10\times$ smaller than those shown.
-        Statistics are comfortable; neutron efficiency, polarization and
-        backgrounds --- not event counts --- are the real limit.
+        Real-data statistical error bars will be $\sim$$10\times$ smaller than
+        those shown.  Statistics are not the limiting factor; neutron
+        acceptance, thresholds, polarization and backgrounds are the key
+        systematics.
       \end{block}
     \end{column}
   \end{columns}
@@ -430,7 +433,7 @@
       \begin{block}{Still required}
         \begin{itemize}
           \item Migrate event-quality cuts from truth to reconstructed.
-          \item Quantify efficiency, purity, and migration.
+          \item Quantify acceptance, purity, and migration.
           \item Validate $^{112}$Sn target-specific rates.
           \item Propagate polarization uncertainty.
           \item Study neutron threshold, cross-talk, backgrounds.
@@ -457,7 +460,8 @@
   \vspace{0.05cm}
   \footnotesize
   \begin{itemize}
-    \item \textbf{Done:} full simulation and detector-level closure.
+    \item \textbf{Done:} full detector simulation and truth-assisted
+          detector-folding study.
     \item \textbf{Hardware remaining:} beam polarimeter (monitor $p_{yy}$) and
           the target system (holder + $^{112}$Sn/$^{124}$Sn).
     \item \textbf{In parallel:} reco-defined closure and detector systematics.
@@ -951,7 +955,7 @@
     truth-defined in simulation. The px60 fiducial is already reconstructed.
   \end{block}
   \begin{block}{Required closure}
-    Re-run with reconstructed quality-class definitions; compare efficiency,
+    Re-run with reconstructed quality-class definitions; compare acceptance,
     purity, migration, and $\gpar$ ordering against the truth-defined baseline.
   \end{block}
 \end{frame}

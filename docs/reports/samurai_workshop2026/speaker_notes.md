@@ -1,8 +1,7 @@
 # SAMURAI Workshop 2026 Talk Script
 
-This note follows `samuraiworkshop2026.pdf` page by page.  The main talk is
-the title plus 10 content slides and a thanks page.  The remaining pages are
-backup for questions.
+This note follows `samuraiworkshop2026.pdf` page by page.  The first part is
+the main talk; the remaining pages are backup for questions.
 
 The deck is now organised around one question: can a polarized deuteron turn a
 proton--neutron isovector force difference into a measurable breakup momentum
@@ -20,8 +19,8 @@ on the title page.
 Build intuition only.  A deuteron is a bound proton--neutron pair; polarization
 gives it a preferred orientation; near a neutron-rich target the two fragments
 feel different isovector forces; after breakup this becomes a relative-momentum
-bias.  Use the "femtoscopic two-particle compass" line sparingly.  End on the
-question: can this bias be reconstructed at SAMURAI?
+bias.  Keep the language as an oriented two-body probe of the isovector field.
+End on the question: can this bias be reconstructed at SAMURAI?
 
 ## Slide 3 -- How the IVR Signal Is Formed
 
@@ -33,7 +32,8 @@ impulse.  Keep the full symmetry-energy formula for backup A.
 
 ## Slide 4 -- Why 112Sn and 124Sn?
 
-Both targets have Z = 50.  N - Z changes from 12 to 24, so 124Sn gives the
+Both targets have Z = 50, so the Coulomb environment is closely matched rather
+than identical.  N - Z changes from 12 to 24, so 124Sn gives the
 stronger neutron-rich response and 112Sn is the isotope reference.  Show the
 ideal (generator-level) prediction: a clear gamma and isotope ordering.  State
 explicitly that the rest of the talk asks whether this ideal ordering survives
@@ -113,22 +113,21 @@ ordering, not R_reco = R_truth.  Error bars are current MC statistics only.
 ## Slide 12 -- Are the Statistics Sufficient?
 
 Answer the natural question right after the main result.  The error bars shown
-are limited by the MC sample (about 2300 folded events per gamma), not by
-physics.  Separating the closest adjacent gamma interval (0.7 to 0.8) at
-3-sigma needs about 2.8e3 usable events.  A 16 h beamtime on a 15 mm 124Sn
-target delivers about 2.75e5 usable y-pol events --- roughly a factor of 100
-above the requirement, so that interval is measured at the ~30-sigma level and
-the real-data error bars will be about an order of magnitude smaller than those
-on the slide.  Conclude that statistics are comfortable; the real limitation is
-systematics --- neutron acceptance, thresholds, polarization, and backgrounds ---
-not event counts.  Be explicit that this is a statistical-only estimate.
+reflect the current MC sample (about 2300 folded events per gamma), not the
+projected beamtime statistics.  Separating the closest adjacent gamma interval
+(0.7 to 0.8) at 3-sigma needs about 2.8e3 usable events in the statistical-only
+planning convention.  A 16 h beamtime on a 15 mm 124Sn target gives about
+2.75e5 usable y-pol events after applying the current tight-px60 reco survival,
+roughly two orders of magnitude above the requirement.  Conclude that event
+counts are not the limiting factor; neutron acceptance, thresholds,
+polarization, and backgrounds are the key systematics.
 
 ## Slide 13 -- What Is Established and What Is Not Yet?
 
 Separate established results from required next work.  Established: the
 observable is reconstructed, folding changes the absolute ratio, the gamma and
 isotope ordering survive, 124Sn is the primary target.  Still required:
-reconstructed event-quality cuts, efficiency/purity/migration, 112Sn rate
+reconstructed event-quality cuts, acceptance/purity/migration, 112Sn rate
 validation, polarization uncertainty, neutron threshold and backgrounds, and
 pseudo-data closure.  Give the honest scope once, clearly: the observable and
 event plane are reconstructed but the quality class is still truth-defined, so
@@ -136,9 +135,10 @@ this is a detector-level closure study.
 
 ## Slide 14 -- Toward the Beamtime: Preparation Timeline
 
-Turn the "still required" list into a concrete schedule.  Full simulation and
-the detector-level closure are done now (2026-07).  The remaining hardware is
-the beam polarimeter, needed to monitor the vertical tensor polarization
+Turn the "still required" list into a concrete schedule.  Full detector
+simulation and the truth-assisted detector-folding study are done now
+(2026-07).  The remaining hardware is the beam polarimeter, needed to monitor
+the vertical tensor polarization
 $p_{yy}$, and the target system --- the target holder plus the $^{112}$Sn and
 $^{124}$Sn targets.  In parallel, run the reco-defined selection closure and
 the detector-systematic studies.  Offline and beam-test commissioning lead
