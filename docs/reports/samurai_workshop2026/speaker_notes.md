@@ -81,20 +81,25 @@ consistent core residuals in the same QMD kinematic window; the NN backend is
 used for the detector-level $R_x$ result because it reduces the large-tail
 contribution.  Do not spend time on architecture.
 
-## Slide 9 -- Neutron Momentum and Event-Plane Reconstruction
+## Slide 9 -- Neutron Momentum Reconstruction
 
-Make one point: the remaining ingredients are the neutron momentum and the
-event plane.  Neutron momentum comes from NEBULA / NEBULA Plus hit position and
-ToF; the event plane is built from reconstructed proton and neutron transverse
-momenta.  Avoid saying the intrinsic detection efficiency changes strongly.
-Say the usable phase space is set by geometry, hit finding, ToF, and
-reconstruction survival.  State the comparison strategy: the ideal reference
-uses QMD truth quantities; the detector result uses reconstructed quantities
-for the observable and fiducial momentum window.  Keep the caveat explicit:
-the event-quality class is still truth-defined in this version, with
+Make one point: the neutron momentum is reconstructed from NEBULA / NEBULA Plus
+hit position and ToF.  Use the one-dimensional residual distributions, not the
+2D scatter plot.  Avoid saying the intrinsic detection efficiency changes
+strongly.  Say the usable phase space is set by geometry, hit finding, ToF, and
+reconstruction survival.
+
+## Slide 10 -- Event-Plane Reconstruction
+
+Make one point: the event plane is built from reconstructed proton and neutron
+transverse momenta.  Reaction-plane migration broadens the observable but does
+not erase the gamma ordering.  State the comparison strategy: the ideal
+reference uses QMD truth quantities; the detector result uses reconstructed
+quantities for the observable and fiducial momentum window.  Keep the caveat
+explicit: the event-quality class is still truth-defined in this version, with
 reco-defined closure remaining.
 
-## Slide 10 -- Main Result: the Detector Changes the Scale, Not the Ordering
+## Slide 11 -- Main Result: the Detector Changes the Scale, Not the Ordering
 
 This is the key slide.  Show the before/after double panel: ideal model on the
 left, folded reconstructed on the right, with 112Sn and 124Sn in consistent
@@ -103,7 +108,7 @@ gamma ordering remains visible, and 124Sn keeps the stronger sensitivity while
 112Sn stays a reference.  Emphasise the central result is the survival of the
 ordering, not R_reco = R_truth.  Error bars are current MC statistics only.
 
-## Slide 11 -- Are the Statistics Sufficient?
+## Slide 12 -- Are the Statistics Sufficient?
 
 Answer the natural question right after the main result.  The error bars shown
 are limited by the MC sample (about 2300 folded events per gamma), not by
@@ -113,10 +118,10 @@ target delivers about 2.75e5 usable y-pol events --- roughly a factor of 100
 above the requirement, so that interval is measured at the ~30-sigma level and
 the real-data error bars will be about an order of magnitude smaller than those
 on the slide.  Conclude that statistics are comfortable; the real limitation is
-systematics --- neutron efficiency, polarization, and backgrounds --- not event
-counts.  Be explicit that this is a statistical-only estimate.
+systematics --- neutron acceptance, thresholds, polarization, and backgrounds ---
+not event counts.  Be explicit that this is a statistical-only estimate.
 
-## Slide 12 -- What Is Established and What Is Not Yet?
+## Slide 13 -- What Is Established and What Is Not Yet?
 
 Separate established results from required next work.  Established: the
 observable is reconstructed, folding changes the absolute ratio, the gamma and
@@ -127,7 +132,7 @@ pseudo-data closure.  Give the honest scope once, clearly: the observable and
 event plane are reconstructed but the quality class is still truth-defined, so
 this is a detector-level closure study.
 
-## Slide 13 -- Toward the Beamtime: Preparation Timeline
+## Slide 14 -- Toward the Beamtime: Preparation Timeline
 
 Turn the "still required" list into a concrete schedule.  Full simulation and
 the detector-level closure are done now (2026-07).  The remaining hardware is
@@ -139,7 +144,7 @@ into the SAMURAI beamtime, planned for the end of April 2027.  If asked, the
 intermediate phasing is a plan and can shift; only the two anchors (simulation
 done now, beamtime end of April 2027) are firm.
 
-## Slide 14 -- Summary
+## Slide 15 -- Summary
 
 Four points in non-technical language: a polarized deuteron converts an
 isovector force difference into a measurable asymmetry; 124Sn is the main
@@ -148,7 +153,7 @@ gamma and isotope ordering survive; the next step is a fully reconstructed
 closure and detector-systematic validation.  Bottom line: a y-polarized
 deuteron is a realistic first-stage path to testing IVR at SAMURAI.
 
-## Slide 15 -- Thanks
+## Slide 16 -- Thanks
 
 Pause for questions.  Route detailed questions to the backup sections:
 reconstruction performance to backup C, neutron acceptance to backup D, the

@@ -290,31 +290,50 @@
 \end{frame}
 
 %=========================================================================
-% Slide 9 --- Neutron Momentum and Event Plane
+% Slide 9 --- Neutron Momentum Reconstruction
 %=========================================================================
-\begin{frame}{Neutron Momentum and Event-Plane Reconstruction}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.50\textwidth}
-      \centering
-      \includegraphics[width=\linewidth,height=0.49\textheight,keepaspectratio]{neutron_reco_vs_truth_ypol.png}\\[-0.01cm]
-      {\scriptsize Neutron momentum from NEBULA / NEBULA Plus ToF and hit position.}
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \centering
-      \includegraphics[width=\linewidth,height=0.49\textheight,keepaspectratio]{dphi_reco_truth_ypol_tight_px60.png}\\[-0.01cm]
-      {\scriptsize Event plane from reconstructed proton and neutron transverse momenta.}
-    \end{column}
-  \end{columns}
-  \vspace{0.02cm}
-  \scriptsize\centering
-  Ideal reference: QMD truth quantities. Detector result: reconstructed
-  observable and fiducial-window quantities.\\
-  Event-quality class is still truth-defined in this version; neutron acceptance
-  is treated as geometry + reconstruction survival, not intrinsic counter efficiency.
+\begin{frame}{Neutron Momentum Reconstruction}
+  \centering
+  \includegraphics[width=0.94\linewidth,height=0.64\textheight,keepaspectratio]{neutron_residuals_ypol.png}
+
+  \vspace{0.06cm}
+  \footnotesize
+  Neutron momentum is reconstructed from NEBULA / NEBULA Plus hit position and
+  time of flight.  The relevant limitation is usable geometry and
+  reconstruction survival, not a changing intrinsic counter efficiency.
 \end{frame}
 
 %=========================================================================
-% Slide 10 --- Main Result: Before and After the Detector
+% Slide 10 --- Event Plane
+%=========================================================================
+\begin{frame}{Event-Plane Reconstruction}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.58\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.62\textheight,keepaspectratio]{dphi_reco_truth_ypol_tight_px60.png}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \footnotesize
+      \begin{itemize}
+        \item The event plane is built from reconstructed proton and neutron
+              transverse momenta.
+        \item Reaction-plane migration broadens the observable but does not
+              erase the $\gamma$ ordering.
+        \item Acceptance maps and migration matrices are kept in backup.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{0.04cm}
+  \begin{block}{Comparison strategy}
+    \scriptsize
+  Ideal reference: QMD truth quantities. Detector result: reconstructed
+  observable and fiducial-window quantities.  Event-quality class is still
+  truth-defined in this version.
+  \end{block}
+\end{frame}
+
+%=========================================================================
+% Slide 11 --- Main Result: Before and After the Detector
 %=========================================================================
 \begin{frame}{Main Result: the Detector Changes the Scale, Not the Ordering}
   \centering
