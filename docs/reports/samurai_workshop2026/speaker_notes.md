@@ -181,7 +181,8 @@ Pause for questions.  Route detailed questions to the backup sections:
 reconstruction performance to backup C, neutron acceptance to backup D, the
 truth-cut versus reco-cut closure to backup E, isotope numbers to backup F,
 statistics to backup G, y-pol/z-pol and polarization monitoring to backup H, reco closure and
-systematics to backup I.
+systematics to backup I, the target-outside 0deg rejection to backup J, and
+the selected 1.15 T, 3deg geometry to backup K.
 
 ## Backup
 
@@ -192,4 +193,5 @@ comparison, and selection migration (D), the truth-cut versus reco-cut closure
 (E), the full 112Sn/124Sn tables and bounded asymmetry (F), the statistical
 planning scale and survival flow (G), the z-pol extension status and
 polarization monitoring (H), and the reco-closure and detector-systematic
-checklists (I).
+checklists (I), plus the target-outside 0deg geometry rejection (J) and the
+selected 1.15 T, 3deg geometry (K).

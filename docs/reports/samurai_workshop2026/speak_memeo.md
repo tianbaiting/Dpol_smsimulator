@@ -180,6 +180,14 @@ The NN is a regression backend for proton momentum reconstruction.  It is valida
 
 I would call it neutron acceptance and usable phase space.  The intrinsic counter efficiency is not the point.  Geometry, thresholds, hit finding, ToF, and reconstruction survival vary across neutron transverse momentum.  This changes the absolute $R_x$ scale, but the reconstructed study shows that the gamma and isotope ordering survive.
 
+### Why not put the target outside the magnet at 0 degrees?
+
+The 0-degree target-outside option does not give a common detector working point.  On the proton side, weak fields leave the tracks too close to the exit direction and force the PDC far off axis, while strong fields over-bend the tracks and split the useful $p_x$ range.  On the neutron side, the old geometric scan gave about 69% NEBULA acceptance at 0 degrees compared with about 85% near the 5-degree reference.  Moving the PDC cannot fix the neutron acceptance, because it is set mainly by the beam/target angle.
+
+### What configuration do we use?
+
+The baseline is the target-inside SAMURAI configuration: 1.15 T field, target at $(-12,0,-1069)$ mm, beam axis rotated by 3 degrees, one exit window removed, and the polarimeter placed before the magnet.  This is the common working point used for the detector-level reconstruction and acceptance studies.
+
 ### Are statistics enough?
 
 Yes for the current planning estimate.  The closest gamma separation needs about $2.8\times10^3$ usable events for a three-sigma statistical separation, while the 16-hour $^{124}$Sn y-pol estimate gives about $2.75\times10^5$ usable events.  The measurement is therefore systematic-limited rather than statistics-limited.
