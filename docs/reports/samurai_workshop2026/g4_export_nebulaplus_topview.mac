@@ -1,0 +1,39 @@
+/control/getEnv SMSIMDIR
+/vis/open VRML2FILE
+
+# [EN] Set the same dipole configuration as the current 3 deg / 1.15 T simulation without executing the legacy Dayone NEBULA macro. / [CN] 设置当前 3 度 / 1.15 T 模拟使用的相同偶极磁铁配置，但不执行会加载旧 Dayone NEBULA 的历史宏。
+/samurai/geometry/Dipole/Angle 30 deg
+/samurai/geometry/Dipole/FieldFile {SMSIMDIR}/configs/simulation/geometry/filed_map/180703-1,15T-3000.table
+/samurai/geometry/Dipole/FieldFactor 1
+
+# [EN] Keep the target disabled as in production geometry while preserving the vertex reference used by reconstruction. / [CN] 与正式几何一致关闭靶体积，同时保留重建使用的靶点参考位置。
+/samurai/geometry/Target/SetTarget false
+/samurai/geometry/Target/Material Sn
+/samurai/geometry/Target/Size 80 80 30 mm
+/samurai/geometry/Target/Position -1.2488 0.0009 -106.9458 cm
+/samurai/geometry/Target/Angle 3.00 deg
+
+# [EN] PDC positions are the current detector-folded reconstruction configuration. / [CN] PDC 位置采用当前探测器折叠重建配置。
+/samurai/geometry/PDC/Angle 69 deg
+/samurai/geometry/PDC/Position1 70 0 400 cm
+/samurai/geometry/PDC/Position2 70 0 500 cm
+
+/samurai/geometry/Dump/SetDump false
+/samurai/geometry/Dump/Angle 36.67 deg
+/samurai/geometry/Dump/Position -0.93 -25.00 0.00 cm
+
+# [EN] Load only the S021 NEBULA and NEBULA Plus layouts so the exported GDML has one clean copy of each wall. / [CN] 只加载 S021 的 NEBULA 与 NEBULA Plus 布局，保证导出的 GDML 中每套墙只有一份。
+/samurai/geometry/NEBULA/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULA_samurai21.csv
+/samurai/geometry/NEBULA/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULA_Detectors_samurai21.csv
+/samurai/geometry/NEBULAPlus/ParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_samurai21.csv
+/samurai/geometry/NEBULAPlus/DetectorParameterFileName {SMSIMDIR}/configs/simulation/geometry/s021/NEBULAPlus_Detectors_samurai21.csv
+
+/samurai/geometry/FillAir true
+/samurai/geometry/Update
+
+# [EN] Force a deterministic top-view export in addition to the GDML written by sim_deuteron. / [CN] 强制导出确定的俯视 WRL；sim_deuteron 同时会写出 GDML。
+/vis/viewer/set/upVector 1 0 0
+/vis/viewer/set/viewpointThetaPhi 90. 90.
+/vis/drawVolume
+/vis/viewer/flush
+exit
