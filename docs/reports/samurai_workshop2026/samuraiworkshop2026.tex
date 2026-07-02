@@ -135,6 +135,35 @@
     \end{column}
   \end{columns}
 \end{frame}
+%=========================================================================
+% Slide 5 --- What Do We Measure?
+%=========================================================================
+\begin{frame}{What Do We Measure?}
+  \small
+  For each event we define a reaction plane from the proton and neutron
+  directions, rotate into it, and compare who receives the larger momentum
+  component along the selected axis:
+  \[
+    \Delta p_x = p_{x,p}-p_{x,n},
+    \qquad\qquad
+    R_x = \frac{N(\Delta p_x>0)}{N(\Delta p_x<0)} .
+  \]
+  \begin{block}{In words}
+    \small
+    We do not measure the force event by event.  We count whether the proton
+    or the neutron receives the larger momentum component along the selected
+    axis.  A larger $R_x$ means a stronger proton--neutron bias.
+  \end{block}
+  \vspace{0.1cm}
+  \begin{itemize}
+    \item $R_x>1$: the proton side is favoured.
+    \item $R_x$ changes with the isovector force, and therefore with $\gpar$.
+    \item In the detector-level analysis the proton momentum, neutron
+          momentum, and event plane are all reconstructed.
+  \end{itemize}
+\end{frame}
+
+
 
 %=========================================================================
 % Slide 4 --- Why 112Sn and 124Sn?  (+ ideal prediction)
@@ -172,84 +201,6 @@
     The rest of this talk asks whether this ideal ordering survives a
     realistic SAMURAI measurement.
   \end{block}
-\end{frame}
-
-%=========================================================================
-% Slide 5 --- What Do We Measure?
-%=========================================================================
-\begin{frame}{What Do We Measure?}
-  \small
-  For each event we define a reaction plane from the proton and neutron
-  directions, rotate into it, and compare who receives the larger momentum
-  component along the selected axis:
-  \[
-    \Delta p_x = p_{x,p}-p_{x,n},
-    \qquad\qquad
-    R_x = \frac{N(\Delta p_x>0)}{N(\Delta p_x<0)} .
-  \]
-  \begin{block}{In words}
-    \small
-    We do not measure the force event by event.  We count whether the proton
-    or the neutron receives the larger momentum component along the selected
-    axis.  A larger $R_x$ means a stronger proton--neutron bias.
-  \end{block}
-  \vspace{0.1cm}
-  \begin{itemize}
-    \item $R_x>1$: the proton side is favoured.
-    \item $R_x$ changes with the isovector force, and therefore with $\gpar$.
-    \item In the detector-level analysis the proton momentum, neutron
-          momentum, and event plane are all reconstructed.
-  \end{itemize}
-\end{frame}
-
-%=========================================================================
-% Slide 6 --- Can SAMURAI Measure the Required Information?
-%=========================================================================
-% \begin{frame}{Can SAMURAI Measure the Required Information?}
-%   \small
-%   To build $R_x$, the experiment must reconstruct three things:
-%   \begin{itemize}
-%     \item the \textbf{proton momentum} --- from drift-chamber tracks (PDC);
-%     \item the \textbf{neutron momentum} --- from the neutron hit position and
-%           time of flight (NEBULA + NEBULA Plus);
-%     \item the \textbf{event plane} --- from the proton and neutron transverse
-%           momenta together.
-%   \end{itemize}
-%   \[
-%     \text{proton track} \;+\; \text{neutron hit}
-%     \;\longrightarrow\; \text{proton + neutron momenta + event plane}
-%     \;\longrightarrow\; R_x
-%   \]
-%   \begin{block}{}
-%     \small\centering
-%     The three ingredients needed for $R_x$ are all reconstructable at SAMURAI.
-%   \end{block}
-% \end{frame}
-%
-\begin{frame}{Can SAMURAI Measure the Required Information?}
-  \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.54\textwidth}
-      \centering
-      \includegraphics[width=\linewidth,height=0.57\textheight,keepaspectratio]{onlysamuraisetup.pdf}
-    \end{column}
-    \begin{column}{0.46\textwidth}
-      \small
-      \begin{itemize}
-        \item \textbf{Proton momentum}: reconstructed from PDC tracking after
-              the SAMURAI magnet.
-        \item \textbf{Neutron momentum}: reconstructed from NEBULA / NEBULA
-              Plus hit position and ToF.
-        \item \textbf{Event plane}: built event-by-event from the reconstructed
-              proton and neutron transverse momenta.
-      \end{itemize}
-      \begin{block}{Observable chain}
-        \scriptsize\centering
-        proton track + neutron hit\\
-        $\longrightarrow$ reconstructed momenta + event plane\\
-        $\longrightarrow$ sign of $\Delta p_x^{\rm rot}$ and $R_x$
-      \end{block}
-    \end{column}
-  \end{columns}
 \end{frame}
 
 %=========================================================================
@@ -302,7 +253,59 @@
 \end{frame}
 
 %=========================================================================
+% Slide 6 --- Can SAMURAI Measure the Required Information?
+%=========================================================================
+% \begin{frame}{Can SAMURAI Measure the Required Information?}
+%   \small
+%   To build $R_x$, the experiment must reconstruct three things:
+%   \begin{itemize}
+%     \item the \textbf{proton momentum} --- from drift-chamber tracks (PDC);
+%     \item the \textbf{neutron momentum} --- from the neutron hit position and
+%           time of flight (NEBULA + NEBULA Plus);
+%     \item the \textbf{event plane} --- from the proton and neutron transverse
+%           momenta together.
+%   \end{itemize}
+%   \[
+%     \text{proton track} \;+\; \text{neutron hit}
+%     \;\longrightarrow\; \text{proton + neutron momenta + event plane}
+%     \;\longrightarrow\; R_x
+%   \]
+%   \begin{block}{}
+%     \small\centering
+%     The three ingredients needed for $R_x$ are all reconstructable at SAMURAI.
+%   \end{block}
+% \end{frame}
+% 润色 改一下
+\begin{frame}{Can SAMURAI Measure the Required Information?}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.54\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.57\textheight,keepaspectratio]{onlysamuraisetup.pdf}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \small
+      \begin{itemize}
+        \item \textbf{Proton momentum}: reconstructed from PDC tracking after
+              the SAMURAI magnet.
+        \item \textbf{Neutron momentum}: reconstructed from NEBULA / NEBULA
+              Plus hit position and ToF.
+        \item \textbf{Event plane}: built event-by-event from the reconstructed
+              proton and neutron transverse momenta.
+      \end{itemize}
+      \begin{block}{Observable chain}
+        \scriptsize\centering
+        proton track + neutron hit\\
+        $\longrightarrow$ reconstructed momenta + event plane\\
+        $\longrightarrow$ sign of $\Delta p_x^{\rm rot}$ and $R_x$
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+%=========================================================================
 % Slide 8 --- Proton Momentum Reconstruction
+% 加入误差 来源和数据流程. 
 %=========================================================================
 \begin{frame}{Proton Momentum Reconstruction: RK and NN Cross-Check}
   \begin{columns}[T,onlytextwidth]
@@ -487,7 +490,7 @@
   \end{itemize}
   \begin{block}{}
     \footnotesize\centering
-    Beamtime at SAMURAI is planned for the end of April 2027.
+    Preferred beamtime is at april 2027.
   \end{block}
 \end{frame}
 
