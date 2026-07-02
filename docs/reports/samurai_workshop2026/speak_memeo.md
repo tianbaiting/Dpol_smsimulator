@@ -37,6 +37,7 @@ Cue: three-step mechanism.
 This slide shows the mechanism in three steps.  First, the incoming deuteron has a preferred spin alignment.  Second, near the target, the proton and neutron receive different isovector impulses.  Third, after breakup, that difference becomes a momentum asymmetry.
 
 In QMD, changing the symmetry-energy parameter changes the density dependence of the isovector field.  Therefore it changes the relative impulse, and finally the measured proton-neutron momentum asymmetry.  We do not measure the force event by event.  We measure a statistical asymmetry and ask whether its gamma dependence survives the detector.
+
 ### Slide 4 -- What Do We Measure?
 
 Cue: define $R_x$ in words.
@@ -44,6 +45,7 @@ Cue: define $R_x$ in words.
 The observable is a counting ratio.  For each event, we reconstruct the proton momentum and neutron momentum.  These two momenta define the event plane.  Then we rotate into that plane and look at the relative momentum along the selected axis.
 
 We count events where the proton side is positive and events where it is negative, and form $R_x$.  This is useful because the final observable is not a complicated fit to individual forces.  It is a reconstructed event-by-event momentum-asymmetry count.
+
 ### Slide 5 -- Why 112Sn and 124Sn?
 
 Cue: isotope control.
