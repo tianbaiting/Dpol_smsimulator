@@ -136,7 +136,7 @@
   \end{columns}
 \end{frame}
 %=========================================================================
-% Slide 5 --- What Do We Measure?
+% Slide 4 --- What Do We Measure?
 %=========================================================================
 \begin{frame}{What Do We Measure?}
   \small
@@ -166,7 +166,7 @@
 
 
 %=========================================================================
-% Slide 4 --- Why 112Sn and 124Sn?  (+ ideal prediction)
+% Slide 5 --- Why 112Sn and 124Sn?  (+ ideal prediction)
 %=========================================================================
 \begin{frame}{Why $^{112}$Sn and $^{124}$Sn?}
   \begin{columns}[T,onlytextwidth]
@@ -204,7 +204,7 @@
 \end{frame}
 
 %=========================================================================
-% Slide 7 --- Why Start with y Polarization?
+% Slide 6 --- Why Start with y Polarization?
 %=========================================================================
 \begin{frame}{Why Start with y Polarization?}
   \begin{columns}[T,onlytextwidth]
@@ -253,7 +253,7 @@
 \end{frame}
 
 %=========================================================================
-% Slide 6 --- Can SAMURAI Measure the Required Information?
+% Slide 7 --- Reconstruction Chain
 %=========================================================================
 % \begin{frame}{Can SAMURAI Measure the Required Information?}
 %   \small
@@ -276,27 +276,63 @@
 %   \end{block}
 % \end{frame}
 % 润色 改一下
-\begin{frame}{Can SAMURAI Measure the Required Information?}
+\begin{frame}{Reconstruction Chain for $R_x$}
+  \vspace{-0.08cm}
   \begin{columns}[T,onlytextwidth]
-    \begin{column}{0.54\textwidth}
+    \begin{column}{0.43\textwidth}
       \centering
-      \includegraphics[width=\linewidth,height=0.57\textheight,keepaspectratio]{onlysamuraisetup.pdf}
+      \includegraphics[width=\linewidth,height=0.67\textheight,keepaspectratio]{onlysamuraisetup.pdf}
     \end{column}
-    \begin{column}{0.46\textwidth}
-      \small
-      \begin{itemize}
-        \item \textbf{Proton momentum}: reconstructed from PDC tracking after
-              the SAMURAI magnet.
-        \item \textbf{Neutron momentum}: reconstructed from NEBULA / NEBULA
-              Plus hit position and ToF.
-        \item \textbf{Event plane}: built event-by-event from the reconstructed
-              proton and neutron transverse momenta.
-      \end{itemize}
-      \begin{block}{Observable chain}
-        \scriptsize\centering
-        proton track + neutron hit\\
-        $\longrightarrow$ reconstructed momenta + event plane\\
-        $\longrightarrow$ sign of $\Delta p_x^{\rm rot}$ and $R_x$
+    \begin{column}{0.57\textwidth}
+      \begin{block}{Detector-folded reconstruction chain}
+        \centering
+        \begin{tikzpicture}[
+          font=\scriptsize,
+          box/.style={
+            draw=dpolgray!55,
+            rounded corners=2pt,
+            align=center,
+            inner sep=3pt,
+            minimum height=0.58cm
+          },
+          pbox/.style={box, fill=protonred!8, text width=2.15cm},
+          nbox/.style={box, fill=neutronblue!8, text width=2.15cm},
+          reco/.style={box, fill=dpolgreen!8, text width=2.15cm},
+          wide/.style={box, fill=dpolblue!6, text width=5.45cm},
+          arrow/.style={-{Latex[length=1.8mm]}, thick, draw=dpolgray}
+        ]
+          \node[pbox] (pin) at (0,0)
+            {\textcolor{protonred}{target vertex}\\PDC1/PDC2 track};
+          \node[reco] (preco) at (3.65,0)
+            {\textcolor{protonred}{$\vec p_p^{\,\rm reco}$}\\NN for $R_x$; RK check};
+          \draw[arrow] (pin) -- node[above,font=\tiny,fill=white,inner sep=0.4pt]
+            {NN / RK} (preco);
+          \node[font=\tiny,align=center,text=dpolgray,text width=4.6cm]
+            at (1.82,-0.58)
+            {folded: PDC hit resolution + air/window/PDC-gas multiple scattering};
+
+          \node[nbox] (nin) at (0,-1.35)
+            {\textcolor{neutronblue}{NEBULA/Plus hit}\\position + ToF};
+          \node[reco] (nreco) at (3.65,-1.35)
+            {\textcolor{neutronblue}{$\vec p_n^{\,\rm reco}$}\\$\beta$ / flight-path reco};
+          \draw[arrow] (nin) -- node[above,font=\tiny,fill=white,inner sep=0.4pt]
+            {$\beta$ reco} (nreco);
+          \node[font=\tiny,align=center,text=dpolgray,text width=4.6cm]
+            at (1.82,-1.93)
+            {folded: hit/time resolution + threshold/acceptance survival};
+
+          \node[wide] (plane) at (1.82,-2.78)
+            {$(\vec p_p^{\,\rm reco},\vec p_n^{\,\rm reco})$
+             $\rightarrow$ reconstructed event plane};
+          \draw[arrow] (preco.east) -- ++(0.22,0) |- (plane.east);
+          \draw[arrow] (nreco.east) -- ++(0.22,0) |- (plane.east);
+
+          \node[wide, fill=dpolorange!10] (rx) at (1.82,-3.87)
+            {rotate into plane $\rightarrow$
+             sign of $\Delta p_x^{\rm rot}$ $\rightarrow$
+             $N_+/N_- = R_x$};
+          \draw[arrow] (plane) -- (rx);
+        \end{tikzpicture}
       \end{block}
     \end{column}
   \end{columns}

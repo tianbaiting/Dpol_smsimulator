@@ -48,15 +48,23 @@ formulae for Delta p_x and R_x.  Stress that we do not measure the force event
 by event.  Say the proton momentum, neutron momentum, and event plane are all
 reconstructed; keep the atan2 and rotation details for backup B.
 
-## Slide 6 -- Can SAMURAI Measure the Required Information?
+## Slide 6 -- Reconstruction Chain for $R_x$
 
 Use the setup figure to connect the observable to real detector elements.  The
 proton goes through the SAMURAI magnet and is measured by the PDC tracking
-system; the neutron is measured by NEBULA / NEBULA Plus using hit position and
-ToF.  These two reconstructed momenta define the event plane event by event.
-Close with the chain: proton track plus neutron hit gives reconstructed momenta
-and event plane, then the sign of rotated Delta p_x gives R_x.  Do not dwell on
-y/z-pol here; the next slide does.
+system.  Say explicitly that the proton input is the target vertex plus the
+PDC1/PDC2 track after the magnet; the NN backend gives the proton target
+momentum used in $R_x$, and RK field transport is the cross-check.  The neutron
+is measured by NEBULA / NEBULA Plus using hit position and ToF.  These two
+reconstructed momenta define the event plane event by event.
+
+Make the detector-folding point clear here: proton-side PDC hit resolution plus
+air/window/PDC-gas multiple scattering are part of the track response; neutron
+timing, hit position, threshold/acceptance, and reconstruction survival are
+part of the neutron response.  Close with the chain: PDC track plus NEBULA hit
+gives reconstructed proton and neutron momenta, then the reconstructed event
+plane, then the sign of rotated Delta p_x and $R_x$.  Do not dwell on y/z-pol
+here; the next slide does.
 
 ## Slide 7 -- Why Start with y Polarization?
 

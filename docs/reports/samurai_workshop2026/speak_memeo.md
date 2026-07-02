@@ -37,8 +37,14 @@ Cue: three-step mechanism.
 This slide shows the mechanism in three steps.  First, the incoming deuteron has a preferred spin alignment.  Second, near the target, the proton and neutron receive different isovector impulses.  Third, after breakup, that difference becomes a momentum asymmetry.
 
 In QMD, changing the symmetry-energy parameter changes the density dependence of the isovector field.  Therefore it changes the relative impulse, and finally the measured proton-neutron momentum asymmetry.  We do not measure the force event by event.  We measure a statistical asymmetry and ask whether its gamma dependence survives the detector.
+### Slide 4 -- What Do We Measure?
 
-### Slide 4 -- Why 112Sn and 124Sn?
+Cue: define $R_x$ in words.
+
+The observable is a counting ratio.  For each event, we reconstruct the proton momentum and neutron momentum.  These two momenta define the event plane.  Then we rotate into that plane and look at the relative momentum along the selected axis.
+
+We count events where the proton side is positive and events where it is negative, and form $R_x$.  This is useful because the final observable is not a complicated fit to individual forces.  It is a reconstructed event-by-event momentum-asymmetry count.
+### Slide 5 -- Why 112Sn and 124Sn?
 
 Cue: isotope control.
 
@@ -46,23 +52,8 @@ The two tin targets give a clean comparison.  They have the same charge, $Z=50$,
 
 This makes $^{124}$Sn the main neutron-rich sensitivity target, while $^{112}$Sn is the isotope reference.  The ideal generator-level result shows the expected gamma and isotope ordering.  The real question is whether this ordering remains after SAMURAI acceptance and reconstruction.
 
-### Slide 5 -- What Do We Measure?
 
-Cue: define $R_x$ in words.
-
-The observable is a counting ratio.  For each event, we reconstruct the proton momentum and neutron momentum.  These two momenta define the event plane.  Then we rotate into that plane and look at the relative momentum along the selected axis.
-
-We count events where the proton side is positive and events where it is negative, and form $R_x$.  This is useful because the final observable is not a complicated fit to individual forces.  It is a reconstructed event-by-event momentum-asymmetry count.
-
-### Slide 6 -- Can SAMURAI Measure the Required Information?
-
-Cue: map observable to detectors.
-
-The required information maps directly onto SAMURAI.  The proton is bent by the SAMURAI magnet and measured by the PDC tracking system.  The neutron is measured by NEBULA and NEBULA Plus using hit position and time of flight.
-
-Together, these reconstructed momenta define the event plane.  This is the first important point: the detector-level $R_x$ is not evaluated with hidden truth information.  It uses reconstructed proton momentum, reconstructed neutron momentum, reconstructed event plane, and reco-defined fiducial and quality cuts.  Truth remains only for the ideal reference, diagnostics, and the virtual-breakup veto.
-
-### Slide 7 -- Why Start with y Polarization?
+### Slide 6 -- Why Start with y Polarization?
 
 Cue: y-pol is practical.
 
@@ -71,6 +62,17 @@ In an ideal geometry, z-pol is cleaner because the polarization axis is approxim
 y-pol is the practical first measurement.  The vertical tensor axis gives a rank-2 projection onto the event plane, so the angular dependence is $\cos(2\psi)$-like.  A naive average over all reaction-plane angles would dilute the signal.
 
 But we reconstruct the reaction plane event by event.  That lets us select a favorable $\psi$ window.  The projected statistics can afford this selection, and LRUD monitoring of $p_{yy}$ is mature.  So y-pol is not the most idealized case, but it is the experimentally realistic one now.
+
+### Slide 7 -- Reconstruction Chain for $R_x$
+
+Cue: map observable to detectors.
+
+The required information maps directly onto SAMURAI.  The proton is bent by the SAMURAI magnet and measured by the PDC tracking system.  The input is the known target vertex plus the PDC1 and PDC2 track after the magnet.  From that I reconstruct the target-frame proton momentum.  The detector-level observable uses the NN proton backend, with RK field transport as the independent cross-check.
+
+The neutron is reconstructed from NEBULA and NEBULA Plus hit position and time of flight.  These two reconstructed momenta define the event plane event by event.
+
+The important point for this slide is that this is a detector-folded chain.  On the proton side, PDC hit resolution and air, window, and PDC-gas multiple scattering are included in the simulated track response.  On the neutron side, timing, hit position, thresholds, acceptance, and reconstruction survival are included.  The detector-level $R_x$ is therefore not evaluated with hidden truth information; it uses reconstructed proton momentum, reconstructed neutron momentum, reconstructed event plane, and reco-defined fiducial and quality cuts.  Truth remains only for the ideal reference, diagnostics, and the virtual-breakup veto.
+
 
 ### Slide 8 -- Proton Momentum Reconstruction
 
